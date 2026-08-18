@@ -13,6 +13,7 @@ use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
 use App\Models\SalesPayment;
 use App\Models\SalesReturn;
+use App\Models\StockDisposition;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -344,6 +345,63 @@ class JournalService
             referenceId: $return->id,
             lines: $lines
         );
+    }
+
+    /**
+     * Buat journal entry dari penyelesaian barang karantina (Stock Disposition).
+     *
+     * Logika:
+     * - write_off: Debet Kerugian Persediaan Rusak (5-1300), Kredit Persediaan (1-1400)
+     * - sold_as_reject: Debet Kas (1-1100), Kredit Pendapatan Penjualan Reject (4-1400),
+     *                   Debet HPP Penjualan Reject (5-1400), Kredit Persediaan (1-1400)
+     */
+    public function createFromStockDisposition(StockDisposition $disposition): JournalEntry
+    {
+        $existing = JournalEntry::where('reference_type', StockDisposition::class)
+            ->where('reference_id', $disposition->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $disposition->load(['product', 'warehouse']);
+
+        $totalCost  = round((float) $disposition->qty * (float) $disposition->unit_cost, 2);
+        $persediaan = $this->findAccount('1-1400'); // Persediaan Barang
+
+        if ($disposition->resolution_type === 'write_off') {
+            $kerugian = $this->findAccount('5-1300'); // Kerugian Persediaan Rusak
+
+            $lines = [
+                ['account_id' => $kerugian->id,   'debit' => $totalCost, 'credit' => 0,          'description' => "Penghapusan Stok Rusak {$disposition->product->name}"],
+                ['account_id' => $persediaan->id, 'debit' => 0,          'credit' => $totalCost, 'description' => "Pengurangan Persediaan (Write Off)"],
+            ];
+            $desc = "Write-off Stok Rusak #{$disposition->disposition_number}";
+        } else {
+            $saleAmount = round((float) $disposition->qty * (float) ($disposition->sale_price ?? 0), 2);
+            $kas        = $this->findAccount('1-1100'); // Kas / Bank
+            $pendapatan = $this->findAccount('4-1400'); // Pendapatan Penjualan Reject
+            $hppReject  = $this->findAccount('5-1400'); // HPP Penjualan Reject
+
+            $lines = [
+                ['account_id' => $kas->id,        'debit' => $saleAmount, 'credit' => 0,          'description' => "Penerimaan Kas Penjualan Reject {$disposition->product->name}"],
+                ['account_id' => $pendapatan->id, 'debit' => 0,           'credit' => $saleAmount, 'description' => "Pendapatan Penjualan Reject"],
+                ['account_id' => $hppReject->id,  'debit' => $totalCost,  'credit' => 0,          'description' => "HPP Penjualan Reject"],
+                ['account_id' => $persediaan->id, 'debit' => 0,           'credit' => $totalCost,  'description' => "Pengurangan Persediaan (Sold as Reject)"],
+            ];
+            $desc = "Penjualan Barang Reject #{$disposition->disposition_number}";
+        }
+
+        $entry = $this->createEntry(
+            date: $disposition->disposed_at->toDateString(),
+            description: $desc,
+            referenceType: StockDisposition::class,
+            referenceId: $disposition->id,
+            lines: $lines
+        );
+
+        return $this->postEntry($entry);
     }
 
     /**

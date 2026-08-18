@@ -19,6 +19,7 @@ use App\Http\Controllers\Purchase\PurchasePaymentController;
 use App\Http\Controllers\Inventory\StockMovementController;
 use App\Http\Controllers\Inventory\WarehouseTransferController;
 use App\Http\Controllers\Inventory\StockOpnameController;
+use App\Http\Controllers\Inventory\StockDispositionController;
 // Sales
 use App\Http\Controllers\Sales\SalesOrderController;
 use App\Http\Controllers\Sales\DeliveryController;
@@ -93,9 +94,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('stock-card', [StockMovementController::class, 'stockCard'])->name('stock-card');
         Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
         Route::resource('transfers', WarehouseTransferController::class)->only(['index', 'create', 'store', 'show']);
+        Route::patch('transfers/{transfer}/ship', [WarehouseTransferController::class, 'ship'])->name('transfers.ship');
         Route::patch('transfers/{transfer}/receive', [WarehouseTransferController::class, 'receive'])->name('transfers.receive');
+        Route::patch('transfers/{transfer}/cancel', [WarehouseTransferController::class, 'cancel'])->name('transfers.cancel');
         Route::resource('opname', StockOpnameController::class)->only(['index', 'create', 'store', 'show']);
         Route::patch('opname/{opname}/complete', [StockOpnameController::class, 'complete'])->name('opname.complete');
+        Route::resource('dispositions', StockDispositionController::class)->only(['index', 'create', 'store']);
     });
 
     Route::middleware('role:admin,gudang,purchasing,sales,finance')->prefix('inventory')->name('inventory.')->group(function () {
@@ -132,9 +136,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('journals/{journal}/post', [JournalEntryController::class, 'post'])->name('journals.post');
 
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
+            Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
+            Route::get('trial-balance', [ReportController::class, 'trialBalance'])->name('trial-balance');
+            Route::get('cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow');
             Route::get('receivables', [ReportController::class, 'receivables'])->name('receivables');
             Route::get('payables', [ReportController::class, 'payables'])->name('payables');
+            Route::get('profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
+            Route::get('balance-sheet', [ReportController::class, 'balanceSheet'])->name('balance-sheet');
             Route::get('stock-valuation', [ReportController::class, 'stockValuation'])->name('stock-valuation');
         });
     });

@@ -90,9 +90,16 @@
                             @endif
                         </td>
                         <td style="text-align:center;">
-                            <a href="{{ route('inventory.stock-card') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-secondary btn-sm" title="Kartu Stok">
-                                <i class="fa-solid fa-rectangle-list"></i> Kartu Stok
-                            </a>
+                            <div style="display:flex; gap:6px; justify-content:center;">
+                                <a href="{{ route('inventory.stock-card') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-secondary btn-sm" title="Kartu Stok">
+                                    <i class="fa-solid fa-rectangle-list"></i> Kartu Stok
+                                </a>
+                                @if($p->quarantine_stock > 0)
+                                <a href="{{ route('inventory.dispositions.create') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-warning btn-sm" title="Selesaikan Barang Karantina">
+                                    <i class="fa-solid fa-box-archive"></i> Selesaikan
+                                </a>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty

@@ -39,20 +39,23 @@ class ChartOfAccountSeeder extends Seeder
             ['code' => '3-1300', 'name' => 'Laba/Rugi Berjalan',    'type' => 'equity'],
 
             // === PENDAPATAN (4-xxxx) ===
-            ['code' => '4-1100', 'name' => 'Penjualan',             'type' => 'revenue'],
-            ['code' => '4-1200', 'name' => 'Retur Penjualan',       'type' => 'revenue'],
-            ['code' => '4-1300', 'name' => 'Potongan Penjualan',    'type' => 'revenue'],
-            ['code' => '4-9100', 'name' => 'Pendapatan Lain-lain',  'type' => 'revenue'],
+            ['code' => '4-1100', 'name' => 'Penjualan',                  'type' => 'revenue'],
+            ['code' => '4-1200', 'name' => 'Retur Penjualan',            'type' => 'revenue'],
+            ['code' => '4-1300', 'name' => 'Potongan Penjualan',         'type' => 'revenue'],
+            ['code' => '4-1400', 'name' => 'Pendapatan Penjualan Reject', 'type' => 'revenue'],
+            ['code' => '4-9100', 'name' => 'Pendapatan Lain-lain',       'type' => 'revenue'],
 
             // === BEBAN (5-xxxx) ===
             ['code' => '5-1100', 'name' => 'Harga Pokok Penjualan (HPP)', 'type' => 'expense'],
-            ['code' => '5-1200', 'name' => 'Retur Pembelian',       'type' => 'expense'],
-            ['code' => '5-2100', 'name' => 'Beban Gaji',            'type' => 'expense'],
-            ['code' => '5-2200', 'name' => 'Beban Sewa',            'type' => 'expense'],
-            ['code' => '5-2300', 'name' => 'Beban Listrik & Air',   'type' => 'expense'],
-            ['code' => '5-2400', 'name' => 'Beban Transportasi',    'type' => 'expense'],
-            ['code' => '5-2500', 'name' => 'Beban Penyusutan',      'type' => 'expense'],
-            ['code' => '5-9900', 'name' => 'Beban Lain-lain',       'type' => 'expense'],
+            ['code' => '5-1200', 'name' => 'Retur Pembelian',             'type' => 'expense'],
+            ['code' => '5-1300', 'name' => 'Kerugian Persediaan Rusak',   'type' => 'expense'],
+            ['code' => '5-1400', 'name' => 'HPP Penjualan Reject',        'type' => 'expense'],
+            ['code' => '5-2100', 'name' => 'Beban Gaji',                  'type' => 'expense'],
+            ['code' => '5-2200', 'name' => 'Beban Sewa',                  'type' => 'expense'],
+            ['code' => '5-2300', 'name' => 'Beban Listrik & Air',         'type' => 'expense'],
+            ['code' => '5-2400', 'name' => 'Beban Transportasi',          'type' => 'expense'],
+            ['code' => '5-2500', 'name' => 'Beban Penyusutan',            'type' => 'expense'],
+            ['code' => '5-9900', 'name' => 'Beban Lain-lain',             'type' => 'expense'],
         ];
 
         foreach ($accounts as $account) {

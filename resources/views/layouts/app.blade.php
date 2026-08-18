@@ -257,6 +257,7 @@
                 <a href="{{ route('inventory.stock-card') }}" class="nav-item {{ request()->routeIs('inventory.stock-card') ? 'active' : '' }}"><i class="fa-solid fa-rectangle-list"></i><span>Kartu Stok</span></a>
                 <a href="{{ route('inventory.transfers.index') }}" class="nav-item {{ request()->routeIs('inventory.transfers.*') ? 'active' : '' }}"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Transfer Gudang</span></a>
                 <a href="{{ route('inventory.opname.index') }}" class="nav-item {{ request()->routeIs('inventory.opname.*') ? 'active' : '' }}"><i class="fa-solid fa-clipboard-check"></i><span>Stock Opname</span></a>
+                <a href="{{ route('inventory.dispositions.index') }}" class="nav-item {{ request()->routeIs('inventory.dispositions.*') ? 'active' : '' }}"><i class="fa-solid fa-box-archive"></i><span>Disposisi Karantina</span></a>
             </div>
         </div>
 
@@ -283,9 +284,14 @@
             </div>
             <div class="nav-sub" :class="{ open: open }">
                 <a href="{{ route('accounting.journals.index') }}" class="nav-item {{ request()->routeIs('accounting.journals.*') ? 'active' : '' }}"><i class="fa-solid fa-book-open"></i><span>Jurnal Umum</span></a>
-                <a href="{{ route('accounting.reports.profit-loss') }}" class="nav-item {{ request()->routeIs('accounting.reports.profit-loss') ? 'active' : '' }}"><i class="fa-solid fa-chart-line"></i><span>Laba/Rugi</span></a>
+                <a href="{{ route('accounting.reports.ledger') }}" class="nav-item {{ request()->routeIs('accounting.reports.ledger') ? 'active' : '' }}"><i class="fa-solid fa-book"></i><span>Buku Besar</span></a>
+                <a href="{{ route('accounting.reports.trial-balance') }}" class="nav-item {{ request()->routeIs('accounting.reports.trial-balance') ? 'active' : '' }}"><i class="fa-solid fa-scale-balanced"></i><span>Neraca Saldo</span></a>
+                <a href="{{ route('accounting.reports.cash-flow') }}" class="nav-item {{ request()->routeIs('accounting.reports.cash-flow') ? 'active' : '' }}"><i class="fa-solid fa-money-bill-transfer"></i><span>Arus Kas</span></a>
                 <a href="{{ route('accounting.reports.receivables') }}" class="nav-item {{ request()->routeIs('accounting.reports.receivables') ? 'active' : '' }}"><i class="fa-solid fa-file-invoice-dollar"></i><span>Laporan Piutang</span></a>
                 <a href="{{ route('accounting.reports.payables') }}" class="nav-item {{ request()->routeIs('accounting.reports.payables') ? 'active' : '' }}"><i class="fa-solid fa-file-invoice"></i><span>Laporan Hutang</span></a>
+                <a href="{{ route('accounting.reports.profit-loss') }}" class="nav-item {{ request()->routeIs('accounting.reports.profit-loss') ? 'active' : '' }}"><i class="fa-solid fa-chart-line"></i><span>Laba / Rugi</span></a>
+                <a href="{{ route('accounting.reports.balance-sheet') }}" class="nav-item {{ request()->routeIs('accounting.reports.balance-sheet') ? 'active' : '' }}"><i class="fa-solid fa-scale-unbalanced"></i><span>Neraca</span></a>
+                <a href="{{ route('accounting.reports.stock-valuation') }}" class="nav-item {{ request()->routeIs('accounting.reports.stock-valuation') ? 'active' : '' }}"><i class="fa-solid fa-boxes-stacked"></i><span>Valuasi Stok</span></a>
             </div>
         </div>
 

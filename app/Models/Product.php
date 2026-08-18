@@ -56,16 +56,18 @@ class Product extends Model
     }
 
     /**
-     * Hitung stok karantina / rusak.
+     * Hitung sisa stok karantina / rusak bersih (minus write_off & reject_out).
      */
     public function quarantineStock(?int $warehouseId = null): int
     {
-        $query = $this->stockMovements()->where('type', 'return_in_damaged');
+        $queryIn = $this->stockMovements()->where('type', 'return_in_damaged');
+        $queryOut = $this->stockMovements()->whereIn('type', ['write_off', 'reject_out']);
 
         if ($warehouseId) {
-            $query->where('warehouse_id', $warehouseId);
+            $queryIn->where('warehouse_id', $warehouseId);
+            $queryOut->where('warehouse_id', $warehouseId);
         }
 
-        return (int) $query->sum('quantity');
+        return max(0, (int) $queryIn->sum('quantity') - (int) $queryOut->sum('quantity'));
     }
 }

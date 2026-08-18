@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WarehouseTransferItem extends Model
 {
     protected $fillable = [
-        'warehouse_transfer_id', 'product_id',
-        'qty_requested', 'qty_received', 'condition',
+        'warehouse_transfer_id',
+        'product_id',
+        'qty',
     ];
 
     public function warehouseTransfer(): BelongsTo

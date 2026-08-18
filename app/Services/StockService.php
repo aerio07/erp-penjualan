@@ -49,18 +49,30 @@ class StockService
     }
 
     /**
-     * Hitung stok fisik KARANTINA (barang rusak/reject hasil retur yang tidak boleh dijual).
+     * Hitung stok fisik KARANTINA BERSIH (barang rusak/reject minus write_off & reject_out).
      */
     public function getQuarantineStock(int $productId, ?int $warehouseId = null): int
     {
-        $query = StockMovement::where('product_id', $productId)
+        $queryIn = StockMovement::where('product_id', $productId)
             ->where('type', 'return_in_damaged');
 
+        $queryOut = StockMovement::where('product_id', $productId)
+            ->whereIn('type', ['write_off', 'reject_out']);
+
         if ($warehouseId) {
-            $query->where('warehouse_id', $warehouseId);
+            $queryIn->where('warehouse_id', $warehouseId);
+            $queryOut->where('warehouse_id', $warehouseId);
         }
 
-        return (int) $query->sum('quantity');
+        return max(0, (int) $queryIn->sum('quantity') - (int) $queryOut->sum('quantity'));
+    }
+
+    /**
+     * Sisa stok karantina yang MASIH tersedia untuk diselesaikan.
+     */
+    public function getQuarantineStockAvailable(int $productId, ?int $warehouseId = null): int
+    {
+        return $this->getQuarantineStock($productId, $warehouseId);
     }
 
     /**
@@ -95,7 +107,7 @@ class StockService
             } elseif ($m->type === 'adjustment') {
                 $runningQty += $m->quantity;
             }
-            // Catatan: type 'return_in_damaged' tidak menambah running_qty siap jual
+            // Catatan: 'return_in_damaged', 'write_off', dan 'reject_out' tidak mengubah running_qty siap jual
 
             return [
                 'movement'    => $m,

@@ -1,18 +1,32 @@
 @extends('layouts.app')
 @section('title', 'Buat Transfer Gudang')
-@section('page-title', 'Buat Transfer Gudang')
+@section('page-title', 'Buat Draft Transfer Gudang')
 
 @section('content')
 <div class="animate-in" x-data="trfForm()">
     <div class="page-header">
         <div>
-            <h1>Buat Transfer Gudang</h1>
-            <p>Form mutasi pemindahan fisik persediaan antar gudang</p>
+            <h1>Buat Draft Transfer Gudang</h1>
+            <p>Form pemindahan persediaan antar gudang. Stok gudang asal akan dikurangi setelah pengiriman dikonfirmasi (Ship).</p>
         </div>
         <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary">
             <i class="fa-solid fa-arrow-left"></i> Kembali
         </a>
     </div>
+
+    @if($errors->any())
+    <div class="alert alert-danger mb-4">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <div>
+            <strong>Terjadi kesalahan input:</strong>
+            <ul style="margin-top:4px; padding-left:18px;">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+    @endif
 
     <form method="POST" action="{{ route('inventory.transfers.store') }}">
         @csrf
@@ -42,7 +56,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Tanggal Kirim <span style="color:var(--danger);">*</span></label>
+                        <label class="form-label">Tanggal Dokumen <span style="color:var(--danger);">*</span></label>
                         <input type="date" name="transfer_date" value="{{ old('transfer_date', date('Y-m-d')) }}" class="form-control" required>
                     </div>
                 </div>
@@ -67,7 +81,7 @@
                     <thead>
                         <tr>
                             <th>Produk</th>
-                            <th style="width:140px;">Jumlah Transfer</th>
+                            <th style="width:180px;">Jumlah Transfer (Qty)</th>
                             <th style="width:50px;"></th>
                         </tr>
                     </thead>
@@ -83,7 +97,7 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" :name="`items[${idx}][qty_requested]`" x-model.number="row.qty" class="form-control" min="1" required>
+                                    <input type="number" :name="`items[${idx}][qty]`" x-model.number="row.qty" class="form-control" min="1" required>
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
@@ -100,7 +114,7 @@
         <div style="display:flex; justify-content:flex-end; gap:12px;">
             <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-truck-ramp-box"></i> Kirim Transfer & Potong Stok Asal
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft Transfer
             </button>
         </div>
     </form>
@@ -111,8 +125,8 @@
 <script>
 function trfForm() {
     return {
-        fromWhId: '',
-        toWhId: '',
+        fromWhId: '{{ old('from_warehouse_id', '') }}',
+        toWhId: '{{ old('to_warehouse_id', '') }}',
         rows: [{ product_id: '', qty: 1 }],
 
         addRow() { this.rows.push({ product_id: '', qty: 1 }); },

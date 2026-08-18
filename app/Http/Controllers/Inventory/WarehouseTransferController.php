@@ -12,19 +12,39 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class WarehouseTransferController extends Controller
 {
     public function __construct(private StockService $stockService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $transfers = WarehouseTransfer::with(['fromWarehouse', 'toWarehouse', 'user'])
+        $query = WarehouseTransfer::with(['fromWarehouse', 'toWarehouse', 'user', 'shippedBy', 'receivedBy'])
             ->latest('transfer_date')
-            ->paginate(20);
+            ->latest('id');
 
-        return view('inventory.transfers.index', compact('transfers'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('from_warehouse_id')) {
+            $query->where('from_warehouse_id', $request->from_warehouse_id);
+        }
+        if ($request->filled('to_warehouse_id')) {
+            $query->where('to_warehouse_id', $request->to_warehouse_id);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('transfer_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('transfer_date', '<=', $request->date_to);
+        }
+
+        $transfers  = $query->paginate(20);
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+
+        return view('inventory.transfers.index', compact('transfers', 'warehouses'));
     }
 
     public function create(): View
@@ -38,25 +58,35 @@ class WarehouseTransferController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'from_warehouse_id'      => 'required|exists:warehouses,id|different:to_warehouse_id',
-            'to_warehouse_id'        => 'required|exists:warehouses,id',
-            'transfer_date'          => 'required|date',
-            'notes'                  => 'nullable|string',
-            'items'                  => 'required|array|min:1',
-            'items.*.product_id'     => 'required|exists:products,id',
-            'items.*.qty_requested'  => 'required|integer|min:1',
+            'from_warehouse_id'     => 'required|exists:warehouses,id|different:to_warehouse_id',
+            'to_warehouse_id'       => 'required|exists:warehouses,id',
+            'transfer_date'         => 'required|date',
+            'notes'                 => 'nullable|string',
+            'items'                 => 'required|array|min:1',
+            'items.*.product_id'    => 'required|exists:products,id',
+            'items.*.qty'           => 'required_without:items.*.qty_requested|nullable|integer|min:1',
+            'items.*.qty_requested' => 'nullable|integer|min:1',
         ]);
 
-        // Cek kecukupan stok di gudang asal
-        foreach ($request->items as $item) {
+        // Standardize qty input
+        $itemsData = collect($request->items)->map(function ($i) {
+            $qty = $i['qty'] ?? $i['qty_requested'] ?? 1;
+            return [
+                'product_id' => $i['product_id'],
+                'qty'        => (int) $qty,
+            ];
+        });
+
+        // Check stock availability in origin warehouse
+        foreach ($itemsData as $item) {
             $currentStock = $this->stockService->getCurrentStock($item['product_id'], $request->from_warehouse_id);
-            if ($currentStock < $item['qty_requested']) {
+            if ($currentStock < $item['qty']) {
                 $product = Product::find($item['product_id']);
-                return back()->with('error', "Stok produk '{$product->name}' di gudang asal tidak mencukupi (Tersedia: {$currentStock}, Diminta: {$item['qty_requested']}).")->withInput();
+                return back()->with('error', "Stok produk '{$product->name}' di gudang asal tidak mencukupi (Tersedia: {$currentStock}, Diminta: {$item['qty']}).")->withInput();
             }
         }
 
-        DB::transaction(function () use ($request) {
+        $transfer = DB::transaction(function () use ($request, $itemsData) {
             $transferNumber = $this->generateNumber();
 
             $transfer = WarehouseTransfer::create([
@@ -64,78 +94,116 @@ class WarehouseTransferController extends Controller
                 'from_warehouse_id' => $request->from_warehouse_id,
                 'to_warehouse_id'   => $request->to_warehouse_id,
                 'user_id'           => Auth::id(),
-                'status'            => 'in_transit',
+                'status'            => 'draft',
                 'transfer_date'     => $request->transfer_date,
                 'notes'             => $request->notes,
             ]);
 
-            foreach ($request->items as $item) {
-                $product = Product::find($item['product_id']);
-
+            foreach ($itemsData as $item) {
                 WarehouseTransferItem::create([
                     'warehouse_transfer_id' => $transfer->id,
                     'product_id'            => $item['product_id'],
-                    'qty_requested'         => $item['qty_requested'],
-                    'qty_received'          => 0,
-                ]);
-
-                // Kurangi stok di gudang asal (transfer_out)
-                $this->stockService->recordMovement([
-                    'product_id'     => $item['product_id'],
-                    'warehouse_id'   => $request->from_warehouse_id,
-                    'type'           => 'transfer_out',
-                    'quantity'       => $item['qty_requested'],
-                    'unit_cost'      => $product->purchase_price,
-                    'reference_type' => WarehouseTransfer::class,
-                    'reference_id'   => $transfer->id,
-                    'movement_date'  => $request->transfer_date,
-                    'notes'          => "Transfer keluar ke gudang #{$transfer->to_warehouse_id} (Ref #{$transferNumber})",
-                    'user_id'        => Auth::id(),
+                    'qty'                   => $item['qty'],
                 ]);
             }
+
+            return $transfer;
         });
 
-        return redirect()->route('inventory.transfers.index')
-            ->with('success', 'Transfer Gudang berhasil dibuat dan stok gudang asal telah dikurangi.');
+        return redirect()->route('inventory.transfers.show', $transfer)
+            ->with('success', "Draft Transfer Gudang #{$transfer->transfer_number} berhasil dibuat. Silakan periksa dan konfirmasi pengiriman (Ship).");
     }
 
     public function show(WarehouseTransfer $transfer): View
     {
-        $transfer->load(['fromWarehouse', 'toWarehouse', 'user', 'items.product']);
+        $transfer->load(['fromWarehouse', 'toWarehouse', 'user', 'shippedBy', 'receivedBy', 'items.product']);
 
         return view('inventory.transfers.show', compact('transfer'));
     }
 
-    public function receive(WarehouseTransfer $transfer): RedirectResponse
+    public function ship(WarehouseTransfer $transfer): RedirectResponse
     {
-        abort_if($transfer->status === 'received', 403, 'Transfer sudah selesai dan barang sudah diterima.');
+        abort_if($transfer->status !== 'draft', 403, 'Hanya dokumen transfer berstatus Draft yang dapat dikirim.');
+
+        $transfer->load(['fromWarehouse', 'toWarehouse', 'items.product']);
 
         DB::transaction(function () use ($transfer) {
+            // Re-validate stock availability
             foreach ($transfer->items as $item) {
-                $item->update(['qty_received' => $item->qty_requested]);
+                $currentStock = $this->stockService->getCurrentStock($item['product_id'], $transfer->from_warehouse_id);
+                if ($currentStock < $item['qty']) {
+                    throw ValidationException::withMessages([
+                        'stock' => "Stok produk '{$item->product->name}' di gudang asal sudah berkurang dan tidak mencukupi (Tersedia: {$currentStock}, Dibutuhkan: {$item->qty}).",
+                    ]);
+                }
+            }
 
-                // Tambah stok di gudang tujuan (transfer_in)
+            // Record transfer_out movement
+            foreach ($transfer->items as $item) {
                 $this->stockService->recordMovement([
                     'product_id'     => $item->product_id,
-                    'warehouse_id'   => $transfer->to_warehouse_id,
-                    'type'           => 'transfer_in',
-                    'quantity'       => $item->qty_requested,
+                    'warehouse_id'   => $transfer->from_warehouse_id,
+                    'type'           => 'transfer_out',
+                    'quantity'       => $item->qty,
                     'unit_cost'      => $item->product->purchase_price,
                     'reference_type' => WarehouseTransfer::class,
                     'reference_id'   => $transfer->id,
                     'movement_date'  => now()->toDateString(),
-                    'notes'          => "Transfer masuk dari gudang #{$transfer->from_warehouse_id} (Ref #{$transfer->transfer_number})",
+                    'notes'          => "Transfer keluar ke {$transfer->toWarehouse->name} (Ref #{$transfer->transfer_number})",
                     'user_id'        => Auth::id(),
                 ]);
             }
 
             $transfer->update([
-                'status'        => 'received',
-                'received_date' => now()->toDateString(),
+                'status'     => 'in_transit',
+                'shipped_by' => Auth::id(),
+                'shipped_at' => now(),
             ]);
         });
 
-        return back()->with('success', 'Transfer Gudang telah diterima dan stok gudang tujuan telah bertambah.');
+        return back()->with('success', "Transfer Gudang #{$transfer->transfer_number} telah dikonfirmasi Kirim (In Transit) dan stok gudang asal telah dikurangi.");
+    }
+
+    public function receive(WarehouseTransfer $transfer): RedirectResponse
+    {
+        abort_if($transfer->status !== 'in_transit', 403, 'Hanya dokumen transfer berstatus Dalam Perjalanan (In Transit) yang dapat dikonfirmasi penerimaannya.');
+
+        $transfer->load(['fromWarehouse', 'toWarehouse', 'items.product']);
+
+        DB::transaction(function () use ($transfer) {
+            // Record transfer_in movement
+            foreach ($transfer->items as $item) {
+                $this->stockService->recordMovement([
+                    'product_id'     => $item->product_id,
+                    'warehouse_id'   => $transfer->to_warehouse_id,
+                    'type'           => 'transfer_in',
+                    'quantity'       => $item->qty,
+                    'unit_cost'      => $item->product->purchase_price,
+                    'reference_type' => WarehouseTransfer::class,
+                    'reference_id'   => $transfer->id,
+                    'movement_date'  => now()->toDateString(),
+                    'notes'          => "Transfer masuk dari {$transfer->fromWarehouse->name} (Ref #{$transfer->transfer_number})",
+                    'user_id'        => Auth::id(),
+                ]);
+            }
+
+            $transfer->update([
+                'status'      => 'completed',
+                'received_by' => Auth::id(),
+                'received_at' => now(),
+            ]);
+        });
+
+        return back()->with('success', "Transfer Gudang #{$transfer->transfer_number} telah diterima di gudang tujuan dan stok telah bertambah.");
+    }
+
+    public function cancel(WarehouseTransfer $transfer): RedirectResponse
+    {
+        abort_if($transfer->status !== 'draft', 403, 'Hanya dokumen transfer berstatus Draft yang dapat dibatalkan.');
+
+        $transfer->update(['status' => 'cancelled']);
+
+        return back()->with('success', "Draft Transfer Gudang #{$transfer->transfer_number} telah dibatalkan.");
     }
 
     private function generateNumber(): string
