@@ -15,41 +15,33 @@
     </div>
 
     {{-- Filters --}}
-    <div class="card" style="margin-bottom:16px;">
-        <div class="card-body" style="padding:16px;">
-            <form method="GET" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                <div style="flex:1; min-width:200px;">
-                    <label class="form-label">Cari PO / Supplier</label>
-                    <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari...">
-                </div>
-                <div style="min-width:160px;">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-control">
-                        <option value="">Semua Status</option>
-                        @foreach(['draft','waiting_approval','confirmed','partially_received','done','cancelled'] as $s)
-                        <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i> Filter</button>
-                    <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary" style="margin-left:8px;"><i class="fa-solid fa-xmark"></i> Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
+    <x-list-filter-bar :action="route('purchase.orders.index')" placeholder="Cari No. PO, Supplier, Catatan..." :showDateFilter="true">
+        <select name="supplier_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
+            <option value="">Semua Supplier</option>
+            @foreach($suppliers as $sup)
+            <option value="{{ $sup->id }}" {{ request('supplier_id') == $sup->id ? 'selected' : '' }}>{{ $sup->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            @foreach(['draft','waiting_approval','confirmed','partially_received','done','cancelled'] as $s)
+            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
+            @endforeach
+        </select>
+    </x-list-filter-bar>
 
     <div class="card">
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. PO</th>
+                        <x-sortable-header column="po_number" title="No. PO" />
                         <th>Supplier</th>
-                        <th>Tanggal</th>
-                        <th>Exp. Delivery</th>
-                        <th style="text-align:right;">Total</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="order_date" title="Tanggal" />
+                        <x-sortable-header column="expected_date" title="Exp. Delivery" />
+                        <x-sortable-header column="total_amount" title="Total" align="right" />
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -61,8 +53,8 @@
                                 {{ $order->po_number }}
                             </a>
                         </td>
-                        <td>{{ $order->supplier->name }}</td>
-                        <td>{{ $order->order_date->format('d/m/Y') }}</td>
+                        <td>{{ $order->supplier->name ?? '-' }}</td>
+                        <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
                         <td>{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                         <td style="text-align:center;">
@@ -98,7 +90,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-inbox" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada Purchase Order
+                            Belum ada Purchase Order yang sesuai filter
                         </td>
                     </tr>
                     @endforelse
@@ -108,7 +100,7 @@
 
         @if($orders->hasPages())
         <div style="padding:16px 20px; border-top:1px solid var(--border);">
-            {{ $orders->withQueryString()->links() }}
+            {{ $orders->links() }}
         </div>
         @endif
     </div>

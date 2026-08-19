@@ -8,12 +8,26 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class ProductController extends Controller
 {
-    public function index(): View
+    use HasListFilters;
+
+    public function index(Request $request): View
     {
-        $products = Product::orderBy('name')->paginate(20);
-        return view('master.products.index', compact('products'));
+        $query = Product::query();
+
+        $query = $this->applySearch($query, $request, ['sku', 'name', 'category', 'notes']);
+        $query = $this->applyFilter($query, $request, 'category');
+        $query = $this->applyFilter($query, $request, 'is_active');
+        $query = $this->applySort($query, $request, ['sku', 'name', 'category', 'purchase_price', 'sell_price', 'min_stock', 'created_at'], 'name', 'asc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $products   = $query->paginate($perPage)->withQueryString();
+        $categories = Product::whereNotNull('category')->distinct()->pluck('category');
+
+        return view('master.products.index', compact('products', 'categories'));
     }
 
     public function create(): View

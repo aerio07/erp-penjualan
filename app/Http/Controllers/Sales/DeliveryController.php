@@ -16,17 +16,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class DeliveryController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private StockService $stockService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $deliveries = Delivery::with(['salesOrder.customer', 'warehouse', 'user'])
-            ->latest('delivery_date')
-            ->paginate(20);
+        $query = Delivery::with(['salesOrder.customer', 'warehouse', 'user']);
 
-        return view('sales.deliveries.index', compact('deliveries'));
+        $query = $this->applySearch($query, $request, ['delivery_number', 'salesOrder.so_number', 'salesOrder.customer.name', 'recipient_name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'warehouse_id');
+        $query = $this->applyFilter($query, $request, 'condition_status');
+        $query = $this->applyDateRange($query, $request, 'delivery_date');
+        $query = $this->applySort($query, $request, ['delivery_number', 'delivery_date', 'condition_status', 'created_at'], 'delivery_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $deliveries = $query->paginate($perPage)->withQueryString();
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+
+        return view('sales.deliveries.index', compact('deliveries', 'warehouses'));
     }
 
     public function create(Request $request): View

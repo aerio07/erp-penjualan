@@ -14,20 +14,24 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('accounting.journals.index')" placeholder="Cari No. Entri, Keterangan..." :showDateFilter="true" dateFromParam="date_from" dateToParam="date_to">
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="posted" {{ request('status') === 'posted' ? 'selected' : '' }}>Posted</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Jurnal Entries</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $entries->total() }} entri</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Entri</th>
-                        <th>Tanggal</th>
+                        <x-sortable-header column="entry_number" title="No. Entri" />
+                        <x-sortable-header column="entry_date" title="Tanggal" />
                         <th>Keterangan / Referensi</th>
                         <th>Dibuat Oleh</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -39,7 +43,7 @@
                                 {{ $entry->entry_number }}
                             </a>
                         </td>
-                        <td>{{ $entry->entry_date->format('d/m/Y') }}</td>
+                        <td>{{ $entry->entry_date ? $entry->entry_date->format('d/m/Y') : '-' }}</td>
                         <td>{{ $entry->description ?? '-' }}</td>
                         <td>{{ $entry->creator->name ?? '-' }}</td>
                         <td style="text-align:center;">
@@ -67,7 +71,7 @@
                     <tr>
                         <td colspan="6" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-book-open" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada entri jurnal akuntansi
+                            Belum ada entri jurnal akuntansi yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

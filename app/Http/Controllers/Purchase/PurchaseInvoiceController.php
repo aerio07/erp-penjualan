@@ -13,17 +13,34 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Models\Supplier;
+use App\Traits\HasListFilters;
+
 class PurchaseInvoiceController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private JournalService $journalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $invoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments'])
-            ->latest('invoice_date')
-            ->paginate(20);
+        $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments']);
 
-        return view('purchase.invoices.index', compact('invoices'));
+        $query = $this->applySearch($query, $request, ['invoice_number', 'supplier_invoice_number', 'purchaseOrder.po_number', 'purchaseOrder.supplier.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'status');
+        if ($request->filled('supplier_id')) {
+            $query->whereHas('purchaseOrder', function ($q) use ($request) {
+                $q->where('supplier_id', $request->supplier_id);
+            });
+        }
+        $query = $this->applyDateRange($query, $request, 'invoice_date');
+        $query = $this->applySort($query, $request, ['invoice_number', 'invoice_date', 'due_date', 'total_amount', 'status', 'created_at'], 'invoice_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $invoices  = $query->paginate($perPage)->withQueryString();
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
+
+        return view('purchase.invoices.index', compact('invoices', 'suppliers'));
     }
 
     public function create(Request $request): View

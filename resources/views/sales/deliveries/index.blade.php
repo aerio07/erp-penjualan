@@ -14,20 +14,32 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('sales.deliveries.index')" placeholder="Cari Surat Jalan, No. SO, Customer, Penerima..." :showDateFilter="true">
+        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Gudang Asal</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="condition_status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Kondisi</option>
+            <option value="baik" {{ request('condition_status') === 'baik' ? 'selected' : '' }}>Baik</option>
+            <option value="rusak" {{ request('condition_status') === 'rusak' ? 'selected' : '' }}>Rusak</option>
+            <option value="partial" {{ request('condition_status') === 'partial' ? 'selected' : '' }}>Partial</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Surat Jalan</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $deliveries->total() }} pengiriman</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Surat Jalan</th>
+                        <x-sortable-header column="delivery_number" title="No. Surat Jalan" />
                         <th>Ref. SO</th>
                         <th>Customer</th>
                         <th>Gudang Asal</th>
-                        <th>Tgl Kirim</th>
+                        <x-sortable-header column="delivery_date" title="Tgl Kirim" />
                         <th>Penerima / Tujuan</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
@@ -41,9 +53,13 @@
                             </a>
                         </td>
                         <td>
+                            @if($del->salesOrder)
                             <a href="{{ route('sales.orders.show', $del->salesOrder) }}" style="color:var(--text-primary); text-decoration:none; font-weight:500;">
                                 {{ $del->salesOrder->so_number }}
                             </a>
+                            @else
+                            -
+                            @endif
                         </td>
                         <td>{{ $del->salesOrder->customer->name ?? '-' }}</td>
                         <td>
@@ -68,7 +84,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-truck-fast" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada dokumen surat jalan pengiriman
+                            Belum ada dokumen surat jalan pengiriman yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

@@ -14,22 +14,33 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('master.products.index')" placeholder="Cari SKU, Nama Produk, Kategori...">
+        <select name="category" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Kategori</option>
+            @foreach($categories as $cat)
+            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+            @endforeach
+        </select>
+
+        <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
+            <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Produk</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $products->total() }} produk</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>SKU</th>
-                        <th>Nama Produk</th>
-                        <th>Kategori</th>
+                        <x-sortable-header column="sku" title="SKU" />
+                        <x-sortable-header column="name" title="Nama Produk" />
+                        <x-sortable-header column="category" title="Kategori" />
                         <th>Unit</th>
-                        <th style="text-align:right;">Harga Beli</th>
-                        <th style="text-align:right;">Harga Jual</th>
-                        <th style="text-align:center;">Min Stok</th>
+                        <x-sortable-header column="purchase_price" title="Harga Beli" align="right" />
+                        <x-sortable-header column="sell_price" title="Harga Jual" align="right" />
+                        <x-sortable-header column="min_stock" title="Min Stok" align="center" />
                         <th style="text-align:center;">Status</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
@@ -67,7 +78,7 @@
                     <tr>
                         <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-box-open" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada produk
+                            Belum ada produk yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

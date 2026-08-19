@@ -14,21 +14,25 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('master.customers.index')" placeholder="Cari Kode, Nama Customer, CP, Telepon...">
+        <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
+            <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Customer</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $customers->total() }} customer</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>Kode</th>
-                        <th>Nama Customer</th>
-                        <th>Contact Person</th>
+                        <x-sortable-header column="code" title="Kode" />
+                        <x-sortable-header column="name" title="Nama Customer" />
+                        <x-sortable-header column="contact_person" title="Contact Person" />
                         <th>Telepon</th>
-                        <th style="text-align:right;">Credit Limit</th>
-                        <th>Payment Term</th>
+                        <x-sortable-header column="credit_limit" title="Credit Limit" align="right" />
+                        <x-sortable-header column="payment_term" title="Payment Term" />
                         <th style="text-align:center;">Status</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
@@ -85,7 +89,7 @@
                     <tr>
                         <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-users" style="font-size:32px; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                            Belum ada data customer
+                            Belum ada data customer yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

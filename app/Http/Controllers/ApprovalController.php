@@ -8,21 +8,32 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class ApprovalController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private ApprovalService $approvalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $pendingApprovals = ApprovalRequest::with(['requester', 'approvable'])
-            ->where('status', 'pending')
-            ->latest()
-            ->paginate(20);
+        $query = ApprovalRequest::with(['requester', 'approvable']);
+
+        $query = $this->applySearch($query, $request, ['request_number', 'notes', 'rejection_reason']);
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyFilter($query, $request, 'approvable_type');
+        $query = $this->applyDateRange($query, $request, 'created_at');
+        $query = $this->applySort($query, $request, ['request_number', 'amount', 'status', 'created_at'], 'created_at', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $pendingApprovals = (clone $query)->where('status', 'pending')->paginate($perPage, ['*'], 'pending_page')->withQueryString();
 
         $myApprovals = ApprovalRequest::with(['requester', 'approvable'])
             ->where('approver_id', auth()->id())
-            ->latest()
-            ->paginate(10);
+            ->latest('created_at')
+            ->paginate(10, ['*'], 'my_page')
+            ->withQueryString();
 
         return view('approvals.index', compact('pendingApprovals', 'myApprovals'));
     }

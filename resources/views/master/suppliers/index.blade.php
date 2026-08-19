@@ -14,20 +14,24 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('master.suppliers.index')" placeholder="Cari Kode, Nama Supplier, CP, Telepon...">
+        <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
+            <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Supplier</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $suppliers->total() }} supplier</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>Kode</th>
-                        <th>Nama Supplier</th>
-                        <th>Contact Person</th>
+                        <x-sortable-header column="code" title="Kode" />
+                        <x-sortable-header column="name" title="Nama Supplier" />
+                        <x-sortable-header column="contact_person" title="Contact Person" />
                         <th>Telepon</th>
-                        <th>Payment Term</th>
+                        <x-sortable-header column="payment_term" title="Payment Term" />
                         <th style="text-align:center;">Status</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
@@ -77,7 +81,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-truck" style="font-size:32px; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                            Belum ada data supplier
+                            Belum ada data supplier yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

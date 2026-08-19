@@ -14,6 +14,14 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('master.warehouses.index')" placeholder="Cari Kode, Nama Gudang, Alamat...">
+        <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
+            <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="grid grid-3" style="margin-bottom:24px;">
         @forelse($warehouses as $wh)
         <div class="card" style="transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='none';this.style.boxShadow='';">
@@ -58,10 +66,16 @@
         <div class="card" style="grid-column:span 3;">
             <div class="card-body" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-warehouse" style="font-size:36px; opacity:0.3; display:block; margin-bottom:12px;"></i>
-                Belum ada data gudang. <a href="{{ route('master.warehouses.create') }}" style="color:var(--primary);">Tambah sekarang</a>
+                Belum ada data gudang yang sesuai filter.
             </div>
         </div>
         @endforelse
     </div>
+
+    @if($warehouses->hasPages())
+    <div style="padding:16px 20px; background:var(--card-bg, #fff); border-radius:10px; border:1px solid var(--border, #e5e7eb);">
+        {{ $warehouses->links() }}
+    </div>
+    @endif
 </div>
 @endsection

@@ -17,17 +17,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class GoodsReceiptController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private StockService $stockService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $receipts = GoodsReceipt::with(['purchaseOrder.supplier', 'items.warehouse', 'user'])
-            ->latest('received_date')
-            ->paginate(20);
+        $query = GoodsReceipt::with(['purchaseOrder.supplier', 'items.warehouse', 'user']);
 
-        return view('purchase.goods-receipts.index', compact('receipts'));
+        $query = $this->applySearch($query, $request, ['receipt_number', 'purchaseOrder.po_number', 'purchaseOrder.supplier.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'qc_status');
+        $query = $this->applyFilter($query, $request, 'warehouse_id');
+        $query = $this->applyDateRange($query, $request, 'received_date');
+        $query = $this->applySort($query, $request, ['receipt_number', 'received_date', 'qc_status', 'created_at'], 'received_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $receipts   = $query->paginate($perPage)->withQueryString();
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+
+        return view('purchase.goods-receipts.index', compact('receipts', 'warehouses'));
     }
 
     public function create(Request $request): View

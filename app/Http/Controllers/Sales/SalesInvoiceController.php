@@ -13,17 +13,34 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Models\Customer;
+use App\Traits\HasListFilters;
+
 class SalesInvoiceController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private JournalService $journalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $invoices = SalesInvoice::with(['salesOrder.customer', 'payments'])
-            ->latest('invoice_date')
-            ->paginate(20);
+        $query = SalesInvoice::with(['salesOrder.customer', 'payments']);
 
-        return view('sales.invoices.index', compact('invoices'));
+        $query = $this->applySearch($query, $request, ['invoice_number', 'salesOrder.so_number', 'salesOrder.customer.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'status');
+        if ($request->filled('customer_id')) {
+            $query->whereHas('salesOrder', function ($q) use ($request) {
+                $q->where('customer_id', $request->customer_id);
+            });
+        }
+        $query = $this->applyDateRange($query, $request, 'invoice_date');
+        $query = $this->applySort($query, $request, ['invoice_number', 'invoice_date', 'due_date', 'total_amount', 'status', 'created_at'], 'invoice_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $invoices  = $query->paginate($perPage)->withQueryString();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
+
+        return view('sales.invoices.index', compact('invoices', 'customers'));
     }
 
     public function create(Request $request): View

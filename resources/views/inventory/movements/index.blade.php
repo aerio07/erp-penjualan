@@ -11,60 +11,47 @@
         </div>
     </div>
 
-    <div class="card" style="margin-bottom:16px;">
-        <div class="card-body" style="padding:16px;">
-            <form method="GET" action="{{ route('inventory.movements.index') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                <div style="flex:1; min-width:180px;">
-                    <label class="form-label">Produk</label>
-                    <select name="product_id" class="form-control">
-                        <option value="">Semua Produk</option>
-                        @foreach($products as $p)
-                        <option value="{{ $p->id }}" {{ request('product_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="flex:1; min-width:180px;">
-                    <label class="form-label">Gudang</label>
-                    <select name="warehouse_id" class="form-control">
-                        <option value="">Semua Gudang</option>
-                        @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div style="min-width:160px;">
-                    <label class="form-label">Tipe Mutasi</label>
-                    <select name="type" class="form-control">
-                        <option value="">Semua Tipe</option>
-                        <option value="in" {{ request('type') === 'in' ? 'selected' : '' }}>Masuk (IN)</option>
-                        <option value="out" {{ request('type') === 'out' ? 'selected' : '' }}>Keluar (OUT)</option>
-                        <option value="transfer_in" {{ request('type') === 'transfer_in' ? 'selected' : '' }}>Transfer In</option>
-                        <option value="transfer_out" {{ request('type') === 'transfer_out' ? 'selected' : '' }}>Transfer Out</option>
-                        <option value="return_in" {{ request('type') === 'return_in' ? 'selected' : '' }}>Retur In (Baik)</option>
-                        <option value="return_in_damaged" {{ request('type') === 'return_in_damaged' ? 'selected' : '' }}>Retur Karantina (Rusak)</option>
-                        <option value="return_out" {{ request('type') === 'return_out' ? 'selected' : '' }}>Retur Out</option>
-                        <option value="adjustment" {{ request('type') === 'adjustment' ? 'selected' : '' }}>Adjustment Opname</option>
-                    </select>
-                </div>
-                <div>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i> Filter</button>
-                    <a href="{{ route('inventory.movements.index') }}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Reset</a>
-                </div>
-            </form>
-        </div>
-    </div>
+    <x-list-filter-bar :action="route('inventory.movements.index')" placeholder="Cari SKU, Nama Produk, Catatan..." :showDateFilter="true">
+        <select name="product_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Produk</option>
+            @foreach($products as $p)
+            <option value="{{ $p->id }}" {{ request('product_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Gudang</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="type" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Tipe Mutasi</option>
+            <option value="in" {{ request('type') === 'in' ? 'selected' : '' }}>Masuk (IN)</option>
+            <option value="out" {{ request('type') === 'out' ? 'selected' : '' }}>Keluar (OUT)</option>
+            <option value="transfer_in" {{ request('type') === 'transfer_in' ? 'selected' : '' }}>Transfer In</option>
+            <option value="transfer_out" {{ request('type') === 'transfer_out' ? 'selected' : '' }}>Transfer Out</option>
+            <option value="return_in" {{ request('type') === 'return_in' ? 'selected' : '' }}>Retur In (Baik)</option>
+            <option value="return_in_damaged" {{ request('type') === 'return_in_damaged' ? 'selected' : '' }}>Retur Karantina (Rusak)</option>
+            <option value="return_out" {{ request('type') === 'return_out' ? 'selected' : '' }}>Retur Out</option>
+            <option value="adjustment" {{ request('type') === 'adjustment' ? 'selected' : '' }}>Adjustment Opname</option>
+            <option value="write_off" {{ request('type') === 'write_off' ? 'selected' : '' }}>Write Off (Pemusnahan)</option>
+            <option value="reject_out" {{ request('type') === 'reject_out' ? 'selected' : '' }}>Jual Reject (Reject Out)</option>
+        </select>
+    </x-list-filter-bar>
 
     <div class="card">
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>Tgl Mutasi</th>
+                        <x-sortable-header column="movement_date" title="Tgl Mutasi" />
                         <th>Produk</th>
                         <th>Gudang</th>
-                        <th>Tipe</th>
-                        <th style="text-align:right;">Jumlah</th>
-                        <th style="text-align:right;">Biaya Satuan</th>
+                        <x-sortable-header column="type" title="Tipe" />
+                        <x-sortable-header column="quantity" title="Jumlah" align="right" />
+                        <x-sortable-header column="unit_cost" title="Biaya Satuan" align="right" />
                         <th>Catatan / Ref</th>
                         <th>User</th>
                     </tr>
@@ -76,7 +63,7 @@
                         $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in']); 
                     @endphp
                     <tr>
-                        <td>{{ $m->movement_date->format('d/m/Y') }}</td>
+                        <td>{{ $m->movement_date ? $m->movement_date->format('d/m/Y') : '-' }}</td>
                         <td>
                             <div style="font-weight:600;">{{ $m->product->name ?? '-' }}</div>
                             <div style="font-size:12px; color:var(--text-secondary);">{{ $m->product->sku ?? '-' }}</div>
@@ -103,7 +90,7 @@
                     @empty
                     <tr>
                         <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
-                            Belum ada riwayat mutasi stok
+                            Belum ada riwayat mutasi stok yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

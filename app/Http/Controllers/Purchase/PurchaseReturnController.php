@@ -15,20 +15,33 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Models\Supplier;
+use App\Traits\HasListFilters;
+
 class PurchaseReturnController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(
         private StockService $stockService,
         private JournalService $journalService,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $returns = PurchaseReturn::with(['goodsReceipt.purchaseOrder.supplier', 'items.product'])
-            ->latest('return_date')
-            ->paginate(20);
+        $query = PurchaseReturn::with(['goodsReceipt.purchaseOrder.supplier', 'supplier', 'items.product']);
 
-        return view('purchase.returns.index', compact('returns'));
+        $query = $this->applySearch($query, $request, ['return_number', 'goodsReceipt.receipt_number', 'supplier.name', 'reason', 'notes']);
+        $query = $this->applyFilter($query, $request, 'supplier_id');
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyDateRange($query, $request, 'return_date');
+        $query = $this->applySort($query, $request, ['return_number', 'return_date', 'status', 'created_at'], 'return_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $returns   = $query->paginate($perPage)->withQueryString();
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
+
+        return view('purchase.returns.index', compact('returns', 'suppliers'));
     }
 
     public function create(Request $request): View

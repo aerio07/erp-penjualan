@@ -10,15 +10,25 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class JournalEntryController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private JournalService $journalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $entries = JournalEntry::with(['creator', 'poster'])
-            ->latest('entry_date')
-            ->paginate(20);
+        $query = JournalEntry::with(['creator', 'poster']);
+
+        $query = $this->applySearch($query, $request, ['entry_number', 'description']);
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyDateRange($query, $request, 'entry_date');
+        $query = $this->applySort($query, $request, ['entry_number', 'entry_date', 'status', 'created_at'], 'entry_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $entries = $query->paginate($perPage)->withQueryString();
 
         return view('accounting.journals.index', compact('entries'));
     }

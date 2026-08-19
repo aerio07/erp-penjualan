@@ -11,6 +11,15 @@
         </div>
     </div>
 
+    {{-- Filter Bar --}}
+    <x-list-filter-bar :action="route('approvals.index')" placeholder="Cari No. Request, Catatan..." :showDateFilter="true">
+        <select name="approvable_type" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Dokumen</option>
+            <option value="App\Models\PurchaseOrder" {{ request('approvable_type') === 'App\Models\PurchaseOrder' ? 'selected' : '' }}>Purchase Order</option>
+            <option value="App\Models\SalesOrder" {{ request('approvable_type') === 'App\Models\SalesOrder' ? 'selected' : '' }}>Sales Order</option>
+        </select>
+    </x-list-filter-bar>
+
     {{-- Pending Approvals --}}
     <div class="card" style="margin-bottom:24px;">
         <div class="card-header">
@@ -21,12 +30,12 @@
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Request</th>
+                        <x-sortable-header column="request_number" title="No. Request" />
                         <th>Tipe Dokumen</th>
                         <th>Dokumen / Ref</th>
                         <th>Pemohon</th>
-                        <th style="text-align:right;">Nilai Transaksi</th>
-                        <th>Tanggal Pengajuan</th>
+                        <x-sortable-header column="amount" title="Nilai Transaksi" align="right" />
+                        <x-sortable-header column="created_at" title="Tanggal Pengajuan" />
                         <th style="text-align:center;">Aksi Approval</th>
                     </tr>
                 </thead>
@@ -55,7 +64,7 @@
                         <td style="text-align:right; font-weight:700; color:var(--primary);">
                             Rp {{ number_format($app->amount, 0, ',', '.') }}
                         </td>
-                        <td>{{ $app->created_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}</td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:8px; justify-content:center;">
                                 {{-- Form Setujui --}}
@@ -107,7 +116,7 @@
                     <tr>
                         <th>No. Request</th>
                         <th>Tipe Dokumen</th>
-                        <th>Nilai Transaksi</th>
+                        <th style="text-align:right;">Nilai Transaksi</th>
                         <th>Pemohon</th>
                         <th style="text-align:center;">Status</th>
                         <th>Alasan Penolakan / Catatan</th>
@@ -137,6 +146,11 @@
                 </tbody>
             </table>
         </div>
+        @if($myApprovals->hasPages())
+        <div style="padding:16px 20px; border-top:1px solid var(--border);">
+            {{ $myApprovals->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -14,17 +14,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class StockOpnameController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private StockService $stockService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $opnames = StockOpname::with(['warehouse', 'user'])
-            ->latest('opname_date')
-            ->paginate(20);
+        $query = StockOpname::with(['warehouse', 'user']);
 
-        return view('inventory.opname.index', compact('opnames'));
+        $query = $this->applySearch($query, $request, ['opname_number', 'warehouse.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyFilter($query, $request, 'warehouse_id');
+        $query = $this->applyDateRange($query, $request, 'opname_date');
+        $query = $this->applySort($query, $request, ['opname_number', 'opname_date', 'status', 'created_at'], 'opname_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $opnames    = $query->paginate($perPage)->withQueryString();
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+
+        return view('inventory.opname.index', compact('opnames', 'warehouses'));
     }
 
     public function create(Request $request): View

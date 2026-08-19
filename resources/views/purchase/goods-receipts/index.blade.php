@@ -14,20 +14,33 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('purchase.goods-receipts.index')" placeholder="Cari GRN, No. PO, Supplier..." :showDateFilter="true">
+        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Gudang</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="qc_status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Status QC</option>
+            <option value="pending" {{ request('qc_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+            <option value="passed" {{ request('qc_status') === 'passed' ? 'selected' : '' }}>Passed (Lolos)</option>
+            <option value="failed" {{ request('qc_status') === 'failed' ? 'selected' : '' }}>Failed (Gagal)</option>
+            <option value="partial" {{ request('qc_status') === 'partial' ? 'selected' : '' }}>Partial</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Penerimaan Barang</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $receipts->total() }} penerimaan</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. GRN</th>
+                        <x-sortable-header column="receipt_number" title="No. GRN" />
                         <th>No. PO</th>
                         <th>Supplier</th>
                         <th>Gudang Tujuan</th>
-                        <th>Tgl Terima</th>
+                        <x-sortable-header column="received_date" title="Tgl Terima" />
                         <th>Diterima Oleh</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
@@ -41,9 +54,13 @@
                             </a>
                         </td>
                         <td>
+                            @if($receipt->purchaseOrder)
                             <a href="{{ route('purchase.orders.show', $receipt->purchaseOrder) }}" style="color:var(--text-primary); text-decoration:none; font-weight:500;">
                                 {{ $receipt->purchaseOrder->po_number }}
                             </a>
+                            @else
+                            -
+                            @endif
                         </td>
                         <td>{{ $receipt->purchaseOrder->supplier->name ?? '-' }}</td>
                         <td>
@@ -63,7 +80,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-boxes-stacked" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada catatan penerimaan barang
+                            Belum ada catatan penerimaan barang yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

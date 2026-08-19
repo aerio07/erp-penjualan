@@ -14,20 +14,33 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('inventory.opname.index')" placeholder="Cari No. Opname, Gudang, Catatan..." :showDateFilter="true">
+        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Gudang</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed (Selesai)</option>
+            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Stock Opname</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $opnames->total() }} dokumen</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Opname</th>
+                        <x-sortable-header column="opname_number" title="No. Opname" />
                         <th>Gudang</th>
-                        <th>Tgl Opname</th>
+                        <x-sortable-header column="opname_date" title="Tgl Opname" />
                         <th>Petugas</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -44,11 +57,11 @@
                                 <i class="fa-solid fa-warehouse"></i> {{ $op->warehouse->name ?? '-' }}
                             </span>
                         </td>
-                        <td>{{ $op->opname_date->format('d/m/Y') }}</td>
+                        <td>{{ $op->opname_date ? $op->opname_date->format('d/m/Y') : '-' }}</td>
                         <td>{{ $op->user->name ?? '-' }}</td>
                         <td style="text-align:center;">
                             <span class="badge badge-{{ $op->status === 'completed' ? 'done' : 'pending' }}">
-                                {{ ucfirst($op->status) }}
+                                {{ ucfirst(str_replace('_', ' ', $op->status)) }}
                             </span>
                         </td>
                         <td style="text-align:center;">
@@ -61,7 +74,7 @@
                     <tr>
                         <td colspan="6" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-clipboard-check" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada dokumen Stock Opname
+                            Belum ada dokumen Stock Opname yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

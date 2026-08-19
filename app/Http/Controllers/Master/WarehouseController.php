@@ -9,13 +9,25 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class WarehouseController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private StockService $stockService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $warehouses = Warehouse::withCount('stockMovements')->orderBy('name')->get();
+        $query = Warehouse::withCount('stockMovements');
+
+        $query = $this->applySearch($query, $request, ['code', 'name', 'address']);
+        $query = $this->applyFilter($query, $request, 'is_active');
+        $query = $this->applySort($query, $request, ['code', 'name', 'created_at'], 'name', 'asc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $warehouses = $query->paginate($perPage)->withQueryString();
+
         return view('master.warehouses.index', compact('warehouses'));
     }
 

@@ -14,21 +14,33 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('purchase.returns.index')" placeholder="Cari No. Retur, Ref. GRN, Supplier, Alasan..." :showDateFilter="true">
+        <select name="supplier_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
+            <option value="">Semua Supplier</option>
+            @foreach($suppliers as $sup)
+            <option value="{{ $sup->id }}" {{ request('supplier_id') == $sup->id ? 'selected' : '' }}>{{ $sup->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>Dikirim (Sent)</option>
+            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Selesai (Completed)</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Retur Pembelian</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $returns->total() }} retur</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Retur</th>
+                        <x-sortable-header column="return_number" title="No. Retur" />
                         <th>Ref. GRN</th>
                         <th>Supplier</th>
-                        <th>Tgl Retur</th>
+                        <x-sortable-header column="return_date" title="Tgl Retur" />
                         <th>Alasan Utama</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -45,7 +57,7 @@
                         <td>{{ $r->return_date ? $r->return_date->format('d/m/Y') : '-' }}</td>
                         <td>{{ Str::limit($r->reason ?? '-', 40) }}</td>
                         <td style="text-align:center;">
-                            <span class="badge badge-{{ $r->status === 'completed' ? 'done' : 'pending' }}">
+                            <span class="badge badge-{{ $r->status === 'completed' ? 'done' : ($r->status === 'sent' ? 'confirmed' : 'pending') }}">
                                 {{ ucfirst($r->status) }}
                             </span>
                         </td>
@@ -59,7 +71,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-rotate-left" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada catatan retur pembelian
+                            Belum ada catatan retur pembelian yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

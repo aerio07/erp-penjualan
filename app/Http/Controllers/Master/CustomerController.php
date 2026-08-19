@@ -8,11 +8,23 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class CustomerController extends Controller
 {
-    public function index(): View
+    use HasListFilters;
+
+    public function index(Request $request): View
     {
-        $customers = Customer::orderBy('name')->paginate(20);
+        $query = Customer::query();
+
+        $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address']);
+        $query = $this->applyFilter($query, $request, 'is_active');
+        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'credit_limit', 'payment_term', 'created_at'], 'name', 'asc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $customers = $query->paginate($perPage)->withQueryString();
+
         return view('master.customers.index', compact('customers'));
     }
 

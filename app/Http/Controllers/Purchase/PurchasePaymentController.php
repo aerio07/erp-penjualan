@@ -12,15 +12,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class PurchasePaymentController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private JournalService $journalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $payments = PurchasePayment::with(['purchaseInvoice.purchaseOrder.supplier', 'user'])
-            ->latest('payment_date')
-            ->paginate(20);
+        $query = PurchasePayment::with(['purchaseInvoice.purchaseOrder.supplier', 'user']);
+
+        $query = $this->applySearch($query, $request, ['reference_number', 'purchaseInvoice.invoice_number', 'purchaseInvoice.purchaseOrder.supplier.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'method');
+        $query = $this->applyDateRange($query, $request, 'payment_date');
+        $query = $this->applySort($query, $request, ['payment_date', 'amount', 'method', 'created_at'], 'payment_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $payments = $query->paginate($perPage)->withQueryString();
 
         return view('purchase.payments.index', compact('payments'));
     }

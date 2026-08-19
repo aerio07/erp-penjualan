@@ -15,20 +15,33 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+use App\Models\Customer;
+use App\Traits\HasListFilters;
+
 class SalesReturnController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(
         private StockService $stockService,
         private JournalService $journalService,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $returns = SalesReturn::with(['delivery.salesOrder.customer', 'items.product'])
-            ->latest('return_date')
-            ->paginate(20);
+        $query = SalesReturn::with(['delivery.salesOrder.customer', 'customer', 'items.product']);
 
-        return view('sales.returns.index', compact('returns'));
+        $query = $this->applySearch($query, $request, ['return_number', 'delivery.delivery_number', 'customer.name', 'reason', 'notes']);
+        $query = $this->applyFilter($query, $request, 'customer_id');
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyDateRange($query, $request, 'return_date');
+        $query = $this->applySort($query, $request, ['return_number', 'return_date', 'status', 'created_at'], 'return_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $returns   = $query->paginate($perPage)->withQueryString();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
+
+        return view('sales.returns.index', compact('returns', 'customers'));
     }
 
     public function create(Request $request): View

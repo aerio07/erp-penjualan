@@ -15,17 +15,29 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+use App\Traits\HasListFilters;
+
 class PurchaseOrderController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private ApprovalService $approvalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $orders = PurchaseOrder::with(['supplier', 'user'])
-            ->latest()
-            ->paginate(20);
+        $query = PurchaseOrder::with(['supplier', 'user']);
 
-        return view('purchase.orders.index', compact('orders'));
+        $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'supplier_id');
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyDateRange($query, $request, 'order_date');
+        $query = $this->applySort($query, $request, ['po_number', 'order_date', 'expected_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $orders    = $query->paginate($perPage)->withQueryString();
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
+
+        return view('purchase.orders.index', compact('orders', 'suppliers'));
     }
 
     public function create(): View

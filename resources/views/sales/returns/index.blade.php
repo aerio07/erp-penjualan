@@ -14,21 +14,33 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('sales.returns.index')" placeholder="Cari No. Retur, Ref. SJ, Customer, Alasan..." :showDateFilter="true">
+        <select name="customer_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
+            <option value="">Semua Customer</option>
+            @foreach($customers as $cust)
+            <option value="{{ $cust->id }}" {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="received" {{ request('status') === 'received' ? 'selected' : '' }}>Diterima Gudang (Received)</option>
+            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Selesai (Completed)</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Retur Penjualan</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $returns->total() }} retur</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Retur</th>
+                        <x-sortable-header column="return_number" title="No. Retur" />
                         <th>Ref. Surat Jalan</th>
                         <th>Customer</th>
-                        <th>Tgl Retur</th>
+                        <x-sortable-header column="return_date" title="Tgl Retur" />
                         <th>Alasan Utama</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -59,7 +71,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-rotate-left" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada catatan retur penjualan customer
+                            Belum ada catatan retur penjualan customer yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

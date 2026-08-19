@@ -14,77 +14,43 @@
         </a>
     </div>
 
-    {{-- Filter Form --}}
-    <div class="card" style="margin-bottom:20px;">
-        <div class="card-body" style="padding:16px;">
-            <form method="GET" action="{{ route('inventory.transfers.index') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                <div style="flex:1; min-width:160px;">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-control">
-                        <option value="">Semua Status</option>
-                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit (Dikirim)</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed (Selesai)</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled (Batal)</option>
-                    </select>
-                </div>
+    {{-- Filter Bar --}}
+    <x-list-filter-bar :action="route('inventory.transfers.index')" placeholder="Cari No. Transfer, Gudang, Catatan..." :showDateFilter="true">
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit (Dikirim)</option>
+            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed (Selesai)</option>
+            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled (Batal)</option>
+        </select>
 
-                <div style="flex:1; min-width:180px;">
-                    <label class="form-label">Gudang Asal</label>
-                    <select name="from_warehouse_id" class="form-control">
-                        <option value="">Semua Gudang Asal</option>
-                        @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}" {{ request('from_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
-                        @endforeach
-                    </select>
-                </div>
+        <select name="from_warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Gudang Asal</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ request('from_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+            @endforeach
+        </select>
 
-                <div style="flex:1; min-width:180px;">
-                    <label class="form-label">Gudang Tujuan</label>
-                    <select name="to_warehouse_id" class="form-control">
-                        <option value="">Semua Gudang Tujuan</option>
-                        @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}" {{ request('to_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div style="width:140px;">
-                    <label class="form-label">Dari Tgl</label>
-                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="form-control">
-                </div>
-
-                <div style="width:140px;">
-                    <label class="form-label">Sampai Tgl</label>
-                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="form-control">
-                </div>
-
-                <div style="display:flex; gap:8px;">
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Filter</button>
-                    @if(request()->hasAny(['status', 'from_warehouse_id', 'to_warehouse_id', 'date_from', 'date_to']))
-                    <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Reset</a>
-                    @endif
-                </div>
-            </form>
-        </div>
-    </div>
+        <select name="to_warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Gudang Tujuan</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ request('to_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
+            @endforeach
+        </select>
+    </x-list-filter-bar>
 
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Transfer Gudang</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">Total {{ $transfers->total() }} Dokumen</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Transfer</th>
+                        <x-sortable-header column="transfer_number" title="No. Transfer" />
                         <th>Gudang Asal</th>
                         <th>Gudang Tujuan</th>
-                        <th>Tgl Dokumen</th>
+                        <x-sortable-header column="transfer_date" title="Tgl Dokumen" />
                         <th>Dikirim Oleh / Tgl</th>
                         <th>Diterima Oleh / Tgl</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -102,7 +68,7 @@
                         <td style="font-weight:500;">
                             <span style="color:var(--success);"><i class="fa-solid fa-warehouse"></i> {{ $trf->toWarehouse->name ?? '-' }}</span>
                         </td>
-                        <td>{{ $trf->transfer_date->format('d/m/Y') }}</td>
+                        <td>{{ $trf->transfer_date ? $trf->transfer_date->format('d/m/Y') : '-' }}</td>
                         <td>
                             @if($trf->shippedBy)
                                 <div>{{ $trf->shippedBy->name }}</div>
@@ -140,7 +106,7 @@
                     <tr>
                         <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-arrow-right-arrow-left" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada riwayat transfer barang antar gudang
+                            Belum ada riwayat transfer barang antar gudang yang sesuai filter
                         </td>
                     </tr>
                     @endforelse
@@ -150,7 +116,7 @@
 
         @if($transfers->hasPages())
         <div style="padding:16px 20px; border-top:1px solid var(--border);">
-            {{ $transfers->withQueryString()->links() }}
+            {{ $transfers->links() }}
         </div>
         @endif
     </div>

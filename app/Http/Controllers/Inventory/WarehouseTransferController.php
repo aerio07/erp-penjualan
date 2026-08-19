@@ -15,33 +15,27 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class WarehouseTransferController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private StockService $stockService) {}
 
     public function index(Request $request): View
     {
-        $query = WarehouseTransfer::with(['fromWarehouse', 'toWarehouse', 'user', 'shippedBy', 'receivedBy'])
-            ->latest('transfer_date')
-            ->latest('id');
+        $query = WarehouseTransfer::with(['fromWarehouse', 'toWarehouse', 'user', 'shippedBy', 'receivedBy']);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('from_warehouse_id')) {
-            $query->where('from_warehouse_id', $request->from_warehouse_id);
-        }
-        if ($request->filled('to_warehouse_id')) {
-            $query->where('to_warehouse_id', $request->to_warehouse_id);
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('transfer_date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('transfer_date', '<=', $request->date_to);
-        }
+        $query = $this->applySearch($query, $request, ['transfer_number', 'fromWarehouse.name', 'toWarehouse.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyFilter($query, $request, 'from_warehouse_id');
+        $query = $this->applyFilter($query, $request, 'to_warehouse_id');
+        $query = $this->applyDateRange($query, $request, 'transfer_date');
+        $query = $this->applySort($query, $request, ['transfer_number', 'transfer_date', 'status', 'created_at'], 'transfer_date', 'desc');
 
-        $transfers  = $query->paginate(20);
+        $perPage = (int) $request->get('per_page', 20);
+        $transfers  = $query->paginate($perPage)->withQueryString();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
         return view('inventory.transfers.index', compact('transfers', 'warehouses'));

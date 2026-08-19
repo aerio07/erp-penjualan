@@ -7,11 +7,14 @@ use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Warehouse;
 use App\Services\StockService;
+use App\Traits\HasListFilters;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class StockMovementController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private StockService $stockService) {}
 
     public function summary(Request $request): View
@@ -51,24 +54,21 @@ class StockMovementController extends Controller
 
     public function index(Request $request): View
     {
-        $query = StockMovement::with(['product', 'warehouse', 'user'])
-            ->latest('movement_date')
-            ->latest('id');
+        $query = StockMovement::with(['product', 'warehouse', 'user']);
 
-        if ($request->filled('product_id')) {
-            $query->where('product_id', $request->product_id);
-        }
-        if ($request->filled('warehouse_id')) {
-            $query->where('warehouse_id', $request->warehouse_id);
-        }
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
+        $query = $this->applySearch($query, $request, ['product.name', 'product.sku', 'notes']);
+        $query = $this->applyFilter($query, $request, 'product_id');
+        $query = $this->applyFilter($query, $request, 'warehouse_id');
+        $query = $this->applyFilter($query, $request, 'type');
+        $query = $this->applyDateRange($query, $request, 'movement_date');
+        $query = $this->applySort($query, $request, ['movement_date', 'quantity', 'unit_cost', 'type', 'created_at'], 'movement_date', 'desc');
 
-        $movements  = $query->paginate(25);
+        $perPage = (int) $request->get('per_page', 20);
+        $movements  = $query->paginate($perPage)->withQueryString();
         $products   = Product::where('is_active', true)->orderBy('name')->get();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
         return view('inventory.movements.index', compact('movements', 'products', 'warehouses'));
     }
 }
+

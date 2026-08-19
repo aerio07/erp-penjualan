@@ -14,23 +14,35 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('purchase.invoices.index')" placeholder="Cari No. Invoice, Ref. PO, Supplier..." :showDateFilter="true">
+        <select name="supplier_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
+            <option value="">Semua Supplier</option>
+            @foreach($suppliers as $sup)
+            <option value="{{ $sup->id }}" {{ request('supplier_id') == $sup->id ? 'selected' : '' }}>{{ $sup->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Belum Dibayar (Unpaid)</option>
+            <option value="partial" {{ request('status') === 'partial' ? 'selected' : '' }}>Dibayar Sebagian (Partial)</option>
+            <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Lunas (Paid)</option>
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
-        <div class="card-header">
-            <h3>Daftar Invoice Pembelian</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $invoices->total() }} invoice</span>
-        </div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. Invoice</th>
+                        <x-sortable-header column="invoice_number" title="No. Invoice" />
                         <th>Supplier</th>
                         <th>Ref. PO</th>
-                        <th>Tgl Invoice</th>
-                        <th>Jatuh Tempo</th>
-                        <th style="text-align:right;">Total Tagihan</th>
+                        <x-sortable-header column="invoice_date" title="Tgl Invoice" />
+                        <x-sortable-header column="due_date" title="Jatuh Tempo" />
+                        <x-sortable-header column="total_amount" title="Total Tagihan" align="right" />
                         <th style="text-align:right;">Sisa Hutang</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -44,14 +56,18 @@
                         </td>
                         <td>{{ $inv->purchaseOrder->supplier->name ?? '-' }}</td>
                         <td>
+                            @if($inv->purchaseOrder)
                             <a href="{{ route('purchase.orders.show', $inv->purchaseOrder) }}" style="color:var(--text-primary); text-decoration:none;">
                                 {{ $inv->purchaseOrder->po_number }}
                             </a>
+                            @else
+                            -
+                            @endif
                         </td>
-                        <td>{{ $inv->invoice_date->format('d/m/Y') }}</td>
+                        <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>
                         <td>
                             <span style="{{ $inv->status !== 'paid' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
-                                {{ $inv->due_date->format('d/m/Y') }}
+                                {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}
                             </span>
                         </td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
@@ -83,7 +99,7 @@
                     <tr>
                         <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-file-invoice-dollar" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada invoice pembelian
+                            Belum ada invoice pembelian yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

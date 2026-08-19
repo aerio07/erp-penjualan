@@ -14,17 +14,33 @@
         </a>
     </div>
 
+    <x-list-filter-bar :action="route('sales.orders.index')" placeholder="Cari No. SO, Customer, Catatan..." :showDateFilter="true">
+        <select name="customer_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
+            <option value="">Semua Customer</option>
+            @foreach($customers as $cust)
+            <option value="{{ $cust->id }}" {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Status</option>
+            @foreach(['draft','waiting_approval','confirmed','partially_delivered','done','cancelled'] as $s)
+            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
+            @endforeach
+        </select>
+    </x-list-filter-bar>
+
     <div class="card">
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th>No. SO</th>
+                        <x-sortable-header column="so_number" title="No. SO" />
                         <th>Customer</th>
-                        <th>Tanggal Order</th>
-                        <th>Exp. Kirim</th>
-                        <th style="text-align:right;">Total Total</th>
-                        <th style="text-align:center;">Status</th>
+                        <x-sortable-header column="order_date" title="Tanggal Order" />
+                        <x-sortable-header column="expected_delivery_date" title="Exp. Kirim" />
+                        <x-sortable-header column="total_amount" title="Total" align="right" />
+                        <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -37,7 +53,7 @@
                             </a>
                         </td>
                         <td>{{ $order->customer->name ?? '-' }}</td>
-                        <td>{{ $order->order_date->format('d/m/Y') }}</td>
+                        <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
                         <td>{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                         <td style="text-align:center;">
@@ -65,7 +81,7 @@
                     <tr>
                         <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-store" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada Sales Order
+                            Belum ada Sales Order yang sesuai filter
                         </td>
                     </tr>
                     @endforelse

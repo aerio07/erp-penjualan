@@ -15,17 +15,29 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+use App\Traits\HasListFilters;
+
 class SalesOrderController extends Controller
 {
+    use HasListFilters;
+
     public function __construct(private ApprovalService $approvalService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $orders = SalesOrder::with(['customer', 'user'])
-            ->latest('order_date')
-            ->paginate(20);
+        $query = SalesOrder::with(['customer', 'user']);
 
-        return view('sales.orders.index', compact('orders'));
+        $query = $this->applySearch($query, $request, ['so_number', 'customer.name', 'notes']);
+        $query = $this->applyFilter($query, $request, 'customer_id');
+        $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyDateRange($query, $request, 'order_date');
+        $query = $this->applySort($query, $request, ['so_number', 'order_date', 'expected_delivery_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $orders    = $query->paginate($perPage)->withQueryString();
+        $customers = Customer::where('is_active', true)->orderBy('name')->get();
+
+        return view('sales.orders.index', compact('orders', 'customers'));
     }
 
     public function create(): View

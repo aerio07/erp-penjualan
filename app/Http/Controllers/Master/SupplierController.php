@@ -8,11 +8,23 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class SupplierController extends Controller
 {
-    public function index(): View
+    use HasListFilters;
+
+    public function index(Request $request): View
     {
-        $suppliers = Supplier::orderBy('name')->paginate(20);
+        $query = Supplier::query();
+
+        $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address']);
+        $query = $this->applyFilter($query, $request, 'is_active');
+        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'payment_term', 'created_at'], 'name', 'asc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $suppliers = $query->paginate($perPage)->withQueryString();
+
         return view('master.suppliers.index', compact('suppliers'));
     }
 
