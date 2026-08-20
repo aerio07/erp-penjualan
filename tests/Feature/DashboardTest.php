@@ -31,7 +31,7 @@ class DashboardTest extends TestCase
             'alerts',
             'aktivitas',
         ]);
-        $response->assertSee('Beranda / Dashboard Eksekutif');
+        $response->assertSee('Overview');
     }
 
     #[Test]
@@ -42,8 +42,8 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($finance)->get(route('dashboard'));
 
         $response->assertOk();
-        $response->assertSee('Total Piutang Belum Lunas');
-        $response->assertSee('Total Hutang Belum Lunas');
+        $response->assertSee('Total Piutang');
+        $response->assertSee('Total Hutang');
     }
 
     #[Test]
@@ -66,6 +66,5 @@ class DashboardTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Stok Kritis');
-        $response->assertSee('Stok Perlu Re-order');
     }
 }

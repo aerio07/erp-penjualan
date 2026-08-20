@@ -15,19 +15,25 @@
         'sort_dir' => $nextDir,
     ]);
     $sortUrl = request()->url() . '?' . http_build_query($queryParams);
+
+    $alignClass = match($align) {
+        'right' => 'text-right justify-end',
+        'center' => 'text-center justify-center',
+        default => 'text-left justify-start'
+    };
 @endphp
 
-<th style="text-align:{{ $align }}; user-select:none;">
-    <a href="{{ $sortUrl }}" style="text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:6px; font-weight:600; cursor:pointer;" title="Urutkan berdasarkan {{ $title }}">
+<th class="py-3 px-4 font-label-xs text-label-xs text-on-surface uppercase tracking-wider whitespace-nowrap {{ match($align) { 'right' => 'text-right', 'center' => 'text-center', default => 'text-left' } }}">
+    <a href="{{ $sortUrl }}" class="inline-flex items-center gap-1 hover:text-primary transition-colors select-none font-bold {{ $alignClass }}" title="Urutkan berdasarkan {{ $title }}">
         <span>{{ $title }}</span>
         @if($isSorted)
             @if($currentDir === 'asc')
-                <i class="fa-solid fa-sort-up" style="color:var(--primary, #3b82f6); font-size:12px;"></i>
+                <span class="material-symbols-outlined text-primary text-[16px]">arrow_upward</span>
             @else
-                <i class="fa-solid fa-sort-down" style="color:var(--primary, #3b82f6); font-size:12px;"></i>
+                <span class="material-symbols-outlined text-primary text-[16px]">arrow_downward</span>
             @endif
         @else
-            <i class="fa-solid fa-sort" style="color:var(--text-secondary, #9ca3af); font-size:11px; opacity:0.4;"></i>
+            <span class="material-symbols-outlined text-on-surface-variant/40 text-[16px]">unfold_more</span>
         @endif
     </a>
 </th>
