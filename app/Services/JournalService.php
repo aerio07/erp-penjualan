@@ -25,6 +25,14 @@ class JournalService
      */
     public function createFromPurchaseInvoice(PurchaseInvoice $invoice): JournalEntry
     {
+        $existing = JournalEntry::where('reference_type', PurchaseInvoice::class)
+            ->where('reference_id', $invoice->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
         $persediaan = $this->findAccount('1-1400'); // Persediaan Barang
         $ppnMasukan = $this->findAccount('1-1500'); // PPN Masukan
         $hutang     = $this->findAccount('2-1100'); // Hutang Usaha
@@ -48,6 +56,14 @@ class JournalService
      */
     public function createFromPurchasePayment(PurchasePayment $payment): JournalEntry
     {
+        $existing = JournalEntry::where('reference_type', PurchasePayment::class)
+            ->where('reference_id', $payment->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
         $hutang = $this->findAccount('2-1100');
         $kas    = $this->findAccount('1-1100'); // Kas / Bank
 
@@ -70,6 +86,14 @@ class JournalService
      */
     public function createFromSalesInvoice(SalesInvoice $invoice, float $cogs): JournalEntry
     {
+        $existing = JournalEntry::where('reference_type', SalesInvoice::class)
+            ->where('reference_id', $invoice->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
         $piutang    = $this->findAccount('1-1200'); // Piutang Usaha
         $penjualan  = $this->findAccount('4-1100'); // Penjualan
         $ppnKeluaran = $this->findAccount('2-1400'); // PPN Keluaran
@@ -97,6 +121,14 @@ class JournalService
      */
     public function createFromSalesPayment(SalesPayment $payment): JournalEntry
     {
+        $existing = JournalEntry::where('reference_type', SalesPayment::class)
+            ->where('reference_id', $payment->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
         $kas     = $this->findAccount('1-1100');
         $piutang = $this->findAccount('1-1200');
 

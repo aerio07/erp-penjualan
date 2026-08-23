@@ -92,7 +92,10 @@ class StockDispositionController extends Controller
         ]);
 
         $disposition = DB::transaction(function () use ($request) {
-            // 1. Validasi stok karantina tersedia
+            // 1. Lock product row to serialize disposition operations
+            $product = Product::lockForUpdate()->findOrFail($request->product_id);
+
+            // 2. Validasi stok karantina tersedia
             $available = $this->stockService->getQuarantineStockAvailable($request->product_id, $request->warehouse_id);
             if ($request->qty > $available) {
                 throw ValidationException::withMessages([
@@ -100,8 +103,7 @@ class StockDispositionController extends Controller
                 ]);
             }
 
-            // 2. Ambil snapshot unit cost
-            $product = Product::findOrFail($request->product_id);
+            // 3. Ambil snapshot unit cost
             $latestDamagedItem = SalesReturnItem::where('product_id', $request->product_id)
                 ->where('condition', 'rusak')
                 ->latest('id')

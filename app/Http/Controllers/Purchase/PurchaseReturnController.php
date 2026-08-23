@@ -149,10 +149,10 @@ class PurchaseReturnController extends Controller
 
     public function complete(PurchaseReturn $return): RedirectResponse
     {
-        abort_if($return->status === 'completed', 403, 'Retur sudah selesai.');
+        return DB::transaction(function () use ($return) {
+            $return = PurchaseReturn::with(['goodsReceipt', 'items.goodsReceiptItem'])->lockForUpdate()->findOrFail($return->id);
+            abort_if($return->status === 'completed', 403, 'Retur sudah selesai.');
 
-        DB::transaction(function () use ($return) {
-            $return->load(['goodsReceipt', 'items.goodsReceiptItem']);
             $grn = $return->goodsReceipt;
 
             foreach ($return->items as $item) {
@@ -183,9 +183,9 @@ class PurchaseReturnController extends Controller
 
             $return->update(['status' => 'completed']);
             $this->refreshAffectedInvoiceStatuses($return);
-        });
 
-        return back()->with('success', 'Retur Pembelian selesai. Stok gudang dikurangi dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
+            return back()->with('success', 'Retur Pembelian selesai. Stok gudang dikurangi dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
+        });
     }
 
     private function generateNumber(): string

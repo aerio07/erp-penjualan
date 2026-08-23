@@ -134,9 +134,10 @@ class SalesReturnController extends Controller
      */
     public function receive(SalesReturn $return): RedirectResponse
     {
-        abort_if($return->status !== 'draft', 403, 'Hanya retur berstatus draft yang dapat diterima fisiknya.');
+        return DB::transaction(function () use ($return) {
+            $return = SalesReturn::with(['delivery', 'items.product'])->lockForUpdate()->findOrFail($return->id);
+            abort_if($return->status !== 'draft', 403, 'Hanya retur berstatus draft yang dapat diterima fisiknya.');
 
-        DB::transaction(function () use ($return) {
             $delivery = $return->delivery;
 
             foreach ($return->items as $item) {
@@ -160,9 +161,9 @@ class SalesReturnController extends Controller
             }
 
             $return->update(['status' => 'received']);
-        });
 
-        return back()->with('success', 'Fisik barang retur telah diterima di gudang. Barang kondisi baik masuk stok siap jual, dan barang rusak masuk stok karantina.');
+            return back()->with('success', 'Fisik barang retur telah diterima di gudang. Barang kondisi baik masuk stok siap jual, dan barang rusak masuk stok karantina.');
+        });
     }
 
     /**
@@ -170,9 +171,10 @@ class SalesReturnController extends Controller
      */
     public function complete(SalesReturn $return): RedirectResponse
     {
-        abort_if($return->status !== 'received', 403, 'Hanya retur yang sudah berstatus received yang dapat diselesaikan.');
+        return DB::transaction(function () use ($return) {
+            $return = SalesReturn::with(['delivery', 'items.product'])->lockForUpdate()->findOrFail($return->id);
+            abort_if($return->status !== 'received', 403, 'Hanya retur yang sudah berstatus received yang dapat diselesaikan.');
 
-        DB::transaction(function () use ($return) {
             // Auto-journaling: balik piutang/PPN keluaran, serta persediaan/HPP jika kondisi baik
             $entry = $this->journalService->createFromSalesReturn($return);
             if ($entry) {
@@ -181,9 +183,9 @@ class SalesReturnController extends Controller
 
             $return->update(['status' => 'completed']);
             $this->refreshAffectedInvoiceStatuses($return);
-        });
 
-        return back()->with('success', 'Proses Retur Penjualan telah diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
+            return back()->with('success', 'Proses Retur Penjualan telah diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
+        });
     }
 
     private function generateNumber(): string

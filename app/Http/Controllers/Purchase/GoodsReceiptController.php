@@ -71,54 +71,52 @@ class GoodsReceiptController extends Controller
             'items.*.shortage_reason'            => 'nullable|in:none,not_shipped,damaged_in_transit',
         ]);
 
-        $po = PurchaseOrder::with(['items.product', 'items.goodsReceiptItems'])->findOrFail($request->purchase_order_id);
-        abort_if(!in_array($po->status, ['confirmed', 'partially_received']), 403, 'PO tidak dapat diterima.');
+        return DB::transaction(function () use ($request, &$autoReturn) {
+            $po = PurchaseOrder::with(['items.product', 'items.goodsReceiptItems'])->lockForUpdate()->findOrFail($request->purchase_order_id);
+            abort_if(!in_array($po->status, ['confirmed', 'partially_received']), 403, 'PO tidak dapat diterima.');
 
-        $receivedByItem = [];
-        $rejectedByItem = [];
-        $physicalByItem = [];
-        foreach ($request->items as $itemData) {
-            $itemId = (int) $itemData['purchase_order_item_id'];
-            $qtyRejected = (int) ($itemData['qty_rejected'] ?? 0);
-            $qtyPhysical = isset($itemData['qty_physical']) 
-                ? (int) $itemData['qty_physical'] 
-                : ((int)($itemData['qty_received'] ?? 0) + $qtyRejected);
-            $qtyGood = max(0, $qtyPhysical - $qtyRejected);
+            $receivedByItem = [];
+            $rejectedByItem = [];
+            $physicalByItem = [];
+            foreach ($request->items as $itemData) {
+                $itemId = (int) $itemData['purchase_order_item_id'];
+                $qtyRejected = (int) ($itemData['qty_rejected'] ?? 0);
+                $qtyPhysical = isset($itemData['qty_physical']) 
+                    ? (int) $itemData['qty_physical'] 
+                    : ((int)($itemData['qty_received'] ?? 0) + $qtyRejected);
+                $qtyGood = max(0, $qtyPhysical - $qtyRejected);
 
-            if ($qtyRejected > $qtyPhysical) {
-                return back()
-                    ->with('error', "Qty rusak tidak boleh melebihi qty datang fisik.")
-                    ->withInput();
+                if ($qtyRejected > $qtyPhysical) {
+                    return back()
+                        ->with('error', "Qty rusak tidak boleh melebihi qty datang fisik.")
+                        ->withInput();
+                }
+
+                $physicalByItem[$itemId] = ($physicalByItem[$itemId] ?? 0) + $qtyPhysical;
+                $receivedByItem[$itemId] = ($receivedByItem[$itemId] ?? 0) + $qtyGood;
+                $rejectedByItem[$itemId] = ($rejectedByItem[$itemId] ?? 0) + $qtyRejected;
             }
 
-            $physicalByItem[$itemId] = ($physicalByItem[$itemId] ?? 0) + $qtyPhysical;
-            $receivedByItem[$itemId] = ($receivedByItem[$itemId] ?? 0) + $qtyGood;
-            $rejectedByItem[$itemId] = ($rejectedByItem[$itemId] ?? 0) + $qtyRejected;
-        }
+            $hasAnyQty = false;
+            foreach ($physicalByItem as $poItemId => $totalPhysical) {
+                $poItem = $po->items->firstWhere('id', $poItemId);
+                abort_if(!$poItem, 422, 'Item penerimaan tidak sesuai dengan PO yang dipilih.');
 
-        $hasAnyQty = false;
-        foreach ($physicalByItem as $poItemId => $totalPhysical) {
-            $poItem = $po->items->firstWhere('id', $poItemId);
-            abort_if(!$poItem, 422, 'Item penerimaan tidak sesuai dengan PO yang dipilih.');
+                if ($totalPhysical > 0) {
+                    $hasAnyQty = true;
+                }
 
-            if ($totalPhysical > 0) {
-                $hasAnyQty = true;
+                if ($totalPhysical > $poItem->qty_remaining) {
+                    return back()
+                        ->with('error', "Total datang fisik untuk '{$poItem->product->name}' melebihi sisa PO. Sisa: {$poItem->qty_remaining}, total diinput: {$totalPhysical}.")
+                        ->withInput();
+                }
             }
 
-            if ($totalPhysical > $poItem->qty_remaining) {
-                return back()
-                    ->with('error', "Total datang fisik untuk '{$poItem->product->name}' melebihi sisa PO. Sisa: {$poItem->qty_remaining}, total diinput: {$totalPhysical}.")
-                    ->withInput();
+            if (!$hasAnyQty) {
+                return back()->with('error', 'Isi minimal satu qty fisik barang yang datang.')->withInput();
             }
-        }
 
-        if (!$hasAnyQty) {
-            return back()->with('error', 'Isi minimal satu qty fisik barang yang datang.')->withInput();
-        }
-
-        $autoReturn = null;
-
-        DB::transaction(function () use ($request, $po, &$autoReturn) {
             $grnNumber = $this->generateNumber();
 
             $firstWarehouseId = $request->items[0]['warehouse_id'] ?? null;
@@ -232,15 +230,15 @@ class GoodsReceiptController extends Controller
             $po->update([
                 'status' => $allDone ? 'done' : 'partially_received'
             ]);
-        });
 
-        if ($autoReturn) {
+            if ($autoReturn) {
+                return redirect()->route('purchase.goods-receipts.index')
+                    ->with('success', "Penerimaan Barang berhasil dicatat. Draft Retur Pembelian (#{$autoReturn->return_number}) otomatis dibuat untuk item yang rusak.");
+            }
+
             return redirect()->route('purchase.goods-receipts.index')
-                ->with('success', "Penerimaan Barang berhasil dicatat. Draft Retur Pembelian (#{$autoReturn->return_number}) otomatis dibuat untuk item yang rusak.");
-        }
-
-        return redirect()->route('purchase.goods-receipts.index')
-            ->with('success', 'Penerimaan Barang (GRN) berhasil dicatat dan stok telah diperbarui.');
+                ->with('success', 'Penerimaan Barang (GRN) berhasil dicatat dan stok telah diperbarui.');
+        });
     }
 
     public function show(GoodsReceipt $goodsReceipt): View

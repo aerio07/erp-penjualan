@@ -216,6 +216,89 @@ class InvoiceReturnConsistencyTest extends TestCase
         $paymentForm->assertSee('Sisa Hutang: Rp 360');
     }
 
+    public function test_sales_return_with_header_discount_and_tax_proration(): void
+    {
+        // 10 items @ 100 = 1000 subtotal, header discount = 200, tax 10%
+        // DPP = 800, Tax = 80, Total Amount = 880
+        $customer = Customer::create([
+            'code' => 'CUST-DISCTAX',
+            'name' => 'Customer Diskon Pajak',
+            'is_active' => true,
+        ]);
+        $salesOrder = SalesOrder::create([
+            'so_number' => 'SO-DISCTAX-001',
+            'customer_id' => $customer->id,
+            'user_id' => $this->admin->id,
+            'status' => 'done',
+            'order_date' => now()->toDateString(),
+            'discount_amount' => 200,
+            'tax_rate' => 10,
+            'tax_amount' => 80,
+            'total_amount' => 880,
+        ]);
+        $soItem = SalesOrderItem::create([
+            'sales_order_id' => $salesOrder->id,
+            'product_id' => $this->product->id,
+            'qty_ordered' => 10,
+            'unit_price' => 100,
+            'subtotal' => 1000,
+        ]);
+        $delivery = Delivery::create([
+            'delivery_number' => 'SJ-DISCTAX-001',
+            'sales_order_id' => $salesOrder->id,
+            'warehouse_id' => $this->warehouse->id,
+            'user_id' => $this->admin->id,
+            'condition_status' => 'baik',
+            'delivery_date' => now()->toDateString(),
+        ]);
+        $delItem = DeliveryItem::create([
+            'delivery_id' => $delivery->id,
+            'sales_order_item_id' => $soItem->id,
+            'qty_delivered' => 10,
+        ]);
+
+        $this->actingAs($this->admin)->post(route('sales.invoices.store'), [
+            'sales_order_id' => $salesOrder->id,
+            'invoice_date' => now()->toDateString(),
+            'due_date' => now()->addWeek()->toDateString(),
+            'tax_rate' => 10,
+        ]);
+
+        $invoice = SalesInvoice::with('items')->firstOrFail();
+        $this->assertEquals(800, $invoice->amount);
+        $this->assertEquals(80, $invoice->tax_amount);
+        $this->assertEquals(880, $invoice->total_amount);
+
+        // Verify item-level proration
+        $invItem = $invoice->items->first();
+        $this->assertEquals(800, $invItem->subtotal);
+        $this->assertEquals(80, $invItem->tax_amount);
+
+        // Return 50% (5 pcs out of 10)
+        $return = SalesReturn::create([
+            'return_number' => 'SRET-DISCTAX-001',
+            'delivery_id' => $delivery->id,
+            'customer_id' => $customer->id,
+            'return_date' => now()->toDateString(),
+            'status' => 'received',
+        ]);
+        SalesReturnItem::create([
+            'sales_return_id' => $return->id,
+            'product_id' => $this->product->id,
+            'delivery_item_id' => $delItem->id,
+            'qty' => 5,
+            'condition' => 'baik',
+        ]);
+
+        $this->actingAs($this->admin)->patch(route('sales.returns.complete', $return));
+
+        $invoice->refresh();
+        // 50% of 880 is 440
+        $this->assertEquals(440, $invoice->total_reversed_amount);
+        $this->assertEquals(440, $invoice->effective_total_amount);
+        $this->assertEquals(440, $invoice->outstanding_amount);
+    }
+
     private function makeSalesDelivery(int $qty): array
     {
         $customer = Customer::create([

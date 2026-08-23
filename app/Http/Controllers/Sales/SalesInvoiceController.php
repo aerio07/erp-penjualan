@@ -134,9 +134,9 @@ class SalesInvoiceController extends Controller
                 ? ($subtotalUnbilled / $totalOrderSubtotal) * $headerDiscountAmount
                 : 0;
 
-            $dpp = max(0, $subtotalUnbilled - $proratedHeaderDiscount);
-            $taxAmount = $dpp * ($taxRate / 100);
-            $totalAmount = $dpp + $taxAmount;
+            $dpp = max(0, round($subtotalUnbilled - $proratedHeaderDiscount, 2));
+            $taxAmount = round($dpp * ($taxRate / 100), 2);
+            $totalAmount = round($dpp + $taxAmount, 2);
 
             $invoice = SalesInvoice::create([
                 'invoice_number' => $this->generateNumber(),
@@ -151,9 +151,24 @@ class SalesInvoiceController extends Controller
                 'notes'          => $request->notes,
             ]);
 
+            // Hitung faktor prorasi diskon header untuk setiap baris item
+            $discountRatio = ($subtotalUnbilled > 0 && $proratedHeaderDiscount > 0)
+                ? ($proratedHeaderDiscount / $subtotalUnbilled)
+                : 0;
+
             // Simpan snapshot rincian item invoice lengkap dengan link ke Delivery Item dan tax_amount
             foreach ($itemsToCreate as $itemData) {
                 $itemData['sales_invoice_id'] = $invoice->id;
+
+                // Alokasikan diskon header ke baris item secara proporsional
+                $itemHeaderDiscount = round($itemData['subtotal'] * $discountRatio, 2);
+                $itemNetSubtotal    = max(0, round($itemData['subtotal'] - $itemHeaderDiscount, 2));
+                $itemTax            = round($itemNetSubtotal * ($taxRate / 100), 2);
+
+                $itemData['discount_amount'] = round($itemData['discount_amount'] + $itemHeaderDiscount, 2);
+                $itemData['subtotal']        = $itemNetSubtotal;
+                $itemData['tax_amount']      = $itemTax;
+
                 SalesInvoiceItem::create($itemData);
             }
 

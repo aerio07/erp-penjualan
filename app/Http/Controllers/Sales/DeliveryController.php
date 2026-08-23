@@ -68,54 +68,56 @@ class DeliveryController extends Controller
             'items.*.qty_delivered'          => 'required|integer|min:0',
         ]);
 
-        $so = SalesOrder::findOrFail($request->sales_order_id);
+        return DB::transaction(function () use ($request) {
+            $so = SalesOrder::with(['items.product', 'items.deliveryItems', 'customer'])->lockForUpdate()->findOrFail($request->sales_order_id);
 
-        $deliveredByItem = [];
-        foreach ($request->items as $itemData) {
-            $itemId = (int) $itemData['sales_order_item_id'];
-            $deliveredByItem[$itemId] = ($deliveredByItem[$itemId] ?? 0) + (int) $itemData['qty_delivered'];
-        }
-
-        $hasAnyDelivered = false;
-        foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
-            $soItem = SalesOrderItem::with('product')->findOrFail($soItemId);
-            abort_if($soItem->sales_order_id !== $so->id, 422, 'Item pengiriman tidak sesuai dengan SO yang dipilih.');
-
-            if ($qtyDelivered > 0) {
-                $hasAnyDelivered = true;
+            $deliveredByItem = [];
+            foreach ($request->items as $itemData) {
+                $itemId = (int) $itemData['sales_order_item_id'];
+                $deliveredByItem[$itemId] = ($deliveredByItem[$itemId] ?? 0) + (int) $itemData['qty_delivered'];
             }
 
-            if ($qtyDelivered > $soItem->qty_remaining) {
-                return back()
-                    ->with('error', "Qty pengiriman '{$soItem->product->name}' melebihi sisa SO. Sisa: {$soItem->qty_remaining}, diinput: {$qtyDelivered}.")
-                    ->withInput();
+            $hasAnyDelivered = false;
+            $productIds = [];
+            foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
+                $soItem = $so->items->firstWhere('id', $soItemId);
+                abort_if(!$soItem, 422, 'Item pengiriman tidak sesuai dengan SO yang dipilih.');
+
+                if ($qtyDelivered > 0) {
+                    $hasAnyDelivered = true;
+                    $productIds[] = $soItem->product_id;
+                }
+
+                if ($qtyDelivered > $soItem->qty_remaining) {
+                    return back()
+                        ->with('error', "Qty pengiriman '{$soItem->product->name}' melebihi sisa SO. Sisa: {$soItem->qty_remaining}, diinput: {$qtyDelivered}.")
+                        ->withInput();
+                }
             }
-        }
 
-        if (!$hasAnyDelivered) {
-            return back()->with('error', 'Isi minimal satu qty barang yang akan dikirim.')->withInput();
-        }
-
-        $requiredByProduct = [];
-        foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
-            if ($qtyDelivered <= 0) {
-                continue;
+            if (!$hasAnyDelivered) {
+                return back()->with('error', 'Isi minimal satu qty barang yang akan dikirim.')->withInput();
             }
 
-            $soItem = SalesOrderItem::with('product')->findOrFail($soItemId);
-            $requiredByProduct[$soItem->product_id]['qty'] = ($requiredByProduct[$soItem->product_id]['qty'] ?? 0) + $qtyDelivered;
-            $requiredByProduct[$soItem->product_id]['product'] = $soItem->product;
-        }
+            // Lock all involved product rows to serialize stock checks
+            Product::whereIn('id', array_unique($productIds))->lockForUpdate()->get();
 
-        // Check stock availability
-        foreach ($requiredByProduct as $productId => $required) {
-            if (!$this->stockService->isStockSufficient($productId, $request->warehouse_id, $required['qty'])) {
-                $available = $this->stockService->getCurrentStock($productId, $request->warehouse_id);
-                return back()->with('error', "Stok untuk '{$required['product']->name}' di gudang ini tidak mencukupi (Tersedia: {$available}, Ingin Dikirim: {$required['qty']}).")->withInput();
+            $requiredByProduct = [];
+            foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
+                if ($qtyDelivered <= 0) continue;
+                $soItem = $so->items->firstWhere('id', $soItemId);
+                $requiredByProduct[$soItem->product_id]['qty'] = ($requiredByProduct[$soItem->product_id]['qty'] ?? 0) + $qtyDelivered;
+                $requiredByProduct[$soItem->product_id]['product'] = $soItem->product;
             }
-        }
 
-        DB::transaction(function () use ($request, $so) {
+            // Check stock availability under lock
+            foreach ($requiredByProduct as $productId => $required) {
+                if (!$this->stockService->isStockSufficient($productId, $request->warehouse_id, $required['qty'])) {
+                    $available = $this->stockService->getCurrentStock($productId, $request->warehouse_id);
+                    return back()->with('error', "Stok untuk '{$required['product']->name}' di gudang ini tidak mencukupi (Tersedia: {$available}, Ingin Dikirim: {$required['qty']}).")->withInput();
+                }
+            }
+
             $deliveryNumber = $this->generateNumber();
 
             $delivery = Delivery::create([
@@ -131,7 +133,7 @@ class DeliveryController extends Controller
             ]);
 
             foreach ($request->items as $itemData) {
-                $soItem = SalesOrderItem::findOrFail($itemData['sales_order_item_id']);
+                $soItem = $so->items->firstWhere('id', $itemData['sales_order_item_id']);
                 $qtyDelivered = (int) $itemData['qty_delivered'];
                 if ($qtyDelivered <= 0) continue;
 
@@ -170,10 +172,10 @@ class DeliveryController extends Controller
             $so->update([
                 'status' => $allDone ? 'done' : 'partially_delivered'
             ]);
-        });
 
-        return redirect()->route('sales.deliveries.index')
-            ->with('success', 'Surat Jalan berhasil dibuat dan stok barang telah berkurang.');
+            return redirect()->route('sales.deliveries.index')
+                ->with('success', 'Surat Jalan berhasil dibuat dan stok barang telah berkurang.');
+        });
     }
 
     public function show(Delivery $delivery): View

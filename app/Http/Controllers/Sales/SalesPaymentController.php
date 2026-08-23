@@ -59,13 +59,13 @@ class SalesPaymentController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
-        $invoice = SalesInvoice::findOrFail($request->sales_invoice_id);
+        return DB::transaction(function () use ($request) {
+            $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->sales_invoice_id);
 
-        if ($request->amount > $invoice->outstanding_amount + 0.01) {
-            return back()->with('error', "Jumlah penerimaan (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
-        }
+            if ($request->amount > $invoice->outstanding_amount + 0.01) {
+                return back()->with('error', "Jumlah penerimaan (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
+            }
 
-        DB::transaction(function () use ($request, $invoice) {
             $payment = SalesPayment::create([
                 'sales_invoice_id' => $invoice->id,
                 'user_id'          => Auth::id(),
@@ -84,10 +84,10 @@ class SalesPaymentController extends Controller
             // Automatic Journal Entry (Kas/Bank -> Piutang Usaha)
             $entry = $this->journalService->createFromSalesPayment($payment);
             $this->journalService->postEntry($entry);
-        });
 
-        return redirect()->route('sales.payments.index')
-            ->with('success', 'Penerimaan Piutang berhasil dicatat dan Jurnal Akuntansi otomatis diposting.');
+            return redirect()->route('sales.payments.index')
+                ->with('success', 'Penerimaan Piutang berhasil dicatat dan Jurnal Akuntansi otomatis diposting.');
+        });
     }
 
     public function show(SalesPayment $payment): View

@@ -59,13 +59,13 @@ class PurchasePaymentController extends Controller
             'notes'               => 'nullable|string',
         ]);
 
-        $invoice = PurchaseInvoice::findOrFail($request->purchase_invoice_id);
+        return DB::transaction(function () use ($request) {
+            $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->purchase_invoice_id);
 
-        if ($request->amount > $invoice->outstanding_amount + 0.01) {
-            return back()->with('error', "Jumlah pembayaran (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa hutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
-        }
+            if ($request->amount > $invoice->outstanding_amount + 0.01) {
+                return back()->with('error', "Jumlah pembayaran (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa hutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
+            }
 
-        DB::transaction(function () use ($request, $invoice) {
             $payment = PurchasePayment::create([
                 'purchase_invoice_id' => $invoice->id,
                 'user_id'             => Auth::id(),
@@ -84,10 +84,10 @@ class PurchasePaymentController extends Controller
             // Jurnal Otomatis (Hutang Usaha -> Kas/Bank)
             $entry = $this->journalService->createFromPurchasePayment($payment);
             $this->journalService->postEntry($entry);
-        });
 
-        return redirect()->route('purchase.payments.index')
-            ->with('success', 'Pembayaran Hutang berhasil dicatat dan Jurnal Akuntansi otomatis diposting.');
+            return redirect()->route('purchase.payments.index')
+                ->with('success', 'Pembayaran Hutang berhasil dicatat dan Jurnal Akuntansi otomatis diposting.');
+        });
     }
 
     public function show(PurchasePayment $payment): View

@@ -108,9 +108,10 @@ class StockOpnameController extends Controller
 
     public function complete(StockOpname $opname): RedirectResponse
     {
-        abort_if($opname->status === 'completed', 403, 'Stock Opname sudah diselesaikan.');
+        return DB::transaction(function () use ($opname) {
+            $opname = StockOpname::with(['items.product'])->lockForUpdate()->findOrFail($opname->id);
+            abort_if($opname->status === 'completed', 403, 'Stock Opname sudah diselesaikan.');
 
-        DB::transaction(function () use ($opname) {
             foreach ($opname->items as $item) {
                 if ($item->difference != 0) {
                     $this->stockService->recordMovement([
@@ -129,9 +130,9 @@ class StockOpnameController extends Controller
             }
 
             $opname->update(['status' => 'completed']);
-        });
 
-        return back()->with('success', 'Stock Opname telah diselesaikan dan penyesuaian stok otomatis dibuat.');
+            return back()->with('success', 'Stock Opname telah diselesaikan dan penyesuaian stok otomatis dibuat.');
+        });
     }
 
     private function generateNumber(): string
