@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
+use App\Models\SalesInvoice;
 use App\Models\SalesReturn;
 use App\Models\SalesReturnItem;
 use App\Services\JournalService;
@@ -179,6 +180,7 @@ class SalesReturnController extends Controller
             }
 
             $return->update(['status' => 'completed']);
+            $this->refreshAffectedInvoiceStatuses($return);
         });
 
         return back()->with('success', 'Proses Retur Penjualan telah diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
@@ -194,5 +196,29 @@ class SalesReturnController extends Controller
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
     }
-}
 
+    private function refreshAffectedInvoiceStatuses(SalesReturn $return): void
+    {
+        $deliveryItemIds = $return->items->pluck('delivery_item_id')->filter()->unique();
+
+        if ($deliveryItemIds->isEmpty()) {
+            return;
+        }
+
+        SalesInvoice::with(['items', 'payments'])
+            ->whereHas('items', fn($query) => $query->whereIn('delivery_item_id', $deliveryItemIds))
+            ->get()
+            ->each(function (SalesInvoice $invoice) {
+                $invoice->update(['status' => $this->statusFromOutstanding($invoice)]);
+            });
+    }
+
+    private function statusFromOutstanding(SalesInvoice $invoice): string
+    {
+        if ($invoice->outstanding_amount <= 0.01) {
+            return 'paid';
+        }
+
+        return $invoice->total_paid > 0 ? 'partial' : 'unpaid';
+    }
+}

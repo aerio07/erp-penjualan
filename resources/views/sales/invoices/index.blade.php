@@ -40,7 +40,7 @@
                         <th>Ref. SO</th>
                         <x-sortable-header column="invoice_date" title="Tgl Invoice" />
                         <x-sortable-header column="due_date" title="Jatuh Tempo" />
-                        <x-sortable-header column="total_amount" title="Total Tagihan" align="right" />
+                        <x-sortable-header column="total_amount" title="Tagihan Efektif" align="right" />
                         <th style="text-align:right;">Sisa Piutang</th>
                         <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>
@@ -70,7 +70,14 @@
                                 {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}
                             </span>
                         </td>
-                        <td style="text-align:right; font-weight:600;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
+                        <td style="text-align:right; font-weight:600;">
+                            Rp {{ number_format($inv->effective_total_amount, 0, ',', '.') }}
+                            @if($inv->total_reversed_amount > 0)
+                                <div style="font-size:11px; color:var(--text-secondary); font-weight:400;">
+                                    Retur: Rp {{ number_format($inv->total_reversed_amount, 0, ',', '.') }}
+                                </div>
+                            @endif
+                        </td>
                         <td style="text-align:right; font-weight:600; color:{{ $inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)' }};">
                             Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
                         </td>

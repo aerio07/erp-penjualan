@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PurchaseInvoice extends Model
 {
-    protected $appends = ['total_paid', 'outstanding_amount'];
+    protected $appends = ['total_paid', 'total_reversed_amount', 'effective_total_amount', 'outstanding_amount'];
 
     protected $fillable = [
         'invoice_number', 'purchase_order_id', 'supplier_invoice_number',
@@ -49,8 +49,29 @@ class PurchaseInvoice extends Model
         return (float) $this->payments()->sum('amount');
     }
 
+    public function getTotalReversedAmountAttribute(): float
+    {
+        $items = $this->relationLoaded('items') ? $this->items : $this->items()->get();
+
+        return round((float) $items->sum(function (PurchaseInvoiceItem $item) {
+            if ($item->qty_invoiced <= 0 || $item->reversed_qty <= 0) {
+                return 0;
+            }
+
+            $reversedQty = min((int) $item->reversed_qty, (int) $item->qty_invoiced);
+            $lineTotal = (float) $item->subtotal + (float) $item->tax_amount;
+
+            return ($lineTotal / (int) $item->qty_invoiced) * $reversedQty;
+        }), 2);
+    }
+
+    public function getEffectiveTotalAmountAttribute(): float
+    {
+        return max(0, round((float) $this->total_amount - $this->total_reversed_amount, 2));
+    }
+
     public function getOutstandingAmountAttribute(): float
     {
-        return max(0, (float) $this->total_amount - $this->total_paid);
+        return max(0, round($this->effective_total_amount - $this->total_paid, 2));
     }
 }

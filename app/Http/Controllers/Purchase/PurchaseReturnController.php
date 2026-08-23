@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Purchase;
 use App\Http\Controllers\Controller;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
+use App\Models\PurchaseInvoice;
 use App\Models\PurchaseReturn;
 use App\Models\PurchaseReturnItem;
 use App\Services\JournalService;
@@ -181,6 +182,7 @@ class PurchaseReturnController extends Controller
             }
 
             $return->update(['status' => 'completed']);
+            $this->refreshAffectedInvoiceStatuses($return);
         });
 
         return back()->with('success', 'Retur Pembelian selesai. Stok gudang dikurangi dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
@@ -196,5 +198,29 @@ class PurchaseReturnController extends Controller
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
     }
-}
 
+    private function refreshAffectedInvoiceStatuses(PurchaseReturn $return): void
+    {
+        $goodsReceiptItemIds = $return->items->pluck('goods_receipt_item_id')->filter()->unique();
+
+        if ($goodsReceiptItemIds->isEmpty()) {
+            return;
+        }
+
+        PurchaseInvoice::with(['items', 'payments'])
+            ->whereHas('items', fn($query) => $query->whereIn('goods_receipt_item_id', $goodsReceiptItemIds))
+            ->get()
+            ->each(function (PurchaseInvoice $invoice) {
+                $invoice->update(['status' => $this->statusFromOutstanding($invoice)]);
+            });
+    }
+
+    private function statusFromOutstanding(PurchaseInvoice $invoice): string
+    {
+        if ($invoice->outstanding_amount <= 0.01) {
+            return 'paid';
+        }
+
+        return $invoice->total_paid > 0 ? 'partial' : 'unpaid';
+    }
+}

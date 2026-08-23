@@ -57,10 +57,11 @@ class CustomerController extends Controller
     {
         $customer->load(['salesOrders' => fn($q) => $q->latest()->limit(10)]);
         $totalSales       = $customer->salesOrders()->sum('total_amount');
-        $outstandingDebt  = $customer->salesOrders()
-            ->join('sales_invoices', 'sales_orders.id', '=', 'sales_invoices.sales_order_id')
-            ->where('sales_invoices.status', '!=', 'paid')
-            ->sum('sales_invoices.total_amount');
+        $outstandingDebt  = \App\Models\SalesInvoice::with(['payments', 'items'])
+            ->whereHas('salesOrder', fn($q) => $q->where('customer_id', $customer->id))
+            ->where('status', '!=', 'paid')
+            ->get()
+            ->sum->outstanding_amount;
 
         return view('master.customers.show', compact('customer', 'totalSales', 'outstandingDebt'));
     }

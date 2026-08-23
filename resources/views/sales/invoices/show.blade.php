@@ -70,9 +70,19 @@
                     </div>
                     <hr style="border:none; border-top:1px solid var(--border);">
                     <div style="display:flex; justify-content:space-between; font-weight:700;">
-                        <span>Total Tagihan</span>
+                        <span>Total Tagihan Awal</span>
                         <span style="color:var(--primary);">Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
                     </div>
+                    @if($invoice->total_reversed_amount > 0)
+                    <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                        <span>Pengurang Retur</span>
+                        <span>- Rp {{ number_format($invoice->total_reversed_amount, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-weight:700;">
+                        <span>Total Tagihan Efektif</span>
+                        <span style="color:var(--primary);">Rp {{ number_format($invoice->effective_total_amount, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
                     <div style="display:flex; justify-content:space-between; color:var(--success);">
                         <span>Total Diterima</span>
                         <span>Rp {{ number_format($invoice->total_paid, 0, ',', '.') }}</span>

@@ -70,7 +70,7 @@
                         <th>Tgl Invoice</th>
                         <th>Jatuh Tempo</th>
                         <th style="text-align:center;">Umur (Aging)</th>
-                        <th style="text-align:right;">Total Tagihan</th>
+                        <th style="text-align:right;">Tagihan Efektif</th>
                         <th style="text-align:right;">Sisa Hutang</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
@@ -99,7 +99,14 @@
                                 <span class="badge badge-cancelled" style="background:#7f1d1d; color:#ffffff;">> 90 Hari</span>
                             @endif
                         </td>
-                        <td style="text-align:right;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
+                        <td style="text-align:right;">
+                            Rp {{ number_format($inv->effective_total_amount, 0, ',', '.') }}
+                            @if($inv->total_reversed_amount > 0)
+                                <div style="font-size:11px; color:var(--text-secondary);">
+                                    Retur: Rp {{ number_format($inv->total_reversed_amount, 0, ',', '.') }}
+                                </div>
+                            @endif
+                        </td>
                         <td style="text-align:right; font-weight:700; color:var(--danger);">
                             Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
                         </td>

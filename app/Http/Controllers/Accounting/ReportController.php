@@ -168,13 +168,10 @@ class ReportController extends Controller
      */
     public function receivables(Request $request): View
     {
-        $openInvoices = SalesInvoice::with(['salesOrder.customer', 'payments'])
+        $openInvoices = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->get()
             ->map(function ($inv) {
-                $paid = $inv->payments->sum('amount');
-                $inv->outstanding_amount = max(0, (float) $inv->total_amount - (float) $paid);
-
                 // DATEDIFF(today, due_date)
                 $dueDate = Carbon::parse($inv->due_date);
                 $today   = Carbon::today();
@@ -216,13 +213,10 @@ class ReportController extends Controller
      */
     public function payables(Request $request): View
     {
-        $openInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments'])
+        $openInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->get()
             ->map(function ($inv) {
-                $paid = $inv->payments->sum('amount');
-                $inv->outstanding_amount = max(0, (float) $inv->total_amount - (float) $paid);
-
                 $dueDate = Carbon::parse($inv->due_date);
                 $today   = Carbon::today();
                 $inv->days_overdue = $dueDate->diffInDays($today, false);

@@ -38,10 +38,12 @@ class PurchasePaymentController extends Controller
     public function create(Request $request): View
     {
         $selectedInvoiceId = $request->query('invoice_id');
-        $unpaidInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments'])
+        $unpaidInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
+            ->values();
 
         return view('purchase.payments.create', compact('unpaidInvoices', 'selectedInvoiceId'));
     }
@@ -76,7 +78,7 @@ class PurchasePaymentController extends Controller
 
             // Update status invoice
             $newTotalPaid = $invoice->total_paid + $request->amount;
-            $status = ($newTotalPaid >= $invoice->total_amount - 0.01) ? 'paid' : 'partial';
+            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : 'partial';
             $invoice->update(['status' => $status]);
 
             // Jurnal Otomatis (Hutang Usaha -> Kas/Bank)

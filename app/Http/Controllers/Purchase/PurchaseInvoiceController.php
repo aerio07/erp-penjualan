@@ -24,7 +24,7 @@ class PurchaseInvoiceController extends Controller
 
     public function index(Request $request): View
     {
-        $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments']);
+        $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items']);
 
         $query = $this->applySearch($query, $request, ['invoice_number', 'supplier_invoice_number', 'purchaseOrder.po_number', 'purchaseOrder.supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -52,7 +52,9 @@ class PurchaseInvoiceController extends Controller
                 $q->whereColumn('qty_received', '>', 'invoiced_qty');
             })
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->filter(fn($order) => $this->availableQtyForInvoice($order) > 0)
+            ->values();
 
         return view('purchase.invoices.create', compact('orders', 'selectedPoId'));
     }
@@ -74,7 +76,7 @@ class PurchaseInvoiceController extends Controller
                 ->findOrFail($request->purchase_order_id);
 
             // 3-Way Match: Pastikan ada barang lolos QC yang BELUM pernah di-invoice
-            $totalUnbilledQty = $po->items->sum('qty_unbilled');
+            $totalUnbilledQty = $this->availableQtyForInvoice($po);
             if ($totalUnbilledQty <= 0) {
                 return back()
                     ->with('error', 'Semua barang yang diterima dalam kondisi baik pada PO ini sudah pernah diterbitkan Invoice-nya (tidak ada sisa yang belum ditagih).')
@@ -87,13 +89,13 @@ class PurchaseInvoiceController extends Controller
             $taxRate = (float) $request->tax_rate;
 
             foreach ($po->items as $item) {
-                $qtyToBill = $item->qty_unbilled;
+                $qtyToBill = (int) $item->goodsReceiptItems->sum(fn($grnItem) => $grnItem->qty_available_for_invoice);
                 if ($qtyToBill <= 0) continue;
 
                 // Split per Goods Receipt Item untuk audit trail fisik yang presisi
                 $neededToInvoice = $qtyToBill;
                 foreach ($item->goodsReceiptItems as $grnItem) {
-                    $availableInThisGrn = max(0, $grnItem->qty_received - ($grnItem->invoiced_qty ?? 0));
+                    $availableInThisGrn = $grnItem->qty_available_for_invoice;
                     if ($availableInThisGrn > 0 && $neededToInvoice > 0) {
                         $qtyThisGrn = min($neededToInvoice, $availableInThisGrn);
                         $grnItem->increment('invoiced_qty', $qtyThisGrn);
@@ -184,5 +186,14 @@ class PurchaseInvoiceController extends Controller
         $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function availableQtyForInvoice(PurchaseOrder $order): int
+    {
+        return (int) $order->items->sum(
+            fn($item) => $item->goodsReceiptItems->sum(
+                fn($grnItem) => $grnItem->qty_available_for_invoice
+            )
+        );
     }
 }

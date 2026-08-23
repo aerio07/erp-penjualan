@@ -24,7 +24,7 @@ class SalesInvoiceController extends Controller
 
     public function index(Request $request): View
     {
-        $query = SalesInvoice::with(['salesOrder.customer', 'payments']);
+        $query = SalesInvoice::with(['salesOrder.customer', 'payments', 'items']);
 
         $query = $this->applySearch($query, $request, ['invoice_number', 'salesOrder.so_number', 'salesOrder.customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -52,7 +52,9 @@ class SalesInvoiceController extends Controller
                 $q->whereColumn('qty_delivered', '>', 'invoiced_qty');
             })
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->filter(fn($order) => $this->availableQtyForInvoice($order) > 0)
+            ->values();
 
         return view('sales.invoices.create', compact('orders', 'selectedSoId'));
     }
@@ -73,7 +75,7 @@ class SalesInvoiceController extends Controller
                 ->findOrFail($request->sales_order_id);
 
             // 3-Way Match: Pastikan ada barang terkirim yang BELUM pernah di-invoice
-            $totalUnbilledQty = $so->items->sum('qty_unbilled');
+            $totalUnbilledQty = $this->availableQtyForInvoice($so);
             if ($totalUnbilledQty <= 0) {
                 return back()
                     ->with('error', 'Semua barang yang sudah dikirim pada Sales Order ini sudah pernah diterbitkan fakturnya (tidak ada sisa yang belum ditagih).')
@@ -87,13 +89,13 @@ class SalesInvoiceController extends Controller
             $taxRate = (float) $request->tax_rate;
 
             foreach ($so->items as $item) {
-                $qtyToBill = $item->qty_unbilled;
+                $qtyToBill = (int) $item->deliveryItems->sum(fn($delItem) => $delItem->qty_available_for_invoice);
                 if ($qtyToBill <= 0) continue;
 
                 // Split per Delivery Item untuk audit trail fisik yang presisi
                 $neededToInvoice = $qtyToBill;
                 foreach ($item->deliveryItems as $delItem) {
-                    $availableInThisDel = max(0, $delItem->qty_delivered - ($delItem->invoiced_qty ?? 0));
+                    $availableInThisDel = $delItem->qty_available_for_invoice;
                     if ($availableInThisDel > 0 && $neededToInvoice > 0) {
                         $qtyThisDel = min($neededToInvoice, $availableInThisDel);
                         $delItem->increment('invoiced_qty', $qtyThisDel);
@@ -188,5 +190,14 @@ class SalesInvoiceController extends Controller
         $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function availableQtyForInvoice(SalesOrder $order): int
+    {
+        return (int) $order->items->sum(
+            fn($item) => $item->deliveryItems->sum(
+                fn($deliveryItem) => $deliveryItem->qty_available_for_invoice
+            )
+        );
     }
 }

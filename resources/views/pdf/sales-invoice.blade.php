@@ -99,7 +99,10 @@
             <div class="total-section">
                 <div class="total-row"><span>Subtotal (DPP):</span><span>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span></div>
                 <div class="total-row"><span>PPN ({{ $invoice->tax_rate }}%):</span><span>Rp {{ number_format($invoice->tax_amount, 0, ',', '.') }}</span></div>
-                <div class="total-row total-grand"><span>TOTAL TAGIHAN:</span><span>Rp {{ number_format($invoice->total_amount, 0, ',', '.') }}</span></div>
+                <div class="total-row total-grand"><span>TOTAL TAGIHAN:</span><span>Rp {{ number_format($invoice->effective_total_amount, 0, ',', '.') }}</span></div>
+                @if($invoice->total_reversed_amount > 0)
+                <div class="total-row" style="color:#dc2626; font-weight:600; margin-top:6px;"><span>Pengurang Retur:</span><span>- Rp {{ number_format($invoice->total_reversed_amount, 0, ',', '.') }}</span></div>
+                @endif
                 <div class="total-row" style="color:#059669; font-weight:600; margin-top:6px;"><span>Sudah Dibayar:</span><span>Rp {{ number_format($invoice->total_paid, 0, ',', '.') }}</span></div>
                 <div class="total-row" style="color:#dc2626; font-weight:700;"><span>Sisa Piutang:</span><span>Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }}</span></div>
             </div>

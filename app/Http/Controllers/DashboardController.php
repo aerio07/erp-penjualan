@@ -41,19 +41,23 @@ class DashboardController extends Controller
         $aktivitas = $this->getAktivitasTerbaru();
 
         // Extra info untuk list preview jatuh tempo & low stock
-        $upcomingReceivables = SalesInvoice::with('salesOrder.customer')
+        $upcomingReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->where('due_date', '<=', now()->addDays(7))
             ->orderBy('due_date')
-            ->limit(5)
-            ->get();
+            ->get()
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
+            ->take(5)
+            ->values();
 
-        $upcomingPayables = PurchaseInvoice::with('purchaseOrder.supplier')
+        $upcomingPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->where('due_date', '<=', now()->addDays(7))
             ->orderBy('due_date')
-            ->limit(5)
-            ->get();
+            ->get()
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
+            ->take(5)
+            ->values();
 
         $lowStockProducts = $this->stockService->getLowStockProducts()->take(5);
 
@@ -75,12 +79,18 @@ class DashboardController extends Controller
 
     private function getTotalPiutang(): float
     {
-        return (float) SalesInvoice::where('status', '!=', 'paid')->get()->sum->outstanding_amount;
+        return (float) SalesInvoice::with(['payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->get()
+            ->sum->outstanding_amount;
     }
 
     private function getTotalHutang(): float
     {
-        return (float) PurchaseInvoice::where('status', '!=', 'paid')->get()->sum->outstanding_amount;
+        return (float) PurchaseInvoice::with(['payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->get()
+            ->sum->outstanding_amount;
     }
 
     private function getLabaBulanIni(): float
@@ -177,12 +187,18 @@ class DashboardController extends Controller
 
         $poApprovalCount = PurchaseOrder::where('status', 'waiting_approval')->count();
 
-        $dueReceivablesCount = SalesInvoice::where('status', '!=', 'paid')
+        $dueReceivablesCount = SalesInvoice::with(['payments', 'items'])
+            ->where('status', '!=', 'paid')
             ->where('due_date', '<=', now()->addDays(7))
+            ->get()
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
             ->count();
 
-        $duePayablesCount = PurchaseInvoice::where('status', '!=', 'paid')
+        $duePayablesCount = PurchaseInvoice::with(['payments', 'items'])
+            ->where('status', '!=', 'paid')
             ->where('due_date', '<=', now()->addDays(7))
+            ->get()
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
             ->count();
 
         return [
@@ -206,7 +222,7 @@ class DashboardController extends Controller
                 'color'      => '#10b981',
                 'ref'        => $inv->invoice_number,
                 'desc'       => 'Invoice ke ' . ($inv->salesOrder->customer->name ?? 'Customer'),
-                'amount'     => $inv->total_amount,
+                'amount'     => $inv->effective_total_amount,
                 'status'     => $inv->status,
                 'created_at' => $inv->created_at,
                 'url'        => route('sales.invoices.show', $inv->id),
