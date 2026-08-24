@@ -35,18 +35,49 @@ class CustomerController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $existingCust = $request->filled('code') 
+            ? Customer::where('code', trim($request->code))->first() 
+            : null;
+
+        $customCodeMsg = $existingCust 
+            ? "Kode customer \"{$request->code}\" sudah digunakan oleh customer \"{$existingCust->name}\"." 
+            : 'Kode customer ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+
         $request->validate([
-            'code'           => 'required|unique:customers,code',
-            'name'           => 'required|string',
-            'contact_person' => 'nullable|string',
-            'phone'          => 'nullable|string',
-            'address'        => 'nullable|string',
-            'credit_limit'   => 'nullable|numeric|min:0',
-            'payment_term'   => 'nullable|string',
+            'code'           => 'required|string|max:50|unique:customers,code',
+            'name'           => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone'          => 'required|string|max:50',
+            'email'          => 'nullable|email|max:255',
+            'payment_term'   => 'required|string|max:50',
+            'credit_limit'   => 'required|numeric|min:0',
+            'npwp'           => 'required|string|max:50',
+            'address'        => 'required|string',
+        ], [
+            'code.required'         => 'Kode customer wajib diisi.',
+            'code.unique'           => $customCodeMsg,
+            'name.required'         => 'Nama customer wajib diisi.',
+            'phone.required'        => 'Nomor telepon customer wajib diisi.',
+            'payment_term.required' => 'Payment term (syarat pembayaran) wajib dipilih.',
+            'credit_limit.required' => 'Credit limit (plafon kredit) wajib diisi.',
+            'credit_limit.numeric'  => 'Credit limit harus berupa angka nominal.',
+            'credit_limit.min'      => 'Credit limit tidak boleh bernilai negatif.',
+            'npwp.required'         => 'Nomor NPWP customer wajib diisi.',
+            'address.required'      => 'Alamat customer wajib diisi.',
+            'email.email'           => 'Format email tidak valid.',
         ]);
 
-        Customer::create($request->only('code', 'name', 'contact_person', 'phone', 'address', 'email', 'npwp', 'credit_limit', 'payment_term') + [
-            'is_active' => $request->boolean('is_active', true),
+        Customer::create([
+            'code'           => strtoupper(trim($request->code)),
+            'name'           => trim($request->name),
+            'contact_person' => $request->contact_person ? trim($request->contact_person) : null,
+            'phone'          => trim($request->phone),
+            'email'          => $request->email ? trim($request->email) : null,
+            'payment_term'   => $request->payment_term,
+            'credit_limit'   => $request->credit_limit ?? 0,
+            'npwp'           => trim($request->npwp),
+            'address'        => trim($request->address),
+            'is_active'      => $request->boolean('is_active', true),
         ]);
 
         return redirect()->route('master.customers.index')
@@ -73,26 +104,81 @@ class CustomerController extends Controller
 
     public function update(Request $request, Customer $customer): RedirectResponse
     {
+        $existingCust = $request->filled('code') 
+            ? Customer::where('code', trim($request->code))->where('id', '!=', $customer->id)->first() 
+            : null;
+
+        $customCodeMsg = $existingCust 
+            ? "Kode customer \"{$request->code}\" sudah digunakan oleh customer \"{$existingCust->name}\"." 
+            : 'Kode customer ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+
         $request->validate([
-            'code' => 'required|unique:customers,code,' . $customer->id,
-            'name' => 'required|string',
+            'code'           => 'required|string|max:50|unique:customers,code,' . $customer->id,
+            'name'           => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'phone'          => 'required|string|max:50',
+            'email'          => 'nullable|email|max:255',
+            'payment_term'   => 'required|string|max:50',
+            'credit_limit'   => 'required|numeric|min:0',
+            'npwp'           => 'required|string|max:50',
+            'address'        => 'required|string',
+        ], [
+            'code.required'         => 'Kode customer wajib diisi.',
+            'code.unique'           => $customCodeMsg,
+            'name.required'         => 'Nama customer wajib diisi.',
+            'phone.required'        => 'Nomor telepon customer wajib diisi.',
+            'payment_term.required' => 'Payment term (syarat pembayaran) wajib dipilih.',
+            'credit_limit.required' => 'Credit limit (plafon kredit) wajib diisi.',
+            'credit_limit.numeric'  => 'Credit limit harus berupa angka nominal.',
+            'credit_limit.min'      => 'Credit limit tidak boleh bernilai negatif.',
+            'npwp.required'         => 'Nomor NPWP customer wajib diisi.',
+            'address.required'      => 'Alamat customer wajib diisi.',
+            'email.email'           => 'Format email tidak valid.',
         ]);
 
-        $customer->update($request->only('code', 'name', 'contact_person', 'phone', 'address', 'email', 'npwp', 'credit_limit', 'payment_term') + [
-            'is_active' => $request->boolean('is_active', true),
+        $customer->update([
+            'code'           => strtoupper(trim($request->code)),
+            'name'           => trim($request->name),
+            'contact_person' => $request->contact_person ? trim($request->contact_person) : null,
+            'phone'          => trim($request->phone),
+            'email'          => $request->email ? trim($request->email) : null,
+            'payment_term'   => $request->payment_term,
+            'credit_limit'   => $request->credit_limit ?? 0,
+            'npwp'           => trim($request->npwp),
+            'address'        => trim($request->address),
+            'is_active'      => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('master.customers.index')
             ->with('success', 'Customer berhasil diperbarui.');
     }
 
+    public function toggleStatus(Customer $customer): RedirectResponse
+    {
+        $customer->update([
+            'is_active' => !$customer->is_active,
+        ]);
+
+        $statusLabel = $customer->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        return back()->with('success', "Status customer \"{$customer->name}\" berhasil {$statusLabel}.");
+    }
+
     public function destroy(Customer $customer): RedirectResponse
     {
-        if ($customer->salesOrders()->exists()) {
-            return back()->with('error', 'Customer tidak dapat dihapus karena sudah memiliki riwayat penjualan.');
+        $hasSOs     = $customer->salesOrders()->exists();
+        $hasReturns = $customer->salesReturns()->exists();
+
+        if ($hasSOs || $hasReturns) {
+            return back()->with('error', "Customer \"{$customer->name}\" ({$customer->code}) tidak dapat dihapus karena sudah memiliki riwayat penjualan/transaksi. Anda dapat menonaktifkan customer ini sebagai gantinya.");
         }
-        $customer->delete();
-        return redirect()->route('master.customers.index')
-            ->with('success', 'Customer berhasil dihapus.');
+
+        try {
+            $custName = $customer->name;
+            $customer->delete();
+            return redirect()->route('master.customers.index')
+                ->with('success', "Customer \"{$custName}\" berhasil dihapus.");
+        } catch (\Exception $e) {
+            return back()->with('error', "Gagal menghapus customer: " . $e->getMessage());
+        }
     }
 }

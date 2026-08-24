@@ -173,7 +173,14 @@
             color: #0e1b35 !important;
             font-family: 'Public Sans', sans-serif !important;
         }
-        .form-control, input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], select, textarea {
+        .form-control, 
+        main input[type="text"], 
+        main input[type="number"], 
+        main input[type="email"], 
+        main input[type="password"], 
+        main input[type="date"], 
+        main select, 
+        main textarea {
             display: block !important;
             width: 100% !important;
             height: 40px !important;
@@ -186,12 +193,12 @@
             box-sizing: border-box !important;
             font-family: 'Inter', sans-serif !important;
         }
-        textarea, textarea.form-control {
+        main textarea, textarea.form-control {
             height: auto !important;
             min-height: 90px !important;
             padding: 0.625rem 0.875rem !important;
         }
-        select, select.form-control {
+        main select, select.form-control {
             cursor: pointer !important;
         }
         .form-text {
@@ -209,7 +216,7 @@
             margin-top: 0.5rem !important;
             margin-bottom: 0.5rem !important;
         }
-        .form-check-input, input[type="checkbox"] {
+        .form-check-input, main input[type="checkbox"] {
             width: 1.125rem !important;
             height: 1.125rem !important;
             margin: 0 !important;
@@ -224,6 +231,20 @@
             text-transform: none !important;
             letter-spacing: normal !important;
             color: #0e1b35 !important;
+        }
+
+        /* SweetAlert2 Input Reset */
+        .swal2-container input:not(.swal2-input),
+        .swal2-container textarea:not(.swal2-textarea),
+        .swal2-container select:not(.swal2-select),
+        .swal2-container .swal2-input[style*="display: none"],
+        .swal2-container .swal2-file[style*="display: none"],
+        .swal2-container .swal2-range[style*="display: none"],
+        .swal2-container .swal2-select[style*="display: none"],
+        .swal2-container .swal2-radio[style*="display: none"],
+        .swal2-container .swal2-checkbox[style*="display: none"],
+        .swal2-container .swal2-textarea[style*="display: none"] {
+            display: none !important;
         }
 
         /* Multi-Column Form Grid Layouts */
@@ -380,6 +401,74 @@
             padding: 0 !important;
             border-radius: 0.375rem !important;
         }
+
+        /* SweetAlert2 Modal Styling */
+        .swal2-popup.erp-swal-modal {
+            font-family: 'Inter', sans-serif !important;
+            border-radius: 16px !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+            border: 1px solid #E2E8F0 !important;
+            width: 440px !important;
+            max-width: 90vw !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-title {
+            font-family: 'Public Sans', sans-serif !important;
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #0e1b35 !important;
+            padding: 0 !important;
+            margin-bottom: 6px !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-html-container {
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.875rem !important;
+            color: #475569 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            line-height: 1.5 !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-icon {
+            margin: 4px auto 16px !important;
+            transform: scale(0.85) !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-actions {
+            margin-top: 20px !important;
+            gap: 10px !important;
+            width: 100% !important;
+            justify-content: center !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-confirm {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+            padding: 10px 20px !important;
+            border: none !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            cursor: pointer !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-confirm:hover {
+            background-color: #b91c1c !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-cancel {
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+            padding: 10px 20px !important;
+            cursor: pointer !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-cancel:hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
     </style>
     @stack('styles')
 </head>
@@ -417,6 +506,7 @@
                 </button>
                 <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('master.products.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.products.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Produk</a>
+                    <a href="{{ route('master.categories.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.categories.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kategori Produk</a>
                     <a href="{{ route('master.warehouses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.warehouses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Gudang</a>
                     <a href="{{ route('master.suppliers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.suppliers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Supplier</a>
                     <a href="{{ route('master.customers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.customers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Customer</a>
@@ -439,6 +529,7 @@
                     <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
                 <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                    <a href="{{ route('purchase.demands.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.demands.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kebutuhan Pengadaan</a>
                     <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
                     <a href="{{ route('purchase.goods-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.goods-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Barang</a>
                     <a href="{{ route('purchase.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Pembelian</a>
@@ -611,17 +702,41 @@
         document.querySelectorAll('[data-confirm-delete]').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
-                const form = document.getElementById(this.dataset.confirmDelete);
+                const formId = this.dataset.confirmDelete;
+                const form = document.getElementById(formId);
+                if (!form) return;
+
+                const itemName = this.dataset.name || this.dataset.productName || '';
+                
+                const messageHtml = itemName 
+                    ? `<div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:10px; padding:12px 16px; margin:14px 0 10px 0; text-align:left;">
+                         <div style="font-size:11px; color:#991b1b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Item yang akan dihapus:</div>
+                         <div style="font-weight:700; font-size:15px; color:#1e293b; word-break:break-word;">${itemName}</div>
+                       </div>
+                       <div style="font-size:13px; color:#64748b; margin-top:8px;">
+                         <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626; margin-right:4px;"></i> Data yang dihapus <strong>tidak dapat dipulihkan</strong>.
+                       </div>` 
+                    : '<div style="font-size:14px; color:#64748b; margin-top:8px;">Data yang dihapus <strong>tidak dapat dipulihkan</strong>!</div>';
+
                 Swal.fire({
                     title: 'Konfirmasi Hapus',
-                    text: 'Data yang dihapus tidak dapat dikembalikan!',
+                    html: messageHtml,
                     icon: 'warning',
+                    iconColor: '#dc2626',
                     showCancelButton: true,
-                    confirmButtonColor: '#ba1a1a',
-                    cancelButtonColor: '#75777f',
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((r) => { if (r.isConfirmed) form.submit(); });
+                    confirmButtonText: '<i class="fa-solid fa-trash" style="font-size:13px;"></i> Ya, Hapus',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    focusCancel: true,
+                    customClass: {
+                        popup: 'erp-swal-modal'
+                    },
+                    buttonsStyling: false
+                }).then((r) => { 
+                    if (r.isConfirmed) {
+                        form.submit(); 
+                    }
+                });
             });
         });
     });

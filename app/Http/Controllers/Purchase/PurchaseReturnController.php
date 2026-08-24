@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Purchase;
 use App\Http\Controllers\Controller;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
-use App\Models\PurchaseInvoice;
+use App\Models\Product;
 use App\Models\PurchaseReturn;
 use App\Models\PurchaseReturnItem;
+use App\Models\Supplier;
 use App\Services\JournalService;
 use App\Services\StockService;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +17,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-use App\Models\Supplier;
 use App\Traits\HasListFilters;
 
 class PurchaseReturnController extends Controller
@@ -53,25 +53,49 @@ class PurchaseReturnController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        // Hitung ketersediaan stok fisik riil di gudang untuk setiap item GRN
+        foreach ($receipts as $grn) {
+            foreach ($grn->items as $item) {
+                $whId = $item->warehouse_id ?? $grn->warehouse_id;
+                $productId = $item->purchaseOrderItem?->product_id;
+
+                if ($productId) {
+                    $onHand    = $this->stockService->getOnHandStock($productId, $whId);
+                    $reserved  = $this->stockService->getReservedStock($productId, $whId);
+                    $available = $this->stockService->getAvailableStock($productId, $whId);
+
+                    $item->physical_on_hand        = $onHand;
+                    $item->physical_reserved       = $reserved;
+                    $item->physical_available      = $available;
+                    $item->max_returnable_accepted = min($item->qty_available_for_return_accepted, $available);
+                } else {
+                    $item->physical_on_hand        = 0;
+                    $item->physical_reserved       = 0;
+                    $item->physical_available      = 0;
+                    $item->max_returnable_accepted = 0;
+                }
+            }
+        }
+
         return view('purchase.returns.create', compact('receipts', 'selectedGrnId'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'goods_receipt_id'           => 'required|exists:goods_receipts,id',
-            'return_date'                => 'required|date',
-            'reason'                     => 'nullable|string',
-            'notes'                      => 'nullable|string',
-            'items'                      => 'required|array|min:1',
+            'goods_receipt_id'              => 'required|exists:goods_receipts,id',
+            'return_date'                   => 'required|date',
+            'reason'                        => 'nullable|string',
+            'notes'                         => 'nullable|string',
+            'items'                         => 'required|array|min:1',
             'items.*.goods_receipt_item_id' => 'required|exists:goods_receipt_items,id',
-            'items.*.product_id'         => 'required|exists:products,id',
-            'items.*.source_type'         => 'required|in:accepted,rejected',
-            'items.*.qty'                => 'required|integer|min:0',
-            'items.*.unit_cost'          => 'required|numeric|min:0',
+            'items.*.product_id'            => 'required|exists:products,id',
+            'items.*.source_type'           => 'required|in:accepted,rejected',
+            'items.*.qty'                   => 'required|integer|min:0',
+            'items.*.unit_cost'             => 'required|numeric|min:0',
         ]);
 
-        $grn = GoodsReceipt::with('purchaseOrder')->findOrFail($request->goods_receipt_id);
+        $grn = GoodsReceipt::with(['purchaseOrder', 'warehouse'])->findOrFail($request->goods_receipt_id);
 
         $hasAnyQty = false;
         foreach ($request->items as $itemData) {
@@ -85,15 +109,39 @@ class PurchaseReturnController extends Controller
             abort_if($grnItem->goods_receipt_id !== $grn->id, 422, 'Item retur tidak sesuai dengan GRN yang dipilih.');
             abort_if($grnItem->purchaseOrderItem->product_id !== (int) $itemData['product_id'], 422, 'Produk retur tidak sesuai dengan item GRN.');
 
-            $available = $itemData['source_type'] === 'accepted'
-                ? $grnItem->qty_available_for_return_accepted
-                : $grnItem->qty_available_for_return_rejected;
+            $product = $grnItem->purchaseOrderItem->product;
+            $warehouseId = $grnItem->warehouse_id ?? $grn->warehouse_id;
 
-            if ($qty > $available) {
-                $sourceLabel = $itemData['source_type'] === 'accepted' ? 'diterima stok' : 'rusak/reject';
-                return back()
-                    ->with('error', "Qty retur '{$grnItem->purchaseOrderItem->product->name}' ({$sourceLabel}) melebihi sisa yang bisa diretur. Sisa: {$available}, diinput: {$qty}.")
-                    ->withInput();
+            if ($itemData['source_type'] === 'accepted') {
+                $grnQuotaRemaining = $grnItem->qty_available_for_return_accepted;
+                $physicalAvailable = $this->stockService->getAvailableStock($product->id, $warehouseId);
+                $maxReturnable     = min($grnQuotaRemaining, $physicalAvailable);
+
+                if ($qty > $maxReturnable) {
+                    if ($physicalAvailable <= 0) {
+                        return back()
+                            ->with('error', "Gagal membuat retur '{$product->name}'. Stok fisik di gudang saat ini 0 {$product->unit} (barang telah habis terjual/dikirim ke pelanggan atau di-booking Sales Order). Barang tidak dapat diretur ke supplier.")
+                            ->withInput();
+                    }
+
+                    if ($qty > $physicalAvailable) {
+                        return back()
+                            ->with('error', "Qty retur '{$product->name}' ({$qty} {$product->unit}) melebihi stok fisik bebas yang ada di gudang ({$physicalAvailable} {$product->unit}).")
+                            ->withInput();
+                    }
+
+                    return back()
+                        ->with('error', "Qty retur '{$product->name}' (diterima stok) melebihi kuota sisa GRN yang bisa diretur ({$grnQuotaRemaining} {$product->unit}).")
+                        ->withInput();
+                }
+            } else {
+                // source_type === 'rejected'
+                $available = $grnItem->qty_available_for_return_rejected;
+                if ($qty > $available) {
+                    return back()
+                        ->with('error', "Qty retur '{$product->name}' (rusak/reject) melebihi sisa yang bisa diretur. Sisa: {$available}, diinput: {$qty}.")
+                        ->withInput();
+                }
             }
         }
 
@@ -140,24 +188,47 @@ class PurchaseReturnController extends Controller
 
     public function send(PurchaseReturn $return): RedirectResponse
     {
-        abort_if($return->status !== 'draft', 403, 'Hanya retur draft yang dapat dikirim.');
+        return DB::transaction(function () use ($return) {
+            $return = PurchaseReturn::with(['goodsReceipt', 'items.product', 'items.goodsReceiptItem'])->lockForUpdate()->findOrFail($return->id);
+            abort_if($return->status !== 'draft', 403, 'Hanya retur draft yang dapat dikirim.');
 
-        $return->update(['status' => 'sent']);
+            $grn = $return->goodsReceipt;
+            foreach ($return->items as $item) {
+                if ($item->source_type === 'accepted') {
+                    $warehouseId = $item->goodsReceiptItem?->warehouse_id ?? $grn->warehouse_id;
+                    $onHand = $this->stockService->getOnHandStock($item->product_id, $warehouseId);
+                    if ($item->qty > $onHand) {
+                        return back()->with('error', "Tidak dapat mengirim retur. Stok fisik '{$item->product->name}' di gudang saat ini ({$onHand}) tidak mencukupi untuk diretur ({$item->qty}).");
+                    }
+                }
+            }
 
-        return back()->with('success', 'Retur Pembelian berhasil ditandai sudah dikirim.');
+            $return->update(['status' => 'sent']);
+
+            return back()->with('success', 'Retur Pembelian berhasil ditandai sudah dikirim ke supplier.');
+        });
     }
 
     public function complete(PurchaseReturn $return): RedirectResponse
     {
         return DB::transaction(function () use ($return) {
-            $return = PurchaseReturn::with(['goodsReceipt', 'items.goodsReceiptItem'])->lockForUpdate()->findOrFail($return->id);
+            $return = PurchaseReturn::with(['goodsReceipt', 'items.product', 'items.goodsReceiptItem'])->lockForUpdate()->findOrFail($return->id);
             abort_if($return->status === 'completed', 403, 'Retur sudah selesai.');
 
             $grn = $return->goodsReceipt;
 
+            // Lock involved products to serialize inventory deduction
+            $productIds = $return->items->pluck('product_id')->unique()->toArray();
+            Product::whereIn('id', $productIds)->lockForUpdate()->get();
+
             foreach ($return->items as $item) {
                 if ($item->source_type === 'accepted') {
                     $warehouseId = $item->goodsReceiptItem?->warehouse_id ?? $grn->warehouse_id;
+                    $currentOnHand = $this->stockService->getOnHandStock($item->product_id, $warehouseId);
+
+                    if ($item->qty > $currentOnHand) {
+                        return back()->with('error', "Gagal menyelesaikan retur. Stok fisik '{$item->product->name}' di gudang ({$currentOnHand}) tidak mencukupi untuk diretur ({$item->qty}). Barang kemungkinan sudah terpakai untuk transaksi lain.");
+                    }
 
                     // Barang accepted pernah masuk stok, jadi saat retur stok harus dikurangi dari gudang tersebut.
                     $this->stockService->recordMovement([
@@ -176,51 +247,22 @@ class PurchaseReturnController extends Controller
             }
 
             // Auto-journaling: balik hutang/PPN/persediaan proporsional (skip jika belum di-invoice)
-            $entry = $this->journalService->createFromPurchaseReturn($return);
-            if ($entry) {
-                $this->journalService->postEntry($entry);
-            }
+            $this->journalService->createFromPurchaseReturn($return);
 
             $return->update(['status' => 'completed']);
-            $this->refreshAffectedInvoiceStatuses($return);
 
-            return back()->with('success', 'Retur Pembelian selesai. Stok gudang dikurangi dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
+            return back()->with('success', 'Retur Pembelian berhasil diselesaikan dan stok persediaan telah diperbarui.');
         });
     }
 
     private function generateNumber(): string
     {
-        $prefix = 'PRET-' . date('Ym') . '-';
+        $prefix = 'RET-' . date('Ym') . '-';
         $last   = PurchaseReturn::where('return_number', 'like', $prefix . '%')
             ->orderByDesc('id')
             ->value('return_number');
         $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
-    }
-
-    private function refreshAffectedInvoiceStatuses(PurchaseReturn $return): void
-    {
-        $goodsReceiptItemIds = $return->items->pluck('goods_receipt_item_id')->filter()->unique();
-
-        if ($goodsReceiptItemIds->isEmpty()) {
-            return;
-        }
-
-        PurchaseInvoice::with(['items', 'payments'])
-            ->whereHas('items', fn($query) => $query->whereIn('goods_receipt_item_id', $goodsReceiptItemIds))
-            ->get()
-            ->each(function (PurchaseInvoice $invoice) {
-                $invoice->update(['status' => $this->statusFromOutstanding($invoice)]);
-            });
-    }
-
-    private function statusFromOutstanding(PurchaseInvoice $invoice): string
-    {
-        if ($invoice->outstanding_amount <= 0.01) {
-            return 'paid';
-        }
-
-        return $invoice->total_paid > 0 ? 'partial' : 'unpaid';
     }
 }

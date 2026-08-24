@@ -7,15 +7,42 @@
     <div class="page-header">
         <div>
             <h1>{{ $supplier->name }}</h1>
-            <p>{{ $supplier->code }} &nbsp;·&nbsp;
+            <p>Kode: <strong style="color:var(--primary);">{{ $supplier->code }}</strong> &nbsp;·&nbsp;
                 <span class="badge {{ $supplier->is_active ? 'badge-done' : 'badge-cancelled' }}">
                     {{ $supplier->is_active ? 'Aktif' : 'Nonaktif' }}
                 </span>
             </p>
         </div>
-        <div style="display:flex; gap:8px;">
-            <a href="{{ route('master.suppliers.edit', $supplier) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
-            <a href="{{ route('master.suppliers.index') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <form method="POST" action="{{ route('master.suppliers.toggle-status', $supplier) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $supplier->is_active ? 'menonaktifkan' : 'mengaktifkan' }} supplier ini?');">
+                @csrf
+                @method('PATCH')
+                @if($supplier->is_active)
+                    <button type="submit" class="btn btn-secondary" style="color:#b91c1c; border-color:#fca5a5;" title="Nonaktifkan Supplier">
+                        <i class="fa-solid fa-ban"></i> Nonaktifkan
+                    </button>
+                @else
+                    <button type="submit" class="btn btn-primary" style="background:#16a34a; border-color:#16a34a;" title="Aktifkan Supplier">
+                        <i class="fa-solid fa-check"></i> Aktifkan
+                    </button>
+                @endif
+            </form>
+
+            <a href="{{ route('master.suppliers.edit', $supplier) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-pen"></i> Edit
+            </a>
+
+            <button type="button" data-confirm-delete="del-sup-show" data-name="{{ $supplier->name }} ({{ $supplier->code }})" class="btn btn-danger" title="Hapus Supplier">
+                <i class="fa-solid fa-trash"></i> Hapus
+            </button>
+            <form id="del-sup-show" method="POST" action="{{ route('master.suppliers.destroy', $supplier) }}" style="display:none;">
+                @csrf
+                @method('DELETE')
+            </form>
+
+            <a href="{{ route('master.suppliers.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
         </div>
     </div>
 

@@ -15,10 +15,10 @@
     </div>
 
     <x-list-filter-bar :action="route('master.products.index')" placeholder="Cari SKU, Nama Produk, Kategori...">
-        <select name="category" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+        <select name="category_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
             <option value="">Semua Kategori</option>
             @foreach($categories as $cat)
-            <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+            <option value="{{ $cat->id }}" {{ (string) request('category_id') === (string) $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
             @endforeach
         </select>
 
@@ -48,24 +48,68 @@
                 <tbody>
                     @forelse($products as $product)
                     <tr>
-                        <td style="font-weight:600; color:var(--primary);">{{ $product->sku }}</td>
-                        <td>{{ $product->name }}</td>
-                        <td>{{ $product->category ?? '-' }}</td>
+                        <td style="font-weight:600;">
+                            <a href="{{ route('master.products.show', $product) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Produk">
+                                {{ $product->sku }}
+                            </a>
+                        </td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                @if($product->image_url)
+                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">
+                                @else
+                                    <div style="width:36px; height:36px; border-radius:6px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:14px; flex-shrink:0; border:1px solid #e2e8f0;">
+                                        <i class="fa-solid fa-box"></i>
+                                    </div>
+                                @endif
+                                <div>
+                                    <a href="{{ route('master.products.show', $product) }}" style="color:inherit; font-weight:600; text-decoration:none;" title="Lihat Detail Produk">
+                                        {{ $product->name }}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if($product->productCategory)
+                                <a href="{{ route('master.categories.show', $product->productCategory) }}" style="color:var(--primary); font-weight:500; text-decoration:none;">
+                                    {{ $product->productCategory->name }}
+                                </a>
+                            @else
+                                {{ $product->category ?? '-' }}
+                            @endif
+                        </td>
                         <td>{{ $product->unit }}</td>
                         <td style="text-align:right;">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
                         <td style="text-align:right;">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</td>
                         <td style="text-align:center;">{{ $product->min_stock }}</td>
                         <td style="text-align:center;">
-                            <span class="badge {{ $product->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                                {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
-                            </span>
+                            <form method="POST" action="{{ route('master.products.toggle-status', $product) }}" style="display:inline;">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" style="background:none; border:none; padding:0; cursor:pointer;" title="Klik untuk {{ $product->is_active ? 'menonaktifkan' : 'mengaktifkan' }} produk ini">
+                                    <span class="badge {{ $product->is_active ? 'badge-done' : 'badge-cancelled' }}" style="cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                        <i class="fa-solid {{ $product->is_active ? 'fa-check' : 'fa-xmark' }}" style="font-size:10px; margin-right:3px;"></i>
+                                        {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </span>
+                                </button>
+                            </form>
                         </td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:6px; justify-content:center;">
+                                <a href="{{ route('master.products.show', $product) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
                                 <a href="{{ route('master.products.edit', $product) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <button data-confirm-delete="delete-product-{{ $product->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
+                                <form method="POST" action="{{ route('master.products.toggle-status', $product) }}" style="display:inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-icon {{ $product->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $product->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $product->is_active ? 'Nonaktifkan Produk' : 'Aktifkan Produk' }}">
+                                        <i class="fa-solid {{ $product->is_active ? 'fa-ban' : 'fa-check' }}"></i>
+                                    </button>
+                                </form>
+                                <button type="button" data-confirm-delete="delete-product-{{ $product->id }}" data-name="{{ $product->name }} ({{ $product->sku }})" class="btn btn-danger btn-sm btn-icon" title="Hapus Produk">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                                 <form id="delete-product-{{ $product->id }}" method="POST" action="{{ route('master.products.destroy', $product) }}" style="display:none;">

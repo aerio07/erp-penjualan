@@ -39,9 +39,17 @@
                 <tbody>
                     @forelse($suppliers as $s)
                     <tr>
-                        <td style="font-weight:600; color:var(--primary);">{{ $s->code }}</td>
+                        <td style="font-weight:600;">
+                            <a href="{{ route('master.suppliers.show', $s) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Supplier">
+                                {{ $s->code }}
+                            </a>
+                        </td>
                         <td>
-                            <div style="font-weight:500;">{{ $s->name }}</div>
+                            <div style="font-weight:600;">
+                                <a href="{{ route('master.suppliers.show', $s) }}" style="color:inherit; text-decoration:none;" title="Lihat Detail Supplier">
+                                    {{ $s->name }}
+                                </a>
+                            </div>
                             @if($s->email)
                             <div style="font-size:12px; color:var(--text-secondary);">{{ $s->email }}</div>
                             @endif
@@ -56,19 +64,33 @@
                             @endif
                         </td>
                         <td style="text-align:center;">
-                            <span class="badge {{ $s->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                                {{ $s->is_active ? 'Aktif' : 'Nonaktif' }}
-                            </span>
+                            <form method="POST" action="{{ route('master.suppliers.toggle-status', $s) }}" style="display:inline;">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" style="background:none; border:none; padding:0; cursor:pointer;" title="Klik untuk {{ $s->is_active ? 'menonaktifkan' : 'mengaktifkan' }} supplier ini">
+                                    <span class="badge {{ $s->is_active ? 'badge-done' : 'badge-cancelled' }}" style="cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                        <i class="fa-solid {{ $s->is_active ? 'fa-check' : 'fa-xmark' }}" style="font-size:10px; margin-right:3px;"></i>
+                                        {{ $s->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </span>
+                                </button>
+                            </form>
                         </td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:6px; justify-content:center;">
-                                <a href="{{ route('master.suppliers.show', $s) }}" class="btn btn-secondary btn-sm btn-icon" title="Detail">
+                                <a href="{{ route('master.suppliers.show', $s) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
                                 <a href="{{ route('master.suppliers.edit', $s) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <button data-confirm-delete="del-sup-{{ $s->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
+                                <form method="POST" action="{{ route('master.suppliers.toggle-status', $s) }}" style="display:inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-icon {{ $s->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $s->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $s->is_active ? 'Nonaktifkan Supplier' : 'Aktifkan Supplier' }}">
+                                        <i class="fa-solid {{ $s->is_active ? 'fa-ban' : 'fa-check' }}"></i>
+                                    </button>
+                                </form>
+                                <button type="button" data-confirm-delete="del-sup-{{ $s->id }}" data-name="{{ $s->name }} ({{ $s->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                                 <form id="del-sup-{{ $s->id }}" method="POST" action="{{ route('master.suppliers.destroy', $s) }}" style="display:none;">

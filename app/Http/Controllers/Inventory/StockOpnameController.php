@@ -126,6 +126,10 @@ class StockOpnameController extends Controller
                         'notes'          => "Penyesuaian Stock Opname #{$opname->opname_number} (Selisih: {$item->difference})",
                         'user_id'        => Auth::id(),
                     ]);
+
+                    if ($item->difference > 0) {
+                        $this->stockService->allocateStockToPendingDemands($item->product_id, $opname->warehouse_id);
+                    }
                 }
             }
 

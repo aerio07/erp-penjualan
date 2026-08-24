@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 // Master Data
 use App\Http\Controllers\Master\ProductController;
+use App\Http\Controllers\Master\ProductCategoryController;
 use App\Http\Controllers\Master\WarehouseController;
 use App\Http\Controllers\Master\SupplierController;
 use App\Http\Controllers\Master\CustomerController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Master\ChartOfAccountController;
 use App\Http\Controllers\Master\UserController;
 // Purchase
 use App\Http\Controllers\Purchase\PurchaseOrderController;
+use App\Http\Controllers\Purchase\ProcurementDemandController;
 use App\Http\Controllers\Purchase\GoodsReceiptController;
 use App\Http\Controllers\Purchase\PurchaseInvoiceController;
 use App\Http\Controllers\Purchase\PurchaseReturnController;
@@ -51,13 +53,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // MASTER DATA
     // =========================================================
     Route::middleware('role:admin,purchasing,sales,gudang,finance')->prefix('master')->name('master.')->group(function () {
+        Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
         Route::resource('products', ProductController::class);
+        Route::patch('categories/{category}/toggle-status', [ProductCategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+        Route::resource('categories', ProductCategoryController::class);
+        Route::patch('warehouses/{warehouse}/toggle-status', [WarehouseController::class, 'toggleStatus'])->name('warehouses.toggle-status');
         Route::resource('warehouses', WarehouseController::class);
+        Route::patch('suppliers/{supplier}/toggle-status', [SupplierController::class, 'toggleStatus'])->name('suppliers.toggle-status');
         Route::resource('suppliers', SupplierController::class);
+        Route::patch('customers/{customer}/toggle-status', [CustomerController::class, 'toggleStatus'])->name('customers.toggle-status');
         Route::resource('customers', CustomerController::class);
     });
 
     Route::middleware('role:admin,finance')->prefix('master')->name('master.')->group(function () {
+        Route::patch('chart-of-accounts/{chart_of_account}/toggle-status', [ChartOfAccountController::class, 'toggleStatus'])->name('chart-of-accounts.toggle-status');
         Route::resource('chart-of-accounts', ChartOfAccountController::class);
     });
 
@@ -69,9 +78,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PURCHASE MODULE
     // =========================================================
     Route::middleware('role:admin,purchasing')->prefix('purchase')->name('purchase.')->group(function () {
-        Route::resource('orders', PurchaseOrderController::class);
-        Route::patch('orders/{order}/confirm', [PurchaseOrderController::class, 'confirm'])->name('orders.confirm');
-        Route::patch('orders/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('orders.cancel');
+        Route::get('demands', [ProcurementDemandController::class, 'index'])->name('demands.index');
+        Route::resource('orders', PurchaseOrderController::class)->parameters(['orders' => 'purchase_order']);
+        Route::patch('orders/{purchase_order}/confirm', [PurchaseOrderController::class, 'confirm'])->name('orders.confirm');
+        Route::patch('orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('orders.cancel');
 
         Route::resource('returns', PurchaseReturnController::class)->only(['index', 'create', 'store', 'show']);
         Route::patch('returns/{return}/send', [PurchaseReturnController::class, 'send'])->name('returns.send');
@@ -110,9 +120,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // SALES MODULE
     // =========================================================
     Route::middleware('role:admin,sales')->prefix('sales')->name('sales.')->group(function () {
-        Route::resource('orders', SalesOrderController::class);
-        Route::patch('orders/{order}/confirm', [SalesOrderController::class, 'confirm'])->name('orders.confirm');
-        Route::patch('orders/{order}/cancel', [SalesOrderController::class, 'cancel'])->name('orders.cancel');
+        Route::resource('orders', SalesOrderController::class)->parameters(['orders' => 'sales_order']);
+        Route::patch('orders/{sales_order}/confirm', [SalesOrderController::class, 'confirm'])->name('orders.confirm');
+        Route::patch('orders/{sales_order}/cancel', [SalesOrderController::class, 'cancel'])->name('orders.cancel');
 
         Route::resource('returns', SalesReturnController::class)->only(['index', 'create', 'store', 'show']);
         Route::patch('returns/{return}/receive', [SalesReturnController::class, 'receive'])->name('returns.receive');

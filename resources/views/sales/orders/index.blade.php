@@ -1,32 +1,45 @@
 @extends('layouts.app')
 @section('title', 'Sales Order')
-@section('page-title', 'Sales Order')
+@section('page-title', 'Sales Order (Pesanan Penjualan)')
 
 @section('content')
 <div class="animate-in">
     <div class="page-header">
         <div>
-            <h1>Sales Order</h1>
-            <p>Kelola pesanan penjualan dari customer</p>
+            <h1>Daftar Sales Order</h1>
+            <p>Kelola pesanan penjualan customer, alokasi stok, dan pelacakan status pemenuhan pengiriman.</p>
         </div>
         <a href="{{ route('sales.orders.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat SO Baru
+            <i class="fa-solid fa-plus"></i> Buat Sales Order
         </a>
     </div>
 
-    <x-list-filter-bar :action="route('sales.orders.index')" placeholder="Cari No. SO, Customer, Catatan..." :showDateFilter="true">
-        <select name="customer_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
-            <option value="">Semua Customer</option>
-            @foreach($customers as $cust)
-            <option value="{{ $cust->id }}" {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
+    <x-list-filter-bar :action="route('sales.orders.index')" searchPlaceholder="Cari no. SO, customer, catatan...">
+        <select name="customer_id" class="form-control" onchange="this.form.submit()">
+            <option value="">-- Semua Customer --</option>
+            @foreach($customers as $c)
+            <option value="{{ $c->id }}" {{ request('customer_id') == $c->id ? 'selected' : '' }}>
+                {{ $c->name }}
+            </option>
             @endforeach
         </select>
 
-        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
-            <option value="">Semua Status</option>
-            @foreach(['draft','waiting_approval','confirmed','partially_delivered','done','cancelled'] as $s)
-            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
-            @endforeach
+        <select name="status" class="form-control" onchange="this.form.submit()">
+            <option value="">-- Semua Status Order --</option>
+            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="waiting_approval" {{ request('status') == 'waiting_approval' ? 'selected' : '' }}>Menunggu Approval</option>
+            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+            <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Done</option>
+            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+        </select>
+
+        <select name="fulfillment_status" class="form-control" onchange="this.form.submit()">
+            <option value="">-- Semua Status Pemenuhan --</option>
+            <option value="ready_to_ship" {{ request('fulfillment_status') == 'ready_to_ship' ? 'selected' : '' }}>Ready to Ship</option>
+            <option value="partially_available" {{ request('fulfillment_status') == 'partially_available' ? 'selected' : '' }}>Partially Available</option>
+            <option value="backorder" {{ request('fulfillment_status') == 'backorder' ? 'selected' : '' }}>Backorder</option>
+            <option value="partially_delivered" {{ request('fulfillment_status') == 'partially_delivered' ? 'selected' : '' }}>Partially Delivered</option>
+            <option value="delivered" {{ request('fulfillment_status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
         </select>
     </x-list-filter-bar>
 
@@ -37,10 +50,10 @@
                     <tr>
                         <x-sortable-header column="so_number" title="No. SO" />
                         <th>Customer</th>
-                        <x-sortable-header column="order_date" title="Tanggal Order" />
-                        <x-sortable-header column="expected_delivery_date" title="Exp. Kirim" />
+                        <x-sortable-header column="order_date" title="Tgl Order" />
                         <x-sortable-header column="total_amount" title="Total" align="right" />
-                        <x-sortable-header column="status" title="Status" align="center" />
+                        <x-sortable-header column="status" title="Status Order" align="center" />
+                        <th style="text-align:center;">Status Pemenuhan</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>
                 </thead>
@@ -54,11 +67,33 @@
                         </td>
                         <td>{{ $order->customer->name ?? '-' }}</td>
                         <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
-                        <td>{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                         <td style="text-align:center;">
                             <span class="badge badge-{{ $order->status }}">
                                 {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                            </span>
+                        </td>
+                        <td style="text-align:center;">
+                            @php
+                                $fBadge = match($order->fulfillment_status) {
+                                    'ready_to_ship'       => 'background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;',
+                                    'partially_available' => 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;',
+                                    'backorder'           => 'background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;',
+                                    'partially_delivered' => 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;',
+                                    'delivered'           => 'background:#d1fae5; color:#047857; border:1px solid #a7f3d0;',
+                                    default               => 'background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;'
+                                };
+                                $fLabel = match($order->fulfillment_status) {
+                                    'ready_to_ship'       => 'Ready to Ship',
+                                    'partially_available' => 'Partial Available',
+                                    'backorder'           => 'Backorder (PO)',
+                                    'partially_delivered' => 'Partially Delivered',
+                                    'delivered'           => 'Delivered',
+                                    default               => 'Pending'
+                                };
+                            @endphp
+                            <span style="display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:9999px; {{ $fBadge }}">
+                                {{ $fLabel }}
                             </span>
                         </td>
                         <td style="text-align:center;">

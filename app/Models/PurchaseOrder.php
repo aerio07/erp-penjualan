@@ -53,4 +53,9 @@ class PurchaseOrder extends Model
     {
         return $this->morphMany(ApprovalRequest::class, 'approvable');
     }
+
+    public function procurementDemands(): HasMany
+    {
+        return $this->hasMany(ProcurementDemand::class);
+    }
 }

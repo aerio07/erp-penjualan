@@ -3,14 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Product extends Model
 {
     protected $fillable = [
-        'sku', 'name', 'category', 'unit',
+        'sku', 'name', 'category_id', 'category', 'unit',
         'purchase_price', 'sell_price', 'min_stock',
-        'is_active', 'notes',
+        'is_active', 'notes', 'image',
     ];
 
     protected $casts = [
@@ -18,6 +20,23 @@ class Product extends Model
         'purchase_price' => 'decimal:2',
         'sell_price' => 'decimal:2',
     ];
+
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if ($this->image && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->image)) {
+            return asset('storage/' . $this->image);
+        }
+        return null;
+    }
+
+    public function productCategory(): BelongsTo
+    {
+        return $this->belongsTo(ProductCategory::class, 'category_id');
+    }
 
     public function stockMovements(): HasMany
     {
@@ -34,8 +53,18 @@ class Product extends Model
         return $this->hasMany(SalesOrderItem::class);
     }
 
+    public function reservations(): HasManyThrough
+    {
+        return $this->hasManyThrough(StockReservation::class, SalesOrderItem::class);
+    }
+
+    public function procurementDemands(): HasMany
+    {
+        return $this->hasMany(ProcurementDemand::class);
+    }
+
     /**
-     * Hitung stok berjalan SIAP JUAL di gudang tertentu (atau semua gudang).
+     * Hitung stok fisik ON HAND SIAP JUAL di gudang tertentu (atau semua gudang).
      */
     public function currentStock(?int $warehouseId = null): int
     {
@@ -56,6 +85,65 @@ class Product extends Model
     }
 
     /**
+     * Alias for on_hand stock
+     */
+    public function onHandStock(?int $warehouseId = null): int
+    {
+        return $this->currentStock($warehouseId);
+    }
+
+    /**
+     * Stok yang aktif dialokasikan / di-reserve untuk SO pelanggan
+     */
+    public function reservedStock(?int $warehouseId = null): int
+    {
+        $query = StockReservation::whereHas('salesOrderItem', function ($q) {
+            $q->where('product_id', $this->id);
+        })->where('status', 'active');
+
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+
+        return (int) $query->selectRaw('SUM(qty_reserved - qty_delivered) as total_reserved')->value('total_reserved');
+    }
+
+    /**
+     * Stok bebas untuk order baru (On Hand - Reserved)
+     */
+    public function availableStock(?int $warehouseId = null): int
+    {
+        return max(0, $this->onHandStock($warehouseId) - $this->reservedStock($warehouseId));
+    }
+
+    /**
+     * Defisit pesanan pelanggan yang sedang menunggu pengadaan (backorder)
+     */
+    public function backorderStock(?int $warehouseId = null): int
+    {
+        $query = $this->procurementDemands()->whereIn('status', ['pending', 'ordered']);
+
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+
+        return (int) $query->selectRaw('SUM(qty_demanded - qty_fulfilled) as total_backorder')->value('total_backorder');
+    }
+
+    /**
+     * Kuantitas dalam PO Supplier yang belum tiba di gudang
+     */
+    public function incomingStock(): int
+    {
+        return (int) $this->purchaseOrderItems()
+            ->whereHas('purchaseOrder', function ($q) {
+                $q->whereIn('status', ['confirmed', 'partially_received']);
+            })
+            ->get()
+            ->sum('qty_remaining');
+    }
+
+    /**
      * Hitung sisa stok karantina / rusak bersih (minus write_off & reject_out).
      */
     public function quarantineStock(?int $warehouseId = null): int
@@ -68,6 +156,9 @@ class Product extends Model
             $queryOut->where('warehouse_id', $warehouseId);
         }
 
-        return max(0, (int) $queryIn->sum('quantity') - (int) $queryOut->sum('quantity'));
+        $totalIn = (int) $queryIn->sum('quantity');
+        $totalOut = (int) $queryOut->sum('quantity');
+
+        return max(0, $totalIn - $totalOut);
     }
 }

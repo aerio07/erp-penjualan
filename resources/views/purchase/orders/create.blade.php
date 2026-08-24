@@ -140,6 +140,12 @@
             </div>
         </div>
 
+        @if(!empty($demandIds))
+            @foreach((array)$demandIds as $dId)
+                <input type="hidden" name="demand_ids[]" value="{{ $dId }}">
+            @endforeach
+        @endif
+
         <div style="display:flex; justify-content:flex-end; gap:12px;">
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">
@@ -155,8 +161,21 @@
 const products = @json($products->keyBy('id'));
 
 function poForm() {
+    const prefilledId = '{{ $prefilledProductId ?? "" }}';
+    const prefilledQty = {{ $prefilledQty ?? 1 }};
+    let initialRows = [{ product_id: '', qty: 1, price: 0, discount: 0 }];
+
+    if (prefilledId && products[prefilledId]) {
+        initialRows = [{
+            product_id: prefilledId,
+            qty: prefilledQty,
+            price: parseFloat(products[prefilledId].purchase_price) || 0,
+            discount: 0
+        }];
+    }
+
     return {
-        rows: [{ product_id: '', qty: 1, price: 0, discount: 0 }],
+        rows: initialRows,
         taxRate: 11,
         discountHeader: 0,
 

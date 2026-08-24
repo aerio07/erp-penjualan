@@ -30,12 +30,23 @@
                     <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#6366f1,#4f46e5); display:flex; align-items:center; justify-content:center; color:white; font-size:20px;">
                         <i class="fa-solid fa-warehouse"></i>
                     </div>
-                    <span class="badge {{ $wh->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                        {{ $wh->is_active ? 'Aktif' : 'Nonaktif' }}
-                    </span>
+                    <form method="POST" action="{{ route('master.warehouses.toggle-status', $wh) }}" style="display:inline;">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" style="background:none; border:none; padding:0; cursor:pointer;" title="Klik untuk {{ $wh->is_active ? 'menonaktifkan' : 'mengaktifkan' }} gudang ini">
+                            <span class="badge {{ $wh->is_active ? 'badge-done' : 'badge-cancelled' }}" style="cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                <i class="fa-solid {{ $wh->is_active ? 'fa-check' : 'fa-xmark' }}" style="font-size:10px; margin-right:3px;"></i>
+                                {{ $wh->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </button>
+                    </form>
                 </div>
-                <div style="font-weight:700; font-size:16px; margin-bottom:4px;">{{ $wh->name }}</div>
-                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Kode: {{ $wh->code }}</div>
+                <div style="font-weight:700; font-size:16px; margin-bottom:4px;">
+                    <a href="{{ route('master.warehouses.show', $wh) }}" style="color:inherit; text-decoration:none;">
+                        {{ $wh->name }}
+                    </a>
+                </div>
+                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Kode: <strong style="color:var(--primary);">{{ $wh->code }}</strong></div>
                 @if($wh->address)
                 <div style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
                     <i class="fa-solid fa-location-dot" style="width:14px;"></i> {{ Str::limit($wh->address, 60) }}
@@ -52,12 +63,17 @@
                         <a href="{{ route('master.warehouses.edit', $wh) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        @if($wh->stock_movements_count == 0)
-                        <button data-confirm-delete="del-wh-{{ $wh->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
+                        <form method="POST" action="{{ route('master.warehouses.toggle-status', $wh) }}" style="display:inline;">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-icon {{ $wh->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $wh->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $wh->is_active ? 'Nonaktifkan Gudang' : 'Aktifkan Gudang' }}">
+                                <i class="fa-solid {{ $wh->is_active ? 'fa-ban' : 'fa-check' }}"></i>
+                            </button>
+                        </form>
+                        <button type="button" data-confirm-delete="del-wh-{{ $wh->id }}" data-name="{{ $wh->name }} ({{ $wh->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                         <form id="del-wh-{{ $wh->id }}" method="POST" action="{{ route('master.warehouses.destroy', $wh) }}" style="display:none;">@csrf @method('DELETE')</form>
-                        @endif
                     </div>
                 </div>
             </div>

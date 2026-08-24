@@ -11,6 +11,8 @@ class SalesOrderItem extends Model
     protected $appends = [
         'qty_delivered',
         'qty_remaining',
+        'qty_reserved',
+        'qty_demanded',
         'qty_invoiced',
         'qty_unbilled',
     ];
@@ -42,6 +44,16 @@ class SalesOrderItem extends Model
         return $this->hasMany(DeliveryItem::class);
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(StockReservation::class);
+    }
+
+    public function procurementDemands(): HasMany
+    {
+        return $this->hasMany(ProcurementDemand::class);
+    }
+
     /** Total qty yang sudah berhasil dikirim ke customer */
     public function getQtyDeliveredAttribute(): int
     {
@@ -55,6 +67,30 @@ class SalesOrderItem extends Model
     public function getQtyRemainingAttribute(): int
     {
         return max(0, $this->qty_ordered - $this->qty_delivered);
+    }
+
+    /** Qty aktif yang ter-reserve di stok fisik */
+    public function getQtyReservedAttribute(): int
+    {
+        if ($this->relationLoaded('reservations')) {
+            return (int) $this->reservations->where('status', 'active')->sum(function ($r) {
+                return max(0, $r->qty_reserved - $r->qty_delivered);
+            });
+        }
+        return (int) $this->reservations()->where('status', 'active')->sum('qty_reserved')
+            - (int) $this->reservations()->where('status', 'active')->sum('qty_delivered');
+    }
+
+    /** Qty defisit yang sedang menunggu pengadaan (backorder) */
+    public function getQtyDemandedAttribute(): int
+    {
+        if ($this->relationLoaded('procurementDemands')) {
+            return (int) $this->procurementDemands->whereIn('status', ['pending', 'ordered'])->sum(function ($d) {
+                return max(0, $d->qty_demanded - $d->qty_fulfilled);
+            });
+        }
+        return (int) $this->procurementDemands()->whereIn('status', ['pending', 'ordered'])->sum('qty_demanded')
+            - (int) $this->procurementDemands()->whereIn('status', ['pending', 'ordered'])->sum('qty_fulfilled');
     }
 
     /** Total qty terkirim yang sudah pernah diterbitkan fakturnya */

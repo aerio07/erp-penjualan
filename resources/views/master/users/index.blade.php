@@ -91,7 +91,7 @@
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
                                 @if($user->id !== auth()->id())
-                                <button data-confirm-delete="del-user-{{ $user->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
+                                <button type="button" data-confirm-delete="del-user-{{ $user->id }}" data-name="{{ $user->name }} ({{ $user->email }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                                 <form id="del-user-{{ $user->id }}" method="POST" action="{{ route('master.users.destroy', $user) }}" style="display:none;">

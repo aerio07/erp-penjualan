@@ -7,16 +7,39 @@
     <div class="page-header">
         <div>
             <h1>{{ $warehouse->name }}</h1>
-            <p>Kode: {{ $warehouse->code }} &nbsp;·&nbsp;
+            <p>Kode: <strong style="color:var(--primary);">{{ $warehouse->code }}</strong> &nbsp;·&nbsp;
                 <span class="badge {{ $warehouse->is_active ? 'badge-done' : 'badge-cancelled' }}">
                     {{ $warehouse->is_active ? 'Aktif' : 'Nonaktif' }}
                 </span>
             </p>
         </div>
-        <div style="display:flex; gap:8px;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <form method="POST" action="{{ route('master.warehouses.toggle-status', $warehouse) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $warehouse->is_active ? 'menonaktifkan' : 'mengaktifkan' }} gudang ini?');">
+                @csrf
+                @method('PATCH')
+                @if($warehouse->is_active)
+                    <button type="submit" class="btn btn-secondary" style="color:#b91c1c; border-color:#fca5a5;" title="Nonaktifkan Gudang">
+                        <i class="fa-solid fa-ban"></i> Nonaktifkan
+                    </button>
+                @else
+                    <button type="submit" class="btn btn-primary" style="background:#16a34a; border-color:#16a34a;" title="Aktifkan Gudang">
+                        <i class="fa-solid fa-check"></i> Aktifkan
+                    </button>
+                @endif
+            </form>
+
             <a href="{{ route('master.warehouses.edit', $warehouse) }}" class="btn btn-secondary">
                 <i class="fa-solid fa-pen"></i> Edit
             </a>
+
+            <button type="button" data-confirm-delete="del-wh-show" data-name="{{ $warehouse->name }} ({{ $warehouse->code }})" class="btn btn-danger" title="Hapus Gudang">
+                <i class="fa-solid fa-trash"></i> Hapus
+            </button>
+            <form id="del-wh-show" method="POST" action="{{ route('master.warehouses.destroy', $warehouse) }}" style="display:none;">
+                @csrf
+                @method('DELETE')
+            </form>
+
             <a href="{{ route('master.warehouses.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>

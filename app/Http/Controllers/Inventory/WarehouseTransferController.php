@@ -167,7 +167,7 @@ class WarehouseTransferController extends Controller
             $transfer = WarehouseTransfer::with(['fromWarehouse', 'toWarehouse', 'items.product'])->lockForUpdate()->findOrFail($transfer->id);
             abort_if($transfer->status !== 'in_transit', 403, 'Hanya dokumen transfer berstatus Dalam Perjalanan (In Transit) yang dapat dikonfirmasi penerimaannya.');
 
-            // Record transfer_in movement
+            // Record transfer_in movement and allocate to pending demands
             foreach ($transfer->items as $item) {
                 $this->stockService->recordMovement([
                     'product_id'     => $item->product_id,
@@ -181,6 +181,9 @@ class WarehouseTransferController extends Controller
                     'notes'          => "Transfer masuk dari {$transfer->fromWarehouse->name} (Ref #{$transfer->transfer_number})",
                     'user_id'        => Auth::id(),
                 ]);
+
+                // Alokasikan stok masuk ke antrean kebutuhan pengadaan (backorder)
+                $this->stockService->allocateStockToPendingDemands($item->product_id, $transfer->to_warehouse_id);
             }
 
             $transfer->update([

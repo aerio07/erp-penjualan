@@ -1,20 +1,20 @@
 @extends('layouts.app')
-@section('title', isset($chartOfAccount) ? 'Edit Akun' : 'Tambah Akun')
-@section('page-title', isset($chartOfAccount) ? 'Edit Akun COA' : 'Tambah Akun COA')
+@section('title', isset($chartOfAccount) ? 'Edit Akun CoA' : 'Tambah Akun CoA')
+@section('page-title', isset($chartOfAccount) ? 'Edit Akun CoA' : 'Tambah Akun CoA')
 
 @section('content')
 <div class="animate-in">
     <div class="page-header">
-        <div><h1>{{ isset($chartOfAccount) ? 'Edit Akun' : 'Tambah Akun Baru' }}</h1></div>
+        <div><h1>{{ isset($chartOfAccount) ? 'Edit Akun CoA' : 'Tambah Akun CoA Baru' }}</h1></div>
         <a href="{{ route('master.chart-of-accounts.index') }}" class="btn btn-secondary">
             <i class="fa-solid fa-arrow-left"></i> Kembali
         </a>
     </div>
 
-    <div class="card" style="max-width:600px;">
-        <div class="card-header"><h3>Informasi Akun</h3></div>
+    <div class="card" style="max-width:650px;">
+        <div class="card-header"><h3>Informasi Akun (Chart of Account)</h3></div>
         <div class="card-body">
-            <form method="POST" action="{{ isset($chartOfAccount) ? route('master.chart-of-accounts.update', $chartOfAccount) : route('master.chart-of-accounts.store') }}">
+            <form method="POST" action="{{ isset($chartOfAccount) ? route('master.chart-of-accounts.update', $chartOfAccount) : route('master.chart-of-accounts.store') }}" id="coaForm">
                 @csrf
                 @if(isset($chartOfAccount)) @method('PUT') @endif
 
@@ -23,47 +23,72 @@
                         <label class="form-label">Kode Akun <span style="color:var(--danger);">*</span></label>
                         <input type="text" name="code" value="{{ old('code', $chartOfAccount->code ?? '') }}"
                             class="form-control {{ $errors->has('code') ? 'is-invalid' : '' }}"
-                            required placeholder="1-1-001" style="font-family:monospace;">
-                        @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            required placeholder="Contoh: 1-1-001, 5-1-002" style="font-family:monospace; text-transform:uppercase;">
+                        @if(!$errors->has('code'))
+                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode unik standar bagan akun.</span>
+                        @endif
+                        @error('code')
+                        <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
+                            <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                        @enderror
                     </div>
+
                     <div class="form-group">
                         <label class="form-label">Tipe Akun <span style="color:var(--danger);">*</span></label>
-                        <select name="type" class="form-control {{ $errors->has('type') ? 'is-invalid' : '' }}" required>
-                            <option value="">-- Pilih Tipe --</option>
-                            @foreach(['asset' => 'Aset', 'liability' => 'Kewajiban', 'equity' => 'Ekuitas', 'revenue' => 'Pendapatan', 'expense' => 'Beban/Biaya'] as $val => $label)
+                        <select name="type" id="accountTypeSelect" class="form-control {{ $errors->has('type') ? 'is-invalid' : '' }}" required onchange="handleTypeChange(this.value)">
+                            <option value="">-- Pilih Tipe Akun --</option>
+                            @foreach(['asset' => 'Aset (Aktiva)', 'liability' => 'Kewajiban (Hutang)', 'equity' => 'Ekuitas (Modal)', 'revenue' => 'Pendapatan (Penjualan)', 'expense' => 'Beban / Biaya'] as $val => $label)
                             <option value="{{ $val }}" {{ old('type', $chartOfAccount->type ?? '') === $val ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
-                        @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('type')
+                        <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
+                            <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                        @enderror
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Nama Akun <span style="color:var(--danger);">*</span></label>
                     <input type="text" name="name" value="{{ old('name', $chartOfAccount->name ?? '') }}"
-                        class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}" required>
-                    @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}" required placeholder="Contoh: Kas Utama, Piutang Usaha, Beban Gaji">
+                    @error('name')
+                    <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
+                        <span>{{ $message }}</span>
+                    </div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Normal Balance <span style="color:var(--danger);">*</span></label>
-                    <div style="display:flex; gap:16px; margin-top:6px;">
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                            <input type="radio" name="normal_balance" value="debit"
-                                {{ old('normal_balance', $chartOfAccount->normal_balance ?? '') === 'debit' ? 'checked' : '' }}>
-                            <span>Debit (Aset, Beban)</span>
+                    <div style="display:flex; gap:20px; margin-top:6px; padding:10px 14px; background:#f8fafc; border-radius:8px; border:1px solid var(--border);">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500;">
+                            <input type="radio" name="normal_balance" id="radioDebit" value="debit"
+                                {{ old('normal_balance', $chartOfAccount->normal_balance ?? '') === 'debit' ? 'checked' : '' }} required>
+                            <span style="color:#2563eb;">Debit</span> <span style="font-size:12px; color:var(--text-secondary);">(Aset, Beban/Biaya)</span>
                         </label>
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                            <input type="radio" name="normal_balance" value="credit"
-                                {{ old('normal_balance', $chartOfAccount->normal_balance ?? '') === 'credit' ? 'checked' : '' }}>
-                            <span>Kredit (Kewajiban, Ekuitas, Pendapatan)</span>
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500;">
+                            <input type="radio" name="normal_balance" id="radioCredit" value="credit"
+                                {{ old('normal_balance', $chartOfAccount->normal_balance ?? '') === 'credit' ? 'checked' : '' }} required>
+                            <span style="color:#dc2626;">Kredit</span> <span style="font-size:12px; color:var(--text-secondary);">(Kewajiban, Ekuitas, Pendapatan)</span>
                         </label>
                     </div>
+                    @error('normal_balance')
+                    <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
+                        <span>{{ $message }}</span>
+                    </div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Keterangan</label>
-                    <textarea name="description" class="form-control" rows="2">{{ old('description', $chartOfAccount->description ?? '') }}</textarea>
+                    <label class="form-label">Keterangan / Catatan</label>
+                    <textarea name="description" class="form-control" rows="2" placeholder="Catatan tambahan mengenai penggunaan akun ini...">{{ old('description', $chartOfAccount->description ?? '') }}</textarea>
                 </div>
 
                 <div class="form-group">
@@ -75,9 +100,9 @@
                     </label>
                 </div>
 
-                <div style="display:flex; gap:12px;">
+                <div style="display:flex; gap:12px; margin-top:24px;">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($chartOfAccount) ? 'Perbarui' : 'Simpan' }}
+                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($chartOfAccount) ? 'Perbarui Akun' : 'Simpan Akun' }}
                     </button>
                     <a href="{{ route('master.chart-of-accounts.index') }}" class="btn btn-secondary">Batal</a>
                 </div>
@@ -85,4 +110,18 @@
         </div>
     </div>
 </div>
+
+<script>
+function handleTypeChange(val) {
+    const radioDebit = document.getElementById('radioDebit');
+    const radioCredit = document.getElementById('radioCredit');
+    
+    // Auto default normal balance based on accounting principle
+    if (val === 'asset' || val === 'expense') {
+        radioDebit.checked = true;
+    } else if (val === 'liability' || val === 'equity' || val === 'revenue') {
+        radioCredit.checked = true;
+    }
+}
+</script>
 @endsection

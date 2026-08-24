@@ -158,6 +158,10 @@ class SalesReturnController extends Controller
                     'notes'          => "Penerimaan Retur Customer [{$conditionLabel}] #{$return->return_number}",
                     'user_id'        => Auth::id(),
                 ]);
+
+                if ($isGood) {
+                    $this->stockService->allocateStockToPendingDemands($item->product_id, $delivery->warehouse_id);
+                }
             }
 
             $return->update(['status' => 'received']);

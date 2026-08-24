@@ -23,11 +23,20 @@ class StockMovementController extends Controller
         $warehouses  = Warehouse::where('is_active', true)->orderBy('name')->get();
 
         $products = Product::where('is_active', true)->orderBy('name')->get()->map(function ($product) use ($warehouseId) {
-            $stock = $this->stockService->getCurrentStock($product->id, $warehouseId);
-            $quarantine = $this->stockService->getQuarantineStock($product->id, $warehouseId);
-            $product->current_stock    = $stock;
+            $onHand    = $this->stockService->getOnHandStock($product->id, $warehouseId);
+            $reserved  = $this->stockService->getReservedStock($product->id, $warehouseId);
+            $available = $this->stockService->getAvailableStock($product->id, $warehouseId);
+            $backorder = $this->stockService->getBackorderStock($product->id, $warehouseId);
+            $incoming  = $this->stockService->getIncomingStock($product->id);
+            $quarantine= $this->stockService->getQuarantineStock($product->id, $warehouseId);
+
+            $product->current_stock    = $onHand;
+            $product->reserved_stock   = $reserved;
+            $product->available_stock  = $available;
+            $product->backorder_stock  = $backorder;
+            $product->incoming_stock   = $incoming;
             $product->quarantine_stock = $quarantine;
-            $product->stock_value      = $stock * $product->purchase_price;
+            $product->stock_value      = $onHand * $product->purchase_price;
             return $product;
         });
 

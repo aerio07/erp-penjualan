@@ -7,15 +7,42 @@
     <div class="page-header">
         <div>
             <h1>{{ $customer->name }}</h1>
-            <p>{{ $customer->code }} &nbsp;·&nbsp;
+            <p>Kode: <strong style="color:var(--primary);">{{ $customer->code }}</strong> &nbsp;·&nbsp;
                 <span class="badge {{ $customer->is_active ? 'badge-done' : 'badge-cancelled' }}">
                     {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
                 </span>
             </p>
         </div>
-        <div style="display:flex; gap:8px;">
-            <a href="{{ route('master.customers.edit', $customer) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
-            <a href="{{ route('master.customers.index') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <form method="POST" action="{{ route('master.customers.toggle-status', $customer) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $customer->is_active ? 'menonaktifkan' : 'mengaktifkan' }} customer ini?');">
+                @csrf
+                @method('PATCH')
+                @if($customer->is_active)
+                    <button type="submit" class="btn btn-secondary" style="color:#b91c1c; border-color:#fca5a5;" title="Nonaktifkan Customer">
+                        <i class="fa-solid fa-ban"></i> Nonaktifkan
+                    </button>
+                @else
+                    <button type="submit" class="btn btn-primary" style="background:#16a34a; border-color:#16a34a;" title="Aktifkan Customer">
+                        <i class="fa-solid fa-check"></i> Aktifkan
+                    </button>
+                @endif
+            </form>
+
+            <a href="{{ route('master.customers.edit', $customer) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-pen"></i> Edit
+            </a>
+
+            <button type="button" data-confirm-delete="del-cust-show" data-name="{{ $customer->name }} ({{ $customer->code }})" class="btn btn-danger" title="Hapus Customer">
+                <i class="fa-solid fa-trash"></i> Hapus
+            </button>
+            <form id="del-cust-show" method="POST" action="{{ route('master.customers.destroy', $customer) }}" style="display:none;">
+                @csrf
+                @method('DELETE')
+            </form>
+
+            <a href="{{ route('master.customers.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
         </div>
     </div>
 

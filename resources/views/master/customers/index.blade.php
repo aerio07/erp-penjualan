@@ -40,21 +40,25 @@
                 <tbody>
                     @forelse($customers as $c)
                     <tr>
-                        <td style="font-weight:600; color:var(--primary);">{{ $c->code }}</td>
+                        <td style="font-weight:600;">
+                            <a href="{{ route('master.customers.show', $c) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Customer">
+                                {{ $c->code }}
+                            </a>
+                        </td>
                         <td>
-                            <div style="font-weight:500;">{{ $c->name }}</div>
+                            <div style="font-weight:600;">
+                                <a href="{{ route('master.customers.show', $c) }}" style="color:inherit; text-decoration:none;" title="Lihat Detail Customer">
+                                    {{ $c->name }}
+                                </a>
+                            </div>
                             @if($c->email)
                             <div style="font-size:12px; color:var(--text-secondary);">{{ $c->email }}</div>
                             @endif
                         </td>
                         <td>{{ $c->contact_person ?? '-' }}</td>
                         <td>{{ $c->phone ?? '-' }}</td>
-                        <td style="text-align:right;">
-                            @if($c->credit_limit)
-                            Rp {{ number_format($c->credit_limit, 0, ',', '.') }}
-                            @else
-                            <span style="color:var(--text-secondary);">-</span>
-                            @endif
+                        <td style="text-align:right; font-weight:600;">
+                            Rp {{ number_format($c->credit_limit ?? 0, 0, ',', '.') }}
                         </td>
                         <td>
                             @if($c->payment_term)
@@ -64,19 +68,33 @@
                             @endif
                         </td>
                         <td style="text-align:center;">
-                            <span class="badge {{ $c->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                                {{ $c->is_active ? 'Aktif' : 'Nonaktif' }}
-                            </span>
+                            <form method="POST" action="{{ route('master.customers.toggle-status', $c) }}" style="display:inline;">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" style="background:none; border:none; padding:0; cursor:pointer;" title="Klik untuk {{ $c->is_active ? 'menonaktifkan' : 'mengaktifkan' }} customer ini">
+                                    <span class="badge {{ $c->is_active ? 'badge-done' : 'badge-cancelled' }}" style="cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                        <i class="fa-solid {{ $c->is_active ? 'fa-check' : 'fa-xmark' }}" style="font-size:10px; margin-right:3px;"></i>
+                                        {{ $c->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </span>
+                                </button>
+                            </form>
                         </td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:6px; justify-content:center;">
-                                <a href="{{ route('master.customers.show', $c) }}" class="btn btn-secondary btn-sm btn-icon" title="Detail">
+                                <a href="{{ route('master.customers.show', $c) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
                                 <a href="{{ route('master.customers.edit', $c) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <button data-confirm-delete="del-cust-{{ $c->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
+                                <form method="POST" action="{{ route('master.customers.toggle-status', $c) }}" style="display:inline;">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-icon {{ $c->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $c->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $c->is_active ? 'Nonaktifkan Customer' : 'Aktifkan Customer' }}">
+                                        <i class="fa-solid {{ $c->is_active ? 'fa-ban' : 'fa-check' }}"></i>
+                                    </button>
+                                </form>
+                                <button type="button" data-confirm-delete="del-cust-{{ $c->id }}" data-name="{{ $c->name }} ({{ $c->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                                 <form id="del-cust-{{ $c->id }}" method="POST" action="{{ route('master.customers.destroy', $c) }}" style="display:none;">

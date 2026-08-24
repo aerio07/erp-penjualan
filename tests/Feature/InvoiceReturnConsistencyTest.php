@@ -18,6 +18,7 @@ use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use App\Models\SalesReturn;
 use App\Models\SalesReturnItem;
+use App\Models\StockMovement;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -299,6 +300,46 @@ class InvoiceReturnConsistencyTest extends TestCase
         $this->assertEquals(440, $invoice->outstanding_amount);
     }
 
+    public function test_delivery_creation_fails_gracefully_when_stock_is_insufficient(): void
+    {
+        $customer = Customer::create([
+            'code' => 'CUST-NOSTOCK',
+            'name' => 'Customer No Stock',
+            'is_active' => true,
+        ]);
+        $salesOrder = SalesOrder::create([
+            'so_number' => 'SO-NOSTOCK-001',
+            'customer_id' => $customer->id,
+            'user_id' => $this->admin->id,
+            'status' => 'confirmed',
+            'order_date' => now()->toDateString(),
+            'total_amount' => 1000,
+        ]);
+        $soItem = SalesOrderItem::create([
+            'sales_order_id' => $salesOrder->id,
+            'product_id' => $this->product->id,
+            'qty_ordered' => 10,
+            'unit_price' => 100,
+            'subtotal' => 1000,
+        ]);
+
+        // Stock in warehouse is 0 for this test
+        $response = $this->actingAs($this->admin)->post(route('sales.deliveries.store'), [
+            'sales_order_id' => $salesOrder->id,
+            'warehouse_id' => $this->warehouse->id,
+            'delivery_date' => now()->toDateString(),
+            'items' => [
+                [
+                    'sales_order_item_id' => $soItem->id,
+                    'qty_delivered' => 10,
+                ],
+            ],
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
+    }
+
     private function makeSalesDelivery(int $qty): array
     {
         $customer = Customer::create([
@@ -377,6 +418,16 @@ class InvoiceReturnConsistencyTest extends TestCase
             'qty_received' => $qty,
             'qty_rejected' => 0,
             'unit_cost' => 60,
+        ]);
+
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'warehouse_id' => $this->warehouse->id,
+            'type' => 'in',
+            'quantity' => $qty,
+            'unit_cost' => 60,
+            'movement_date' => now()->toDateString(),
+            'user_id' => $this->admin->id,
         ]);
 
         return [$purchaseOrder, $receipt];

@@ -185,6 +185,9 @@ class GoodsReceiptController extends Controller
                         'notes'          => "Penerimaan Barang #{$grnNumber} (PO #{$po->po_number})",
                         'user_id'        => Auth::id(),
                     ]);
+
+                    // Targeted Event-Driven Allocation: Alokasikan stok masuk ke SO yang sedang backorder
+                    $this->stockService->allocateStockToPendingDemands($poItem->product_id, $warehouseId);
                 }
             }
 

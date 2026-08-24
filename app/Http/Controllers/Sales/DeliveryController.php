@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
+use App\Models\Product;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use App\Models\Warehouse;
@@ -144,6 +145,27 @@ class DeliveryController extends Controller
                     'condition'           => 'Good',
                 ]);
 
+                // Consume active stock reservations for this item
+                $remainingToFulfill = $qtyDelivered;
+                $activeReservations = \App\Models\StockReservation::where('sales_order_item_id', $soItem->id)
+                    ->where('status', 'active')
+                    ->get();
+
+                foreach ($activeReservations as $res) {
+                    $unconsumed = max(0, $res->qty_reserved - $res->qty_delivered);
+                    $consume = min($unconsumed, $remainingToFulfill);
+                    if ($consume > 0) {
+                        $newDelivered = $res->qty_delivered + $consume;
+                        $resStatus = ($newDelivered >= $res->qty_reserved) ? 'fulfilled' : 'active';
+                        $res->update([
+                            'qty_delivered' => $newDelivered,
+                            'status'        => $resStatus,
+                        ]);
+                        $remainingToFulfill -= $consume;
+                    }
+                    if ($remainingToFulfill <= 0) break;
+                }
+
                 // Record stock movement OUT
                 $this->stockService->recordMovement([
                     'product_id'     => $soItem->product_id,
@@ -157,10 +179,15 @@ class DeliveryController extends Controller
                     'notes'          => "Surat Jalan / Pengiriman #{$deliveryNumber} (SO #{$so->so_number})",
                     'user_id'        => Auth::id(),
                 ]);
+
+                // Sync demand fulfillment (qty_fulfilled & status) for this SO item
+                $this->stockService->syncDemandFulfillmentForOrderItem($soItem);
             }
 
-            // Update SO Status
+            // Update SO Status & Fulfillment Status
             $so->refresh();
+            $this->stockService->refreshSalesOrderFulfillment($so);
+
             $allDone = true;
             foreach ($so->items as $item) {
                 if ($item->qty_delivered < $item->qty_ordered) {

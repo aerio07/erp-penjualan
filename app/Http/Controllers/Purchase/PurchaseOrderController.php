@@ -28,24 +28,28 @@ class PurchaseOrderController extends Controller
         $query = PurchaseOrder::with(['supplier', 'user']);
 
         $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes']);
-        $query = $this->applyFilter($query, $request, 'supplier_id');
         $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyFilter($query, $request, 'supplier_id');
         $query = $this->applyDateRange($query, $request, 'order_date');
-        $query = $this->applySort($query, $request, ['po_number', 'order_date', 'expected_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
+        $query = $this->applySort($query, $request, ['po_number', 'order_date', 'total_amount', 'status', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
-        $orders    = $query->paginate($perPage)->withQueryString();
+        $perPage = (int) $request->get('per_page', 15);
+        $orders = $query->paginate($perPage)->withQueryString();
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
         return view('purchase.orders.index', compact('orders', 'suppliers'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
         $products  = Product::where('is_active', true)->orderBy('name')->get();
 
-        return view('purchase.orders.create', compact('suppliers', 'products'));
+        $prefilledProductId = $request->get('product_id');
+        $prefilledQty       = $request->get('qty');
+        $demandIds          = $request->get('demand_ids');
+
+        return view('purchase.orders.create', compact('suppliers', 'products', 'prefilledProductId', 'prefilledQty', 'demandIds'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -62,6 +66,8 @@ class PurchaseOrderController extends Controller
             'items.*.qty_ordered'   => 'required|integer|min:1',
             'items.*.unit_price'    => 'required|numeric|min:0',
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
+            'demand_ids'            => 'nullable|array',
+            'demand_ids.*'          => 'exists:procurement_demands,id',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -108,21 +114,32 @@ class PurchaseOrderController extends Controller
                     'subtotal'          => $lineSubtotal - $discAmount,
                 ]);
             }
+
+            // Hubungkan Procurement Demands ke PO jika berasal dari Demand Hub
+            if (!empty($request->demand_ids)) {
+                \App\Models\ProcurementDemand::whereIn('id', $request->demand_ids)
+                    ->update([
+                        'purchase_order_id' => $po->id,
+                        'status'            => 'ordered',
+                    ]);
+            }
         });
 
         return redirect()->route('purchase.orders.index')
             ->with('success', 'Purchase Order berhasil dibuat.');
     }
 
-    public function show(PurchaseOrder $order): View
+    public function show(PurchaseOrder $purchaseOrder): View
     {
+        $order = $purchaseOrder;
         $order->load(['supplier', 'user', 'items.product', 'goodsReceipts', 'invoices']);
 
         return view('purchase.orders.show', compact('order'));
     }
 
-    public function edit(PurchaseOrder $order): View
+    public function edit(PurchaseOrder $purchaseOrder): View
     {
+        $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft']), 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
 
         $order->load(['items.product']);
@@ -132,8 +149,9 @@ class PurchaseOrderController extends Controller
         return view('purchase.orders.edit', compact('order', 'suppliers', 'products'));
     }
 
-    public function update(Request $request, PurchaseOrder $order): RedirectResponse
+    public function update(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
+        $order = $purchaseOrder;
         abort_if($order->status !== 'draft', 403);
 
         // Reuse store validation logic
@@ -197,8 +215,9 @@ class PurchaseOrderController extends Controller
             ->with('success', 'Purchase Order berhasil diperbarui.');
     }
 
-    public function destroy(PurchaseOrder $order): RedirectResponse
+    public function destroy(PurchaseOrder $purchaseOrder): RedirectResponse
     {
+        $order = $purchaseOrder;
         abort_if($order->status !== 'draft', 403, 'Hanya PO berstatus draft yang dapat dihapus.');
         $order->delete();
 
@@ -206,8 +225,9 @@ class PurchaseOrderController extends Controller
             ->with('success', 'Purchase Order berhasil dihapus.');
     }
 
-    public function confirm(PurchaseOrder $order): RedirectResponse
+    public function confirm(PurchaseOrder $purchaseOrder): RedirectResponse
     {
+        $order = $purchaseOrder;
         abort_if($order->status !== 'draft', 403);
 
         $order->update(['status' => 'waiting_approval']);
@@ -221,16 +241,18 @@ class PurchaseOrderController extends Controller
         return back()->with('info', 'PO telah dikirim untuk approval.');
     }
 
-    public function cancel(PurchaseOrder $order): RedirectResponse
+    public function cancel(PurchaseOrder $purchaseOrder): RedirectResponse
     {
+        $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft', 'waiting_approval', 'confirmed']), 403);
         $order->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Purchase Order berhasil dibatalkan.');
     }
 
-    public function exportPdf(PurchaseOrder $order)
+    public function exportPdf(PurchaseOrder $purchaseOrder)
     {
+        $order = $purchaseOrder;
         $order->load(['supplier', 'user', 'items.product']);
         $pdf = Pdf::loadView('pdf.purchase-order', compact('order'));
 

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalRequest;
+use App\Models\SalesOrder;
 use App\Services\ApprovalService;
+use App\Services\StockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -14,7 +16,10 @@ class ApprovalController extends Controller
 {
     use HasListFilters;
 
-    public function __construct(private ApprovalService $approvalService) {}
+    public function __construct(
+        private ApprovalService $approvalService,
+        private StockService $stockService
+    ) {}
 
     public function index(Request $request): View
     {
@@ -46,6 +51,10 @@ class ApprovalController extends Controller
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
             $approvable->update(['status' => 'confirmed']);
+
+            if ($approvable instanceof SalesOrder) {
+                $this->stockService->allocateStockForSalesOrder($approvable);
+            }
         }
 
         return back()->with('success', "Approval #{$approval->request_number} berhasil disetujui.");
@@ -60,9 +69,13 @@ class ApprovalController extends Controller
         // Kembalikan dokumen ke draft
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            $approvable->update(['status' => 'draft']);
+            $updateData = ['status' => 'draft'];
+            if ($approvable instanceof SalesOrder) {
+                $updateData['fulfillment_status'] = 'pending';
+            }
+            $approvable->update($updateData);
         }
 
-        return back()->with('success', "Approval #{$approval->request_number} ditolak.");
+        return back()->with('success', "Approval #{$approval->request_number} berhasil ditolak.");
     }
 }
