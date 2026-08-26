@@ -51,7 +51,7 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header"><h3>Informasi Supplier</h3></div>
             <div class="card-body">
-                <div class="form-row form-row-2">
+                <div class="form-row form-row-3">
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Contact Person</div>
                         <div style="font-weight:600;">{{ $supplier->contact_person ?? '-' }}</div>
@@ -73,13 +73,56 @@
                         @endif
                     </div>
                     <div>
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP</div>
-                        <div>{{ $supplier->npwp ?? '-' }}</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Nomor NPWP</div>
+                        <div style="font-weight:500;">{{ $supplier->npwp ?? '-' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Nomor KTP / NIK</div>
+                        <div style="font-weight:500; font-family:monospace;">{{ $supplier->ktp_number ?? '-' }}</div>
                     </div>
                 </div>
+
+                {{-- Bank Account Information --}}
+                <div style="margin-top:16px; padding:14px 16px; background:#f0f4ff; border-radius:10px; border:1px solid #d8e2ff;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="material-symbols-outlined text-[20px] text-primary">account_balance</span>
+                            <strong style="font-size:13px; color:#0e1b35;">Informasi Rekening Bank</strong>
+                        </div>
+                        @if($supplier->bank_name || $supplier->bank_account_number)
+                            <span class="badge badge-done" style="font-size:10px;">Tersedia</span>
+                        @else
+                            <span class="badge badge-neutral" style="font-size:10px;">Belum Diatur</span>
+                        @endif
+                    </div>
+
+                    @if($supplier->bank_name || $supplier->bank_account_number)
+                    <div class="form-row form-row-3 mb-0" style="gap:12px;">
+                        <div>
+                            <div style="font-size:11px; color:#6B7280; text-transform:uppercase; font-weight:700; margin-bottom:2px;">Nama Bank</div>
+                            <div style="font-size:14px; font-weight:600; color:#0e1b35;">{{ $supplier->bank_name ?? '-' }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px; color:#6B7280; text-transform:uppercase; font-weight:700; margin-bottom:2px;">Nomor Rekening</div>
+                            <div style="font-size:14px; font-weight:700; font-family:monospace; color:#03193c; letter-spacing:0.5px;">
+                                {{ $supplier->bank_account_number ?? '-' }}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px; color:#6B7280; text-transform:uppercase; font-weight:700; margin-bottom:2px;">Nama Pemilik Rekening</div>
+                            <div style="font-size:14px; font-weight:600; color:#0e1b35;">{{ $supplier->bank_account_holder ? 'a/n ' . $supplier->bank_account_holder : '-' }}</div>
+                        </div>
+                    </div>
+                    @else
+                    <div style="font-size:12.5px; color:#6B7280; font-style:italic;">
+                        Belum ada data rekening bank yang disimpan untuk supplier ini.
+                    </div>
+                    @endif
+                </div>
+
                 @if($supplier->address)
-                <div style="margin-top:16px; padding:12px; background:#f8fafc; border-radius:10px;">
-                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Alamat</div>
+                <div style="margin-top:12px; padding:12px 16px; background:#f8fafc; border-radius:10px; border:1px solid #E2E8F0;">
+                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Alamat Lengkap</div>
                     <div style="font-size:14px;">{{ $supplier->address }}</div>
                 </div>
                 @endif

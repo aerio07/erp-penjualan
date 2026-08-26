@@ -24,26 +24,34 @@ class MasterDataSeeder extends Seeder
         // Suppliers
         $suppliers = [
             [
-                'code'           => 'SUP-001',
-                'name'           => 'PT Sumber Makmur',
-                'contact_person' => 'Budi Santoso',
-                'phone'          => '021-5551234',
-                'email'          => 'budi@sumbermakmur.co.id',
-                'address'        => 'Jl. Pasar Baru No.10, Jakarta',
-                'payment_term'   => 'NET 30',
+                'code'                => 'SUP-001',
+                'name'                => 'PT Sumber Makmur',
+                'contact_person'      => 'Budi Santoso',
+                'phone'               => '021-5551234',
+                'email'               => 'budi@sumbermakmur.co.id',
+                'address'             => 'Jl. Pasar Baru No.10, Jakarta',
+                'payment_term'        => 'NET 30',
+                'npwp'                => '01.234.567.8-012.000',
+                'bank_name'           => 'Bank Central Asia (BCA)',
+                'bank_account_number' => '0123456789',
+                'bank_account_holder' => 'PT Sumber Makmur',
             ],
             [
-                'code'           => 'SUP-002',
-                'name'           => 'CV Jaya Abadi',
-                'contact_person' => 'Dewi Lestari',
-                'phone'          => '031-7775678',
-                'email'          => 'dewi@jayaabadi.co.id',
-                'address'        => 'Jl. Kembang Jepun No.22, Surabaya',
-                'payment_term'   => 'NET 14',
+                'code'                => 'SUP-002',
+                'name'                => 'CV Jaya Abadi',
+                'contact_person'      => 'Dewi Lestari',
+                'phone'               => '031-7775678',
+                'email'               => 'dewi@jayaabadi.co.id',
+                'address'             => 'Jl. Kembang Jepun No.22, Surabaya',
+                'payment_term'        => 'NET 14',
+                'npwp'                => '02.345.678.9-023.000',
+                'bank_name'           => 'Bank Mandiri',
+                'bank_account_number' => '1420009876543',
+                'bank_account_holder' => 'CV Jaya Abadi',
             ],
         ];
         foreach ($suppliers as $s) {
-            Supplier::firstOrCreate(['code' => $s['code']], $s);
+            Supplier::updateOrCreate(['code' => $s['code']], $s);
         }
 
         // Customers

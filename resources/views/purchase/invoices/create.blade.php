@@ -34,33 +34,31 @@
                         </select>
                     </div>
 
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
-                            <label class="form-label">No. Faktur / Invoice Supplier</label>
-                            <input type="text" name="supplier_invoice_number" value="{{ old('supplier_invoice_number') }}" class="form-control" placeholder="Contoh: INV/SUP/2026/001">
+                            <label class="form-label">No. Faktur Supplier</label>
+                            <input type="text" name="supplier_invoice_number" value="{{ old('supplier_invoice_number') }}" class="form-control" placeholder="INV/SUP/2026/001">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Tarif PPN (%) <span style="color:var(--danger);">*</span></label>
                             <input type="number" name="tax_rate" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100" required>
                         </div>
-                    </div>
 
-                    <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Tanggal Invoice <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="invoice_date" value="{{ old('invoice_date', date('Y-m-d')) }}" class="form-control" required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
+                            <label class="form-label">Jatuh Tempo <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="due_date" value="{{ old('due_date', date('Y-m-d', strtotime('+30 days'))) }}" class="form-control" required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Catatan invoice...">{{ old('notes') }}</textarea>
+                        <textarea name="notes" class="form-control" rows="1" placeholder="Catatan invoice...">{{ old('notes') }}</textarea>
                     </div>
                 </div>
             </div>

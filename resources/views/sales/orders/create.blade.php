@@ -21,7 +21,7 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Informasi Sales Order</h3></div>
                 <div class="card-body">
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Customer <span style="color:var(--danger);">*</span></label>
                             <select name="customer_id" class="form-control" required>
@@ -46,7 +46,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Catatan SO...">{{ old('notes') }}</textarea>
+                        <textarea name="notes" class="form-control" rows="1" placeholder="Catatan SO...">{{ old('notes') }}</textarea>
                     </div>
                 </div>
             </div>

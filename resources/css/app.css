@@ -230,6 +230,16 @@
     font-family: 'Inter', sans-serif !important;
 }
 
+/* Ensure Search Inputs with icons never overlap */
+.search-input,
+.search-box input,
+.has-search-icon input,
+input.search-input,
+input[name="q"],
+input[type="search"] {
+    padding-left: 2.5rem !important;
+}
+
 textarea, textarea.form-control {
     height: auto !important;
     min-height: 90px !important;

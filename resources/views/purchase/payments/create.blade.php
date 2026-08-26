@@ -33,9 +33,9 @@
                         </select>
                     </div>
 
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
-                            <label class="form-label">Jumlah Pembayaran (Rp) <span style="color:var(--danger);">*</span></label>
+                            <label class="form-label">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
                             <div style="position:relative;">
                                 <input type="number" 
                                        name="amount" 
@@ -46,26 +46,23 @@
                                        step="1" 
                                        @keydown="if($event.key==='-'||$event.key==='e'||$event.key==='+') $event.preventDefault()"
                                        required 
-                                       placeholder="Ketik nominal bayar (cth: 5000000)">
+                                       placeholder="Nominal (cth: 5000000)">
                             </div>
                             <template x-if="selectedInvoice">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                                    <span style="font-size:12px; color:var(--text-secondary);">
-                                        Maksimal bayar: <strong x-text="'Rp ' + formatNum(maxAmount)"></strong>
-                                    </span>
-                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:11.5px; padding:2px 8px;" title="Isi otomatis dengan sisa tagihan untuk pelunasan">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:11px; padding:2px 6px; width:100%; justify-content:center;" title="Isi otomatis sisa hutang">
                                         <i class="fa-solid fa-bolt"></i> Isi Sisa Lunas
                                     </button>
                                 </div>
                             </template>
                             <template x-if="amount && amount > maxAmount">
-                                <div style="color:var(--danger); font-size:12px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Nominal pembayaran melebihi sisa hutang (Maks: Rp <span x-text="formatNum(maxAmount)"></span>)!
+                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Melebihi sisa hutang!
                                 </div>
                             </template>
                             <template x-if="amount !== null && amount !== '' && amount <= 0">
-                                <div style="color:var(--danger); font-size:12px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Jumlah bayar harus lebih dari 0!
+                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Harus > 0!
                                 </div>
                             </template>
                         </div>
@@ -79,23 +76,21 @@
                                 <option value="cek">Cek Bank</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="form-row form-row-2">
                         <div class="form-group">
-                            <label class="form-label">Tanggal Pembayaran <span style="color:var(--danger);">*</span></label>
+                            <label class="form-label">Tanggal Bayar <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" class="form-control" required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">No. Referensi / Cek / Bukti Transfer</label>
-                            <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="Contoh: TRF-BCA-98124 / NO-CEK-001">
+                            <label class="form-label">No. Referensi / Bukti</label>
+                            <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="TRF-BCA-98124">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Catatan pembayaran...">{{ old('notes') }}</textarea>
+                        <textarea name="notes" class="form-control" rows="1" placeholder="Catatan pembayaran...">{{ old('notes') }}</textarea>
                     </div>
 
                     <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
@@ -169,6 +164,25 @@
                                     </span>
                                 </template>
                             </div>
+
+                            {{-- Supplier Bank Account Information --}}
+                            <template x-if="selectedInvoice && selectedInvoice.purchase_order && selectedInvoice.purchase_order.supplier && (selectedInvoice.purchase_order.supplier.bank_name || selectedInvoice.purchase_order.supplier.bank_account_number)">
+                                <div style="margin-top:14px; padding:10px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; font-size:12px;">
+                                    <div style="font-weight:700; color:#1e40af; margin-bottom:3px; display:flex; align-items:center; gap:4px;">
+                                        <span class="material-symbols-outlined text-[16px]">account_balance</span>
+                                        Rekening Transfer Supplier:
+                                    </div>
+                                    <div style="color:#1e3a8a; font-weight:600;">
+                                        <span x-text="selectedInvoice.purchase_order.supplier.bank_name || 'Bank'"></span>: 
+                                        <span x-text="selectedInvoice.purchase_order.supplier.bank_account_number" style="font-family:monospace; font-weight:700;"></span>
+                                    </div>
+                                    <template x-if="selectedInvoice.purchase_order.supplier.bank_account_holder">
+                                        <div style="color:#475569; font-size:11px; margin-top:2px;">
+                                            a/n <span x-text="selectedInvoice.purchase_order.supplier.bank_account_holder"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
                         </div>
                     </template>
                     <template x-if="!selectedInvoice">

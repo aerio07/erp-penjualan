@@ -9,7 +9,8 @@ class Supplier extends Model
 {
     protected $fillable = [
         'code', 'name', 'contact_person', 'phone', 'email',
-        'address', 'payment_term', 'npwp', 'is_active', 'notes',
+        'address', 'payment_term', 'npwp', 'ktp_number', 'bank_name', 'bank_account_number', 'bank_account_holder',
+        'is_active', 'notes',
     ];
 
     protected $casts = ['is_active' => 'boolean'];

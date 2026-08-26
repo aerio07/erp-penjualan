@@ -13,13 +13,14 @@
         </a>
     </div>
 
-    <div class="card" style="max-width:600px;">
+    <div class="card w-full">
         <div class="card-header"><h3>Informasi Gudang</h3></div>
         <div class="card-body">
             <form method="POST" action="{{ isset($warehouse) ? route('master.warehouses.update', $warehouse) : route('master.warehouses.store') }}">
                 @csrf
                 @if(isset($warehouse)) @method('PUT') @endif
 
+                <!-- Row 1: 2 Kolom (Kode & Nama Gudang) -->
                 <div class="form-row form-row-2">
                     <div class="form-group">
                         <label class="form-label">Kode Gudang <span style="color:var(--danger);">*</span></label>
@@ -49,9 +50,10 @@
                     </div>
                 </div>
 
+                <!-- Row 2: Alamat Lengkap -->
                 <div class="form-group">
                     <label class="form-label">Alamat Lengkap <span style="color:var(--danger);">*</span></label>
-                    <textarea name="address" class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" rows="3" required
+                    <textarea name="address" class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" rows="2" required
                         placeholder="Masukkan alamat lengkap lokasi gudang...">{{ old('address', $warehouse->address ?? '') }}</textarea>
                     @error('address')
                     <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">

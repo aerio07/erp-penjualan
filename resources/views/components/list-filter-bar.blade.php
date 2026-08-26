@@ -1,19 +1,25 @@
 @props([
     'action' => request()->url(),
-    'placeholder' => 'Cari kata kunci...',
+    'placeholder' => null,
+    'searchPlaceholder' => null,
     'showDateFilter' => false,
     'dateFromParam' => 'date_from',
     'dateToParam' => 'date_to',
 ])
 
+@php
+    $finalPlaceholder = $placeholder ?? $searchPlaceholder ?? 'Cari kata kunci...';
+@endphp
+
 <form method="GET" action="{{ $action }}" class="bg-paper rounded-t-lg shadow-sm p-unit-md flex flex-col md:flex-row gap-unit-md items-start md:items-center justify-between border-b border-border-light mb-unit-md">
     <div class="flex flex-wrap gap-unit-md items-center w-full md:w-auto flex-1">
         
         <!-- Search Input -->
-        <div class="relative w-full md:w-64">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ $placeholder }}" 
-                   class="w-full h-[38px] pl-10 pr-3 rounded bg-surface border border-border-medium text-body-sm font-body-base text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+        <div class="relative w-full md:w-64 flex items-center">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none select-none z-10">search</span>
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="{{ $finalPlaceholder }}" 
+                   class="search-input w-full h-[38px] rounded bg-surface border border-border-medium text-body-sm font-body-base text-on-surface focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all !pl-10 pr-3"
+                   style="padding-left: 2.5rem !important;">
         </div>
 
         <!-- Slot dropdowns custom -->

@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <x-list-filter-bar :action="route('sales.orders.index')" searchPlaceholder="Cari no. SO, customer, catatan...">
+    <x-list-filter-bar :action="route('sales.orders.index')" placeholder="Cari no. SO, customer, catatan...">
         <select name="customer_id" class="form-control" onchange="this.form.submit()">
             <option value="">-- Semua Customer --</option>
             @foreach($customers as $c)

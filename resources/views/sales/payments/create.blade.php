@@ -33,9 +33,9 @@
                         </select>
                     </div>
 
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
-                            <label class="form-label">Jumlah Uang Diterima (Rp) <span style="color:var(--danger);">*</span></label>
+                            <label class="form-label">Nominal Diterima (Rp) <span style="color:var(--danger);">*</span></label>
                             <div style="position:relative;">
                                 <input type="number" 
                                        name="amount" 
@@ -46,26 +46,23 @@
                                        step="1" 
                                        @keydown="if($event.key==='-'||$event.key==='e'||$event.key==='+') $event.preventDefault()"
                                        required 
-                                       placeholder="Ketik nominal diterima (cth: 5000000)">
+                                       placeholder="Nominal (cth: 5000000)">
                             </div>
                             <template x-if="selectedInvoice">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
-                                    <span style="font-size:12px; color:var(--text-secondary);">
-                                        Maksimal penerimaan: <strong x-text="'Rp ' + formatNum(maxAmount)"></strong>
-                                    </span>
-                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:11.5px; padding:2px 8px;" title="Isi otomatis dengan sisa piutang untuk pelunasan">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:11px; padding:2px 6px; width:100%; justify-content:center;" title="Isi otomatis sisa piutang">
                                         <i class="fa-solid fa-bolt"></i> Isi Sisa Lunas
                                     </button>
                                 </div>
                             </template>
                             <template x-if="amount && amount > maxAmount">
-                                <div style="color:var(--danger); font-size:12px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Nominal pembayaran melebihi sisa piutang (Maks: Rp <span x-text="formatNum(maxAmount)"></span>)!
+                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Melebihi sisa piutang!
                                 </div>
                             </template>
                             <template x-if="amount !== null && amount !== '' && amount <= 0">
-                                <div style="color:var(--danger); font-size:12px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Jumlah penerimaan harus lebih dari 0!
+                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> Harus > 0!
                                 </div>
                             </template>
                         </div>
@@ -79,23 +76,21 @@
                                 <option value="cek">Cek Bank</option>
                             </select>
                         </div>
-                    </div>
 
-                    <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Tanggal Diterima <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" class="form-control" required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">No. Referensi / Cek / Bukti Transfer</label>
-                            <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="Contoh: TRF-BCA-9981 / NO-CEK-001">
+                            <label class="form-label">No. Referensi / Bukti</label>
+                            <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="TRF-BCA-9981">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Catatan penerimaan...">{{ old('notes') }}</textarea>
+                        <textarea name="notes" class="form-control" rows="1" placeholder="Catatan penerimaan...">{{ old('notes') }}</textarea>
                     </div>
 
                     <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">

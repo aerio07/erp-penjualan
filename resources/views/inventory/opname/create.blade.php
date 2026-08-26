@@ -39,13 +39,15 @@
         <div class="card" style="margin-bottom:20px;">
             <div class="card-header"><h3>Informasi Opname</h3></div>
             <div class="card-body">
-                <div class="form-group" style="max-width:240px;">
-                    <label class="form-label">Tanggal Opname <span style="color:var(--danger);">*</span></label>
-                    <input type="date" name="opname_date" value="{{ old('opname_date', date('Y-m-d')) }}" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Catatan</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Keterangan opname...">{{ old('notes') }}</textarea>
+                <div class="form-row form-row-2">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Opname <span style="color:var(--danger);">*</span></label>
+                        <input type="date" name="opname_date" value="{{ old('opname_date', date('Y-m-d')) }}" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Catatan</label>
+                        <input type="text" name="notes" class="form-control" placeholder="Keterangan opname (misal: Opname Bulanan Q1)..." value="{{ old('notes') }}">
+                    </div>
                 </div>
             </div>
         </div>

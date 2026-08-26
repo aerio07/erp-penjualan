@@ -20,7 +20,7 @@
         <div class="card" style="margin-bottom:20px;">
             <div class="card-header"><h3>Informasi Retur</h3></div>
             <div class="card-body">
-                <div class="form-row form-row-2">
+                <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">Bukti Penerimaan (GRN) <span style="color:var(--danger);">*</span></label>
                         <select name="goods_receipt_id" class="form-control" x-model="selectedGrnId" @change="onGrnChange()" required>
@@ -35,16 +35,16 @@
                         <label class="form-label">Tanggal Retur <span style="color:var(--danger);">*</span></label>
                         <input type="date" name="return_date" value="{{ old('return_date', date('Y-m-d')) }}" class="form-control" required>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Alasan Retur Utama</label>
-                    <input type="text" name="reason" value="{{ old('reason') }}" class="form-control" placeholder="Contoh: Barang cacat pabrik / Kemasan rusak / Klaim garansi supplier">
+                    <div class="form-group">
+                        <label class="form-label">Alasan Retur Utama</label>
+                        <input type="text" name="reason" value="{{ old('reason') }}" class="form-control" placeholder="Contoh: Cacat pabrik / Rusak / Klaim garansi">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Catatan Tambahan</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Catatan pengiriman retur..."></textarea>
+                    <textarea name="notes" class="form-control" rows="1" placeholder="Catatan pengiriman retur..."></textarea>
                 </div>
             </div>
         </div>

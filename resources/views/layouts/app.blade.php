@@ -193,6 +193,16 @@
             box-sizing: border-box !important;
             font-family: 'Inter', sans-serif !important;
         }
+        /* Search Input Icon Overlap Prevention */
+        .search-input,
+        .search-box input,
+        .has-search-icon input,
+        input.search-input,
+        main input.search-input,
+        main input[name="q"],
+        main input[type="search"] {
+            padding-left: 2.5rem !important;
+        }
         main textarea, textarea.form-control {
             height: auto !important;
             min-height: 90px !important;
@@ -251,23 +261,31 @@
         .form-row, .form-row-2, .grid-2 {
             display: grid !important;
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            gap: 1rem !important;
+            gap: 1.25rem !important;
             width: 100% !important;
             margin-bottom: 1rem !important;
         }
         .form-row-3, .grid-3 {
             display: grid !important;
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            gap: 1rem !important;
+            gap: 1.25rem !important;
             width: 100% !important;
             margin-bottom: 1rem !important;
         }
         .form-row-4, .grid-4 {
             display: grid !important;
             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-            gap: 1rem !important;
+            gap: 1.25rem !important;
             width: 100% !important;
             margin-bottom: 1rem !important;
+        }
+        @media (max-width: 1024px) {
+            .form-row-4, .grid-4 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            .form-row-3, .grid-3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
         }
         @media (max-width: 768px) {
             .form-row, .form-row-2, .form-row-3, .form-row-4, .grid-2, .grid-3, .grid-4 {

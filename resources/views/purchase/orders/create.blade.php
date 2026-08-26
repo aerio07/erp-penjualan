@@ -22,7 +22,7 @@
             <div class="card" style="grid-column: span 2;">
                 <div class="card-header"><h3>Informasi PO</h3></div>
                 <div class="card-body">
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Supplier <span style="color:var(--danger);">*</span></label>
                             <select name="supplier_id" class="form-control {{ $errors->has('supplier_id') ? 'is-invalid' : '' }}" required>
@@ -49,7 +49,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Catatan tambahan...">{{ old('notes') }}</textarea>
+                        <textarea name="notes" class="form-control" rows="1" placeholder="Catatan tambahan...">{{ old('notes') }}</textarea>
                     </div>
                 </div>
             </div>

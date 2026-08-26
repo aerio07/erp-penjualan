@@ -14,13 +14,13 @@
         </a>
     </div>
 
-    <div class="card" style="max-width:600px;">
+    <div class="card w-full">
         <div class="card-header">
             <h3>Bukti Transaksi Pembayaran</h3>
             <span class="badge badge-done">Telah Diposting</span>
         </div>
         <div class="card-body">
-            <div class="form-row form-row-2" style="margin-bottom:16px;">
+            <div class="form-row form-row-4" style="margin-bottom:16px;">
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Supplier</div>
                     <div style="font-weight:600;">{{ $payment->purchaseInvoice->purchaseOrder->supplier->name ?? '-' }}</div>
