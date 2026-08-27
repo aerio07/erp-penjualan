@@ -60,8 +60,18 @@
                     <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tipe Customer</div>
                         <div><x-status-badge :status="$customer->tax_type ?? 'non_pkp'" /></div>
                     </div>
-                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP</div>
-                        <div style="font-weight:{{ $customer->npwp ? '600' : 'normal' }};">{{ $customer->npwp ?? '-' }}</div>
+                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP / NIK</div>
+                        <div style="font-weight:{{ ($customer->npwp || $customer->nik) ? '600' : 'normal' }};">
+                            @if($customer->npwp)
+                                <span>NPWP: {{ $customer->npwp }}</span>
+                            @endif
+                            @if($customer->nik)
+                                <div style="font-size:12px; color:#475569; margin-top:2px;">NIK: {{ $customer->nik }}</div>
+                            @endif
+                            @if(!$customer->npwp && !$customer->nik)
+                                <span>-</span>
+                            @endif
+                        </div>
                     </div>
                     <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Sales PIC (Account Owner)</div>
                         <div style="font-weight:600;">

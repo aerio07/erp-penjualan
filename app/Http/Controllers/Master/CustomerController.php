@@ -60,6 +60,7 @@ class CustomerController extends Controller
             'sales_person_id' => 'nullable|exists:users,id',
             'tax_type'        => 'required|in:pkp,non_pkp',
             'npwp'            => 'required_if:tax_type,pkp|nullable|string|max:50',
+            'nik'             => 'required_if:tax_type,non_pkp|nullable|string|max:50',
             'address'         => 'required|string',
         ], [
             'code.required'           => 'Kode customer wajib diisi.',
@@ -74,6 +75,7 @@ class CustomerController extends Controller
             'tax_type.required'       => 'Tipe customer (PKP / Non-PKP) wajib dipilih.',
             'tax_type.in'             => 'Pilihan tipe customer tidak valid.',
             'npwp.required_if'        => 'Nomor NPWP wajib diisi untuk customer bertipe PKP.',
+            'nik.required_if'         => 'Nomor NIK (KTP) wajib diisi untuk customer Non-PKP (non-pajak).',
             'address.required'        => 'Alamat customer wajib diisi.',
             'email.email'             => 'Format email tidak valid.',
         ]);
@@ -89,6 +91,7 @@ class CustomerController extends Controller
             'sales_person_id' => $request->filled('sales_person_id') ? $request->sales_person_id : null,
             'tax_type'        => $request->tax_type,
             'npwp'            => $request->npwp ? trim($request->npwp) : null,
+            'nik'             => $request->nik ? trim($request->nik) : null,
             'address'         => trim($request->address),
             'is_active'       => $request->boolean('is_active', true),
         ]);
@@ -138,6 +141,7 @@ class CustomerController extends Controller
             'sales_person_id' => 'nullable|exists:users,id',
             'tax_type'        => 'required|in:pkp,non_pkp',
             'npwp'            => 'required_if:tax_type,pkp|nullable|string|max:50',
+            'nik'             => 'required_if:tax_type,non_pkp|nullable|string|max:50',
             'address'         => 'required|string',
         ], [
             'code.required'           => 'Kode customer wajib diisi.',
@@ -152,6 +156,7 @@ class CustomerController extends Controller
             'tax_type.required'       => 'Tipe customer (PKP / Non-PKP) wajib dipilih.',
             'tax_type.in'             => 'Pilihan tipe customer tidak valid.',
             'npwp.required_if'        => 'Nomor NPWP wajib diisi untuk customer bertipe PKP.',
+            'nik.required_if'         => 'Nomor NIK (KTP) wajib diisi untuk customer Non-PKP (non-pajak).',
             'address.required'        => 'Alamat customer wajib diisi.',
             'email.email'             => 'Format email tidak valid.',
         ]);
@@ -167,6 +172,7 @@ class CustomerController extends Controller
             'sales_person_id' => $request->filled('sales_person_id') ? $request->sales_person_id : null,
             'tax_type'        => $request->tax_type,
             'npwp'            => $request->npwp ? trim($request->npwp) : null,
+            'nik'             => $request->nik ? trim($request->nik) : null,
             'address'         => trim($request->address),
             'is_active'       => $request->boolean('is_active'),
         ]);

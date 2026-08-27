@@ -25,6 +25,7 @@ class CustomerSalesPersonTest extends TestCase
             'sales_person_id' => $sales->id,
             'tax_type'        => 'non_pkp',
             'npwp'            => null,
+            'nik'             => '3201123456780001',
             'address'         => 'Kawasan Bisnis Sudirman Jakarta',
             'is_active'       => 1,
         ]);
@@ -54,6 +55,7 @@ class CustomerSalesPersonTest extends TestCase
             'sales_person_id' => '',
             'tax_type'        => 'non_pkp',
             'npwp'            => null,
+            'nik'             => '3201123456780002',
             'address'         => 'Jl. Raya Bogor No. 12',
             'is_active'       => 1,
         ]);

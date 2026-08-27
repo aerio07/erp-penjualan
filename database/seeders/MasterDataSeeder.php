@@ -65,6 +65,8 @@ class MasterDataSeeder extends Seeder
                 'address'        => 'Jl. Sudirman No.45, Jakarta',
                 'credit_limit'   => 100_000_000,
                 'payment_term'   => 'NET 30',
+                'tax_type'       => 'pkp',
+                'npwp'           => '01.234.567.8-001.000',
             ],
             [
                 'code'           => 'CUST-002',
@@ -75,10 +77,12 @@ class MasterDataSeeder extends Seeder
                 'address'        => 'Jl. Asia Afrika No.12, Bandung',
                 'credit_limit'   => 50_000_000,
                 'payment_term'   => 'NET 14',
+                'tax_type'       => 'non_pkp',
+                'nik'            => '3273012345670001',
             ],
         ];
         foreach ($customers as $c) {
-            Customer::firstOrCreate(['code' => $c['code']], $c);
+            Customer::updateOrCreate(['code' => $c['code']], $c);
         }
 
         // Products

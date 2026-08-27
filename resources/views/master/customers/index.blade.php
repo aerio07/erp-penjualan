@@ -84,6 +84,11 @@
                         <td>{{ $c->phone ?? '-' }}</td>
                         <td>
                             <x-status-badge :status="$c->tax_type ?? 'non_pkp'" />
+                            @if($c->tax_type === 'pkp' && $c->npwp)
+                                <div style="font-size:10.5px; color:#64748b; margin-top:3px; font-family:monospace;">NPWP: {{ $c->npwp }}</div>
+                            @elseif($c->nik)
+                                <div style="font-size:10.5px; color:#64748b; margin-top:3px; font-family:monospace;">NIK: {{ $c->nik }}</div>
+                            @endif
                         </td>
                         <td style="text-align:right; font-weight:600;">
                             Rp {{ number_format($c->credit_limit ?? 0, 0, ',', '.') }}

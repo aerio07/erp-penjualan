@@ -39,7 +39,30 @@ class CustomerTaxTypeAndInvoiceTest extends TestCase
         ]);
     }
 
-    public function test_can_create_non_pkp_customer_without_npwp(): void
+    public function test_cannot_create_non_pkp_customer_without_nik(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->post(route('master.customers.store'), [
+            'code'           => 'CUST-NONPKP-NO-NIK',
+            'name'           => 'Toko Berkah Mandiri',
+            'phone'          => '08198765432',
+            'payment_term'   => 'COD',
+            'credit_limit'   => 0,
+            'tax_type'       => 'non_pkp',
+            'npwp'           => null,
+            'nik'            => '', // Kosong -> harus ditolak untuk non_pkp
+            'address'        => 'Jl. Pasar Baru No. 5',
+            'is_active'      => 1,
+        ]);
+
+        $response->assertSessionHasErrors(['nik']);
+        $this->assertDatabaseMissing('customers', [
+            'code' => 'CUST-NONPKP-NO-NIK',
+        ]);
+    }
+
+    public function test_can_create_non_pkp_customer_without_npwp_when_nik_provided(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
@@ -51,6 +74,7 @@ class CustomerTaxTypeAndInvoiceTest extends TestCase
             'credit_limit'   => 0,
             'tax_type'       => 'non_pkp',
             'npwp'           => null,
+            'nik'            => '3201012345670001',
             'address'        => 'Jl. Pasar Baru No. 5',
             'is_active'      => 1,
         ]);
@@ -60,6 +84,7 @@ class CustomerTaxTypeAndInvoiceTest extends TestCase
             'code'     => 'CUST-NONPKP-1',
             'tax_type' => 'non_pkp',
             'npwp'     => null,
+            'nik'      => '3201012345670001',
         ]);
 
         $cust = Customer::where('code', 'CUST-NONPKP-1')->first();
@@ -192,5 +217,67 @@ class CustomerTaxTypeAndInvoiceTest extends TestCase
         $responsePdf = $this->actingAs($finance)->get(route('pdf.sales-invoice', $invoice));
         $responsePdf->assertOk();
         $responsePdf->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_can_create_non_pkp_customer_with_nik(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->post(route('master.customers.store'), [
+            'code'           => 'CUST-NIK-01',
+            'name'           => 'Budi Santoso (Perorangan)',
+            'phone'          => '081234567890',
+            'payment_term'   => 'COD',
+            'credit_limit'   => 0,
+            'tax_type'       => 'non_pkp',
+            'npwp'           => null,
+            'nik'            => '3201123456780001',
+            'address'        => 'Jl. Mawar No. 12 Bogor',
+            'is_active'      => 1,
+        ]);
+
+        $response->assertRedirect(route('master.customers.index'));
+        $this->assertDatabaseHas('customers', [
+            'code'     => 'CUST-NIK-01',
+            'tax_type' => 'non_pkp',
+            'nik'      => '3201123456780001',
+        ]);
+    }
+
+    public function test_can_update_customer_nik(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $customer = Customer::create([
+            'code'         => 'CUST-NIK-02',
+            'name'         => 'Siti Aminah',
+            'phone'        => '08987654321',
+            'payment_term' => 'COD',
+            'credit_limit' => 0,
+            'tax_type'     => 'non_pkp',
+            'npwp'         => null,
+            'nik'          => null,
+            'address'      => 'Jl. Melati No. 4 Bandung',
+            'is_active'    => true,
+        ]);
+
+        $response = $this->actingAs($admin)->put(route('master.customers.update', $customer), [
+            'code'           => 'CUST-NIK-02',
+            'name'           => 'Siti Aminah Updated',
+            'phone'          => '08987654321',
+            'payment_term'   => 'NET 7',
+            'credit_limit'   => 1000000,
+            'tax_type'       => 'non_pkp',
+            'npwp'           => null,
+            'nik'            => '3273012345670002',
+            'address'        => 'Jl. Melati No. 4 Bandung',
+            'is_active'      => 1,
+        ]);
+
+        $response->assertRedirect(route('master.customers.index'));
+        $this->assertDatabaseHas('customers', [
+            'id'   => $customer->id,
+            'name' => 'Siti Aminah Updated',
+            'nik'  => '3273012345670002',
+        ]);
     }
 }
