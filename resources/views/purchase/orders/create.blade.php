@@ -47,9 +47,27 @@
                             <input type="number" name="tax_rate" value="{{ old('tax_rate', 11) }}" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="1" placeholder="Catatan tambahan...">{{ old('notes') }}</textarea>
+
+                    <div class="form-row form-row-2" style="margin-top:12px;">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-warehouse text-primary"></i> Lokasi Gudang Tujuan</label>
+                            <select class="form-control" @change="if($event.target.value) { shipTo = $event.target.value; }">
+                                <option value="">-- Pilih Gudang (Otomatis Isi Ship To) --</option>
+                                @foreach($warehouses as $wh)
+                                <option value="{{ $wh->name }} - {{ $wh->address }}">{{ $wh->name }} ({{ $wh->code }})</option>
+                                @endforeach
+                            </select>
+                            <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:block;">Pilih gudang untuk mengisi otomatis atau sesuaikan alamat di bawah.</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-note-sticky text-primary"></i> Catatan Tambahan</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Instruksi khusus, syarat penyerahan barang, atau no. referensi...">{{ old('notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top:6px;">
+                        <label class="form-label"><i class="fa-solid fa-truck-ramp-box text-primary"></i> Ship To (Alamat Tujuan Pengiriman Barang)</label>
+                        <textarea name="ship_to" x-model="shipTo" class="form-control" rows="2" placeholder="Nama penerima, PIC/kontak, nama gudang, dan alamat lengkap tujuan pengiriman..."></textarea>
                     </div>
                 </div>
             </div>
@@ -178,6 +196,7 @@ function poForm() {
         rows: initialRows,
         taxRate: 11,
         discountHeader: 0,
+        shipTo: @json(old('ship_to', '')),
 
         addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0 }); },
         removeRow(idx) { this.rows.splice(idx, 1); },

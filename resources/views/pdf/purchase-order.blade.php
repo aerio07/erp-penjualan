@@ -55,16 +55,17 @@
             </span>
         </div>
         <div class="info-block">
-            <label>Tanggal PO</label>
-            <value>{{ $order->order_date->format('d F Y') }}</value><br><br>
+            <label>Ship To (Tujuan Pengiriman)</label>
+            <value style="color:#0f766e;">{{ $order->ship_to ?: 'Gudang Perusahaan' }}</value><br><br>
             <label>Expected Delivery</label>
             <value>{{ $order->expected_date ? $order->expected_date->format('d F Y') : '-' }}</value>
         </div>
         <div class="info-block">
-            <label>Status</label>
-            <div class="badge">{{ strtoupper($order->status) }}</div><br><br>
-            <label>Dibuat Oleh</label>
-            <value>{{ $order->user->name }}</value>
+            <label>Tanggal PO</label>
+            <value>{{ $order->order_date->format('d F Y') }}</value><br><br>
+            <label>Status / Dibuat Oleh</label>
+            <div class="badge">{{ strtoupper($order->status) }}</div>
+            <div style="font-size:11px; color:#64748b; margin-top:3px;">{{ $order->user->name }}</div>
         </div>
     </div>
 

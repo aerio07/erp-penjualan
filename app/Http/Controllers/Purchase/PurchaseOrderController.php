@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
+use App\Models\Warehouse;
 use App\Services\ApprovalService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class PurchaseOrderController extends Controller
     {
         $query = PurchaseOrder::with(['supplier', 'user']);
 
-        $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes']);
+        $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes', 'ship_to']);
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyFilter($query, $request, 'supplier_id');
         $query = $this->applyDateRange($query, $request, 'order_date');
@@ -42,14 +43,15 @@ class PurchaseOrderController extends Controller
 
     public function create(Request $request): View
     {
-        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
-        $products  = Product::where('is_active', true)->orderBy('name')->get();
+        $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
+        $products   = Product::where('is_active', true)->orderBy('name')->get();
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
         $prefilledProductId = $request->get('product_id');
         $prefilledQty       = $request->get('qty');
         $demandIds          = $request->get('demand_ids');
 
-        return view('purchase.orders.create', compact('suppliers', 'products', 'prefilledProductId', 'prefilledQty', 'demandIds'));
+        return view('purchase.orders.create', compact('suppliers', 'products', 'warehouses', 'prefilledProductId', 'prefilledQty', 'demandIds'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -61,6 +63,7 @@ class PurchaseOrderController extends Controller
             'tax_rate'              => 'required|numeric|min:0|max:100',
             'discount_amount'       => 'nullable|numeric|min:0',
             'notes'                 => 'nullable|string',
+            'ship_to'               => 'nullable|string',
             'items'                 => 'required|array|min:1',
             'items.*.product_id'    => 'required|exists:products,id',
             'items.*.qty_ordered'   => 'required|integer|min:1',
@@ -97,6 +100,7 @@ class PurchaseOrderController extends Controller
                 'tax_amount'      => $taxAmount,
                 'total_amount'    => $totalAmount,
                 'notes'           => $request->notes,
+                'ship_to'         => $request->ship_to,
             ]);
 
             foreach ($request->items as $item) {
@@ -143,10 +147,11 @@ class PurchaseOrderController extends Controller
         abort_if(!in_array($order->status, ['draft']), 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
 
         $order->load(['items.product']);
-        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
-        $products  = Product::where('is_active', true)->orderBy('name')->get();
+        $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
+        $products   = Product::where('is_active', true)->orderBy('name')->get();
+        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
-        return view('purchase.orders.edit', compact('order', 'suppliers', 'products'));
+        return view('purchase.orders.edit', compact('order', 'suppliers', 'products', 'warehouses'));
     }
 
     public function update(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
@@ -162,6 +167,7 @@ class PurchaseOrderController extends Controller
             'tax_rate'       => 'required|numeric|min:0|max:100',
             'discount_amount'=> 'nullable|numeric|min:0',
             'notes'          => 'nullable|string',
+            'ship_to'        => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_id'   => 'required|exists:products,id',
             'items.*.qty_ordered'  => 'required|integer|min:1',
@@ -192,6 +198,7 @@ class PurchaseOrderController extends Controller
                 'tax_amount'     => $taxAmount,
                 'total_amount'   => $taxableAmount + $taxAmount,
                 'notes'          => $request->notes,
+                'ship_to'        => $request->ship_to,
             ]);
 
             foreach ($request->items as $item) {

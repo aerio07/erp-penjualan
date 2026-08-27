@@ -57,8 +57,17 @@
                         <div style="font-weight:600;">{{ $order->expected_date ? $order->expected_date->format('d F Y') : '-' }}</div>
                     </div>
                 </div>
+                @if($order->ship_to)
+                <div style="margin-top:16px; padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; font-size:13px; color:#166534;">
+                    <div style="font-weight:600; margin-bottom:3px; display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-truck-ramp-box"></i> Ship To (Tujuan Pengiriman):
+                    </div>
+                    <div>{{ $order->ship_to }}</div>
+                </div>
+                @endif
+
                 @if($order->notes)
-                <div style="margin-top:16px; padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; color:var(--text-secondary);">
+                <div style="margin-top:12px; padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; color:var(--text-secondary);">
                     <i class="fa-solid fa-note-sticky" style="margin-right:6px;"></i>{{ $order->notes }}
                 </div>
                 @endif
