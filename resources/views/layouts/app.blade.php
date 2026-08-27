@@ -211,6 +211,24 @@
         main select, select.form-control {
             cursor: pointer !important;
         }
+        /* Filter Bar Specific Overrides: Prevent selects/dates from forcing 100% width and overlapping */
+        .erp-filter-bar select,
+        .erp-filter-bar input[type="date"],
+        .filter-bar select,
+        .filter-bar input[type="date"],
+        .list-filter-form select,
+        .list-filter-form input[type="date"] {
+            width: auto !important;
+            display: inline-block !important;
+            min-width: 140px;
+            max-width: 100%;
+        }
+        .erp-filter-bar select[name="per_page"],
+        .filter-bar select[name="per_page"],
+        .list-filter-form select[name="per_page"] {
+            min-width: 70px !important;
+            width: 75px !important;
+        }
         .form-text {
             display: block !important;
             font-size: 0.75rem !important;

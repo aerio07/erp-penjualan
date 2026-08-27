@@ -14,8 +14,8 @@ class ChartOfAccountController extends Controller
     {
         $query = ChartOfAccount::query();
 
-        if ($request->filled('search')) {
-            $search = trim($request->search);
+        $search = trim($request->input('search') ?: $request->input('q', ''));
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
                   ->orWhere('name', 'like', "%{$search}%")
@@ -31,7 +31,7 @@ class ChartOfAccountController extends Controller
             $query->where('is_active', $request->is_active === '1');
         }
 
-        $allAccounts = $query->orderBy('code')->get();
+        $allAccounts = $query->with(['parent', 'children'])->orderBy('code')->get();
         $accounts = $allAccounts->groupBy('type');
 
         return view('master.chart-of-accounts.index', compact('accounts', 'allAccounts'));
@@ -39,7 +39,8 @@ class ChartOfAccountController extends Controller
 
     public function create(): View
     {
-        return view('master.chart-of-accounts.form');
+        $parentAccounts = ChartOfAccount::orderBy('code')->get();
+        return view('master.chart-of-accounts.form', compact('parentAccounts'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -53,6 +54,7 @@ class ChartOfAccountController extends Controller
             : 'Kode akun ":input" sudah terdaftar. Gunakan kode yang berbeda.';
 
         $request->validate([
+            'parent_id'      => 'nullable|exists:chart_of_accounts,id',
             'code'           => 'required|string|max:50|unique:chart_of_accounts,code',
             'name'           => 'required|string|max:255',
             'type'           => 'required|in:asset,liability,equity,revenue,expense',
@@ -69,6 +71,7 @@ class ChartOfAccountController extends Controller
         ]);
 
         ChartOfAccount::create([
+            'parent_id'      => $request->filled('parent_id') ? $request->parent_id : null,
             'code'           => strtoupper(trim($request->code)),
             'name'           => trim($request->name),
             'type'           => $request->type,
@@ -83,7 +86,7 @@ class ChartOfAccountController extends Controller
 
     public function show(ChartOfAccount $chartOfAccount): View
     {
-        $chartOfAccount->load(['journalLines' => fn($q) => $q->with('journalEntry')->latest()->limit(50)]);
+        $chartOfAccount->load(['parent', 'children', 'journalLines' => fn($q) => $q->with('journalEntry')->latest()->limit(50)]);
 
         $totalDebit = $chartOfAccount->journalLines()->sum('debit');
         $totalCredit = $chartOfAccount->journalLines()->sum('credit');
@@ -97,7 +100,8 @@ class ChartOfAccountController extends Controller
 
     public function edit(ChartOfAccount $chartOfAccount): View
     {
-        return view('master.chart-of-accounts.form', compact('chartOfAccount'));
+        $parentAccounts = ChartOfAccount::where('id', '!=', $chartOfAccount->id)->orderBy('code')->get();
+        return view('master.chart-of-accounts.form', compact('chartOfAccount', 'parentAccounts'));
     }
 
     public function update(Request $request, ChartOfAccount $chartOfAccount): RedirectResponse
@@ -111,6 +115,7 @@ class ChartOfAccountController extends Controller
             : 'Kode akun ":input" sudah terdaftar. Gunakan kode yang berbeda.';
 
         $request->validate([
+            'parent_id'      => 'nullable|exists:chart_of_accounts,id|not_in:' . $chartOfAccount->id,
             'code'           => 'required|string|max:50|unique:chart_of_accounts,code,' . $chartOfAccount->id,
             'name'           => 'required|string|max:255',
             'type'           => 'required|in:asset,liability,equity,revenue,expense',
@@ -127,6 +132,7 @@ class ChartOfAccountController extends Controller
         ]);
 
         $chartOfAccount->update([
+            'parent_id'      => $request->filled('parent_id') ? $request->parent_id : null,
             'code'           => strtoupper(trim($request->code)),
             'name'           => trim($request->name),
             'type'           => $request->type,
@@ -151,6 +157,10 @@ class ChartOfAccountController extends Controller
 
     public function destroy(ChartOfAccount $chartOfAccount): RedirectResponse
     {
+        if ($chartOfAccount->children()->exists()) {
+            return back()->with('error', "Akun \"{$chartOfAccount->name}\" ({$chartOfAccount->code}) tidak dapat dihapus karena masih memiliki sub-akun (akun anak). Hapus atau pindahkan sub-akun tersebut terlebih dahulu.");
+        }
+
         if ($chartOfAccount->journalLines()->exists()) {
             return back()->with('error', "Akun \"{$chartOfAccount->name}\" ({$chartOfAccount->code}) tidak dapat dihapus karena sudah memiliki riwayat mutasi dalam jurnal akuntansi. Anda dapat menonaktifkan akun ini sebagai gantinya.");
         }

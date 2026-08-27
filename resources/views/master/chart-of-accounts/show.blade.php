@@ -1,30 +1,62 @@
 @extends('layouts.app')
-@section('title', $chartOfAccount->name)
-@section('page-title', 'Detail Akun CoA')
+@section('title', '[' . $chartOfAccount->code . '] ' . $chartOfAccount->name)
+@section('page-title', 'Detail Bagan Akun (CoA)')
 
 @section('content')
 <div class="animate-in">
     @php
     $typeMeta = [
-        'asset'     => ['label' => 'Aset',         'icon' => 'fa-building-columns', 'color' => '#3b82f6', 'bg' => '#dbeafe'],
-        'liability' => ['label' => 'Kewajiban',     'icon' => 'fa-file-invoice',     'color' => '#ef4444', 'bg' => '#fee2e2'],
-        'equity'    => ['label' => 'Ekuitas',       'icon' => 'fa-chart-pie',        'color' => '#8b5cf6', 'bg' => '#ede9fe'],
-        'revenue'   => ['label' => 'Pendapatan',    'icon' => 'fa-arrow-trend-up',   'color' => '#10b981', 'bg' => '#d1fae5'],
-        'expense'   => ['label' => 'Beban/Biaya',   'icon' => 'fa-arrow-trend-down', 'color' => '#f59e0b', 'bg' => '#fef3c7'],
-    ][$chartOfAccount->type] ?? ['label' => ucfirst($chartOfAccount->type), 'icon' => 'fa-book', 'color' => '#6b7280', 'bg' => '#f3f4f6'];
+        'asset'     => ['label' => 'Aset (Aktiva)',         'icon' => 'fa-building-columns', 'color' => '#2563eb', 'bg' => '#eff6ff', 'border' => '#bfdbfe'],
+        'liability' => ['label' => 'Kewajiban (Hutang)',    'icon' => 'fa-file-invoice-dollar', 'color' => '#dc2626', 'bg' => '#fef2f2', 'border' => '#fecaca'],
+        'equity'    => ['label' => 'Ekuitas (Modal)',       'icon' => 'fa-chart-pie',        'color' => '#7c3aed', 'bg' => '#f5f3ff', 'border' => '#ddd6fe'],
+        'revenue'   => ['label' => 'Pendapatan (Penjualan)', 'icon' => 'fa-arrow-trend-up',   'color' => '#16a34a', 'bg' => '#f0fdf4', 'border' => '#bbf7d0'],
+        'expense'   => ['label' => 'Beban & Biaya',         'icon' => 'fa-arrow-trend-down', 'color' => '#d97706', 'bg' => '#fffbeb', 'border' => '#fde68a'],
+    ][$chartOfAccount->type] ?? ['label' => ucfirst($chartOfAccount->type), 'icon' => 'fa-book', 'color' => '#6b7280', 'bg' => '#f3f4f6', 'border' => '#e5e7eb'];
     @endphp
+
+    {{-- Breadcrumb Navigation --}}
+    <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+        <a href="{{ route('master.chart-of-accounts.index') }}" style="color:var(--text-secondary); text-decoration:none;">
+            <i class="fa-solid fa-layer-group"></i> Chart of Accounts
+        </a>
+        <i class="fa-solid fa-chevron-right" style="font-size:10px; color:#cbd5e1;"></i>
+        <span class="badge" style="background:{{ $typeMeta['bg'] }}; color:{{ $typeMeta['color'] }}; font-size:11px; font-weight:600;">
+            {{ $typeMeta['label'] }}
+        </span>
+        @if($chartOfAccount->parent)
+        <i class="fa-solid fa-chevron-right" style="font-size:10px; color:#cbd5e1;"></i>
+        <a href="{{ route('master.chart-of-accounts.show', $chartOfAccount->parent) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+            [{{ $chartOfAccount->parent->code }}] {{ $chartOfAccount->parent->name }}
+        </a>
+        @endif
+        <i class="fa-solid fa-chevron-right" style="font-size:10px; color:#cbd5e1;"></i>
+        <span style="color:var(--primary); font-weight:700;">{{ $chartOfAccount->name }}</span>
+    </div>
 
     <div class="page-header">
         <div>
-            <h1>{{ $chartOfAccount->name }}</h1>
-            <p>
-                Kode: <strong style="color:{{ $typeMeta['color'] }}; font-family:monospace; font-size:15px;">{{ $chartOfAccount->code }}</strong> &nbsp;·&nbsp;
-                <span class="badge" style="background:{{ $typeMeta['bg'] }}; color:{{ $typeMeta['color'] }};">
-                    <i class="fa-solid {{ $typeMeta['icon'] }}" style="margin-right:4px;"></i> {{ $typeMeta['label'] }}
-                </span> &nbsp;·&nbsp;
-                <span class="badge {{ $chartOfAccount->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                    {{ $chartOfAccount->is_active ? 'Aktif' : 'Nonaktif' }}
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                <span style="font-family:monospace; font-size:18px; font-weight:800; color:{{ $typeMeta['color'] }}; background:{{ $typeMeta['bg'] }}; padding:2px 10px; border-radius:6px; border:1px solid {{ $typeMeta['border'] }};">
+                    {{ $chartOfAccount->code }}
                 </span>
+                <h1 style="margin:0; font-size:24px;">{{ $chartOfAccount->name }}</h1>
+            </div>
+            <p style="margin:0;">
+                <span class="badge {{ $chartOfAccount->is_active ? 'badge-done' : 'badge-cancelled' }}">
+                    <i class="fa-solid {{ $chartOfAccount->is_active ? 'fa-check' : 'fa-xmark' }}" style="font-size:10px; margin-right:3px;"></i>
+                    {{ $chartOfAccount->is_active ? 'Akun Aktif (Dapat Dijurnal)' : 'Nonaktif' }}
+                </span>
+                @if($chartOfAccount->parent)
+                &nbsp;·&nbsp;
+                <span style="font-size:13px; color:var(--text-secondary);">
+                    Sub-akun dari: <a href="{{ route('master.chart-of-accounts.show', $chartOfAccount->parent) }}" style="color:var(--primary); font-weight:600; text-decoration:none;"><i class="fa-solid fa-sitemap" style="font-size:11px; margin-right:3px;"></i>[{{ $chartOfAccount->parent->code }}] {{ $chartOfAccount->parent->name }}</a>
+                </span>
+                @else
+                &nbsp;·&nbsp;
+                <span style="font-size:13px; color:#64748b; font-style:italic;">
+                    <i class="fa-solid fa-folder-tree" style="margin-right:4px;"></i> Akun Induk Tingkat 1 (Header Utama)
+                </span>
+                @endif
             </p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -43,7 +75,7 @@
             </form>
 
             <a href="{{ route('master.chart-of-accounts.edit', $chartOfAccount) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit
+                <i class="fa-solid fa-pen"></i> Edit Akun
             </a>
 
             <button type="button" data-confirm-delete="del-coa-show" data-name="{{ $chartOfAccount->name }} ({{ $chartOfAccount->code }})" class="btn btn-danger" title="Hapus Akun">
@@ -60,38 +92,108 @@
         </div>
     </div>
 
-    {{-- Metrics Cards --}}
+    {{-- Financial Metrics Cards --}}
     <div class="grid grid-4" style="margin-bottom:24px;">
-        <div class="card" style="padding:16px;">
-            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Normal Balance</div>
-            <div style="font-size:18px; font-weight:700;">
-                <span class="badge {{ $chartOfAccount->normal_balance === 'debit' ? 'badge-confirmed' : 'badge-pending' }}" style="font-size:14px; padding:6px 12px;">
+        <div class="card" style="padding:16px; border-top:3px solid var(--primary);">
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px; font-weight:500;">Normal Balance</div>
+            <div style="font-size:16px; font-weight:800;">
+                <span class="badge {{ $chartOfAccount->normal_balance === 'debit' ? 'badge-confirmed' : 'badge-pending' }}" style="font-size:13px; padding:4px 10px;">
+                    <i class="fa-solid {{ $chartOfAccount->normal_balance === 'debit' ? 'fa-arrow-down-left' : 'fa-arrow-up-right' }}" style="font-size:10px; margin-right:4px;"></i>
                     {{ strtoupper($chartOfAccount->normal_balance) }}
                 </span>
             </div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">
+                {{ $chartOfAccount->normal_balance === 'debit' ? 'Bertambah di Debit' : 'Bertambah di Kredit' }}
+            </div>
         </div>
 
-        <div class="card" style="padding:16px;">
-            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Total Debit</div>
-            <div style="font-size:18px; font-weight:700; color:#2563eb;">
+        <div class="card" style="padding:16px; border-top:3px solid #2563eb;">
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px; font-weight:500;">Total Mutasi Debit</div>
+            <div style="font-size:18px; font-weight:800; color:#2563eb;">
                 Rp {{ number_format($totalDebit, 0, ',', '.') }}
             </div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Akumulasi debit akun ini</div>
         </div>
 
-        <div class="card" style="padding:16px;">
-            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Total Kredit</div>
-            <div style="font-size:18px; font-weight:700; color:#dc2626;">
+        <div class="card" style="padding:16px; border-top:3px solid #dc2626;">
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px; font-weight:500;">Total Mutasi Kredit</div>
+            <div style="font-size:18px; font-weight:800; color:#dc2626;">
                 Rp {{ number_format($totalCredit, 0, ',', '.') }}
             </div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Akumulasi kredit akun ini</div>
         </div>
 
-        <div class="card" style="padding:16px; background:#f8fafc; border-left:4px solid {{ $typeMeta['color'] }};">
-            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Saldo Akhir (Estimasi)</div>
-            <div style="font-size:18px; font-weight:800; color:var(--primary);">
+        <div class="card" style="padding:16px; background:#f8fafc; border-top:3px solid {{ $typeMeta['color'] }};">
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px; font-weight:500;">Estimasi Saldo Akhir</div>
+            <div style="font-size:20px; font-weight:900; color:var(--primary);">
                 Rp {{ number_format($endingBalance, 0, ',', '.') }}
             </div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Sesuai rumus saldo normal</div>
         </div>
     </div>
+
+    {{-- Sub-accounts Section (If this is a parent account) --}}
+    @if($chartOfAccount->children->count() > 0)
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-header" style="background:#f8fafc;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:15px;"><i class="fa-solid fa-sitemap" style="color:var(--primary); margin-right:6px;"></i> Sub-Akun Terdaftar ({{ $chartOfAccount->children->count() }})</h3>
+                <a href="{{ route('master.chart-of-accounts.create') }}?parent_id={{ $chartOfAccount->id }}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-plus"></i> Tambah Sub-Akun
+                </a>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="erp-table">
+                <thead>
+                    <tr>
+                        <th style="width:140px;">Kode Sub-Akun</th>
+                        <th>Nama Akun</th>
+                        <th>Normal Balance</th>
+                        <th>Keterangan</th>
+                        <th style="text-align:center;">Status</th>
+                        <th style="text-align:center; width:120px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($chartOfAccount->children as $child)
+                    <tr>
+                        <td style="font-family:monospace; font-weight:700;">
+                            <a href="{{ route('master.chart-of-accounts.show', $child) }}" style="color:var(--primary); text-decoration:none;">
+                                {{ $child->code }}
+                            </a>
+                        </td>
+                        <td style="font-weight:600;">
+                            <a href="{{ route('master.chart-of-accounts.show', $child) }}" style="color:inherit; text-decoration:none;">
+                                {{ $child->name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge {{ $child->normal_balance === 'debit' ? 'badge-confirmed' : 'badge-pending' }}" style="font-size:11px;">
+                                {{ strtoupper($child->normal_balance) }}
+                            </span>
+                        </td>
+                        <td style="font-size:13px; color:var(--text-secondary);">{{ $child->description ?: '-' }}</td>
+                        <td style="text-align:center;">
+                            <span class="badge {{ $child->is_active ? 'badge-done' : 'badge-cancelled' }}">
+                                {{ $child->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </td>
+                        <td style="text-align:center;">
+                            <a href="{{ route('master.chart-of-accounts.show', $child) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a href="{{ route('master.chart-of-accounts.edit', $child) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
 
     {{-- Account Info --}}
     @if($chartOfAccount->description)
