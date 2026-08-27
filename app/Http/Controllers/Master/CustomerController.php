@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,21 +17,26 @@ class CustomerController extends Controller
 
     public function index(Request $request): View
     {
-        $query = Customer::query();
+        $query = Customer::with('salesPerson');
 
         $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address']);
         $query = $this->applyFilter($query, $request, 'is_active');
-        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'credit_limit', 'payment_term', 'created_at'], 'name', 'asc');
+        $query = $this->applyFilter($query, $request, 'tax_type');
+        $query = $this->applyFilter($query, $request, 'sales_person_id');
+        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'credit_limit', 'payment_term', 'tax_type', 'created_at'], 'name', 'asc');
 
         $perPage = (int) $request->get('per_page', 20);
         $customers = $query->paginate($perPage)->withQueryString();
+        $salesUsers = User::where('role', 'sales')->orderBy('name')->get();
 
-        return view('master.customers.index', compact('customers'));
+        return view('master.customers.index', compact('customers', 'salesUsers'));
     }
 
     public function create(): View
     {
-        return view('master.customers.form');
+        $salesUsers = User::where('role', 'sales')->orderBy('name')->get();
+
+        return view('master.customers.form', compact('salesUsers'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -44,40 +50,47 @@ class CustomerController extends Controller
             : 'Kode customer ":input" sudah terdaftar. Gunakan kode yang berbeda.';
 
         $request->validate([
-            'code'           => 'required|string|max:50|unique:customers,code',
-            'name'           => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
-            'phone'          => 'required|string|max:50',
-            'email'          => 'nullable|email|max:255',
-            'payment_term'   => 'required|string|max:50',
-            'credit_limit'   => 'required|numeric|min:0',
-            'npwp'           => 'required|string|max:50',
-            'address'        => 'required|string',
+            'code'            => 'required|string|max:50|unique:customers,code',
+            'name'            => 'required|string|max:255',
+            'contact_person'  => 'nullable|string|max:255',
+            'phone'           => 'required|string|max:50',
+            'email'           => 'nullable|email|max:255',
+            'payment_term'    => 'required|string|max:50',
+            'credit_limit'    => 'required|numeric|min:0',
+            'sales_person_id' => 'nullable|exists:users,id',
+            'tax_type'        => 'required|in:pkp,non_pkp',
+            'npwp'            => 'required_if:tax_type,pkp|nullable|string|max:50',
+            'address'         => 'required|string',
         ], [
-            'code.required'         => 'Kode customer wajib diisi.',
-            'code.unique'           => $customCodeMsg,
-            'name.required'         => 'Nama customer wajib diisi.',
-            'phone.required'        => 'Nomor telepon customer wajib diisi.',
-            'payment_term.required' => 'Payment term (syarat pembayaran) wajib dipilih.',
-            'credit_limit.required' => 'Credit limit (plafon kredit) wajib diisi.',
-            'credit_limit.numeric'  => 'Credit limit harus berupa angka nominal.',
-            'credit_limit.min'      => 'Credit limit tidak boleh bernilai negatif.',
-            'npwp.required'         => 'Nomor NPWP customer wajib diisi.',
-            'address.required'      => 'Alamat customer wajib diisi.',
-            'email.email'           => 'Format email tidak valid.',
+            'code.required'           => 'Kode customer wajib diisi.',
+            'code.unique'             => $customCodeMsg,
+            'name.required'           => 'Nama customer wajib diisi.',
+            'phone.required'          => 'Nomor telepon customer wajib diisi.',
+            'payment_term.required'   => 'Payment term (syarat pembayaran) wajib dipilih.',
+            'credit_limit.required'   => 'Credit limit (plafon kredit) wajib diisi.',
+            'credit_limit.numeric'    => 'Credit limit harus berupa angka nominal.',
+            'credit_limit.min'        => 'Credit limit tidak boleh bernilai negatif.',
+            'sales_person_id.exists'  => 'Sales PIC yang dipilih tidak valid / tidak terdaftar.',
+            'tax_type.required'       => 'Tipe customer (PKP / Non-PKP) wajib dipilih.',
+            'tax_type.in'             => 'Pilihan tipe customer tidak valid.',
+            'npwp.required_if'        => 'Nomor NPWP wajib diisi untuk customer bertipe PKP.',
+            'address.required'        => 'Alamat customer wajib diisi.',
+            'email.email'             => 'Format email tidak valid.',
         ]);
 
         Customer::create([
-            'code'           => strtoupper(trim($request->code)),
-            'name'           => trim($request->name),
-            'contact_person' => $request->contact_person ? trim($request->contact_person) : null,
-            'phone'          => trim($request->phone),
-            'email'          => $request->email ? trim($request->email) : null,
-            'payment_term'   => $request->payment_term,
-            'credit_limit'   => $request->credit_limit ?? 0,
-            'npwp'           => trim($request->npwp),
-            'address'        => trim($request->address),
-            'is_active'      => $request->boolean('is_active', true),
+            'code'            => strtoupper(trim($request->code)),
+            'name'            => trim($request->name),
+            'contact_person'  => $request->contact_person ? trim($request->contact_person) : null,
+            'phone'           => trim($request->phone),
+            'email'           => $request->email ? trim($request->email) : null,
+            'payment_term'    => $request->payment_term,
+            'credit_limit'    => $request->credit_limit ?? 0,
+            'sales_person_id' => $request->filled('sales_person_id') ? $request->sales_person_id : null,
+            'tax_type'        => $request->tax_type,
+            'npwp'            => $request->npwp ? trim($request->npwp) : null,
+            'address'         => trim($request->address),
+            'is_active'       => $request->boolean('is_active', true),
         ]);
 
         return redirect()->route('master.customers.index')
@@ -86,7 +99,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer): View
     {
-        $customer->load(['salesOrders' => fn($q) => $q->latest()->limit(10)]);
+        $customer->load(['salesPerson', 'salesOrders' => fn($q) => $q->latest()->limit(10)]);
         $totalSales       = $customer->salesOrders()->sum('total_amount');
         $outstandingDebt  = \App\Models\SalesInvoice::with(['payments', 'items'])
             ->whereHas('salesOrder', fn($q) => $q->where('customer_id', $customer->id))
@@ -99,7 +112,9 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer): View
     {
-        return view('master.customers.form', compact('customer'));
+        $salesUsers = User::where('role', 'sales')->orderBy('name')->get();
+
+        return view('master.customers.form', compact('customer', 'salesUsers'));
     }
 
     public function update(Request $request, Customer $customer): RedirectResponse
@@ -113,40 +128,47 @@ class CustomerController extends Controller
             : 'Kode customer ":input" sudah terdaftar. Gunakan kode yang berbeda.';
 
         $request->validate([
-            'code'           => 'required|string|max:50|unique:customers,code,' . $customer->id,
-            'name'           => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
-            'phone'          => 'required|string|max:50',
-            'email'          => 'nullable|email|max:255',
-            'payment_term'   => 'required|string|max:50',
-            'credit_limit'   => 'required|numeric|min:0',
-            'npwp'           => 'required|string|max:50',
-            'address'        => 'required|string',
+            'code'            => 'required|string|max:50|unique:customers,code,' . $customer->id,
+            'name'            => 'required|string|max:255',
+            'contact_person'  => 'nullable|string|max:255',
+            'phone'           => 'required|string|max:50',
+            'email'           => 'nullable|email|max:255',
+            'payment_term'    => 'required|string|max:50',
+            'credit_limit'    => 'required|numeric|min:0',
+            'sales_person_id' => 'nullable|exists:users,id',
+            'tax_type'        => 'required|in:pkp,non_pkp',
+            'npwp'            => 'required_if:tax_type,pkp|nullable|string|max:50',
+            'address'         => 'required|string',
         ], [
-            'code.required'         => 'Kode customer wajib diisi.',
-            'code.unique'           => $customCodeMsg,
-            'name.required'         => 'Nama customer wajib diisi.',
-            'phone.required'        => 'Nomor telepon customer wajib diisi.',
-            'payment_term.required' => 'Payment term (syarat pembayaran) wajib dipilih.',
-            'credit_limit.required' => 'Credit limit (plafon kredit) wajib diisi.',
-            'credit_limit.numeric'  => 'Credit limit harus berupa angka nominal.',
-            'credit_limit.min'      => 'Credit limit tidak boleh bernilai negatif.',
-            'npwp.required'         => 'Nomor NPWP customer wajib diisi.',
-            'address.required'      => 'Alamat customer wajib diisi.',
-            'email.email'           => 'Format email tidak valid.',
+            'code.required'           => 'Kode customer wajib diisi.',
+            'code.unique'             => $customCodeMsg,
+            'name.required'           => 'Nama customer wajib diisi.',
+            'phone.required'          => 'Nomor telepon customer wajib diisi.',
+            'payment_term.required'   => 'Payment term (syarat pembayaran) wajib dipilih.',
+            'credit_limit.required'   => 'Credit limit (plafon kredit) wajib diisi.',
+            'credit_limit.numeric'    => 'Credit limit harus berupa angka nominal.',
+            'credit_limit.min'        => 'Credit limit tidak boleh bernilai negatif.',
+            'sales_person_id.exists'  => 'Sales PIC yang dipilih tidak valid / tidak terdaftar.',
+            'tax_type.required'       => 'Tipe customer (PKP / Non-PKP) wajib dipilih.',
+            'tax_type.in'             => 'Pilihan tipe customer tidak valid.',
+            'npwp.required_if'        => 'Nomor NPWP wajib diisi untuk customer bertipe PKP.',
+            'address.required'        => 'Alamat customer wajib diisi.',
+            'email.email'             => 'Format email tidak valid.',
         ]);
 
         $customer->update([
-            'code'           => strtoupper(trim($request->code)),
-            'name'           => trim($request->name),
-            'contact_person' => $request->contact_person ? trim($request->contact_person) : null,
-            'phone'          => trim($request->phone),
-            'email'          => $request->email ? trim($request->email) : null,
-            'payment_term'   => $request->payment_term,
-            'credit_limit'   => $request->credit_limit ?? 0,
-            'npwp'           => trim($request->npwp),
-            'address'        => trim($request->address),
-            'is_active'      => $request->boolean('is_active'),
+            'code'            => strtoupper(trim($request->code)),
+            'name'            => trim($request->name),
+            'contact_person'  => $request->contact_person ? trim($request->contact_person) : null,
+            'phone'           => trim($request->phone),
+            'email'           => $request->email ? trim($request->email) : null,
+            'payment_term'    => $request->payment_term,
+            'credit_limit'    => $request->credit_limit ?? 0,
+            'sales_person_id' => $request->filled('sales_person_id') ? $request->sales_person_id : null,
+            'tax_type'        => $request->tax_type,
+            'npwp'            => $request->npwp ? trim($request->npwp) : null,
+            'address'         => trim($request->address),
+            'is_active'       => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('master.customers.index')

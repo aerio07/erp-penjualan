@@ -35,6 +35,11 @@
         <div class="doc-title">
             <h1>INVOICE PENJUALAN</h1>
             <div class="po-number">{{ $invoice->invoice_number }}</div>
+            @if($invoice->salesOrder->customer?->isPkp() && $invoice->tax_invoice_number)
+            <div style="font-size:11px; color:#4338ca; font-weight:700; margin-top:2px;">
+                Faktur Pajak: {{ $invoice->tax_invoice_number }}
+            </div>
+            @endif
             <div style="font-size:11px; color:#64748b; margin-top:4px;">Tanggal: {{ $invoice->invoice_date->format('d/m/Y') }}</div>
         </div>
     </div>
@@ -45,6 +50,9 @@
             <value>{{ $invoice->salesOrder->customer->name ?? '-' }}</value><br>
             <span style="color:#64748b; font-size:11px;">
                 Ref SO: {{ $invoice->salesOrder->so_number }}<br>
+                @if($invoice->salesOrder->customer?->isPkp())
+                Status: PKP @if($invoice->salesOrder->customer->npwp) · NPWP: {{ $invoice->salesOrder->customer->npwp }} @endif<br>
+                @endif
                 Alamat: {{ $invoice->salesOrder->customer->address ?? '-' }}
             </span>
         </div>

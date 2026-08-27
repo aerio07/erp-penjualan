@@ -188,6 +188,21 @@ class SalesInvoiceController extends Controller
         return view('sales.invoices.show', compact('invoice'));
     }
 
+    public function updateTaxInvoice(Request $request, SalesInvoice $invoice): RedirectResponse
+    {
+        $request->validate([
+            'tax_invoice_number' => 'nullable|string|max:50',
+        ], [
+            'tax_invoice_number.max' => 'Nomor Faktur Pajak maksimal 50 karakter.',
+        ]);
+
+        $invoice->update([
+            'tax_invoice_number' => $request->filled('tax_invoice_number') ? trim($request->tax_invoice_number) : null,
+        ]);
+
+        return back()->with('success', 'Nomor Faktur Pajak berhasil diperbarui.');
+    }
+
     public function exportPdf(SalesInvoice $invoice)
     {
         $invoice->load(['salesOrder.customer', 'items.product', 'items.deliveryItem.delivery', 'payments']);

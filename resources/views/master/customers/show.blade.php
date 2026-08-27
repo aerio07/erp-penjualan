@@ -57,7 +57,22 @@
                     <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Payment Term</div>
                         @if($customer->payment_term)<span class="badge badge-confirmed">{{ $customer->payment_term }}</span>@else<span>-</span>@endif
                     </div>
-                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP</div><div>{{ $customer->npwp ?? '-' }}</div></div>
+                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tipe Customer</div>
+                        <div><x-status-badge :status="$customer->tax_type ?? 'non_pkp'" /></div>
+                    </div>
+                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP</div>
+                        <div style="font-weight:{{ $customer->npwp ? '600' : 'normal' }};">{{ $customer->npwp ?? '-' }}</div>
+                    </div>
+                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Sales PIC (Account Owner)</div>
+                        <div style="font-weight:600;">
+                            @if($customer->salesPerson)
+                                <i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:4px;"></i>
+                                {{ $customer->salesPerson->name }} <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">({{ $customer->salesPerson->email }})</span>
+                            @else
+                                <span style="color:var(--text-secondary); font-style:italic; font-weight:normal;">Belum di-assign</span>
+                            @endif
+                        </div>
+                    </div>
                     <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Credit Limit</div>
                         <div style="font-weight:600;">{{ $customer->credit_limit ? 'Rp '.number_format($customer->credit_limit, 0, ',', '.') : 'Tidak ada limit' }}</div>
                     </div>

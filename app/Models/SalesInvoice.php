@@ -11,7 +11,7 @@ class SalesInvoice extends Model
     protected $appends = ['total_paid', 'total_reversed_amount', 'effective_total_amount', 'outstanding_amount'];
 
     protected $fillable = [
-        'invoice_number', 'sales_order_id',
+        'invoice_number', 'tax_invoice_number', 'sales_order_id',
         'amount', 'tax_rate', 'tax_amount', 'total_amount',
         'invoice_date', 'due_date', 'status', 'notes',
     ];

@@ -101,4 +101,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ApprovalRequest::class, 'approver_id');
     }
+
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class, 'sales_person_id');
+    }
 }

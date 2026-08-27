@@ -34,7 +34,12 @@
                 <div class="form-row form-row-2">
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Customer</div>
-                        <div style="font-weight:600;">{{ $invoice->salesOrder->customer->name ?? '-' }}</div>
+                        <div style="font-weight:600; display:flex; align-items:center; gap:8px;">
+                            <span>{{ $invoice->salesOrder->customer->name ?? '-' }}</span>
+                            @if($invoice->salesOrder->customer?->isPkp())
+                                <x-status-badge status="pkp" />
+                            @endif
+                        </div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Invoice</div>
@@ -47,6 +52,60 @@
                         </div>
                     </div>
                 </div>
+
+                @if($invoice->salesOrder->customer?->isPkp())
+                <div class="p-3.5 rounded-lg border border-indigo-100 bg-[#FAF9FF] mt-4" x-data="{ editingTax: false }">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice text-primary text-sm"></i>
+                            <span class="text-xs font-bold text-[#0e1b35]">Faktur Pajak (Customer PKP)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">PKP</span>
+                        </div>
+                        <template x-if="!editingTax">
+                            <button type="button" @click="editingTax = true" class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:11px;">
+                                <i class="fa-solid fa-pen text-[10px]"></i> {{ $invoice->tax_invoice_number ? 'Ubah No. Seri' : 'Input No. Seri' }}
+                            </button>
+                        </template>
+                    </div>
+
+                    <div x-show="!editingTax" class="flex items-center justify-between flex-wrap gap-2">
+                        <div>
+                            <div style="font-size:11px; color:var(--text-secondary);">Nomor Seri Faktur Pajak (NSFP) DJP:</div>
+                            <div class="font-mono text-sm font-bold text-gray-800 mt-0.5">
+                                @if($invoice->tax_invoice_number)
+                                    <span class="text-primary">{{ $invoice->tax_invoice_number }}</span>
+                                @else
+                                    <span class="text-gray-400 font-normal italic text-xs">Belum diisi (input nomor setelah terbit di aplikasi e-Faktur)</span>
+                                @endif
+                            </div>
+                        </div>
+                        @if($invoice->salesOrder->customer->npwp)
+                        <div>
+                            <div style="font-size:11px; color:var(--text-secondary);">NPWP Customer:</div>
+                            <div class="font-mono text-xs font-semibold text-gray-700 mt-0.5">{{ $invoice->salesOrder->customer->npwp }}</div>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div x-show="editingTax" style="display: none;" class="mt-2 pt-2 border-t border-indigo-100">
+                        <form method="POST" action="{{ route('sales.invoices.tax-invoice.update', $invoice) }}" class="flex items-center gap-2 flex-wrap">
+                            @csrf
+                            @method('PATCH')
+                            <div class="flex-1 min-w-[240px]">
+                                <input type="text" name="tax_invoice_number" value="{{ old('tax_invoice_number', $invoice->tax_invoice_number ?? '') }}" 
+                                    class="form-control text-xs font-mono" 
+                                    placeholder="Contoh: 010.001-26.00000001" style="height:34px;">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm" style="height:34px; padding:0 12px; font-size:12px;">
+                                <i class="fa-solid fa-check"></i> Simpan
+                            </button>
+                            <button type="button" @click="editingTax = false" class="btn btn-secondary btn-sm" style="height:34px; padding:0 10px; font-size:12px;">
+                                Batal
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @endif
 
                 @if($invoice->notes)
                 <div style="margin-top:16px; padding:12px; background:#f8fafc; border-radius:10px; font-size:13.5px; color:var(--text-secondary);">

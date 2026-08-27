@@ -6,7 +6,7 @@
     // Mapping warna & kelas Tailwind per status enum
     $badgeClasses = match($s) {
         // Success (Hijau)
-        'done', 'completed', 'paid', 'approved', 'passed', 'baik', 'posted', 'in' => 
+        'done', 'completed', 'paid', 'approved', 'passed', 'baik', 'posted', 'in', 'pkp' => 
             'bg-status-success-bg text-status-success-text border border-status-success-text/20',
         
         // Active / Sent / Confirmed (Biru)
@@ -29,6 +29,10 @@
         'adjustment' => 
             'bg-purple-100 text-purple-800 border border-purple-200',
 
+        // Neutral / Non-PKP
+        'non_pkp' => 
+            'bg-status-neutral-bg text-status-neutral-text border border-border-medium',
+
         // Fallback Default Neutral (Gray)
         default => 
             'bg-status-neutral-bg text-status-neutral-text border border-border-medium'
@@ -44,6 +48,8 @@
         'in_transit' => 'IN TRANSIT',
         'in_progress' => 'IN PROGRESS',
         'write_off' => 'WRITE OFF',
+        'pkp' => 'PKP',
+        'non_pkp' => 'NON-PKP',
         default => strtoupper(str_replace('_', ' ', $s))
     };
 @endphp

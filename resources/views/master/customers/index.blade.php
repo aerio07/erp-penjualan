@@ -15,6 +15,19 @@
     </div>
 
     <x-list-filter-bar :action="route('master.customers.index')" placeholder="Cari Kode, Nama Customer, CP, Telepon...">
+        <select name="sales_person_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+            <option value="">Semua Sales PIC</option>
+            @foreach($salesUsers as $su)
+            <option value="{{ $su->id }}" {{ request('sales_person_id') == $su->id ? 'selected' : '' }}>
+                {{ $su->name }}
+            </option>
+            @endforeach
+        </select>
+        <select name="tax_type" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">Semua Tipe</option>
+            <option value="pkp" {{ request('tax_type') === 'pkp' ? 'selected' : '' }}>PKP</option>
+            <option value="non_pkp" {{ request('tax_type') === 'non_pkp' ? 'selected' : '' }}>Non-PKP</option>
+        </select>
         <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
             <option value="">Semua Status</option>
             <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
@@ -30,7 +43,9 @@
                         <x-sortable-header column="code" title="Kode" />
                         <x-sortable-header column="name" title="Nama Customer" />
                         <x-sortable-header column="contact_person" title="Contact Person" />
+                        <th>Sales PIC</th>
                         <th>Telepon</th>
+                        <x-sortable-header column="tax_type" title="Tipe" />
                         <x-sortable-header column="credit_limit" title="Credit Limit" align="right" />
                         <x-sortable-header column="payment_term" title="Payment Term" />
                         <th style="text-align:center;">Status</th>
@@ -56,7 +71,20 @@
                             @endif
                         </td>
                         <td>{{ $c->contact_person ?? '-' }}</td>
+                        <td>
+                            @if($c->salesPerson)
+                                <div style="font-weight:600; font-size:12.5px; color:#1e293b;">
+                                    <i class="fa-solid fa-user-tie" style="color:var(--primary); margin-right:4px;"></i>
+                                    {{ $c->salesPerson->name }}
+                                </div>
+                            @else
+                                <span style="color:var(--text-secondary); font-size:12px; font-style:italic;">-</span>
+                            @endif
+                        </td>
                         <td>{{ $c->phone ?? '-' }}</td>
+                        <td>
+                            <x-status-badge :status="$c->tax_type ?? 'non_pkp'" />
+                        </td>
                         <td style="text-align:right; font-weight:600;">
                             Rp {{ number_format($c->credit_limit ?? 0, 0, ',', '.') }}
                         </td>
@@ -105,7 +133,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                        <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-users" style="font-size:32px; opacity:0.3; display:block; margin-bottom:12px;"></i>
                             Belum ada data customer yang sesuai filter
                         </td>
