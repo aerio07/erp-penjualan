@@ -56,6 +56,12 @@
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Expected Delivery</div>
                         <div style="font-weight:600;">{{ $order->expected_date ? $order->expected_date->format('d F Y') : '-' }}</div>
                     </div>
+                    @if($order->warehouse)
+                    <div style="grid-column: span 2;">
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Gudang Tujuan Masuk Stok</div>
+                        <div style="font-weight:600; color:var(--primary);"><i class="fa-solid fa-warehouse"></i> {{ $order->warehouse->name }} ({{ $order->warehouse->code }})</div>
+                    </div>
+                    @endif
                 </div>
                 @if($order->ship_to)
                 <div style="margin-top:16px; padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; font-size:13px; color:#166534;">

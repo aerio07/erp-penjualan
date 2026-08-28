@@ -58,6 +58,7 @@ class PurchaseOrderController extends Controller
     {
         $request->validate([
             'supplier_id'           => 'required|exists:suppliers,id',
+            'warehouse_id'          => 'nullable|exists:warehouses,id',
             'order_date'            => 'required|date',
             'expected_date'         => 'nullable|date|after_or_equal:order_date',
             'tax_rate'              => 'required|numeric|min:0|max:100',
@@ -91,6 +92,7 @@ class PurchaseOrderController extends Controller
             $po = PurchaseOrder::create([
                 'po_number'       => $this->generateNumber(),
                 'supplier_id'     => $request->supplier_id,
+                'warehouse_id'    => $request->warehouse_id,
                 'user_id'         => Auth::id(),
                 'status'          => 'draft',
                 'order_date'      => $request->order_date,
@@ -136,7 +138,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $purchaseOrder): View
     {
         $order = $purchaseOrder;
-        $order->load(['supplier', 'user', 'items.product', 'goodsReceipts', 'invoices']);
+        $order->load(['supplier', 'warehouse', 'user', 'items.product', 'goodsReceipts', 'invoices']);
 
         return view('purchase.orders.show', compact('order'));
     }
@@ -146,7 +148,7 @@ class PurchaseOrderController extends Controller
         $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft']), 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
 
-        $order->load(['items.product']);
+        $order->load(['items.product', 'warehouse']);
         $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
         $products   = Product::where('is_active', true)->orderBy('name')->get();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
@@ -162,6 +164,7 @@ class PurchaseOrderController extends Controller
         // Reuse store validation logic
         $request->validate([
             'supplier_id'    => 'required|exists:suppliers,id',
+            'warehouse_id'   => 'nullable|exists:warehouses,id',
             'order_date'     => 'required|date',
             'expected_date'  => 'nullable|date|after_or_equal:order_date',
             'tax_rate'       => 'required|numeric|min:0|max:100',
@@ -191,6 +194,7 @@ class PurchaseOrderController extends Controller
 
             $order->update([
                 'supplier_id'    => $request->supplier_id,
+                'warehouse_id'   => $request->warehouse_id,
                 'order_date'     => $request->order_date,
                 'expected_date'  => $request->expected_date,
                 'discount_amount'=> $discountHeader,
@@ -260,7 +264,7 @@ class PurchaseOrderController extends Controller
     public function exportPdf(PurchaseOrder $purchaseOrder)
     {
         $order = $purchaseOrder;
-        $order->load(['supplier', 'user', 'items.product']);
+        $order->load(['supplier', 'warehouse', 'user', 'items.product']);
         $pdf = Pdf::loadView('pdf.purchase-order', compact('order'));
 
         return $pdf->download("PO-{$order->po_number}.pdf");

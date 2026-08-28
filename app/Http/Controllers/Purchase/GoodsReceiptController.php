@@ -45,7 +45,7 @@ class GoodsReceiptController extends Controller
     public function create(Request $request): View
     {
         $selectedPoId = $request->query('po_id');
-        $confirmedPos = PurchaseOrder::with(['supplier', 'items.product', 'items.goodsReceiptItems'])
+        $confirmedPos = PurchaseOrder::with(['supplier', 'warehouse', 'items.product', 'items.goodsReceiptItems'])
             ->whereIn('status', ['confirmed', 'partially_received'])
             ->orderByDesc('id')
             ->get();

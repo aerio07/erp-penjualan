@@ -558,18 +558,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'is_active' => true,
         ]);
 
-        // 1. Initial 10 pcs in Warehouse 2
-        StockMovement::create([
-            'product_id' => $this->product->id,
-            'warehouse_id' => $warehouse2->id,
-            'type' => 'in',
-            'quantity' => 10,
-            'unit_cost' => 50000,
-            'movement_date' => now()->toDateString(),
-            'user_id' => $this->admin->id,
-        ]);
-
-        // 2. SO on Warehouse 1 with 0 stock -> Demand for 10 pcs
+        // 1. SO when stock is 0 -> Demand for 10 pcs (backorder)
         $so = SalesOrder::create([
             'so_number' => 'SO-TRANSFER-DEMAND-001',
             'customer_id' => $this->customer->id,
@@ -587,6 +576,17 @@ class OrderFulfillmentAndDemandTest extends TestCase
         ]);
         $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
         $this->assertEquals('backorder', $so->refresh()->fulfillment_status);
+
+        // 2. Initial 10 pcs in Warehouse 2
+        StockMovement::create([
+            'product_id' => $this->product->id,
+            'warehouse_id' => $warehouse2->id,
+            'type' => 'in',
+            'quantity' => 10,
+            'unit_cost' => 50000,
+            'movement_date' => now()->toDateString(),
+            'user_id' => $this->admin->id,
+        ]);
 
         // 3. Create, ship, and receive transfer from WH2 to WH1
         $transfer = \App\Models\WarehouseTransfer::create([

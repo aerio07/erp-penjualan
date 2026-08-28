@@ -74,13 +74,14 @@
                     <div class="form-row form-row-2" style="margin-top:12px;">
                         <div class="form-group">
                             <label class="form-label"><i class="fa-solid fa-warehouse text-primary"></i> Lokasi Gudang Tujuan</label>
-                            <select class="form-control" @change="if($event.target.value) { shipTo = $event.target.value; }">
-                                <option value="">-- Pilih Gudang (Otomatis Isi Ship To) --</option>
+                            <select name="warehouse_id" class="form-control {{ $errors->has('warehouse_id') ? 'is-invalid' : '' }}" x-model="warehouseId" @change="onWarehouseChange($event.target.value)">
+                                <option value="">-- Pilih Gudang Tujuan --</option>
                                 @foreach($warehouses as $wh)
-                                <option value="{{ $wh->name }} - {{ $wh->address }}">{{ $wh->name }} ({{ $wh->code }})</option>
+                                <option value="{{ $wh->id }}" {{ old('warehouse_id', $order->warehouse_id) == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
                                 @endforeach
                             </select>
-                            <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:block;">Pilih gudang untuk mengisi otomatis atau sesuaikan alamat di bawah.</span>
+                            <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:block;">Pilih gudang untuk menetapkan alokasi stok dan mengisi alamat pengiriman otomatis.</span>
+                            @error('warehouse_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="form-group">
                             <label class="form-label"><i class="fa-solid fa-note-sticky text-primary"></i> Catatan Tambahan</label>
@@ -194,13 +195,23 @@
 @push('scripts')
 <script>
 const products = @json($products->keyBy('id'));
+const warehouses = @json($warehouses->keyBy('id'));
 
 function poForm() {
     return {
         rows: @json($initialRows),
         taxRate: {{ old('tax_rate', $order->tax_rate ?? 11) }},
         discountHeader: {{ old('discount_amount', $order->discount_amount ?? 0) }},
+        warehouseId: @json(old('warehouse_id', $order->warehouse_id ?? '')),
         shipTo: @json(old('ship_to', $order->ship_to ?? '')),
+
+        onWarehouseChange(whId) {
+            this.warehouseId = whId;
+            if (whId && warehouses[whId]) {
+                const wh = warehouses[whId];
+                this.shipTo = wh.name + (wh.address ? ' - ' + wh.address : '');
+            }
+        },
 
         addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0 }); },
         removeRow(idx) { this.rows.splice(idx, 1); },

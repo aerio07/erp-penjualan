@@ -58,6 +58,17 @@
                                 <div style="font-size:12px; color:var(--text-secondary);">Supplier</div>
                                 <div style="font-weight:600;" x-text="selectedPo.supplier ? selectedPo.supplier.name : '-'"></div>
                             </div>
+                            <template x-if="selectedPo.warehouse">
+                                <div>
+                                    <div style="font-size:12px; color:var(--text-secondary);">Gudang Tujuan PO</div>
+                                    <div style="font-weight:600; color:var(--primary);"><i class="fa-solid fa-warehouse"></i> <span x-text="selectedPo.warehouse.name + ' (' + selectedPo.warehouse.code + ')'"></span></div>
+                                </div>
+                            </template>
+                            <template x-if="selectedPo.ship_to">
+                                <div style="font-size:12px; color:var(--text-secondary); background:#f8fafc; padding:8px 10px; border-radius:6px;">
+                                    <i class="fa-solid fa-truck-ramp-box text-primary"></i> <strong>Ship To:</strong> <span x-text="selectedPo.ship_to"></span>
+                                </div>
+                            </template>
                             <hr style="border:none; border-top:1px solid var(--border);">
                             <div style="display:flex; justify-content:space-between;">
                                 <span style="color:var(--text-secondary);">Total Fisik Datang</span>
@@ -246,6 +257,10 @@ function grnForm() {
             this.selectedPo = confirmedPos[this.selectedPoId];
             this.rows = [];
 
+            const poWarehouseId = (this.selectedPo && this.selectedPo.warehouse_id) 
+                ? String(this.selectedPo.warehouse_id) 
+                : defaultWarehouseId;
+
             this.selectedPo.items.forEach(item => {
                 const alreadyArrived = (item.qty_received || 0) + (item.qty_rejected || 0);
                 const remaining = Math.max(0, item.qty_ordered - alreadyArrived);
@@ -260,7 +275,7 @@ function grnForm() {
                     qty_already_rejected: item.qty_rejected || 0,
                     qty_already_arrived: alreadyArrived,
                     qty_remaining: remaining,
-                    warehouse_id: defaultWarehouseId,
+                    warehouse_id: poWarehouseId,
                     qty_physical: remaining, // Datang fisik default = sisa PO yang belum tiba
                     qty_rejected: 0,         // Rusak default = 0
                     shortage_reason: 'none',

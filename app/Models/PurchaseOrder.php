@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class PurchaseOrder extends Model
 {
     protected $fillable = [
-        'po_number', 'supplier_id', 'user_id', 'status',
+        'po_number', 'supplier_id', 'warehouse_id', 'user_id', 'status',
         'order_date', 'expected_date', 'discount_amount',
         'tax_rate', 'tax_amount', 'total_amount', 'notes', 'ship_to',
     ];
@@ -27,6 +27,11 @@ class PurchaseOrder extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 
     public function user(): BelongsTo

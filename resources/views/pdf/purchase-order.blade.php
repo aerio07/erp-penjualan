@@ -56,7 +56,7 @@
         </div>
         <div class="info-block">
             <label>Ship To (Tujuan Pengiriman)</label>
-            <value style="color:#0f766e;">{{ $order->ship_to ?: 'Gudang Perusahaan' }}</value><br><br>
+            <value style="color:#0f766e;">{{ $order->ship_to ?: ($order->warehouse ? $order->warehouse->name . ' - ' . $order->warehouse->address : 'Gudang Perusahaan') }}</value><br><br>
             <label>Expected Delivery</label>
             <value>{{ $order->expected_date ? $order->expected_date->format('d F Y') : '-' }}</value>
         </div>

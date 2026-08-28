@@ -120,10 +120,8 @@ class StockService
     {
         $order->load(['customer', 'items.product', 'items.reservations', 'items.procurementDemands']);
 
-        // Tentukan gudang default jika tidak dispesifikasi
-        if (!$preferredWarehouseId) {
-            $preferredWarehouseId = Warehouse::where('is_active', true)->orderBy('id')->value('id');
-        }
+        // Ambil seluruh gudang aktif
+        $warehouses = Warehouse::where('is_active', true)->orderBy('id')->get();
 
         foreach ($order->items as $item) {
             $neededQty = $item->qty_remaining;
@@ -134,24 +132,42 @@ class StockService
                 continue;
             }
 
-            $availableInWarehouse = $this->getAvailableStock($item->product_id, $preferredWarehouseId);
-
-            // Alokasikan apa yang ada di gudang
-            $allocatable = min($availableInWarehouse, $stillNeeded);
-
-            if ($allocatable > 0) {
-                StockReservation::create([
-                    'sales_order_item_id' => $item->id,
-                    'warehouse_id'        => $preferredWarehouseId,
-                    'qty_reserved'        => $allocatable,
-                    'qty_delivered'       => 0,
-                    'status'              => 'active',
-                ]);
+            // Urutkan gudang: jika ada preferredWarehouseId, prioritaskan gudang tersebut terlebih dahulu
+            $targetWarehouses = $warehouses;
+            if ($preferredWarehouseId) {
+                $targetWarehouses = $warehouses->sortByDesc(fn($wh) => $wh->id == $preferredWarehouseId)->values();
             }
 
-            // Defisit dicatat sebagai Procurement Demand (Backorder)
-            $deficit = $stillNeeded - $allocatable;
+            // Alokasikan stok dari gudang-gudang yang memiliki stok bebas (available > 0)
+            foreach ($targetWarehouses as $wh) {
+                if ($stillNeeded <= 0) {
+                    break;
+                }
+
+                $availableInWarehouse = $this->getAvailableStock($item->product_id, $wh->id);
+                if ($availableInWarehouse <= 0) {
+                    continue;
+                }
+
+                $allocatable = min($availableInWarehouse, $stillNeeded);
+
+                if ($allocatable > 0) {
+                    StockReservation::create([
+                        'sales_order_item_id' => $item->id,
+                        'warehouse_id'        => $wh->id,
+                        'qty_reserved'        => $allocatable,
+                        'qty_delivered'       => 0,
+                        'status'              => 'active',
+                    ]);
+
+                    $stillNeeded -= $allocatable;
+                }
+            }
+
+            // Defisit (jika ada sisa yang belum ter-reserve) dicatat sebagai Procurement Demand (Backorder)
+            $deficit = $stillNeeded;
             if ($deficit > 0) {
+                $demandWarehouseId = $preferredWarehouseId ?? $warehouses->first()?->id;
                 $existingDemand = ProcurementDemand::where('sales_order_item_id', $item->id)
                     ->whereIn('status', ['pending', 'ordered'])
                     ->first();
@@ -167,7 +183,7 @@ class StockService
                         'sales_order_id'      => $order->id,
                         'sales_order_item_id' => $item->id,
                         'product_id'          => $item->product_id,
-                        'warehouse_id'        => $preferredWarehouseId,
+                        'warehouse_id'        => $demandWarehouseId,
                         'qty_demanded'        => $deficit,
                         'qty_procured'        => 0,
                         'qty_fulfilled'       => 0,
@@ -218,6 +234,16 @@ class StockService
      */
     public function allocateStockToPendingDemands(int $productId, ?int $warehouseId = null): void
     {
+        $targetWarehouseId = $warehouseId ?? Warehouse::where('is_active', true)->orderBy('id')->value('id');
+        if (!$targetWarehouseId) {
+            return;
+        }
+
+        $freeStock = $this->getAvailableStock($productId, $targetWarehouseId);
+        if ($freeStock <= 0) {
+            return;
+        }
+
         $query = ProcurementDemand::with(['salesOrder', 'salesOrderItem'])
             ->where('procurement_demands.product_id', $productId)
             ->whereIn('procurement_demands.status', ['pending', 'ordered'])
@@ -226,20 +252,10 @@ class StockService
             ->orderBy('sales_orders.id', 'asc')
             ->select('procurement_demands.*');
 
-        if ($warehouseId) {
-            $query->where(function ($q) use ($warehouseId) {
-                $q->where('procurement_demands.warehouse_id', $warehouseId)
-                  ->orWhereNull('procurement_demands.warehouse_id');
-            });
-        }
-
         $demands = $query->get();
         $affectedSalesOrders = [];
 
         foreach ($demands as $demand) {
-            $targetWarehouseId = $demand->warehouse_id ?? $warehouseId ?? Warehouse::where('is_active', true)->orderBy('id')->value('id');
-            $freeStock = $this->getAvailableStock($productId, $targetWarehouseId);
-
             if ($freeStock <= 0) {
                 break; // Stok sudah habis dialokasikan
             }
@@ -268,6 +284,7 @@ class StockService
                     'status'        => $demandStatus,
                 ]);
 
+                $freeStock -= $allocatable;
                 $affectedSalesOrders[$demand->sales_order_id] = $demand->salesOrder;
             }
         }
@@ -552,7 +569,7 @@ class StockService
         $orders = SalesOrder::whereIn('status', ['confirmed', 'partially_delivered'])
             ->where(function ($q) {
                 $q->whereNull('fulfillment_status')
-                  ->orWhere('fulfillment_status', 'pending');
+                  ->orWhereIn('fulfillment_status', ['pending', 'backorder', 'partially_available']);
             })
             ->orderBy('order_date', 'asc')
             ->orderBy('id', 'asc')
