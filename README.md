@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP 8.2+">
   <img src="https://img.shields.io/badge/MySQL-8.0+-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
   <img src="https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
-  <img src="https://img.shields.io/badge/Tests-78%20Passed-16A34A?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Tests Status">
+  <img src="https://img.shields.io/badge/Tests-83%20Passed-16A34A?style=for-the-badge&logo=checkmarx&logoColor=white" alt="Tests Status">
 </p>
 
 ---

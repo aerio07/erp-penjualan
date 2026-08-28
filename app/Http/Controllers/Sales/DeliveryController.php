@@ -100,22 +100,31 @@ class DeliveryController extends Controller
                 return back()->with('error', 'Isi minimal satu qty barang yang akan dikirim.')->withInput();
             }
 
-            // Lock all involved product rows to serialize stock checks
+            // Lock all involved product rows and active reservations to serialize stock & reservation checks
             Product::whereIn('id', array_unique($productIds))->lockForUpdate()->get();
+            \App\Models\StockReservation::whereIn('sales_order_item_id', array_keys($deliveredByItem))
+                ->where('warehouse_id', $request->warehouse_id)
+                ->where('status', 'active')
+                ->lockForUpdate()
+                ->get();
 
-            $requiredByProduct = [];
+            // Check stock deliverability under lock (Reservation allocation + Free stock check)
             foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
                 if ($qtyDelivered <= 0) continue;
                 $soItem = $so->items->firstWhere('id', $soItemId);
-                $requiredByProduct[$soItem->product_id]['qty'] = ($requiredByProduct[$soItem->product_id]['qty'] ?? 0) + $qtyDelivered;
-                $requiredByProduct[$soItem->product_id]['product'] = $soItem->product;
-            }
 
-            // Check stock availability under lock
-            foreach ($requiredByProduct as $productId => $required) {
-                if (!$this->stockService->isStockSufficient($productId, $request->warehouse_id, $required['qty'])) {
-                    $available = $this->stockService->getCurrentStock($productId, $request->warehouse_id);
-                    return back()->with('error', "Stok untuk '{$required['product']->name}' di gudang ini tidak mencukupi (Tersedia: {$available}, Ingin Dikirim: {$required['qty']}).")->withInput();
+                $maxDeliverable = $this->stockService->getDeliverableStockForOrderItem($soItem, $request->warehouse_id);
+                if ($qtyDelivered > $maxDeliverable) {
+                    $reservedForThis = (int) \App\Models\StockReservation::where('sales_order_item_id', $soItem->id)
+                        ->where('warehouse_id', $request->warehouse_id)
+                        ->where('status', 'active')
+                        ->selectRaw('SUM(qty_reserved - qty_delivered) as active_qty')
+                        ->value('active_qty');
+                    $freeStock = $this->stockService->getAvailableStock($soItem->product_id, $request->warehouse_id);
+
+                    return back()
+                        ->with('error', "Stok untuk produk '{$soItem->product->name}' tidak mencukupi untuk dikirim (Teralokasi untuk SO ini: {$reservedForThis}, Stok Bebas: {$freeStock}, Maksimal Kirim: {$maxDeliverable}, Ingin Dikirim: {$qtyDelivered}).")
+                        ->withInput();
                 }
             }
 
@@ -145,10 +154,12 @@ class DeliveryController extends Controller
                     'condition'           => 'Good',
                 ]);
 
-                // Consume active stock reservations for this item
+                // Consume active stock reservations for this item with pessimistic lock
                 $remainingToFulfill = $qtyDelivered;
                 $activeReservations = \App\Models\StockReservation::where('sales_order_item_id', $soItem->id)
+                    ->where('warehouse_id', $request->warehouse_id)
                     ->where('status', 'active')
+                    ->lockForUpdate()
                     ->get();
 
                 foreach ($activeReservations as $res) {

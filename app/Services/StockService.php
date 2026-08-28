@@ -477,6 +477,31 @@ class StockService
         return $this->getCurrentStock($productId, $warehouseId) >= $requiredQty;
     }
 
+    /**
+     * Hitung kuantiti maksimal produk yang sah untuk dikirimkan untuk suatu Sales Order Item di gudang tertentu.
+     * Rule P0.1: Deliverable = Reservasi Aktif SO ini di gudang tersebut + Free Unreserved Stock di gudang tersebut.
+     * Capped pada total physical On Hand di gudang tersebut.
+     */
+    public function getDeliverableStockForOrderItem(SalesOrderItem $soItem, int $warehouseId): int
+    {
+        $onHand = $this->getOnHandStock($soItem->product_id, $warehouseId);
+        if ($onHand <= 0) {
+            return 0;
+        }
+
+        $activeReservationForThisItem = (int) StockReservation::where('sales_order_item_id', $soItem->id)
+            ->where('warehouse_id', $warehouseId)
+            ->where('status', 'active')
+            ->selectRaw('SUM(qty_reserved - qty_delivered) as active_qty')
+            ->value('active_qty');
+
+        $freeUnreservedStock = $this->getAvailableStock($soItem->product_id, $warehouseId);
+
+        $maxDeliverable = $activeReservationForThisItem + $freeUnreservedStock;
+
+        return min($onHand, $maxDeliverable);
+    }
+
     public function getLowStockProducts(): Collection
     {
         return Product::where('is_active', true)
