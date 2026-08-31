@@ -3,7 +3,7 @@
 @section('page-title', 'Laporan Valuasi Persediaan (Stock Valuation)')
 
 @section('content')
-<div class="animate-in">
+<div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
             <h1>Laporan Valuasi Persediaan</h1>
@@ -11,13 +11,19 @@
         </div>
     </div>
 
-    <div class="stat-card" style="max-width:350px; margin-bottom:24px;">
-        <div class="icon" style="background:#ede9fe; color:#6d28d9;"><i class="fa-solid fa-boxes-stacked"></i></div>
-        <div class="value">Rp {{ number_format($totalValue, 0, ',', '.') }}</div>
-        <div class="label">Total Nilai Persediaan Aset</div>
+    <div class="w-full sm:max-w-xs">
+        <div class="stat-card border-l-4 border-purple-600">
+            <div class="stat-icon" style="background:#ede9fe; color:#6d28d9;">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-label">Total Nilai Persediaan Aset</div>
+                <div class="stat-value text-purple-700">Rp {{ number_format($totalValue, 0, ',', '.') }}</div>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
+    <div class="card mb-0">
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>

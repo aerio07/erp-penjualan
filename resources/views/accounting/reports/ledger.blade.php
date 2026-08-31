@@ -3,7 +3,7 @@
 @section('page-title', 'Buku Besar (General Ledger)')
 
 @section('content')
-<div class="animate-in">
+<div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
             <h1>Buku Besar (General Ledger)</h1>
@@ -12,11 +12,11 @@
     </div>
 
     {{-- Filter Form --}}
-    <div class="card" style="margin-bottom:20px;">
-        <div class="card-body" style="padding:16px;">
-            <form method="GET" action="{{ route('accounting.reports.ledger') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                <div style="flex:1; min-width:240px;">
-                    <label class="form-label">Pilih Akun COA <span style="color:var(--danger);">*</span></label>
+    <div class="card mb-0">
+        <div class="card-body p-0">
+            <form method="GET" action="{{ route('accounting.reports.ledger') }}" class="flex flex-col sm:flex-row flex-wrap sm:items-end gap-3">
+                <div class="w-full sm:flex-1 sm:min-w-[260px]">
+                    <label class="form-label">Pilih Akun COA <span class="text-rose-600">*</span></label>
                     <select name="chart_of_account_id" class="form-control" onchange="this.form.submit()" required>
                         @foreach($accounts as $acc)
                         <option value="{{ $acc->id }}" {{ $accountId == $acc->id ? 'selected' : '' }}>
@@ -26,18 +26,20 @@
                     </select>
                 </div>
 
-                <div style="width:160px;">
-                    <label class="form-label">Dari Tgl</label>
+                <div class="w-full sm:w-44">
+                    <label class="form-label">Dari Tanggal</label>
                     <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control">
                 </div>
 
-                <div style="width:160px;">
-                    <label class="form-label">Sampai Tgl</label>
+                <div class="w-full sm:w-44">
+                    <label class="form-label">Sampai Tanggal</label>
                     <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control">
                 </div>
 
-                <div style="display:flex; gap:8px;">
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tampilkan</button>
+                <div class="w-full sm:w-auto">
+                    <button type="submit" class="btn btn-primary w-full sm:w-auto">
+                        <i class="fa-solid fa-filter"></i> Tampilkan
+                    </button>
                 </div>
             </form>
         </div>

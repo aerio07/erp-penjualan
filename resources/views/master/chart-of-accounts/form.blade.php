@@ -129,12 +129,12 @@
                             <div style="display:flex; gap:16px; padding:10px 14px; background:#f8fafc; border-radius:8px; border:1px solid var(--border);">
                                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600;">
                                     <input type="radio" name="normal_balance" value="debit" x-model="normalBalance" required>
-                                    <span style="color:#2563eb;"><i class="fa-solid fa-arrow-down-left" style="font-size:11px; margin-right:2px;"></i> Debit</span>
+                                    <span style="color:#2563eb;"><i class="fa-solid fa-arrow-down" style="font-size:11px; margin-right:2px;"></i> Debit</span>
                                     <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(Aset & Beban)</span>
                                 </label>
                                 <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600;">
                                     <input type="radio" name="normal_balance" value="credit" x-model="normalBalance" required>
-                                    <span style="color:#dc2626;"><i class="fa-solid fa-arrow-up-right" style="font-size:11px; margin-right:2px;"></i> Kredit</span>
+                                    <span style="color:#dc2626;"><i class="fa-solid fa-arrow-up" style="font-size:11px; margin-right:2px;"></i> Kredit</span>
                                     <span style="font-size:11px; color:var(--text-secondary); font-weight:400;">(Hutang, Modal, Omset)</span>
                                 </label>
                             </div>

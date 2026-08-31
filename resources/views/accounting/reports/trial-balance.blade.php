@@ -3,7 +3,7 @@
 @section('page-title', 'Neraca Saldo (Trial Balance)')
 
 @section('content')
-<div class="animate-in">
+<div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
             <h1>Neraca Saldo (Trial Balance)</h1>
@@ -12,34 +12,37 @@
     </div>
 
     {{-- Filter Form --}}
-    <div class="card" style="margin-bottom:20px;">
-        <div class="card-body" style="padding:16px;">
-            <form method="GET" action="{{ route('accounting.reports.trial-balance') }}" style="display:flex; gap:12px; align-items:flex-end;">
-                <div style="width:200px;">
+    <div class="card mb-0">
+        <div class="card-body p-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <form method="GET" action="{{ route('accounting.reports.trial-balance') }}" class="flex flex-col sm:flex-row sm:items-end gap-3 w-full sm:w-auto">
+                <div class="w-full sm:w-56">
                     <label class="form-label">Per Tanggal (As of Date)</label>
                     <input type="date" name="as_of_date" value="{{ $asOfDate }}" class="form-control" onchange="this.form.submit()">
                 </div>
-                <div>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tampilkan</button>
+                <div class="w-full sm:w-auto">
+                    <button type="submit" class="btn btn-primary w-full sm:w-auto">
+                        <i class="fa-solid fa-filter"></i> Tampilkan
+                    </button>
                 </div>
             </form>
-        </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h3>Daftar Saldo Akun (Per {{ Carbon\Carbon::parse($asOfDate)->format('d F Y') }})</h3>
             <div>
                 @if($isBalanced)
-                    <span class="badge badge-done" style="font-size:13px; font-weight:700; background:#d1fae5; color:#065f46; padding:6px 12px;">
-                        <i class="fa-solid fa-circle-check"></i> DEBIT & KREDIT BALANCED
+                    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-800 text-sm font-bold shadow-sm">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> DEBIT & KREDIT BALANCED
                     </span>
                 @else
-                    <span class="badge badge-cancelled" style="font-size:13px; font-weight:700; padding:6px 12px;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> UNBALANCED (Selisih: Rp {{ number_format(abs($grandTotalDebit - $grandTotalCredit), 0, ',', '.') }})
+                    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 text-sm font-bold shadow-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 text-base"></i> UNBALANCED (Selisih: Rp {{ number_format(abs($grandTotalDebit - $grandTotalCredit), 0, ',', '.') }})
                     </span>
                 @endif
             </div>
+        </div>
+    </div>
+
+    <div class="card mb-0">
+        <div class="card-header">
+            <h3>Daftar Saldo Akun (Per {{ Carbon\Carbon::parse($asOfDate)->format('d F Y') }})</h3>
         </div>
         <div class="table-responsive">
             <table class="erp-table">

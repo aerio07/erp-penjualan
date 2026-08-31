@@ -98,7 +98,7 @@
             <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px; font-weight:500;">Normal Balance</div>
             <div style="font-size:16px; font-weight:800;">
                 <span class="badge {{ $chartOfAccount->normal_balance === 'debit' ? 'badge-confirmed' : 'badge-pending' }}" style="font-size:13px; padding:4px 10px;">
-                    <i class="fa-solid {{ $chartOfAccount->normal_balance === 'debit' ? 'fa-arrow-down-left' : 'fa-arrow-up-right' }}" style="font-size:10px; margin-right:4px;"></i>
+                    <i class="fa-solid {{ $chartOfAccount->normal_balance === 'debit' ? 'fa-arrow-down' : 'fa-arrow-up' }}" style="font-size:10px; margin-right:4px;"></i>
                     {{ strtoupper($chartOfAccount->normal_balance) }}
                 </span>
             </div>
