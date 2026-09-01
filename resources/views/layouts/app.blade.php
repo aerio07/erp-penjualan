@@ -6,77 +6,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — TradePro ERP</title>
 
-    <!-- Tailwind CSS CDN & Configuration Script -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script id="tailwind-config">
-    tailwind.config = {
-        theme: {
-            extend: {
-                "colors": {
-                    "primary": "#03193c",
-                    "primary-container": "#1b2e52",
-                    "on-primary": "#ffffff",
-                    "on-primary-container": "#8496c0",
-                    "primary-fixed": "#d8e2ff",
-                    "primary-fixed-dim": "#b4c6f3",
-                    "on-primary-fixed-variant": "#34466c",
-                    "secondary": "#455e90",
-                    "secondary-container": "#aec6ff",
-                    "on-secondary-container": "#395283",
-                    "slate-bg": "#F5F6F8",
-                    "paper": "#FFFFFF",
-                    "surface": "#faf9ff",
-                    "surface-variant": "#d9e2ff",
-                    "surface-dim": "#cddafc",
-                    "surface-container": "#e9edff",
-                    "surface-container-low": "#f1f3ff",
-                    "on-surface": "#0e1b35",
-                    "on-surface-variant": "#44474e",
-                    "border-light": "#E2E8F0",
-                    "border-medium": "#CBD5E1",
-                    "outline": "#75777f",
-                    "outline-variant": "#c5c6cf",
-                    "status-active-bg": "#DBE7FB", "status-active-text": "#1D4ED8",
-                    "status-success-bg": "#DCFCE3", "status-success-text": "#166534",
-                    "status-pending-bg": "#FBEBD2", "status-pending-text": "#92640B",
-                    "status-danger-bg": "#FDE2E1", "status-danger-text": "#B91C1C",
-                    "status-neutral-bg": "#F3F4F6", "status-neutral-text": "#6B7280",
-                    "tertiary-container": "#432900", "on-tertiary": "#ffffff",
-                    "error": "#ba1a1a"
-                },
-                "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
-                "spacing": {
-                    "unit-xs": "4px", "unit-sm": "8px", "unit-md": "16px", "unit-lg": "24px", "unit-xl": "32px",
-                    "gutter": "16px", "page-margin": "24px", "sidebar-width": "240px", "header-height": "56px"
-                },
-                "fontFamily": {
-                    "headline-lg": ["Public Sans", "sans-serif"],
-                    "headline-md": ["Public Sans", "sans-serif"],
-                    "title-sm": ["Public Sans", "sans-serif"],
-                    "label-xs": ["Public Sans", "sans-serif"],
-                    "body-base": ["Inter", "sans-serif"],
-                    "body-medium": ["Inter", "sans-serif"],
-                    "body-sm": ["Inter", "sans-serif"],
-                    "table-data": ["Inter", "sans-serif"],
-                    "stat-number": ["Inter", "sans-serif"]
-                }
-            }
-        }
-    }
-    </script>
+
 
     <!-- Google Fonts & Material Symbols -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Public+Sans:wght@100..900&display=swap" rel="stylesheet"/>
 
     <!-- FontAwesome Compatibility -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- Alpine.js Collapse Plugin MUST BE BEFORE Alpine Core -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -86,6 +27,59 @@
 
     <!-- Direct CSS Rules for All Legacy Forms, Cards, Tables, Buttons, and Layouts -->
     <style>
+        [x-cloak] { display: none !important; }
+
+        /* Critical Layout CSS: Instant rendering for Sidebar & Navbar */
+        aside, aside.fixed, #erp-sidebar {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            height: 100vh !important;
+            width: 240px !important;
+            min-width: 240px !important;
+            max-width: 240px !important;
+            background-color: #03193c !important;
+            border-right: 1px solid #1b2e52 !important;
+            z-index: 50 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            box-sizing: border-box !important;
+        }
+
+        .erp-main-wrapper, .pl-\[240px\] {
+            padding-left: 240px !important;
+            box-sizing: border-box !important;
+            min-height: 100vh !important;
+        }
+
+        header, header.fixed, #erp-header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 240px !important;
+            right: 0 !important;
+            height: 56px !important;
+            min-height: 56px !important;
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #E2E8F0 !important;
+            z-index: 40 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            box-sizing: border-box !important;
+        }
+
+        main, main.pt-\[56px\] {
+            position: relative !important;
+            padding-top: 56px !important;
+            min-height: 100vh !important;
+            background-color: #F5F6F8 !important;
+            box-sizing: border-box !important;
+        }
+
         .material-symbols-outlined {
             font-family: 'Material Symbols Outlined';
             font-weight: normal;
@@ -94,11 +88,21 @@
             line-height: 1;
             letter-spacing: normal;
             text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
-            -webkit-font-smoothing: antialiased;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 1em !important;
+            height: 1em !important;
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            word-wrap: normal !important;
+            direction: ltr !important;
+            -webkit-font-smoothing: antialiased !important;
+            text-rendering: optimizeLegibility !important;
+            font-feature-settings: 'liga' !important;
+            user-select: none !important;
+            vertical-align: middle !important;
+            flex-shrink: 0 !important;
         }
         ::-webkit-scrollbar { display: none; }
 
@@ -592,7 +596,7 @@
         <nav class="flex-1 flex flex-col gap-1 px-2">
             <!-- Dashboard Link -->
             <a href="{{ route('dashboard') }}" 
-               class="flex items-center px-4 py-2 rounded transition-all {{ request()->routeIs('dashboard') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
+               class="flex items-center px-4 py-2 rounded {{ request()->routeIs('dashboard') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
                 <span class="material-symbols-outlined mr-3">dashboard</span>
                 <span class="text-sm font-medium">Dashboard</span>
             </a>
@@ -601,15 +605,16 @@
             <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Core Operations</div>
 
             <!-- Master Data Group -->
-            <div x-data="{ open: {{ request()->is('master/*') ? 'true' : 'false' }} }" class="group">
-                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white transition-all">
+            @php $isMaster = request()->is('master/*'); @endphp
+            <div x-data="{ open: {{ $isMaster ? 'true' : 'false' }} }" class="group">
+                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">inventory_2</span>
                         <span class="text-sm font-medium">Master Data</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isMaster ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isMaster) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('master.products.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.products.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Produk</a>
                     <a href="{{ route('master.categories.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.categories.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kategori Produk</a>
                     <a href="{{ route('master.warehouses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.warehouses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Gudang</a>
@@ -625,15 +630,16 @@
             </div>
 
             <!-- Purchase Group -->
-            <div x-data="{ open: {{ request()->is('purchase/*') ? 'true' : 'false' }} }" class="group">
-                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white transition-all">
+            @php $isPurchase = request()->is('purchase/*'); @endphp
+            <div x-data="{ open: {{ $isPurchase ? 'true' : 'false' }} }" class="group">
+                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">shopping_cart</span>
                         <span class="text-sm font-medium">Purchase</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isPurchase ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isPurchase) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('purchase.demands.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.demands.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kebutuhan Pengadaan</a>
                     <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
                     <a href="{{ route('purchase.goods-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.goods-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Barang</a>
@@ -644,15 +650,16 @@
             </div>
 
             <!-- Inventory Group -->
-            <div x-data="{ open: {{ request()->is('inventory/*') ? 'true' : 'false' }} }" class="group">
-                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white transition-all">
+            @php $isInventory = request()->is('inventory/*'); @endphp
+            <div x-data="{ open: {{ $isInventory ? 'true' : 'false' }} }" class="group">
+                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">warehouse</span>
                         <span class="text-sm font-medium">Inventory</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isInventory ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isInventory) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('inventory.stock-summary') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-summary') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Ringkasan Stok</a>
                     <a href="{{ route('inventory.stock-card') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-card') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kartu Stok</a>
                     <a href="{{ route('inventory.movements.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.movements.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Mutasi Stok</a>
@@ -663,15 +670,16 @@
             </div>
 
             <!-- Sales Group -->
-            <div x-data="{ open: {{ request()->is('sales/*') ? 'true' : 'false' }} }" class="group">
-                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white transition-all">
+            @php $isSales = request()->is('sales/*'); @endphp
+            <div x-data="{ open: {{ $isSales ? 'true' : 'false' }} }" class="group">
+                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">sell</span>
                         <span class="text-sm font-medium">Sales</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isSales ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isSales) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('sales.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Sales Order</a>
                     <a href="{{ route('sales.deliveries.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.deliveries.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Surat Jalan</a>
                     <a href="{{ route('sales.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Penjualan</a>
@@ -683,15 +691,16 @@
             <!-- SECTION 2: FINANCE & ACCOUNTING -->
             <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Finance</div>
 
-            <div x-data="{ open: {{ request()->is('accounting/*') ? 'true' : 'false' }} }" class="group">
-                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white transition-all">
+            @php $isAccounting = request()->is('accounting/*'); @endphp
+            <div x-data="{ open: {{ $isAccounting ? 'true' : 'false' }} }" class="group">
+                <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">account_balance</span>
                         <span class="text-sm font-medium">Akuntansi</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm transition-transform duration-200" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isAccounting ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" x-collapse class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isAccounting) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
                     <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
                     <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
@@ -709,7 +718,7 @@
                 $pendingApprovalCount = \App\Models\ApprovalRequest::where('status', 'pending')->count();
             @endphp
             <a href="{{ route('approvals.index') }}" 
-               class="flex items-center justify-between px-4 py-2 rounded transition-all {{ request()->routeIs('approvals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
+               class="flex items-center justify-between px-4 py-2 rounded {{ request()->routeIs('approvals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
                 <div class="flex items-center">
                     <span class="material-symbols-outlined mr-3">verified_user</span>
                     <span class="text-sm font-medium">Approval</span>
@@ -723,7 +732,7 @@
             <!-- Logout Button -->
             <form method="POST" action="{{ route('logout') }}" class="mt-auto mb-4">
                 @csrf
-                <button type="submit" class="w-full flex items-center px-4 py-2 rounded text-white/60 hover:bg-red-500/20 hover:text-red-300 transition-all text-left">
+                <button type="submit" class="w-full flex items-center px-4 py-2 rounded text-white/60 hover:bg-red-500/20 hover:text-red-300 text-left">
                     <span class="material-symbols-outlined mr-3">logout</span>
                     <span class="text-sm font-medium">Logout</span>
                 </button>
@@ -737,12 +746,12 @@
     <div class="pl-[240px]">
         <header class="fixed top-0 left-[240px] right-0 h-[56px] bg-white border-b border-[#E2E8F0] z-40 flex items-center justify-between px-6">
             <!-- Breadcrumbs -->
-            <div class="flex items-center gap-2 text-[#6B7280] text-sm">
-                <span class="material-symbols-outlined text-base">home</span>
-                <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span>TradePro</span>
-                <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-[#03193c] font-bold">@yield('page-title', 'Overview')</span>
+            <div class="flex items-center gap-2 text-[#6B7280] text-sm font-sans whitespace-nowrap min-w-0">
+                <span class="material-symbols-outlined text-base shrink-0">home</span>
+                <span class="material-symbols-outlined text-xs shrink-0">chevron_right</span>
+                <span class="shrink-0 font-medium">TradePro</span>
+                <span class="material-symbols-outlined text-xs shrink-0">chevron_right</span>
+                <span class="text-[#03193c] font-bold truncate">@yield('page-title', 'Overview')</span>
             </div>
 
             <!-- Right Options -->
@@ -766,7 +775,7 @@
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div x-show="open" x-transition style="display: none;" class="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border border-[#E2E8F0] py-1 z-50">
+                    <div x-show="open" x-cloak x-transition style="display: none;" class="absolute right-0 top-12 w-48 bg-white rounded-lg shadow-lg border border-[#E2E8F0] py-1 z-50">
                         <a href="{{ route('profile.edit') }}" class="px-4 py-2 text-sm text-[#0e1b35] hover:bg-[#F5F6F8] flex items-center gap-2">
                             <span class="material-symbols-outlined text-base">person</span> Profil Saya
                         </a>
