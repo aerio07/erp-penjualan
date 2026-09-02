@@ -16,9 +16,15 @@
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+            <div class="mb-2">
+                <a href="/" class="flex flex-col items-center gap-2 group">
+                    <div class="h-12 w-12 rounded-xl bg-[#03193c] flex items-center justify-center text-white font-bold text-2xl shadow-md group-hover:bg-[#1b2e52] transition-colors">
+                        T
+                    </div>
+                    <div class="text-center">
+                        <span class="text-2xl font-bold text-[#03193c] tracking-tight font-sans block">TradePro</span>
+                        <span class="text-xs text-slate-500 font-medium">Trading & Distribution ERP</span>
+                    </div>
                 </a>
             </div>
 
