@@ -184,8 +184,9 @@
                         <th>No. Sales Order</th>
                         <th>Customer</th>
                         <th>Produk</th>
-                        <th style="text-align:center;">Qty Kurang</th>
-                        <th style="text-align:center;">Qty Terpenuhi</th>
+                        <th style="text-align:center;">Kebutuhan SO</th>
+                        <th style="text-align:center;">Terpenuhi</th>
+                        <th style="text-align:center;">Sisa Kurang</th>
                         <th style="text-align:center;">Status</th>
                         <th>Purchase Order Terkait</th>
                     </tr>
@@ -210,11 +211,14 @@
                             <div style="font-weight:600;">{{ $demand->product->name }}</div>
                             <div style="font-size:12px; color:var(--text-secondary); font-family:monospace;">{{ $demand->product->sku }}</div>
                         </td>
-                        <td style="text-align:center; font-weight:700; color:#dc2626;">
+                        <td style="text-align:center; font-weight:600; color:var(--text-primary);">
                             {{ number_format($demand->qty_demanded) }} {{ $demand->product->unit }}
                         </td>
                         <td style="text-align:center; font-weight:600; color:#059669;">
                             {{ number_format($demand->qty_fulfilled) }}
+                        </td>
+                        <td style="text-align:center; font-weight:700; color:{{ $demand->qty_unfulfilled > 0 ? '#dc2626' : '#059669' }};">
+                            {{ number_format($demand->qty_unfulfilled) }} {{ $demand->product->unit }}
                         </td>
                         <td style="text-align:center;">
                             @php

@@ -618,4 +618,78 @@ class OrderFulfillmentAndDemandTest extends TestCase
         $this->assertEquals('ready_to_ship', $so->fulfillment_status);
         $this->assertTrue($so->canCreateDelivery());
     }
+
+    /**
+     * Test: Kebutuhan pengadaan (Procurement Demand) tidak boleh terakumulasi ganda saat syncAllPendingSalesOrders()
+     * dipanggil berulang kali, dan otomatis menghubungkan PO aktif jika ada PO terbit untuk produk tersebut.
+     */
+    public function test_procurement_demand_does_not_accumulate_qty_demanded_on_repeated_sync_and_auto_links_po(): void
+    {
+        // 1. Buat Sales Order 15 pcs saat stok gudang = 0
+        $so = SalesOrder::create([
+            'so_number' => 'SO-DEM-TEST-' . uniqid(),
+            'customer_id' => $this->customer->id,
+            'user_id' => $this->admin->id,
+            'status' => 'draft',
+            'order_date' => now()->toDateString(),
+            'tax_rate' => 0,
+            'total_amount' => 1500000,
+        ]);
+        SalesOrderItem::create([
+            'sales_order_id' => $so->id,
+            'product_id' => $this->product->id,
+            'qty_ordered' => 15,
+            'unit_price' => 100000,
+            'discount_percent' => 0,
+            'discount_amount' => 0,
+            'subtotal' => 1500000,
+        ]);
+
+        // Konfirmasi SO -> buat demand 15 pcs
+        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
+
+        $demand = ProcurementDemand::where('sales_order_id', $so->id)->firstOrFail();
+        $this->assertEquals(15, $demand->qty_demanded);
+        $this->assertEquals('pending', $demand->status);
+
+        // 2. Simulasikan refresh halaman berkali-kali (syncAllPendingSalesOrders dipanggil 5 kali)
+        $stockService = app(\App\Services\StockService::class);
+        for ($i = 0; $i < 5; $i++) {
+            $stockService->syncAllPendingSalesOrders();
+            $stockService->syncAllProcurementDemands();
+        }
+
+        // Pastikan qty_demanded TETAP 15, tidak menggelembung menjadi 75
+        $demand->refresh();
+        $this->assertEquals(15, $demand->qty_demanded, 'qty_demanded tidak boleh menggelembung pada sync berulang.');
+
+        // 3. Buat PO aktif untuk produk ini (20 pcs)
+        $po = \App\Models\PurchaseOrder::create([
+            'po_number' => 'PO-DEM-MATCH-' . uniqid(),
+            'supplier_id' => $this->supplier->id,
+            'warehouse_id' => $this->warehouse->id,
+            'user_id' => $this->admin->id,
+            'status' => 'confirmed',
+            'order_date' => now()->toDateString(),
+            'tax_rate' => 0,
+            'total_amount' => 1000000,
+        ]);
+        \App\Models\PurchaseOrderItem::create([
+            'purchase_order_id' => $po->id,
+            'product_id' => $this->product->id,
+            'qty_ordered' => 20,
+            'unit_price' => 50000,
+            'discount_percent' => 0,
+            'discount_amount' => 0,
+            'subtotal' => 1000000,
+        ]);
+
+        // Trigger sync
+        $stockService->syncAllProcurementDemands();
+
+        // 4. Verifikasi bahwa demand sekarang otomatis terhubung ke PO dan berstatus 'ordered'
+        $demand->refresh();
+        $this->assertEquals($po->id, $demand->purchase_order_id);
+        $this->assertEquals('ordered', $demand->status);
+    }
 }

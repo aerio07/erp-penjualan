@@ -173,9 +173,13 @@ class StockService
                     ->first();
 
                 if ($existingDemand) {
-                    $existingDemand->update([
-                        'qty_demanded' => $existingDemand->qty_demanded + $deficit,
-                    ]);
+                    // Pastikan qty_demanded tidak terakumulasi ganda saat sync ulang
+                    $targetDemanded = min($item->qty_ordered, max($existingDemand->qty_fulfilled, $stillNeeded + $existingDemand->qty_fulfilled));
+                    if ($existingDemand->qty_demanded !== $targetDemanded) {
+                        $existingDemand->update([
+                            'qty_demanded' => $targetDemanded,
+                        ]);
+                    }
                 } else {
                     $demandNumber = $this->generateDemandNumber();
                     ProcurementDemand::create([
@@ -327,6 +331,24 @@ class StockService
         $remainingToDistribute = $totalFulfilled;
 
         foreach ($demands as $demand) {
+            // Auto-heal jika ada data historis yang qty_demanded melebihi pesanan SO
+            if ($demand->qty_demanded > $soItem->qty_ordered) {
+                $demand->qty_demanded = $soItem->qty_ordered;
+            }
+
+            // Auto-link ke Purchase Order aktif jika belum terhubung tapi ada PO aktif untuk produk ini
+            if (!$demand->purchase_order_id) {
+                $matchingPo = \App\Models\PurchaseOrder::whereIn('status', ['confirmed', 'partially_received'])
+                    ->whereHas('items', fn($q) => $q->where('product_id', $demand->product_id))
+                    ->orderBy('id', 'desc')
+                    ->first();
+                if ($matchingPo) {
+                    $demand->purchase_order_id = $matchingPo->id;
+                }
+            } elseif ($demand->purchaseOrder && in_array($demand->purchaseOrder->status, ['cancelled', 'rejected'])) {
+                $demand->purchase_order_id = null;
+            }
+
             $demanded = $demand->qty_demanded;
             $fulfilled = min($demanded, $remainingToDistribute);
             $remainingToDistribute = max(0, $remainingToDistribute - $fulfilled);
@@ -335,10 +357,12 @@ class StockService
                 ? 'fulfilled'
                 : ($demand->purchase_order_id ? 'ordered' : 'pending');
 
-            if ($demand->qty_fulfilled !== $fulfilled || $demand->status !== $newStatus) {
+            if ($demand->qty_fulfilled !== $fulfilled || $demand->status !== $newStatus || $demand->isDirty('purchase_order_id') || $demand->isDirty('qty_demanded')) {
                 $demand->update([
-                    'qty_fulfilled' => $fulfilled,
-                    'status'        => $newStatus,
+                    'purchase_order_id' => $demand->purchase_order_id,
+                    'qty_demanded'      => $demand->qty_demanded,
+                    'qty_fulfilled'     => $fulfilled,
+                    'status'            => $newStatus,
                 ]);
             }
         }
