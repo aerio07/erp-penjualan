@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ChartOfAccount;
 use App\Models\JournalLine;
+use App\Models\ProcurementDemand;
 use App\Models\Product;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
@@ -11,6 +12,7 @@ use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
 use App\Models\StockMovement;
 use App\Services\StockService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -40,26 +42,52 @@ class DashboardController extends Controller
         // --- BARIS 4: Aktivitas Terbaru ---
         $aktivitas = $this->getAktivitasTerbaru();
 
-        // Extra info untuk list preview jatuh tempo & low stock
-        $upcomingReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
+        // Extra info untuk list preview jatuh tempo (≤ 7 hari dari hari ini) & low stock
+        $today = Carbon::today();
+        $dueThreshold = $today->copy()->addDays(7);
+
+        $allUpcomingReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
             ->where('status', '!=', 'paid')
-            ->where('due_date', '<=', now()->addDays(7))
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $dueThreshold)
             ->orderBy('due_date')
             ->get()
-            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
-            ->take(5)
+            ->map(function ($inv) use ($today) {
+                $dueDate = Carbon::parse($inv->due_date);
+                $inv->days_remaining = max(0, $today->diffInDays($dueDate, false));
+                return $inv;
+            })
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
             ->values();
 
-        $upcomingPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
+        $upcomingReceivables = $allUpcomingReceivables->take(5);
+        $totalUpcomingReceivables = (float) $allUpcomingReceivables->sum('outstanding_amount');
+
+        $allUpcomingPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->where('status', '!=', 'paid')
-            ->where('due_date', '<=', now()->addDays(7))
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $dueThreshold)
             ->orderBy('due_date')
             ->get()
-            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
-            ->take(5)
+            ->map(function ($inv) use ($today) {
+                $dueDate = Carbon::parse($inv->due_date);
+                $inv->days_remaining = max(0, $today->diffInDays($dueDate, false));
+                return $inv;
+            })
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
             ->values();
+
+        $upcomingPayables = $allUpcomingPayables->take(5);
+        $totalUpcomingPayables = (float) $allUpcomingPayables->sum('outstanding_amount');
 
         $lowStockProducts = $this->stockService->getLowStockProducts()->take(5);
+
+        // Status Antrian Operasional & Logistik
+        $operationalQueues = [
+            'so_ready_to_ship'   => SalesOrder::whereIn('status', ['confirmed', 'partially_delivered'])->count(),
+            'po_waiting_receipt' => PurchaseOrder::whereIn('status', ['confirmed', 'partially_received'])->count(),
+            'backorder_count'    => ProcurementDemand::whereIn('status', ['pending', 'ordered'])->count(),
+        ];
 
         return view('dashboard', compact(
             'role',
@@ -73,7 +101,10 @@ class DashboardController extends Controller
             'aktivitas',
             'upcomingReceivables',
             'upcomingPayables',
-            'lowStockProducts'
+            'totalUpcomingReceivables',
+            'totalUpcomingPayables',
+            'lowStockProducts',
+            'operationalQueues'
         ));
     }
 
@@ -187,18 +218,23 @@ class DashboardController extends Controller
 
         $poApprovalCount = PurchaseOrder::where('status', 'waiting_approval')->count();
 
+        $today = Carbon::today();
+        $dueThreshold = $today->copy()->addDays(7);
+
         $dueReceivablesCount = SalesInvoice::with(['payments', 'items'])
             ->where('status', '!=', 'paid')
-            ->where('due_date', '<=', now()->addDays(7))
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $dueThreshold)
             ->get()
-            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
             ->count();
 
         $duePayablesCount = PurchaseInvoice::with(['payments', 'items'])
             ->where('status', '!=', 'paid')
-            ->where('due_date', '<=', now()->addDays(7))
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $dueThreshold)
             ->get()
-            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
+            ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
             ->count();
 
         return [
