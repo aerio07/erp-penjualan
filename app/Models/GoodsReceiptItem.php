@@ -91,6 +91,11 @@ class GoodsReceiptItem extends Model
         return max(0, $this->qty_rejected - $this->qty_returned_rejected);
     }
 
+    /**
+     * Catatan: Dipertahankan untuk kompatibilitas data lama (pola Opsi A).
+     * Untuk pembuatan invoice baru (aturan 1 LPB = 1 Invoice), penanda ketersediaan
+     * berada di level header GoodsReceipt via field `is_invoiced`.
+     */
     public function getQtyAvailableForInvoiceAttribute(): int
     {
         return max(0, $this->qty_received - ($this->invoiced_qty ?? 0) - $this->qty_returned_completed_accepted);

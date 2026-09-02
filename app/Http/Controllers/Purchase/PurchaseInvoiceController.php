@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
+use App\Models\GoodsReceipt;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use App\Models\PurchaseOrder;
@@ -24,9 +25,9 @@ class PurchaseInvoiceController extends Controller
 
     public function index(Request $request): View
     {
-        $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items']);
+        $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'goodsReceipt', 'payments', 'items']);
 
-        $query = $this->applySearch($query, $request, ['invoice_number', 'supplier_invoice_number', 'purchaseOrder.po_number', 'purchaseOrder.supplier.name', 'notes']);
+        $query = $this->applySearch($query, $request, ['invoice_number', 'supplier_invoice_number', 'purchaseOrder.po_number', 'purchaseOrder.supplier.name', 'goodsReceipt.receipt_number', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
         if ($request->filled('supplier_id')) {
             $query->whereHas('purchaseOrder', function ($q) use ($request) {
@@ -45,24 +46,55 @@ class PurchaseInvoiceController extends Controller
 
     public function create(Request $request): View
     {
-        $selectedPoId = $request->query('po_id');
-        $orders = PurchaseOrder::with(['supplier', 'items.product', 'items.goodsReceiptItems'])
+        // PO yang memiliki minimal 1 LPB belum diinvoice
+        $orders = PurchaseOrder::with(['supplier'])
             ->whereIn('status', ['confirmed', 'partially_received', 'done'])
-            ->whereHas('goodsReceipts.items', function ($q) {
-                $q->whereColumn('qty_received', '>', 'invoiced_qty');
+            ->whereHas('goodsReceipts', function ($q) {
+                $q->where('is_invoiced', false);
             })
             ->orderByDesc('id')
-            ->get()
-            ->filter(fn($order) => $this->availableQtyForInvoice($order) > 0)
-            ->values();
+            ->get();
 
-        return view('purchase.invoices.create', compact('orders', 'selectedPoId'));
+        // Ambil SEMUA LPB yang belum diinvoice untuk seluruh PO yang eligible
+        $availableReceipts = GoodsReceipt::whereIn('purchase_order_id', $orders->pluck('id'))
+            ->where('is_invoiced', false)
+            ->with(['items.purchaseOrderItem.product', 'warehouse'])
+            ->orderByDesc('id')
+            ->get();
+
+        $selectedPoId = $request->query('po_id');
+        $selectedGrnId = $request->query('grn_id');
+
+        // Data PO lengkap untuk kalkulasi diskon header & PPN di frontend
+        $ordersData = PurchaseOrder::with(['supplier', 'items.product', 'items.goodsReceiptItems', 'invoices.items'])
+            ->whereIn('id', $orders->pluck('id'))
+            ->get()
+            ->map(function ($po) {
+                $usedDiscount = 0;
+                $usedTax = 0;
+                foreach ($po->invoices as $inv) {
+                    $invBaseSubtotal = $inv->items->sum(function ($it) {
+                        $lineBase = $it->qty_invoiced * $it->unit_price;
+                        $lineDisc = $lineBase * (($it->discount_percent ?? 0) / 100);
+                        return $lineBase - $lineDisc;
+                    });
+                    $usedDiscount += max(0, round($invBaseSubtotal - $inv->amount, 2));
+                    $usedTax += (float) $inv->tax_amount;
+                }
+                $po->used_header_discount = round($usedDiscount, 2);
+                $po->used_tax_amount = round($usedTax, 2);
+                return $po;
+            })
+            ->keyBy('id');
+
+        return view('purchase.invoices.create', compact('orders', 'availableReceipts', 'selectedPoId', 'selectedGrnId', 'ordersData'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'purchase_order_id'       => 'required|exists:purchase_orders,id',
+            'goods_receipt_id'        => 'required|exists:goods_receipts,id',
             'supplier_invoice_number' => 'nullable|string',
             'invoice_date'            => 'required|date',
             'due_date'                => 'required|date|after_or_equal:invoice_date',
@@ -71,71 +103,132 @@ class PurchaseInvoiceController extends Controller
         ]);
 
         return DB::transaction(function () use ($request) {
-            $po = PurchaseOrder::with(['items.product', 'items.goodsReceiptItems.goodsReceipt'])
+            // Lock GRN untuk cegah race condition
+            $grn = GoodsReceipt::with(['items.purchaseOrderItem'])
                 ->lockForUpdate()
-                ->findOrFail($request->purchase_order_id);
+                ->findOrFail($request->goods_receipt_id);
 
-            // 3-Way Match: Pastikan ada barang lolos QC yang BELUM pernah di-invoice
-            $totalUnbilledQty = $this->availableQtyForInvoice($po);
-            if ($totalUnbilledQty <= 0) {
+            // Guard: pastikan LPB ini milik PO yang dipilih
+            if ((int) $grn->purchase_order_id !== (int) $request->purchase_order_id) {
                 return back()
-                    ->with('error', 'Semua barang yang diterima dalam kondisi baik pada PO ini sudah pernah diterbitkan Invoice-nya (tidak ada sisa yang belum ditagih).')
+                    ->with('error', 'LPB yang dipilih bukan milik Purchase Order yang dipilih.')
                     ->withInput();
             }
 
-            // Tagihan HANYA dihitung dari barang lolos QC yang BELUM pernah di-invoice (qty_unbilled)
-            $subtotalUnbilled = 0;
-            $itemsToCreate = [];
-            $taxRate = (float) $request->tax_rate;
-
-            foreach ($po->items as $item) {
-                $qtyToBill = (int) $item->goodsReceiptItems->sum(fn($grnItem) => $grnItem->qty_available_for_invoice);
-                if ($qtyToBill <= 0) continue;
-
-                // Split per Goods Receipt Item untuk audit trail fisik yang presisi
-                $neededToInvoice = $qtyToBill;
-                foreach ($item->goodsReceiptItems as $grnItem) {
-                    $availableInThisGrn = $grnItem->qty_available_for_invoice;
-                    if ($availableInThisGrn > 0 && $neededToInvoice > 0) {
-                        $qtyThisGrn = min($neededToInvoice, $availableInThisGrn);
-                        $grnItem->increment('invoiced_qty', $qtyThisGrn);
-                        $neededToInvoice -= $qtyThisGrn;
-
-                        $lineBase = $qtyThisGrn * $item->unit_price;
-                        $disc = $lineBase * ($item->discount_percent / 100);
-                        $netLine = $lineBase - $disc;
-                        $lineTax = $netLine * ($taxRate / 100);
-                        $subtotalUnbilled += $netLine;
-
-                        $itemsToCreate[] = [
-                            'purchase_order_item_id' => $item->id,
-                            'goods_receipt_item_id'  => $grnItem->id,
-                            'product_id'             => $item->product_id,
-                            'qty_invoiced'           => $qtyThisGrn,
-                            'unit_price'             => $item->unit_price,
-                            'discount_percent'       => $item->discount_percent,
-                            'discount_amount'        => $disc,
-                            'subtotal'               => $netLine,
-                            'tax_amount'             => $lineTax,
-                        ];
-                    }
-                }
+            // Guard: pastikan LPB belum pernah dipakai untuk invoice lain
+            if ($grn->is_invoiced) {
+                return back()
+                    ->with('error', 'LPB ini sudah pernah digunakan untuk invoice lain. Satu LPB hanya bisa dipakai untuk satu invoice.')
+                    ->withInput();
             }
 
-            // Prorate Diskon Header PO secara proporsional
-            $totalOrderSubtotal = $po->items->sum('subtotal');
-            $headerDiscountAmount = (float) ($po->discount_amount ?? 0);
-            $proratedHeaderDiscount = $totalOrderSubtotal > 0
-                ? ($subtotalUnbilled / $totalOrderSubtotal) * $headerDiscountAmount
-                : 0;
+            $po = PurchaseOrder::with(['items', 'invoices.items'])->lockForUpdate()->findOrFail($request->purchase_order_id);
+            $taxRate = (float) $request->tax_rate;
 
-            $dpp = max(0, round($subtotalUnbilled - $proratedHeaderDiscount, 2));
-            $taxAmount = round($dpp * ($taxRate / 100), 2);
-            $totalAmount = round($dpp + $taxAmount, 2);
+            // Hitung subtotal dari SELURUH item di LPB ini (qty_received penuh)
+            $subtotalGrn = 0;
+            $itemsToCreate = [];
+
+            foreach ($grn->items as $grnItem) {
+                $poItem = $grnItem->purchaseOrderItem;
+                if (!$poItem) continue;
+
+                $qty = (int) $grnItem->qty_received;
+                if ($qty <= 0) continue;
+
+                $lineBase = $qty * $poItem->unit_price;
+                $disc = $lineBase * ($poItem->discount_percent / 100);
+                $netLine = $lineBase - $disc;
+                $subtotalGrn += $netLine;
+
+                $itemsToCreate[] = [
+                    'purchase_order_item_id' => $poItem->id,
+                    'goods_receipt_item_id'  => $grnItem->id,
+                    'product_id'             => $poItem->product_id,
+                    'qty_invoiced'           => $qty,
+                    'unit_price'             => $poItem->unit_price,
+                    'discount_percent'       => $poItem->discount_percent,
+                    'discount_amount'        => $disc,
+                    'subtotal'               => $netLine,
+                    'tax_amount'             => 0, // dihitung setelah prorasi diskon header
+                ];
+            }
+
+            if (empty($itemsToCreate)) {
+                return back()
+                    ->with('error', 'LPB ini tidak memiliki item yang bisa ditagih.')
+                    ->withInput();
+            }
+
+            // Hitung diskon header dan PPN yang sudah diserap oleh invoice-invoice sebelumnya untuk PO ini
+            $usedHeaderDiscount = 0;
+            $usedTaxAmount = 0;
+            $totalInvoicedSubtotal = 0;
+            foreach ($po->invoices as $existingInv) {
+                $invBaseSubtotal = 0;
+                foreach ($existingInv->items as $invItem) {
+                    $lineBase = $invItem->qty_invoiced * $invItem->unit_price;
+                    $lineDisc = $lineBase * (($invItem->discount_percent ?? 0) / 100);
+                    $invBaseSubtotal += ($lineBase - $lineDisc);
+                }
+                $totalInvoicedSubtotal += $invBaseSubtotal;
+                $usedHeaderDiscount += max(0, round($invBaseSubtotal - $existingInv->amount, 2));
+                $usedTaxAmount += (float) $existingInv->tax_amount;
+            }
+
+            // Cek apakah ini LPB terakhir yang belum diinvoice untuk PO ini
+            $otherUninvoicedGrnsCount = GoodsReceipt::where('purchase_order_id', $po->id)
+                ->where('is_invoiced', false)
+                ->where('id', '!=', $grn->id)
+                ->count();
+
+            $totalOrderSubtotal = (float) $po->items->sum('subtotal');
+            $headerDiscountAmount = (float) ($po->discount_amount ?? 0);
+
+            $poFullyReceived = $po->items->every(function ($item) {
+                return ($item->qty_received + $item->qty_rejected) >= $item->qty_ordered;
+            });
+
+            $isLastInvoiceForPo = ($otherUninvoicedGrnsCount === 0) && (
+                $poFullyReceived ||
+                in_array($po->status, ['done', 'completed']) ||
+                round($subtotalGrn + $totalInvoicedSubtotal, 2) >= round($totalOrderSubtotal, 2)
+            );
+
+            // Presisi desimal: Jika PO bernilai rupiah bulat (tanpa sen), bulatkan ke rupiah bulat (0 desimal)
+            // agar tampilan di UI dan database tidak memiliki selisih 1 rupiah akibat pecahan 50 sen.
+            $poTotalTax = (float) ($po->tax_amount ?? 0);
+            $isIntegerRupiah = (round($poTotalTax) == $poTotalTax) && 
+                               (round($totalOrderSubtotal) == $totalOrderSubtotal) && 
+                               (round($headerDiscountAmount) == $headerDiscountAmount);
+            $dec = $isIntegerRupiah ? 0 : 2;
+
+            // Alokasi diskon header:
+            // Jika invoice terakhir: ambil SELURUH sisa diskon header agar totalnya presisi 100% tanpa selisih pembulatan.
+            if ($isLastInvoiceForPo && $headerDiscountAmount > 0) {
+                $proratedHeaderDiscount = max(0, round($headerDiscountAmount - $usedHeaderDiscount, $dec));
+            } else {
+                $proratedHeaderDiscount = $totalOrderSubtotal > 0
+                    ? round(($subtotalGrn / $totalOrderSubtotal) * $headerDiscountAmount, $dec)
+                    : 0;
+            }
+
+            $dpp = max(0, round($subtotalGrn - $proratedHeaderDiscount, $dec));
+
+            // Alokasi PPN:
+            // Jika invoice terakhir dan tarif PPN sama dengan PO: ambil SELURUH sisa PPN dari PO agar totalnya presisi 100% tanpa selisih pembulatan.
+            if ($isLastInvoiceForPo && abs((float) $po->tax_rate - $taxRate) < 0.001 && $poTotalTax > 0) {
+                $taxAmount = max(0, round($poTotalTax - $usedTaxAmount, $dec));
+            } else {
+                $taxAmount = round($dpp * ($taxRate / 100), $dec);
+            }
+
+            $totalAmount = round($dpp + $taxAmount, $dec);
 
             $invoice = PurchaseInvoice::create([
                 'invoice_number'          => $this->generateNumber(),
                 'purchase_order_id'       => $po->id,
+                'goods_receipt_id'        => $grn->id,
                 'supplier_invoice_number' => $request->supplier_invoice_number,
                 'amount'                  => $dpp,
                 'tax_rate'                => $taxRate,
@@ -148,45 +241,67 @@ class PurchaseInvoiceController extends Controller
             ]);
 
             // Hitung faktor prorasi diskon header untuk setiap baris item
-            $discountRatio = ($subtotalUnbilled > 0 && $proratedHeaderDiscount > 0)
-                ? ($proratedHeaderDiscount / $subtotalUnbilled)
+            $discountRatio = ($subtotalGrn > 0 && $proratedHeaderDiscount > 0)
+                ? ($proratedHeaderDiscount / $subtotalGrn)
                 : 0;
 
-            // Simpan snapshot rincian item invoice lengkap dengan link ke GRN item dan tax_amount
-            foreach ($itemsToCreate as $itemData) {
+            // Simpan item invoice dengan prorasi diskon header dan PPN per baris
+            // Baris item terakhir mengambil sisa pembulatan agar sum(subtotal) == DPP dan sum(tax) == taxAmount
+            $allocatedHeaderDiscount = 0;
+            $allocatedSubtotal = 0;
+            $allocatedTax = 0;
+            $itemCount = count($itemsToCreate);
+
+            foreach ($itemsToCreate as $idx => $itemData) {
                 $itemData['purchase_invoice_id'] = $invoice->id;
+                $isLastItem = ($idx === $itemCount - 1);
 
-                // Alokasikan diskon header ke baris item secara proporsional
-                $itemHeaderDiscount = round($itemData['subtotal'] * $discountRatio, 2);
-                $itemNetSubtotal    = max(0, round($itemData['subtotal'] - $itemHeaderDiscount, 2));
-                $itemTax            = round($itemNetSubtotal * ($taxRate / 100), 2);
+                if ($isLastItem) {
+                    $itemHeaderDiscount = max(0, round($proratedHeaderDiscount - $allocatedHeaderDiscount, $dec));
+                    $itemNetSubtotal    = max(0, round($dpp - $allocatedSubtotal, $dec));
+                    $itemTax            = max(0, round($taxAmount - $allocatedTax, $dec));
+                } else {
+                    $itemHeaderDiscount = round($itemData['subtotal'] * $discountRatio, $dec);
+                    $itemNetSubtotal    = max(0, round($itemData['subtotal'] - $itemHeaderDiscount, $dec));
+                    $itemTax            = round($itemNetSubtotal * ($taxRate / 100), $dec);
 
-                $itemData['discount_amount'] = round($itemData['discount_amount'] + $itemHeaderDiscount, 2);
+                    $allocatedHeaderDiscount += $itemHeaderDiscount;
+                    $allocatedSubtotal       += $itemNetSubtotal;
+                    $allocatedTax            += $itemTax;
+                }
+
+                $itemData['discount_amount'] = round($itemData['discount_amount'] + $itemHeaderDiscount, $dec);
                 $itemData['subtotal']        = $itemNetSubtotal;
                 $itemData['tax_amount']      = $itemTax;
 
                 PurchaseInvoiceItem::create($itemData);
             }
 
+            // Tandai LPB sebagai sudah diinvoice — TIDAK bisa dipakai lagi
+            $grn->update([
+                'is_invoiced' => true,
+                'purchase_invoice_id' => $invoice->id,
+            ]);
+
             // Automatic Journal Entry (Persediaan & PPN Masukan -> Hutang Usaha)
             $entry = $this->journalService->createFromPurchaseInvoice($invoice);
             $this->journalService->postEntry($entry);
 
             return redirect()->route('purchase.invoices.index')
-                ->with('success', 'Invoice Pembelian (3-Way Match) berhasil diterbitkan dan Jurnal Akuntansi otomatis diposting.');
+                ->with('success', 'Invoice Pembelian berhasil diterbitkan dari LPB ' . $grn->receipt_number . ' dan Jurnal Akuntansi otomatis diposting.');
         });
     }
 
     public function show(PurchaseInvoice $invoice): View
     {
-        $invoice->load(['purchaseOrder.supplier', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
+        $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
 
         return view('purchase.invoices.show', compact('invoice'));
     }
 
     public function exportPdf(PurchaseInvoice $invoice)
     {
-        $invoice->load(['purchaseOrder.supplier', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
+        $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
         $pdf = Pdf::loadView('pdf.purchase-invoice', compact('invoice'));
 
         return $pdf->download("INV-{$invoice->invoice_number}.pdf");
@@ -201,14 +316,5 @@ class PurchaseInvoiceController extends Controller
         $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
 
         return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
-    }
-
-    private function availableQtyForInvoice(PurchaseOrder $order): int
-    {
-        return (int) $order->items->sum(
-            fn($item) => $item->goodsReceiptItems->sum(
-                fn($grnItem) => $grnItem->qty_available_for_invoice
-            )
-        );
     }
 }

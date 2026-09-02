@@ -111,9 +111,16 @@
                 <div style="margin-top:16px; padding:12px; background:#ede9fe; border-radius:10px;">
                     <div style="font-size:12px; font-weight:600; color:#7c3aed; margin-bottom:4px;">GRN Terkait</div>
                     @foreach($order->goodsReceipts as $grn)
-                    <a href="{{ route('purchase.goods-receipts.show', $grn) }}" style="font-size:13px; color:#4c1d95; text-decoration:none; display:block; margin-bottom:4px; font-weight:500;">
-                        <i class="fa-solid fa-file-lines"></i> {{ $grn->receipt_number }} · {{ $grn->received_date->format('d/m/Y') }}
-                    </a>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                        <a href="{{ route('purchase.goods-receipts.show', $grn) }}" style="font-size:13px; color:#4c1d95; text-decoration:none; font-weight:500;">
+                            <i class="fa-solid fa-file-lines"></i> {{ $grn->receipt_number }} · {{ $grn->received_date->format('d/m/Y') }}
+                        </a>
+                        @if($grn->is_invoiced)
+                            <span class="badge badge-done" style="font-size:10px; padding:2px 8px;">Sudah Diinvoice</span>
+                        @else
+                            <span class="badge badge-pending" style="font-size:10px; padding:2px 8px;">Belum Diinvoice</span>
+                        @endif
+                    </div>
                     @endforeach
                 </div>
                 @endif

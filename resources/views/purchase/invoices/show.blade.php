@@ -7,7 +7,11 @@
     <div class="page-header">
         <div>
             <h1>{{ $invoice->invoice_number }}</h1>
-            <p>Ref PO: <a href="{{ route('purchase.orders.show', $invoice->purchaseOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->purchaseOrder->po_number }}</a> · {{ $invoice->purchaseOrder->supplier->name ?? '-' }}</p>
+            <p>Ref PO: <a href="{{ route('purchase.orders.show', $invoice->purchaseOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->purchaseOrder->po_number }}</a>
+                @if($invoice->goodsReceipt)
+                · Ref LPB: <a href="{{ route('purchase.goods-receipts.show', $invoice->goodsReceipt) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->goodsReceipt->receipt_number }}</a>
+                @endif
+                · {{ $invoice->purchaseOrder->supplier->name ?? '-' }}</p>
         </div>
         <div style="display:flex; gap:8px;">
             @if($invoice->outstanding_amount > 0)

@@ -10,14 +10,32 @@ class GoodsReceipt extends Model
 {
     protected $fillable = [
         'receipt_number', 'purchase_order_id', 'warehouse_id',
-        'user_id', 'qc_status', 'received_date', 'notes',
+        'user_id', 'qc_status', 'is_invoiced', 'purchase_invoice_id',
+        'received_date', 'notes',
     ];
 
-    protected $casts = ['received_date' => 'date'];
+    protected $casts = [
+        'received_date' => 'date',
+        'is_invoiced' => 'boolean',
+    ];
 
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    public function purchaseInvoice(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseInvoice::class);
+    }
+
+    /**
+     * Apakah LPB ini masih bisa dipilih untuk invoice baru?
+     * true jika belum pernah dipakai, false jika sudah.
+     */
+    public function getIsAvailableForInvoiceAttribute(): bool
+    {
+        return !$this->is_invoiced;
     }
 
     public function warehouse(): BelongsTo

@@ -38,6 +38,7 @@
                         <x-sortable-header column="invoice_number" title="No. Invoice" />
                         <th>Supplier</th>
                         <th>Ref. PO</th>
+                        <th>Ref. LPB</th>
                         <x-sortable-header column="invoice_date" title="Tgl Invoice" />
                         <x-sortable-header column="due_date" title="Jatuh Tempo" />
                         <x-sortable-header column="total_amount" title="Tagihan Efektif" align="right" />
@@ -62,6 +63,15 @@
                             </a>
                             @else
                             -
+                            @endif
+                        </td>
+                        <td>
+                            @if($inv->goodsReceipt)
+                            <a href="{{ route('purchase.goods-receipts.show', $inv->goodsReceipt) }}" style="color:var(--primary); text-decoration:none; font-weight:500;">
+                                {{ $inv->goodsReceipt->receipt_number }}
+                            </a>
+                            @else
+                            <span style="color:var(--text-secondary);">-</span>
                             @endif
                         </td>
                         <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>
@@ -104,7 +114,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                        <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
                             <i class="fa-solid fa-file-invoice-dollar" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                             Belum ada invoice pembelian yang sesuai filter
                         </td>

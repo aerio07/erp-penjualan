@@ -45,6 +45,9 @@
             <value>{{ $invoice->purchaseOrder->supplier->name ?? '-' }}</value><br>
             <span style="color:#64748b; font-size:11px;">
                 Ref PO: {{ $invoice->purchaseOrder->po_number }}<br>
+                @if($invoice->goodsReceipt)
+                Ref LPB: {{ $invoice->goodsReceipt->receipt_number }}<br>
+                @endif
                 Inv Sup: {{ $invoice->supplier_invoice_number ?? '-' }}
             </span>
         </div>

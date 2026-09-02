@@ -11,7 +11,8 @@ class PurchaseInvoice extends Model
     protected $appends = ['total_paid', 'total_reversed_amount', 'effective_total_amount', 'outstanding_amount'];
 
     protected $fillable = [
-        'invoice_number', 'purchase_order_id', 'supplier_invoice_number',
+        'invoice_number', 'purchase_order_id', 'goods_receipt_id',
+        'supplier_invoice_number',
         'amount', 'tax_rate', 'tax_amount', 'total_amount',
         'invoice_date', 'due_date', 'status', 'notes',
     ];
@@ -28,6 +29,11 @@ class PurchaseInvoice extends Model
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    public function goodsReceipt(): BelongsTo
+    {
+        return $this->belongsTo(GoodsReceipt::class);
     }
 
     public function payments(): HasMany

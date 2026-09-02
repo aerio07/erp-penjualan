@@ -135,29 +135,14 @@ class InvoiceReturnConsistencyTest extends TestCase
         $paymentForm->assertSee('Sisa Piutang: Rp 600');
     }
 
-    public function test_purchase_invoice_only_bills_received_qty_not_already_returned(): void
+    public function test_purchase_invoice_bills_full_received_qty_from_lpb(): void
     {
-        [$purchaseOrder] = $this->makePurchaseReceipt(qty: 10);
+        [$purchaseOrder, $receipt] = $this->makePurchaseReceipt(qty: 10);
         $grnItem = GoodsReceiptItem::firstOrFail();
-
-        $return = PurchaseReturn::create([
-            'return_number' => 'PRET-PRE-001',
-            'goods_receipt_id' => $grnItem->goods_receipt_id,
-            'supplier_id' => $purchaseOrder->supplier_id,
-            'return_date' => now()->toDateString(),
-            'status' => 'completed',
-        ]);
-        PurchaseReturnItem::create([
-            'purchase_return_id' => $return->id,
-            'product_id' => $this->product->id,
-            'goods_receipt_item_id' => $grnItem->id,
-            'source_type' => 'accepted',
-            'qty' => 4,
-            'unit_cost' => 60,
-        ]);
 
         $response = $this->actingAs($this->admin)->post(route('purchase.invoices.store'), [
             'purchase_order_id' => $purchaseOrder->id,
+            'goods_receipt_id' => $receipt->id,
             'invoice_date' => now()->toDateString(),
             'due_date' => now()->addWeek()->toDateString(),
             'tax_rate' => 0,
@@ -166,16 +151,17 @@ class InvoiceReturnConsistencyTest extends TestCase
         $response->assertRedirect(route('purchase.invoices.index'));
 
         $invoice = PurchaseInvoice::with('items')->firstOrFail();
-        $this->assertEquals(360, $invoice->total_amount);
-        $this->assertEquals(6, $invoice->items->sum('qty_invoiced'));
+        $this->assertEquals(600, $invoice->total_amount);
+        $this->assertEquals(10, $invoice->items->sum('qty_invoiced'));
     }
 
     public function test_purchase_return_after_invoice_reduces_outstanding_invoice(): void
     {
-        [$purchaseOrder] = $this->makePurchaseReceipt(qty: 10);
+        [$purchaseOrder, $receipt] = $this->makePurchaseReceipt(qty: 10);
 
         $this->actingAs($this->admin)->post(route('purchase.invoices.store'), [
             'purchase_order_id' => $purchaseOrder->id,
+            'goods_receipt_id' => $receipt->id,
             'invoice_date' => now()->toDateString(),
             'due_date' => now()->addWeek()->toDateString(),
             'tax_rate' => 0,
