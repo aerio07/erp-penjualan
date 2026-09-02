@@ -23,6 +23,7 @@ use App\Http\Controllers\Inventory\StockMovementController;
 use App\Http\Controllers\Inventory\WarehouseTransferController;
 use App\Http\Controllers\Inventory\StockOpnameController;
 use App\Http\Controllers\Inventory\StockDispositionController;
+use App\Http\Controllers\Inventory\InventoryReportController;
 // Sales
 use App\Http\Controllers\Sales\SalesOrderController;
 use App\Http\Controllers\Sales\DeliveryController;
@@ -101,6 +102,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin,purchasing,finance')->prefix('purchase')->name('purchase.')->group(function () {
         Route::get('reports/fulfillment', [PurchaseReportController::class, 'fulfillment'])->name('reports.fulfillment');
+        Route::get('reports/recap-by-product', [PurchaseReportController::class, 'recapByProduct'])->name('reports.recap-by-product');
     });
 
     // =========================================================
@@ -120,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin,gudang,purchasing,sales,finance')->prefix('inventory')->name('inventory.')->group(function () {
         Route::get('stock-summary', [StockMovementController::class, 'summary'])->name('stock-summary');
+        Route::get('reports/returns-by-product', [InventoryReportController::class, 'returnsByProduct'])->name('reports.returns-by-product');
     });
 
     // =========================================================
@@ -147,6 +150,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin,sales,finance')->prefix('sales')->name('sales.')->group(function () {
         Route::get('reports/fulfillment', [SalesReportController::class, 'fulfillment'])->name('reports.fulfillment');
+        Route::get('reports/recap-by-product', [SalesReportController::class, 'recapByProduct'])->name('reports.recap-by-product');
     });
 
     // =========================================================
@@ -162,6 +166,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow');
             Route::get('receivables', [ReportController::class, 'receivables'])->name('receivables');
             Route::get('payables', [ReportController::class, 'payables'])->name('payables');
+            Route::get('payables-by-vendor', [ReportController::class, 'payablesByVendor'])->name('payables-by-vendor');
+            Route::get('receivables-by-customer', [ReportController::class, 'receivablesByCustomer'])->name('receivables-by-customer');
+            Route::get('ledger-payable/{supplier}', [ReportController::class, 'ledgerPayable'])->name('ledger-payable');
+            Route::get('ledger-receivable/{customer}', [ReportController::class, 'ledgerReceivable'])->name('ledger-receivable');
             Route::get('profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
             Route::get('balance-sheet', [ReportController::class, 'balanceSheet'])->name('balance-sheet');
             Route::get('stock-valuation', [ReportController::class, 'stockValuation'])->name('stock-valuation');

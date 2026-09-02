@@ -14,6 +14,10 @@
             </p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <a href="{{ route('accounting.reports.ledger-receivable', $customer) }}" class="btn btn-secondary" style="color:var(--primary); border-color:var(--primary);" title="Lihat Buku Pembantu / Kartu Piutang">
+                <i class="fa-solid fa-book"></i> Kartu Piutang
+            </a>
+
             <form method="POST" action="{{ route('master.customers.toggle-status', $customer) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $customer->is_active ? 'menonaktifkan' : 'mengaktifkan' }} customer ini?');">
                 @csrf
                 @method('PATCH')

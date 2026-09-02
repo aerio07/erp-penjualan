@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\SalesInvoice;
 use App\Models\SalesOrder;
 use App\Models\SalesPayment;
@@ -147,6 +149,94 @@ class SalesReportController extends Controller
             'totalInvoicedAmount',
             'totalPaidAmount',
             'totalOutstandingAmount'
+        ));
+    }
+
+    /**
+     * Rekap Penjualan per Barang (dengan Analisis HPP & Margin Kotor)
+     */
+    public function recapByProduct(Request $request): View
+    {
+        $dateFrom   = $request->input('date_from');
+        $dateTo     = $request->input('date_to');
+        $categoryId = $request->input('category_id');
+        $search     = $request->input('q');
+
+        $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
+
+        $query = Product::with('category')
+            ->where('is_active', true)
+            ->withSum(['salesInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            }], 'qty_invoiced')
+            ->withSum(['salesInvoiceItems as total_amount' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            }], 'subtotal')
+            ->withSum(['salesInvoiceItems as total_cogs' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            }], 'cogs_amount')
+            ->withCount(['salesInvoiceItems as transaction_count' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            }]);
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->orderByDesc('total_amount')->paginate(20)->withQueryString();
+
+        $products->getCollection()->transform(function ($p) {
+            $totalSales  = (float) $p->total_amount;
+            $totalCogs   = (float) ($p->total_cogs ?: ($p->total_qty * $p->purchase_price));
+            $grossMargin = $totalSales - $totalCogs;
+            $marginPct   = $totalSales > 0 ? round(($grossMargin / $totalSales) * 100, 1) : 0;
+
+            $p->calculated_cogs   = $totalCogs;
+            $p->gross_margin      = $grossMargin;
+            $p->margin_percentage = $marginPct;
+            $p->avg_selling_price = $p->total_qty > 0 ? round($totalSales / $p->total_qty, 2) : $p->selling_price;
+            return $p;
+        });
+
+        // Summary KPI cards
+        $summaryQuery = Product::query();
+        if ($categoryId) $summaryQuery->where('category_id', $categoryId);
+        if ($search) {
+            $summaryQuery->where(fn($q) => $q->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%"));
+        }
+
+        $totalItemsSold = (float) $summaryQuery->withSum(['salesInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
+            if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+            if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+        }], 'qty_invoiced')->get()->sum('total_qty');
+
+        $totalRevenue = (float) $summaryQuery->withSum(['salesInvoiceItems as total_amt' => function ($q) use ($dateFrom, $dateTo) {
+            if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+            if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+        }], 'subtotal')->get()->sum('total_amt');
+
+        $totalCogsAll = (float) $summaryQuery->withSum(['salesInvoiceItems as total_cogs' => function ($q) use ($dateFrom, $dateTo) {
+            if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
+            if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+        }], 'cogs_amount')->get()->sum('total_cogs');
+
+        $totalGrossProfit = $totalRevenue - $totalCogsAll;
+        $avgGrossMargin   = $totalRevenue > 0 ? round(($totalGrossProfit / $totalRevenue) * 100, 1) : 0;
+
+        return view('sales.reports.recap-by-product', compact(
+            'products', 'categories', 'totalItemsSold', 'totalRevenue', 'totalCogsAll',
+            'totalGrossProfit', 'avgGrossMargin', 'dateFrom', 'dateTo', 'categoryId', 'search'
         ));
     }
 }

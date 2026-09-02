@@ -6,9 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\ChartOfAccount;
 use App\Models\JournalEntry;
 use App\Models\JournalLine;
+use App\Models\Customer;
 use App\Models\PurchaseInvoice;
+use App\Models\PurchasePayment;
+use App\Models\PurchaseReturn;
 use App\Models\SalesInvoice;
+use App\Models\SalesPayment;
+use App\Models\SalesReturn;
 use App\Models\StockDisposition;
+use App\Models\Supplier;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -402,5 +408,364 @@ class ReportController extends Controller
         $totalValue = $products->sum('stock_value');
 
         return view('accounting.reports.stock-valuation', compact('products', 'totalValue'));
+    }
+
+    /**
+     * 9. Kartu Hutang (Subsidiary Ledger Payable per Supplier)
+     */
+    public function ledgerPayable(Supplier $supplier, Request $request): View
+    {
+        $dateFrom = $request->input('date_from');
+        $dateTo   = $request->input('date_to');
+
+        // 1. Tagihan Invoices Pembelian
+        $invoices = PurchaseInvoice::with('purchaseOrder')
+            ->whereHas('purchaseOrder', fn($q) => $q->where('supplier_id', $supplier->id))
+            ->get()
+            ->map(function ($inv) {
+                return (object) [
+                    'date'             => $inv->invoice_date ? $inv->invoice_date->toDateString() : $inv->created_at->toDateString(),
+                    'created_at'       => $inv->created_at,
+                    'type'             => 'invoice',
+                    'type_badge'       => 'primary',
+                    'type_label'       => 'Invoice',
+                    'document_number'  => $inv->invoice_number,
+                    'reference_info'   => $inv->purchaseOrder ? $inv->purchaseOrder->po_number : '-',
+                    'description'      => 'Tagihan Pembelian ' . ($inv->purchaseOrder ? '#' . $inv->purchaseOrder->po_number : ''),
+                    'debit'            => 0, // Hutang berkurang
+                    'credit'           => (float) $inv->total_amount, // Hutang bertambah
+                    'link'             => route('purchase.invoices.show', $inv),
+                ];
+            });
+
+        // 2. Pembayaran Hutang ke Supplier
+        $payments = PurchasePayment::with(['purchaseInvoice.purchaseOrder'])
+            ->whereHas('purchaseInvoice.purchaseOrder', fn($q) => $q->where('supplier_id', $supplier->id))
+            ->get()
+            ->map(function ($pay) {
+                return (object) [
+                    'date'             => $pay->payment_date ? $pay->payment_date->toDateString() : $pay->created_at->toDateString(),
+                    'created_at'       => $pay->created_at,
+                    'type'             => 'payment',
+                    'type_badge'       => 'success',
+                    'type_label'       => 'Pembayaran',
+                    'document_number'  => $pay->reference_number ?: ('PAY-' . $pay->id),
+                    'reference_info'   => $pay->purchaseInvoice ? $pay->purchaseInvoice->invoice_number : '-',
+                    'description'      => 'Pembayaran Hutang Invoice ' . ($pay->purchaseInvoice ? '#' . $pay->purchaseInvoice->invoice_number : ''),
+                    'debit'            => (float) $pay->amount, // Hutang berkurang
+                    'credit'           => 0,
+                    'link'             => $pay->purchaseInvoice ? route('purchase.invoices.show', $pay->purchaseInvoice) : null,
+                ];
+            });
+
+        // 3. Retur Pembelian yang memotong hutang (completed)
+        $returns = PurchaseReturn::with(['goodsReceipt.purchaseOrder', 'items'])
+            ->where('supplier_id', $supplier->id)
+            ->where('status', 'completed')
+            ->get()
+            ->map(function ($ret) {
+                // Cek jurnal pembalikan hutang untuk mendapatkan nilai tepat yang memotong hutang
+                $journal = JournalEntry::with('lines.account')
+                    ->where('reference_type', PurchaseReturn::class)
+                    ->where('reference_id', $ret->id)
+                    ->where('status', 'posted')
+                    ->first();
+
+                $debtReversed = $journal
+                    ? (float) $journal->lines->where('account.code', '2-1100')->sum('debit')
+                    : (float) $ret->items->sum(fn($it) => $it->qty * $it->unit_cost);
+
+                return (object) [
+                    'date'             => $ret->return_date ? $ret->return_date->toDateString() : $ret->created_at->toDateString(),
+                    'created_at'       => $ret->created_at,
+                    'type'             => 'return',
+                    'type_badge'       => 'danger',
+                    'type_label'       => 'Retur Beli',
+                    'document_number'  => $ret->return_number,
+                    'reference_info'   => $ret->goodsReceipt ? $ret->goodsReceipt->receipt_number : '-',
+                    'description'      => 'Retur Pembelian ' . ($ret->goodsReceipt ? '#' . $ret->goodsReceipt->receipt_number : ''),
+                    'debit'            => $debtReversed, // Hutang berkurang
+                    'credit'           => 0,
+                    'link'             => route('purchase.returns.show', $ret),
+                ];
+            })
+            ->filter(fn($r) => $r->debit > 0);
+
+        // Gabungkan seluruh transaksi urut kronologis
+        $allTransactions = $invoices->concat($payments)->concat($returns)
+            ->sortBy(function ($t) {
+                return $t->date . ' ' . $t->created_at;
+            })
+            ->values();
+
+        // Hitung Saldo Awal (Beginning Balance) sebelum date_from
+        $beginningBalance = 0;
+        $filteredTransactions = collect();
+
+        foreach ($allTransactions as $t) {
+            $impact = $t->credit - $t->debit; // Pada Hutang: Kredit (+) menambah, Debit (-) mengurangi
+            if ($dateFrom && $t->date < $dateFrom) {
+                $beginningBalance += $impact;
+            } else {
+                if (!$dateTo || $t->date <= $dateTo) {
+                    $filteredTransactions->push($t);
+                }
+            }
+        }
+
+        // Hitung Saldo Berjalan (Running Balance) untuk baris mutasi dalam periode
+        $runningBalance = $beginningBalance;
+        $totalDebit = 0;
+        $totalCredit = 0;
+
+        foreach ($filteredTransactions as $t) {
+            $totalDebit += $t->debit;
+            $totalCredit += $t->credit;
+            $runningBalance += ($t->credit - $t->debit);
+            $t->running_balance = $runningBalance;
+        }
+
+        $endingBalance = $runningBalance;
+
+        return view('accounting.reports.ledger-payable', compact(
+            'supplier', 'filteredTransactions', 'beginningBalance',
+            'endingBalance', 'totalDebit', 'totalCredit', 'dateFrom', 'dateTo'
+        ));
+    }
+
+    /**
+     * 10. Kartu Piutang (Subsidiary Ledger Receivable per Customer)
+     */
+    public function ledgerReceivable(Customer $customer, Request $request): View
+    {
+        $dateFrom = $request->input('date_from');
+        $dateTo   = $request->input('date_to');
+
+        // 1. Tagihan Invoices Penjualan
+        $invoices = SalesInvoice::with('salesOrder')
+            ->whereHas('salesOrder', fn($q) => $q->where('customer_id', $customer->id))
+            ->get()
+            ->map(function ($inv) {
+                return (object) [
+                    'date'             => $inv->invoice_date ? $inv->invoice_date->toDateString() : $inv->created_at->toDateString(),
+                    'created_at'       => $inv->created_at,
+                    'type'             => 'invoice',
+                    'type_badge'       => 'primary',
+                    'type_label'       => 'Invoice',
+                    'document_number'  => $inv->invoice_number,
+                    'reference_info'   => $inv->salesOrder ? $inv->salesOrder->so_number : '-',
+                    'description'      => 'Tagihan Penjualan ' . ($inv->salesOrder ? '#' . $inv->salesOrder->so_number : ''),
+                    'debit'            => (float) $inv->total_amount, // Piutang bertambah
+                    'credit'           => 0, // Piutang berkurang
+                    'link'             => route('sales.invoices.show', $inv),
+                ];
+            });
+
+        // 2. Pembayaran Piutang dari Customer
+        $payments = SalesPayment::with(['salesInvoice.salesOrder'])
+            ->whereHas('salesInvoice.salesOrder', fn($q) => $q->where('customer_id', $customer->id))
+            ->get()
+            ->map(function ($pay) {
+                return (object) [
+                    'date'             => $pay->payment_date ? $pay->payment_date->toDateString() : $pay->created_at->toDateString(),
+                    'created_at'       => $pay->created_at,
+                    'type'             => 'payment',
+                    'type_badge'       => 'success',
+                    'type_label'       => 'Pembayaran',
+                    'document_number'  => $pay->reference_number ?: ('PAY-' . $pay->id),
+                    'reference_info'   => $pay->salesInvoice ? $pay->salesInvoice->invoice_number : '-',
+                    'description'      => 'Penerimaan Pembayaran Piutang ' . ($pay->salesInvoice ? '#' . $pay->salesInvoice->invoice_number : ''),
+                    'debit'            => 0,
+                    'credit'           => (float) $pay->amount, // Piutang berkurang
+                    'link'             => $pay->salesInvoice ? route('sales.invoices.show', $pay->salesInvoice) : null,
+                ];
+            });
+
+        // 3. Retur Penjualan yang memotong piutang (received / completed)
+        $returns = SalesReturn::with(['delivery.salesOrder', 'items'])
+            ->where('customer_id', $customer->id)
+            ->whereIn('status', ['received', 'completed'])
+            ->get()
+            ->map(function ($ret) {
+                $journal = JournalEntry::with('lines.account')
+                    ->where('reference_type', SalesReturn::class)
+                    ->where('reference_id', $ret->id)
+                    ->where('status', 'posted')
+                    ->first();
+
+                $receivableReversed = $journal
+                    ? (float) $journal->lines->where('account.code', '1-1200')->sum('credit')
+                    : (float) $ret->items->sum(fn($it) => $it->qty * ($it->product->selling_price ?? 0));
+
+                return (object) [
+                    'date'             => $ret->return_date ? $ret->return_date->toDateString() : $ret->created_at->toDateString(),
+                    'created_at'       => $ret->created_at,
+                    'type'             => 'return',
+                    'type_badge'       => 'danger',
+                    'type_label'       => 'Retur Jual',
+                    'document_number'  => $ret->return_number,
+                    'reference_info'   => $ret->delivery ? $ret->delivery->delivery_number : '-',
+                    'description'      => 'Retur Penjualan Customer ' . ($ret->delivery ? '#' . $ret->delivery->delivery_number : ''),
+                    'debit'            => 0,
+                    'credit'           => $receivableReversed, // Piutang berkurang
+                    'link'             => route('sales.returns.show', $ret),
+                ];
+            })
+            ->filter(fn($r) => $r->credit > 0);
+
+        // Gabungkan seluruh transaksi urut kronologis
+        $allTransactions = $invoices->concat($payments)->concat($returns)
+            ->sortBy(function ($t) {
+                return $t->date . ' ' . $t->created_at;
+            })
+            ->values();
+
+        // Hitung Saldo Awal (Beginning Balance) sebelum date_from
+        $beginningBalance = 0;
+        $filteredTransactions = collect();
+
+        foreach ($allTransactions as $t) {
+            $impact = $t->debit - $t->credit; // Pada Piutang: Debit (+) menambah, Kredit (-) mengurangi
+            if ($dateFrom && $t->date < $dateFrom) {
+                $beginningBalance += $impact;
+            } else {
+                if (!$dateTo || $t->date <= $dateTo) {
+                    $filteredTransactions->push($t);
+                }
+            }
+        }
+
+        // Hitung Saldo Berjalan (Running Balance) untuk baris mutasi dalam periode
+        $runningBalance = $beginningBalance;
+        $totalDebit = 0;
+        $totalCredit = 0;
+
+        foreach ($filteredTransactions as $t) {
+            $totalDebit += $t->debit;
+            $totalCredit += $t->credit;
+            $runningBalance += ($t->debit - $t->credit);
+            $t->running_balance = $runningBalance;
+        }
+
+        $endingBalance = $runningBalance;
+
+        return view('accounting.reports.ledger-receivable', compact(
+            'customer', 'filteredTransactions', 'beginningBalance',
+            'endingBalance', 'totalDebit', 'totalCredit', 'dateFrom', 'dateTo'
+        ));
+    }
+
+    /**
+     * 11. Rekap Hutang by Vendor
+     */
+    public function payablesByVendor(Request $request): View
+    {
+        $search = $request->input('q');
+        $onlyOutstanding = $request->has('only_outstanding')
+            ? $request->boolean('only_outstanding')
+            : true;
+
+        $query = Supplier::with(['purchaseInvoices' => function ($q) {
+            $q->where('purchase_invoices.status', '!=', 'paid')->with('payments');
+        }]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        $suppliers = $query->orderBy('name')->get()->map(function ($supplier) {
+            $openInvoices = $supplier->purchaseInvoices->filter(fn($inv) => $inv->outstanding_amount > 0.01);
+            $supplier->open_invoices_count = $openInvoices->count();
+            $supplier->total_payable = (float) $openInvoices->sum('outstanding_amount');
+
+            $oldestInv = $openInvoices->sortBy('due_date')->first();
+            if ($oldestInv) {
+                $dueDate = Carbon::parse($oldestInv->due_date);
+                $supplier->oldest_invoice_number = $oldestInv->invoice_number;
+                $supplier->oldest_invoice_date = $oldestInv->invoice_date;
+                $supplier->oldest_due_date = $dueDate;
+                $diff = Carbon::today()->diffInDays($dueDate, false);
+                $supplier->max_overdue_days = $diff < 0 ? abs($diff) : 0;
+            } else {
+                $supplier->oldest_invoice_number = null;
+                $supplier->oldest_invoice_date = null;
+                $supplier->oldest_due_date = null;
+                $supplier->max_overdue_days = 0;
+            }
+
+            return $supplier;
+        });
+
+        if ($onlyOutstanding) {
+            $suppliers = $suppliers->filter(fn($s) => $s->total_payable > 0)->values();
+        }
+
+        $totalVendors = $suppliers->count();
+        $totalAllPayable = $suppliers->sum('total_payable');
+        $totalOpenInvoices = $suppliers->sum('open_invoices_count');
+
+        return view('accounting.reports.payables-by-vendor', compact(
+            'suppliers', 'totalVendors', 'totalAllPayable', 'totalOpenInvoices', 'search', 'onlyOutstanding'
+        ));
+    }
+
+    /**
+     * 12. Rekap Piutang by Customer
+     */
+    public function receivablesByCustomer(Request $request): View
+    {
+        $search = $request->input('q');
+        $onlyOutstanding = $request->has('only_outstanding')
+            ? $request->boolean('only_outstanding')
+            : true;
+
+        $query = Customer::with(['salesInvoices' => function ($q) {
+            $q->where('sales_invoices.status', '!=', 'paid')->with('payments');
+        }]);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->orderBy('name')->get()->map(function ($customer) {
+            $openInvoices = $customer->salesInvoices->filter(fn($inv) => $inv->outstanding_amount > 0.01);
+            $customer->open_invoices_count = $openInvoices->count();
+            $customer->total_receivable = (float) $openInvoices->sum('outstanding_amount');
+
+            $oldestInv = $openInvoices->sortBy('due_date')->first();
+            if ($oldestInv) {
+                $dueDate = Carbon::parse($oldestInv->due_date);
+                $customer->oldest_invoice_number = $oldestInv->invoice_number;
+                $customer->oldest_invoice_date = $oldestInv->invoice_date;
+                $customer->oldest_due_date = $dueDate;
+                $diff = Carbon::today()->diffInDays($dueDate, false);
+                $customer->max_overdue_days = $diff < 0 ? abs($diff) : 0;
+            } else {
+                $customer->oldest_invoice_number = null;
+                $customer->oldest_invoice_date = null;
+                $customer->oldest_due_date = null;
+                $customer->max_overdue_days = 0;
+            }
+
+            return $customer;
+        });
+
+        if ($onlyOutstanding) {
+            $customers = $customers->filter(fn($c) => $c->total_receivable > 0)->values();
+        }
+
+        $totalCustomers = $customers->count();
+        $totalAllReceivable = $customers->sum('total_receivable');
+        $totalOpenInvoices = $customers->sum('open_invoices_count');
+
+        return view('accounting.reports.receivables-by-customer', compact(
+            'customers', 'totalCustomers', 'totalAllReceivable', 'totalOpenInvoices', 'search', 'onlyOutstanding'
+        ));
     }
 }

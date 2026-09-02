@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseOrder;
 use App\Models\PurchasePayment;
@@ -147,6 +149,72 @@ class PurchaseReportController extends Controller
             'totalInvoicedAmount',
             'totalPaidAmount',
             'totalOutstandingAmount'
+        ));
+    }
+
+    /**
+     * Rekap Pembelian per Barang
+     */
+    public function recapByProduct(Request $request): View
+    {
+        $dateFrom   = $request->input('date_from');
+        $dateTo     = $request->input('date_to');
+        $categoryId = $request->input('category_id');
+        $search     = $request->input('q');
+
+        $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
+
+        $query = Product::with('category')
+            ->where('is_active', true)
+            ->withSum(['purchaseInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '<=', $dateTo));
+            }], 'qty_invoiced')
+            ->withSum(['purchaseInvoiceItems as total_amount' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '<=', $dateTo));
+            }], 'subtotal')
+            ->withCount(['purchaseInvoiceItems as transaction_count' => function ($q) use ($dateFrom, $dateTo) {
+                if ($dateFrom) $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '>=', $dateFrom));
+                if ($dateTo)   $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '<=', $dateTo));
+            }]);
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->orderByDesc('total_amount')->paginate(20)->withQueryString();
+
+        $products->getCollection()->transform(function ($p) {
+            $p->avg_price = $p->total_qty > 0 ? round($p->total_amount / $p->total_qty, 2) : $p->purchase_price;
+            return $p;
+        });
+
+        // Metrik Ringkasan (KPI Cards)
+        $summaryQuery = Product::query();
+        if ($categoryId) $summaryQuery->where('category_id', $categoryId);
+        if ($search) {
+            $summaryQuery->where(fn($q) => $q->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%"));
+        }
+        $totalItemsPurchased = (float) $summaryQuery->withSum(['purchaseInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
+            if ($dateFrom) $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '>=', $dateFrom));
+            if ($dateTo)   $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '<=', $dateTo));
+        }], 'qty_invoiced')->get()->sum('total_qty');
+
+        $totalSpend = (float) $summaryQuery->withSum(['purchaseInvoiceItems as total_amt' => function ($q) use ($dateFrom, $dateTo) {
+            if ($dateFrom) $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '>=', $dateFrom));
+            if ($dateTo)   $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '<=', $dateTo));
+        }], 'subtotal')->get()->sum('total_amt');
+
+        return view('purchase.reports.recap-by-product', compact(
+            'products', 'categories', 'totalItemsPurchased', 'totalSpend', 'dateFrom', 'dateTo', 'categoryId', 'search'
         ));
     }
 }

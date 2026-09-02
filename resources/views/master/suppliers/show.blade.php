@@ -14,6 +14,10 @@
             </p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <a href="{{ route('accounting.reports.ledger-payable', $supplier) }}" class="btn btn-secondary" style="color:var(--primary); border-color:var(--primary);" title="Lihat Buku Pembantu / Kartu Hutang">
+                <i class="fa-solid fa-book"></i> Kartu Hutang
+            </a>
+
             <form method="POST" action="{{ route('master.suppliers.toggle-status', $supplier) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $supplier->is_active ? 'menonaktifkan' : 'mengaktifkan' }} supplier ini?');">
                 @csrf
                 @method('PATCH')
