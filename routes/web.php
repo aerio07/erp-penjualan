@@ -17,6 +17,7 @@ use App\Http\Controllers\Purchase\GoodsReceiptController;
 use App\Http\Controllers\Purchase\PurchaseInvoiceController;
 use App\Http\Controllers\Purchase\PurchaseReturnController;
 use App\Http\Controllers\Purchase\PurchasePaymentController;
+use App\Http\Controllers\Purchase\PurchaseReportController;
 // Inventory
 use App\Http\Controllers\Inventory\StockMovementController;
 use App\Http\Controllers\Inventory\WarehouseTransferController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\Sales\DeliveryController;
 use App\Http\Controllers\Sales\SalesInvoiceController;
 use App\Http\Controllers\Sales\SalesReturnController;
 use App\Http\Controllers\Sales\SalesPaymentController;
+use App\Http\Controllers\Sales\SalesReportController;
 // Accounting
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReportController;
@@ -97,6 +99,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('payments', PurchasePaymentController::class)->only(['index', 'create', 'store', 'show']);
     });
 
+    Route::middleware('role:admin,purchasing,finance')->prefix('purchase')->name('purchase.')->group(function () {
+        Route::get('reports/fulfillment', [PurchaseReportController::class, 'fulfillment'])->name('reports.fulfillment');
+    });
+
     // =========================================================
     // INVENTORY MODULE
     // =========================================================
@@ -137,6 +143,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('invoices/{invoice}/tax-invoice', [SalesInvoiceController::class, 'updateTaxInvoice'])->name('invoices.tax-invoice.update');
         Route::resource('invoices', SalesInvoiceController::class)->only(['index', 'create', 'store', 'show']);
         Route::resource('payments', SalesPaymentController::class)->only(['index', 'create', 'store', 'show']);
+    });
+
+    Route::middleware('role:admin,sales,finance')->prefix('sales')->name('sales.')->group(function () {
+        Route::get('reports/fulfillment', [SalesReportController::class, 'fulfillment'])->name('reports.fulfillment');
     });
 
     // =========================================================

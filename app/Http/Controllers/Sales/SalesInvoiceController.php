@@ -57,7 +57,11 @@ class SalesInvoiceController extends Controller
         // Ambil SEMUA Delivery (Surat Jalan) yang belum diinvoice untuk seluruh SO yang eligible
         $availableDeliveries = Delivery::whereIn('sales_order_id', $orders->pluck('id'))
             ->where('is_invoiced', false)
-            ->with(['items.salesOrderItem.product', 'warehouse'])
+            ->with([
+                'items.salesOrderItem.product',
+                'items.salesReturnItems.salesReturn',
+                'warehouse'
+            ])
             ->orderByDesc('id')
             ->get();
 

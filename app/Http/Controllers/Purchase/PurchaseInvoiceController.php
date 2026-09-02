@@ -58,7 +58,11 @@ class PurchaseInvoiceController extends Controller
         // Ambil SEMUA LPB yang belum diinvoice untuk seluruh PO yang eligible
         $availableReceipts = GoodsReceipt::whereIn('purchase_order_id', $orders->pluck('id'))
             ->where('is_invoiced', false)
-            ->with(['items.purchaseOrderItem.product', 'warehouse'])
+            ->with([
+                'items.purchaseOrderItem.product',
+                'items.purchaseReturnItems.purchaseReturn',
+                'warehouse'
+            ])
             ->orderByDesc('id')
             ->get();
 
@@ -125,7 +129,7 @@ class PurchaseInvoiceController extends Controller
             $po = PurchaseOrder::with(['items', 'invoices.items'])->lockForUpdate()->findOrFail($request->purchase_order_id);
             $taxRate = (float) $request->tax_rate;
 
-            // Hitung subtotal dari SELURUH item di LPB ini (qty_received penuh)
+            // Hitung subtotal dari item di LPB ini (qty_received bersih dikurangi retur pre-invoice jika ada)
             $subtotalGrn = 0;
             $itemsToCreate = [];
 
@@ -133,7 +137,11 @@ class PurchaseInvoiceController extends Controller
                 $poItem = $grnItem->purchaseOrderItem;
                 if (!$poItem) continue;
 
-                $qty = (int) $grnItem->qty_received;
+                $returnedCompleted = (int) $grnItem->purchaseReturnItems()
+                    ->where('source_type', 'accepted')
+                    ->whereHas('purchaseReturn', fn($q) => $q->where('status', 'completed'))
+                    ->sum('qty');
+                $qty = max(0, (int) $grnItem->qty_received - $returnedCompleted);
                 if ($qty <= 0) continue;
 
                 $lineBase = $qty * $poItem->unit_price;
@@ -156,7 +164,7 @@ class PurchaseInvoiceController extends Controller
 
             if (empty($itemsToCreate)) {
                 return back()
-                    ->with('error', 'LPB ini tidak memiliki item yang bisa ditagih.')
+                    ->with('error', 'Seluruh barang dalam LPB ini telah diretur ke supplier, sehingga tidak ada barang yang dapat ditagihkan.')
                     ->withInput();
             }
 

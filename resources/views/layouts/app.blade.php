@@ -646,6 +646,7 @@
                     <a href="{{ route('purchase.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Pembelian</a>
                     <a href="{{ route('purchase.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Pembelian</a>
                     <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Bayar Hutang</a>
+                    <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i> Monitoring PO</a>
                 </div>
             </div>
 
@@ -680,11 +681,12 @@
                     <span class="material-symbols-outlined text-sm {{ $isSales ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isSales) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
-                    <a href="{{ route('sales.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Sales Order</a>
+                    <a href="{{ route('sales.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.orders.*') && !request()->routeIs('sales.reports.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Sales Order</a>
                     <a href="{{ route('sales.deliveries.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.deliveries.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Surat Jalan</a>
                     <a href="{{ route('sales.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Penjualan</a>
                     <a href="{{ route('sales.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Penjualan</a>
                     <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Terima Piutang</a>
+                    <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i> Monitoring SO</a>
                 </div>
             </div>
 

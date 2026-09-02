@@ -63,4 +63,24 @@ class PurchaseOrder extends Model
     {
         return $this->hasMany(ProcurementDemand::class);
     }
+
+    public function goodsReceiptItems(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(GoodsReceiptItem::class, GoodsReceipt::class);
+    }
+
+    public function invoiceItems(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(PurchaseInvoiceItem::class, PurchaseInvoice::class);
+    }
+
+    public function invoicePayments(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(PurchasePayment::class, PurchaseInvoice::class);
+    }
+
+    public function returns(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(PurchaseReturn::class, GoodsReceipt::class, 'purchase_order_id', 'goods_receipt_id');
+    }
 }

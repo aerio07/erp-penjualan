@@ -65,6 +65,26 @@ class SalesOrder extends Model
         return $this->hasManyThrough(StockReservation::class, SalesOrderItem::class);
     }
 
+    public function deliveryItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(DeliveryItem::class, Delivery::class);
+    }
+
+    public function invoiceItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(SalesInvoiceItem::class, SalesInvoice::class);
+    }
+
+    public function invoicePayments(): HasManyThrough
+    {
+        return $this->hasManyThrough(SalesPayment::class, SalesInvoice::class);
+    }
+
+    public function returns(): HasManyThrough
+    {
+        return $this->hasManyThrough(SalesReturn::class, Delivery::class, 'sales_order_id', 'delivery_id');
+    }
+
     public function getActiveReservedQtyAttribute(): int
     {
         return (int) $this->reservations()->where('stock_reservations.status', 'active')->sum('qty_reserved')

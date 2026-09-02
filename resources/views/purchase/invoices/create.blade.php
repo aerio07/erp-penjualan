@@ -118,7 +118,10 @@
                                 <span>Total Tagihan Invoice</span>
                                 <span style="color:var(--primary);" x-text="'Rp ' + formatNum(totalAmount)"></span>
                             </div>
-                            <div style="padding:10px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0; font-size:12.5px; color:#166534; margin-top:8px;">
+                            <div x-show="totalReturnedQty > 0" style="padding:10px; background:#fef2f2; border-radius:8px; border:1px solid #fecaca; font-size:12px; color:#991b1b; margin-top:8px;">
+                                <i class="fa-solid fa-rotate-left"></i> <strong>Penyesuaian Retur:</strong> Sebanyak <span style="font-weight:700;" x-text="totalReturnedQty"></span> unit telah diretur ke supplier sebelum invoice diterbitkan. Invoice hanya menagih barang bersih (<span style="font-weight:700;" x-text="totalQty"></span> unit).
+                            </div>
+                            <div x-show="totalReturnedQty === 0" style="padding:10px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0; font-size:12.5px; color:#166534; margin-top:8px;">
                                 <i class="fa-solid fa-shield-halved"></i> <strong>1 LPB = 1 Invoice:</strong> Menagih penuh <span x-text="totalQty"></span> unit dari LPB <span x-text="selectedGrn.receipt_number"></span>.
                             </div>
                         </div>
@@ -135,8 +138,13 @@
 
         {{-- Detail Item dari LPB (read-only) --}}
         <div class="card" style="margin-bottom:20px;" x-show="selectedGrn">
-            <div class="card-header">
-                <h3>Rincian Item dari LPB (Otomatis — Qty Penuh)</h3>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Rincian Item dari LPB</h3>
+                <template x-if="totalReturnedQty > 0">
+                    <span class="badge" style="background:#fef2f2; color:#b91c1c; font-size:11px; padding:4px 8px;">
+                        <i class="fa-solid fa-rotate-left"></i> Total Diretur: <span x-text="totalReturnedQty"></span> unit
+                    </span>
+                </template>
             </div>
             <div class="table-responsive">
                 <table class="erp-table">
@@ -144,10 +152,12 @@
                         <tr>
                             <th>Produk</th>
                             <th style="text-align:center; width:90px;">Dipesan (PO)</th>
-                            <th style="text-align:center; width:110px; background:rgba(16, 185, 129, 0.08);">Diterima di LPB (Ditagih)</th>
-                            <th style="text-align:right; width:140px;">Harga Satuan</th>
+                            <th style="text-align:center; width:95px;">Diterima (LPB)</th>
+                            <th style="text-align:center; width:85px; color:#dc2626;">Diretur</th>
+                            <th style="text-align:center; width:110px; background:rgba(16, 185, 129, 0.08);">Ditagih (Net)</th>
+                            <th style="text-align:right; width:130px;">Harga Satuan</th>
                             <th style="text-align:center; width:80px;">Diskon</th>
-                            <th style="text-align:right; width:150px;">Subtotal</th>
+                            <th style="text-align:right; width:140px;">Subtotal</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -157,9 +167,11 @@
                                     <div style="font-weight:600;" x-text="item.product_name"></div>
                                     <div style="font-size:12px; color:var(--text-secondary);" x-text="item.product_sku"></div>
                                 </td>
-                                <td style="text-align:center; font-weight:600;" x-text="item.qty_ordered + ' ' + item.product_unit"></td>
+                                <td style="text-align:center;" x-text="item.qty_ordered + ' ' + item.product_unit"></td>
+                                <td style="text-align:center;" x-text="item.qty_received + ' ' + item.product_unit"></td>
+                                <td style="text-align:center; font-weight:600; color:#dc2626;" x-text="item.qty_returned > 0 ? '-' + item.qty_returned : '-'"></td>
                                 <td style="text-align:center; background:rgba(16, 185, 129, 0.05);">
-                                    <span class="badge badge-done" style="font-weight:700;" x-text="item.qty_received + ' ' + item.product_unit"></span>
+                                    <span class="badge badge-done" style="font-weight:700;" x-text="item.qty_invoiced + ' ' + item.product_unit"></span>
                                 </td>
                                 <td style="text-align:right;" x-text="'Rp ' + formatNum(item.unit_price)"></td>
                                 <td style="text-align:center;" x-text="item.discount_percent > 0 ? item.discount_percent + '%' : '-'"></td>
@@ -226,12 +238,16 @@ function invForm() {
             this.availableGrns = Object.values(receiptsData)
                 .filter(grn => String(grn.purchase_order_id) === String(this.selectedPoId))
                 .map(grn => {
-                    const totalQty = (grn.items || []).reduce((s, it) => s + (Number(it.qty_received) || 0), 0);
+                    const totalReceived = (grn.items || []).reduce((s, it) => s + (Number(it.qty_received) || 0), 0);
+                    const totalReturned = (grn.items || []).reduce((s, it) => s + (Number(it.qty_returned_completed_accepted) || 0), 0);
+                    const totalQty = Math.max(0, totalReceived - totalReturned);
                     const tgl = grn.received_date ? String(grn.received_date).substring(0, 10) : '-';
+                    const retInfo = totalReturned > 0 ? ` (Retur: ${totalReturned} unit)` : '';
                     return {
                         ...grn,
                         total_qty: totalQty,
-                        display_label: `${grn.receipt_number} · Tgl: ${tgl} · ${totalQty} unit`
+                        total_returned: totalReturned,
+                        display_label: `${grn.receipt_number} · Tgl: ${tgl} · Ditagih: ${totalQty} unit${retInfo}`
                     };
                 });
         },
@@ -244,14 +260,16 @@ function invForm() {
             }
             this.selectedGrn = receiptsData[this.selectedGrnId];
 
-            // Bangun data item dari LPB yang dipilih
+            // Bangun data item dari LPB yang dipilih (kurangi retur completed jika ada)
             this.grnItems = (this.selectedGrn.items || []).map(grnItem => {
                 const poItem = grnItem.purchase_order_item || {};
                 const product = poItem.product || {};
                 const qtyReceived = Number(grnItem.qty_received) || 0;
+                const qtyReturned = Number(grnItem.qty_returned_completed_accepted) || 0;
+                const qtyInvoiced = Math.max(0, qtyReceived - qtyReturned);
                 const unitPrice = Number(poItem.unit_price) || 0;
                 const discountPercent = Number(poItem.discount_percent) || 0;
-                const lineBase = qtyReceived * unitPrice;
+                const lineBase = qtyInvoiced * unitPrice;
                 const lineDisc = lineBase * (discountPercent / 100);
 
                 return {
@@ -261,15 +279,21 @@ function invForm() {
                     product_unit: product.unit || 'pcs',
                     qty_ordered: poItem.qty_ordered || 0,
                     qty_received: qtyReceived,
+                    qty_returned: qtyReturned,
+                    qty_invoiced: qtyInvoiced,
                     unit_price: unitPrice,
                     discount_percent: discountPercent,
                     line_subtotal: lineBase - lineDisc,
                 };
-            });
+            }).filter(it => it.qty_invoiced > 0);
         },
 
         get totalQty() {
-            return this.grnItems.reduce((s, it) => s + it.qty_received, 0);
+            return this.grnItems.reduce((s, it) => s + it.qty_invoiced, 0);
+        },
+
+        get totalReturnedQty() {
+            return (this.selectedGrn?.items || []).reduce((s, it) => s + (Number(it.qty_returned_completed_accepted) || 0), 0);
         },
 
         get rawSubtotal() {
