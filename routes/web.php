@@ -166,11 +166,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow');
             Route::get('receivables', [ReportController::class, 'receivables'])->name('receivables');
             Route::get('payables', [ReportController::class, 'payables'])->name('payables');
+            Route::get('receivables-upcoming', [ReportController::class, 'receivablesUpcoming'])->name('receivables-upcoming');
+            Route::get('payables-upcoming', [ReportController::class, 'payablesUpcoming'])->name('payables-upcoming');
             Route::get('payables-by-vendor', [ReportController::class, 'payablesByVendor'])->name('payables-by-vendor');
             Route::get('receivables-by-customer', [ReportController::class, 'receivablesByCustomer'])->name('receivables-by-customer');
             Route::get('ledger-payable/{supplier}', [ReportController::class, 'ledgerPayable'])->name('ledger-payable');
             Route::get('ledger-receivable/{customer}', [ReportController::class, 'ledgerReceivable'])->name('ledger-receivable');
             Route::get('profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
+            Route::get('gross-profit', [ReportController::class, 'grossProfit'])->name('gross-profit');
             Route::get('balance-sheet', [ReportController::class, 'balanceSheet'])->name('balance-sheet');
             Route::get('stock-valuation', [ReportController::class, 'stockValuation'])->name('stock-valuation');
         });

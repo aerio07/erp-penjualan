@@ -7,10 +7,12 @@ use App\Models\ChartOfAccount;
 use App\Models\JournalEntry;
 use App\Models\JournalLine;
 use App\Models\Customer;
+use App\Models\ProductCategory;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchasePayment;
 use App\Models\PurchaseReturn;
 use App\Models\SalesInvoice;
+use App\Models\SalesInvoiceItem;
 use App\Models\SalesPayment;
 use App\Models\SalesReturn;
 use App\Models\StockDisposition;
@@ -163,9 +165,112 @@ class ReportController extends Controller
         $totalOutflow  = $cashLines->sum('credit');
         $closingBalance = $openingBalance + $totalInflow - $totalOutflow;
 
+        // =========================================================================
+        // PROYEKSI ARUS KAS 30 HARI KE DEPAN (FORECAST LIKUIDITAS)
+        // Berbasis tagihan belum lunas & belum jatuh tempo, memperhitungkan retur (effective_total_amount)
+        // =========================================================================
+        $today = Carbon::today();
+        $forecastEndDate = $today->copy()->addDays(30);
+
+        // Saldo Kas Riil saat ini (per hari ini)
+        $currentCashBalance = (float) JournalLine::join('journal_entries', 'journal_lines.journal_entry_id', '=', 'journal_entries.id')
+            ->whereIn('journal_lines.chart_of_account_id', $cashAccounts)
+            ->where('journal_entries.status', 'posted')
+            ->whereDate('journal_entries.entry_date', '<=', $today)
+            ->sum(DB::raw('debit - credit'));
+
+        // Tagihan Piutang Customer belum lunas yang jatuh tempo dalam 30 hari ke depan
+        $upcomingSales = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $forecastEndDate)
+            ->get()
+            ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
+
+        // Tagihan Hutang Supplier belum lunas yang jatuh tempo dalam 30 hari ke depan
+        $upcomingPurchases = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $forecastEndDate)
+            ->get()
+            ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
+
+        // 4 Rolling Week Buckets:
+        // Week 1: today s/d today+7
+        // Week 2: today+8 s/d today+14
+        // Week 3: today+15 s/d today+21
+        // Week 4: today+22 s/d today+30
+        $forecastWeeks = [
+            1 => [
+                'label'   => 'Minggu ke-1',
+                'range'   => $today->copy()->addDay()->format('d M') . ' - ' . $today->copy()->addDays(7)->format('d M'),
+                'end'     => $today->copy()->addDays(7)->toDateString(),
+                'inflow'  => 0,
+                'outflow' => 0,
+            ],
+            2 => [
+                'label'   => 'Minggu ke-2',
+                'range'   => $today->copy()->addDays(8)->format('d M') . ' - ' . $today->copy()->addDays(14)->format('d M'),
+                'end'     => $today->copy()->addDays(14)->toDateString(),
+                'inflow'  => 0,
+                'outflow' => 0,
+            ],
+            3 => [
+                'label'   => 'Minggu ke-3',
+                'range'   => $today->copy()->addDays(15)->format('d M') . ' - ' . $today->copy()->addDays(21)->format('d M'),
+                'end'     => $today->copy()->addDays(21)->toDateString(),
+                'inflow'  => 0,
+                'outflow' => 0,
+            ],
+            4 => [
+                'label'   => 'Minggu ke-4',
+                'range'   => $today->copy()->addDays(22)->format('d M') . ' - ' . $today->copy()->addDays(30)->format('d M'),
+                'end'     => $today->copy()->addDays(30)->toDateString(),
+                'inflow'  => 0,
+                'outflow' => 0,
+            ],
+        ];
+
+        foreach ($upcomingSales as $inv) {
+            $dueStr = Carbon::parse($inv->due_date)->toDateString();
+            $netOutstanding = $inv->outstanding_amount; // otomatis memperhitungkan retur (effective_total_amount - total_paid)
+
+            if ($dueStr <= $forecastWeeks[1]['end']) {
+                $forecastWeeks[1]['inflow'] += $netOutstanding;
+            } elseif ($dueStr <= $forecastWeeks[2]['end']) {
+                $forecastWeeks[2]['inflow'] += $netOutstanding;
+            } elseif ($dueStr <= $forecastWeeks[3]['end']) {
+                $forecastWeeks[3]['inflow'] += $netOutstanding;
+            } else {
+                $forecastWeeks[4]['inflow'] += $netOutstanding;
+            }
+        }
+
+        foreach ($upcomingPurchases as $inv) {
+            $dueStr = Carbon::parse($inv->due_date)->toDateString();
+            $netOutstanding = $inv->outstanding_amount; // otomatis memperhitungkan retur (effective_total_amount - total_paid)
+
+            if ($dueStr <= $forecastWeeks[1]['end']) {
+                $forecastWeeks[1]['outflow'] += $netOutstanding;
+            } elseif ($dueStr <= $forecastWeeks[2]['end']) {
+                $forecastWeeks[2]['outflow'] += $netOutstanding;
+            } elseif ($dueStr <= $forecastWeeks[3]['end']) {
+                $forecastWeeks[3]['outflow'] += $netOutstanding;
+            } else {
+                $forecastWeeks[4]['outflow'] += $netOutstanding;
+            }
+        }
+
+        $totalProjectedInflow  = array_sum(array_column($forecastWeeks, 'inflow'));
+        $totalProjectedOutflow = array_sum(array_column($forecastWeeks, 'outflow'));
+        $projectedNetChange    = $totalProjectedInflow - $totalProjectedOutflow;
+        $projectedEndingCash   = $currentCashBalance + $projectedNetChange;
+
         return view('accounting.reports.cash-flow', compact(
             'dateFrom', 'dateTo', 'openingBalance', 'inflows', 'outflows',
-            'totalInflow', 'totalOutflow', 'closingBalance'
+            'totalInflow', 'totalOutflow', 'closingBalance',
+            'currentCashBalance', 'forecastWeeks', 'totalProjectedInflow',
+            'totalProjectedOutflow', 'projectedNetChange', 'projectedEndingCash'
         ));
     }
 
@@ -766,6 +871,186 @@ class ReportController extends Controller
 
         return view('accounting.reports.receivables-by-customer', compact(
             'customers', 'totalCustomers', 'totalAllReceivable', 'totalOpenInvoices', 'search', 'onlyOutstanding'
+        ));
+    }
+
+    /**
+     * 13. Laporan Tagihan Piutang Akan Jatuh Tempo
+     */
+    public function receivablesUpcoming(Request $request): View
+    {
+        $days = (int) $request->input('days', 7);
+        $search = $request->input('q');
+        $today = Carbon::today();
+        $targetDate = $today->copy()->addDays($days);
+
+        $query = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $targetDate);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhereHas('salesOrder.customer', fn($c) => $c->where('name', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%"));
+            });
+        }
+
+        $invoices = $query->orderBy('due_date', 'asc')
+            ->get()
+            ->map(function ($inv) use ($today) {
+                $dueDate = Carbon::parse($inv->due_date);
+                $diff = $today->diffInDays($dueDate, false);
+                $inv->days_remaining = max(0, $diff);
+                return $inv;
+            })
+            // Filter hanya tagihan yang masih ada sisa outstanding setelah memperhitungkan retur & pembayaran
+            ->filter(fn($inv) => $inv->outstanding_amount > 0.01)
+            ->values();
+
+        $totalUpcomingAmount = (float) $invoices->sum('outstanding_amount');
+        $totalUpcomingCount = $invoices->count();
+
+        return view('accounting.reports.receivables-upcoming', compact(
+            'invoices', 'days', 'search', 'totalUpcomingAmount', 'totalUpcomingCount'
+        ));
+    }
+
+    /**
+     * 14. Laporan Tagihan Hutang Akan Jatuh Tempo
+     */
+    public function payablesUpcoming(Request $request): View
+    {
+        $days = (int) $request->input('days', 7);
+        $search = $request->input('q');
+        $today = Carbon::today();
+        $targetDate = $today->copy()->addDays($days);
+
+        $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '>=', $today)
+            ->whereDate('due_date', '<=', $targetDate);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                  ->orWhereHas('purchaseOrder.supplier', fn($s) => $s->where('name', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%"));
+            });
+        }
+
+        $invoices = $query->orderBy('due_date', 'asc')
+            ->get()
+            ->map(function ($inv) use ($today) {
+                $dueDate = Carbon::parse($inv->due_date);
+                $diff = $today->diffInDays($dueDate, false);
+                $inv->days_remaining = max(0, $diff);
+                return $inv;
+            })
+            // Filter hanya tagihan yang masih ada sisa outstanding setelah memperhitungkan retur & pembayaran
+            ->filter(fn($inv) => $inv->outstanding_amount > 0.01)
+            ->values();
+
+        $totalUpcomingAmount = (float) $invoices->sum('outstanding_amount');
+        $totalUpcomingCount = $invoices->count();
+
+        return view('accounting.reports.payables-upcoming', compact(
+            'invoices', 'days', 'search', 'totalUpcomingAmount', 'totalUpcomingCount'
+        ));
+    }
+
+    /**
+     * 15. Laporan Tren Laba Kotor (Gross Profit Trend & Breakdown)
+     */
+    public function grossProfit(Request $request): View
+    {
+        $periodMonths = (int) $request->input('period_months', 12);
+        $startDate = Carbon::today()->subMonths($periodMonths)->startOfMonth();
+
+        // Ambil semua item invoice penjualan yang terjadi sejak $startDate
+        $items = SalesInvoiceItem::with(['salesInvoice', 'product.productCategory'])
+            ->whereHas('salesInvoice', fn($q) => $q->whereDate('invoice_date', '>=', $startDate))
+            ->get();
+
+        // Siapkan struktur 12 bulan berurutan
+        $monthlyMap = [];
+        for ($i = $periodMonths - 1; $i >= 0; $i--) {
+            $dt = Carbon::today()->subMonths($i);
+            $key = $dt->format('Y-m');
+            $monthlyMap[$key] = [
+                'month_key'    => $key,
+                'label'        => $dt->translatedFormat('M Y'),
+                'revenue'      => 0,
+                'cogs'         => 0,
+                'gross_profit' => 0,
+                'margin_pct'   => 0,
+            ];
+        }
+
+        // Breakdown per Kategori Produk
+        $categoryMap = [];
+
+        foreach ($items as $item) {
+            $invDate = $item->salesInvoice?->invoice_date;
+            if (!$invDate) continue;
+
+            $monthKey = Carbon::parse($invDate)->format('Y-m');
+
+            // Hitung revenue bersih dan COGS bersih setelah memperhitungkan reversed_qty (retur penjualan)
+            $qtyInvoiced = max(1, (int) $item->qty_invoiced);
+            $reversedQty = min((int) $item->reversed_qty, $qtyInvoiced);
+            $effectiveQty = max(0, $qtyInvoiced - $reversedQty);
+
+            $unitPrice = (float) $item->unit_price;
+            $unitCogs = (float) ($item->cogs_amount > 0 ? ($item->cogs_amount / $qtyInvoiced) : ($item->product?->purchase_price ?? 0));
+
+            $netRevenue = $effectiveQty * $unitPrice;
+            $netCogs = $effectiveQty * $unitCogs;
+            $netProfit = $netRevenue - $netCogs;
+
+            // Akumulasi bulanan
+            if (isset($monthlyMap[$monthKey])) {
+                $monthlyMap[$monthKey]['revenue'] += $netRevenue;
+                $monthlyMap[$monthKey]['cogs'] += $netCogs;
+                $monthlyMap[$monthKey]['gross_profit'] += $netProfit;
+            }
+
+            // Akumulasi kategori
+            $catName = $item->product?->productCategory?->name ?? ($item->product?->category ?: 'Lain-lain / Tanpa Kategori');
+            if (!isset($categoryMap[$catName])) {
+                $categoryMap[$catName] = [
+                    'name'         => $catName,
+                    'revenue'      => 0,
+                    'cogs'         => 0,
+                    'gross_profit' => 0,
+                    'margin_pct'   => 0,
+                ];
+            }
+            $categoryMap[$catName]['revenue'] += $netRevenue;
+            $categoryMap[$catName]['cogs'] += $netCogs;
+            $categoryMap[$catName]['gross_profit'] += $netProfit;
+        }
+
+        // Hitung margin persentase bulanan
+        $monthlyTrend = collect($monthlyMap)->map(function ($m) {
+            $m['margin_pct'] = $m['revenue'] > 0 ? round(($m['gross_profit'] / $m['revenue']) * 100, 1) : 0;
+            return (object) $m;
+        })->values();
+
+        // Hitung margin persentase kategori
+        $categoryBreakdown = collect($categoryMap)->map(function ($c) {
+            $c['margin_pct'] = $c['revenue'] > 0 ? round(($c['gross_profit'] / $c['revenue']) * 100, 1) : 0;
+            return (object) $c;
+        })->sortByDesc('gross_profit')->values();
+
+        // Metrik Ringkasan (Executive KPI)
+        $totalRevenue     = $monthlyTrend->sum('revenue');
+        $totalCogs        = $monthlyTrend->sum('cogs');
+        $totalGrossProfit = $monthlyTrend->sum('gross_profit');
+        $avgMarginPct     = $totalRevenue > 0 ? round(($totalGrossProfit / $totalRevenue) * 100, 1) : 0;
+
+        return view('accounting.reports.gross-profit', compact(
+            'monthlyTrend', 'categoryBreakdown', 'periodMonths',
+            'totalRevenue', 'totalCogs', 'totalGrossProfit', 'avgMarginPct'
         ));
     }
 }
