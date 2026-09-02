@@ -594,6 +594,15 @@
         </div>
 
         <nav class="flex-1 flex flex-col gap-1 px-2">
+            @php
+                $u = auth()->user();
+                $isAdmin = $u && $u->isAdmin();
+                $isFinance = $u && $u->isFinance();
+                $isGudang = $u && $u->isGudang();
+                $isSales = $u && $u->isSales();
+                $isPurchasing = $u && $u->isPurchasing();
+            @endphp
+
             <!-- Dashboard Link -->
             <a href="{{ route('dashboard') }}" 
                class="flex items-center px-4 py-2 rounded {{ request()->routeIs('dashboard') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
@@ -605,107 +614,150 @@
             <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Core Operations</div>
 
             <!-- Master Data Group -->
-            @php $isMaster = request()->is('master/*'); @endphp
-            <div x-data="{ open: {{ $isMaster ? 'true' : 'false' }} }" class="group">
+            @php $isMasterRoute = request()->is('master/*'); @endphp
+            <div x-data="{ open: {{ $isMasterRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">inventory_2</span>
                         <span class="text-sm font-medium">Master Data</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isMaster ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isMasterRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isMaster) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isMasterRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                    @if($isAdmin || $isPurchasing || $isGudang || $isSales || $isFinance)
                     <a href="{{ route('master.products.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.products.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Produk</a>
+                    @endif
+                    @if($isAdmin || $isPurchasing || $isGudang)
                     <a href="{{ route('master.categories.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.categories.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kategori Produk</a>
+                    @endif
+                    @if($isAdmin || $isGudang)
                     <a href="{{ route('master.warehouses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.warehouses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Gudang</a>
+                    @endif
+                    @if($isAdmin || $isPurchasing || $isFinance)
                     <a href="{{ route('master.suppliers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.suppliers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Supplier</a>
+                    @endif
+                    @if($isAdmin || $isSales || $isFinance)
                     <a href="{{ route('master.customers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.customers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Customer</a>
-                    @if(auth()->user()->isAdmin() || auth()->user()->isFinance())
+                    @endif
+                    @if($isAdmin || $isFinance)
                     <a href="{{ route('master.chart-of-accounts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.chart-of-accounts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Chart of Accounts</a>
                     @endif
-                    @if(auth()->user()->isAdmin())
+                    @if($isAdmin)
                     <a href="{{ route('master.users.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('master.users.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">User Management</a>
                     @endif
                 </div>
             </div>
 
             <!-- Purchase Group -->
-            @php $isPurchase = request()->is('purchase/*'); @endphp
-            <div x-data="{ open: {{ $isPurchase ? 'true' : 'false' }} }" class="group">
+            @if($isAdmin || $isPurchasing || $isGudang || $isFinance)
+            @php $isPurchaseRoute = request()->is('purchase/*'); @endphp
+            <div x-data="{ open: {{ $isPurchaseRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">shopping_cart</span>
                         <span class="text-sm font-medium">Purchase</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isPurchase ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isPurchaseRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isPurchase) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                    @if($isAdmin || $isPurchasing)
                     <a href="{{ route('purchase.demands.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.demands.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kebutuhan Pengadaan</a>
                     <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
+                    @endif
+                    @if($isAdmin || $isGudang)
                     <a href="{{ route('purchase.goods-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.goods-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Barang</a>
+                    @endif
+                    @if($isAdmin || $isFinance)
                     <a href="{{ route('purchase.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Pembelian</a>
+                    @endif
+                    @if($isAdmin || $isPurchasing)
                     <a href="{{ route('purchase.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Pembelian</a>
+                    @endif
+                    @if($isAdmin || $isFinance)
                     <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Bayar Hutang</a>
+                    @endif
+                    @if($isAdmin || $isPurchasing || $isFinance)
                     <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i> Monitoring PO</a>
                     <a href="{{ route('purchase.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-boxes-packing mr-1 text-[11px]"></i> Rekap Beli per Barang</a>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- Inventory Group -->
-            @php $isInventory = request()->is('inventory/*'); @endphp
-            <div x-data="{ open: {{ $isInventory ? 'true' : 'false' }} }" class="group">
+            @if($isAdmin || $isGudang || $isPurchasing || $isSales || $isFinance)
+            @php $isInventoryRoute = request()->is('inventory/*'); @endphp
+            <div x-data="{ open: {{ $isInventoryRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">warehouse</span>
                         <span class="text-sm font-medium">Inventory</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isInventory ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isInventoryRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isInventory) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isInventoryRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('inventory.stock-summary') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-summary') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Ringkasan Stok</a>
+                    @if($isAdmin || $isGudang)
                     <a href="{{ route('inventory.stock-card') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-card') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kartu Stok</a>
                     <a href="{{ route('inventory.movements.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.movements.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Mutasi Stok</a>
                     <a href="{{ route('inventory.transfers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.transfers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Transfer Gudang</a>
                     <a href="{{ route('inventory.opname.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.opname.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Stock Opname</a>
                     <a href="{{ route('inventory.dispositions.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.dispositions.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Disposisi Karantina</a>
                     <a href="{{ route('inventory.reports.returns-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.reports.returns-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-rotate-left mr-1 text-[11px]"></i> Rekap Retur Barang</a>
+                    @endif
                 </div>
             </div>
+            @endif
 
             <!-- Sales Group -->
-            @php $isSales = request()->is('sales/*'); @endphp
-            <div x-data="{ open: {{ $isSales ? 'true' : 'false' }} }" class="group">
+            @if($isAdmin || $isSales || $isGudang || $isFinance)
+            @php $isSalesRoute = request()->is('sales/*'); @endphp
+            <div x-data="{ open: {{ $isSalesRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">sell</span>
                         <span class="text-sm font-medium">Sales</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isSales ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isSalesRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isSales) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isSalesRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                    @if($isAdmin || $isSales)
                     <a href="{{ route('sales.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.orders.*') && !request()->routeIs('sales.reports.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Sales Order</a>
+                    @endif
+                    @if($isAdmin || $isGudang)
                     <a href="{{ route('sales.deliveries.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.deliveries.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Surat Jalan</a>
+                    @endif
+                    @if($isAdmin || $isFinance)
                     <a href="{{ route('sales.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Penjualan</a>
+                    @endif
+                    @if($isAdmin || $isSales)
                     <a href="{{ route('sales.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Penjualan</a>
+                    @endif
+                    @if($isAdmin || $isFinance)
                     <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Terima Piutang</a>
+                    @endif
+                    @if($isAdmin || $isSales || $isFinance)
                     <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i> Monitoring SO</a>
                     <a href="{{ route('sales.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-simple mr-1 text-[11px]"></i> Rekap Jual per Barang</a>
+                    @endif
                 </div>
             </div>
+            @endif
 
-            <!-- SECTION 2: FINANCE & ACCOUNTING -->
+            <!-- SECTION 2: FINANCE & ACCOUNTING (Hanya Admin & Finance) -->
+            @if($isAdmin || $isFinance)
             <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Finance</div>
 
-            @php $isAccounting = request()->is('accounting/*'); @endphp
-            <div x-data="{ open: {{ $isAccounting ? 'true' : 'false' }} }" class="group">
+            @php $isAccountingRoute = request()->is('accounting/*'); @endphp
+            <div x-data="{ open: {{ $isAccountingRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">account_balance</span>
                         <span class="text-sm font-medium">Akuntansi</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isAccounting ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm {{ $isAccountingRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isAccounting) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                <div x-show="open" @if(!$isAccountingRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
                     <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
                     <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
@@ -722,11 +774,14 @@
                     <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Stok</a>
                 </div>
             </div>
+            @endif
 
-            @if(auth()->user()->isAdmin() || auth()->user()->isFinance())
+            <!-- SECTION 3: APPROVALS (HANYA ADMIN) -->
+            @if($isAdmin)
             @php
                 $pendingApprovalCount = \App\Models\ApprovalRequest::where('status', 'pending')->count();
             @endphp
+            <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Otorisasi</div>
             <a href="{{ route('approvals.index') }}" 
                class="flex items-center justify-between px-4 py-2 rounded {{ request()->routeIs('approvals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
                 <div class="flex items-center">

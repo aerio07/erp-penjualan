@@ -216,7 +216,7 @@ class DashboardController extends Controller
             ->filter(fn($p) => $this->stockService->getQuarantineStockAvailable($p->id) > 0)
             ->count();
 
-        $poApprovalCount = PurchaseOrder::where('status', 'waiting_approval')->count();
+        $poApprovalCount = ($role === 'admin') ? PurchaseOrder::where('status', 'waiting_approval')->count() : 0;
 
         $today = Carbon::today();
         $dueThreshold = $today->copy()->addDays(7);

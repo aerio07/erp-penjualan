@@ -9,8 +9,8 @@
     <!-- 1. ALERT BARS (Action Items & Early Warnings) -->
     <!-- ========================================================= -->
     <div class="flex flex-col gap-3">
-        {{-- PO Waiting Approval --}}
-        @if(isset($alerts['po_waiting_approval']) && $alerts['po_waiting_approval'] > 0)
+        {{-- PO Waiting Approval (Khusus Admin) --}}
+        @if(auth()->user()->isAdmin() && isset($alerts['po_waiting_approval']) && $alerts['po_waiting_approval'] > 0)
         <div class="bg-[#FBEBD2] border-l-4 border-[#92640B] p-3.5 rounded-lg flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-3 text-[#92640B]">
                 <span class="material-symbols-outlined text-[20px]">warning</span>

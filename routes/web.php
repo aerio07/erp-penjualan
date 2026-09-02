@@ -180,9 +180,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // =========================================================
-    // APPROVALS
+    // APPROVALS (Hanya Admin)
     // =========================================================
-    Route::middleware('role:admin,finance')->prefix('approvals')->name('approvals.')->group(function () {
+    Route::middleware('role:admin')->prefix('approvals')->name('approvals.')->group(function () {
         Route::get('/', [ApprovalController::class, 'index'])->name('index');
         Route::patch('{approval}/approve', [ApprovalController::class, 'approve'])->name('approve');
         Route::patch('{approval}/reject', [ApprovalController::class, 'reject'])->name('reject');
