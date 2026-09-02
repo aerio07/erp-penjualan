@@ -196,6 +196,7 @@
                             <th>No. Surat Jalan</th>
                             <th>Tanggal</th>
                             <th>Gudang</th>
+                            <th style="text-align:center;">Status Invoice</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -208,10 +209,17 @@
                             </td>
                             <td>{{ $del->delivery_date->format('d/m/Y') }}</td>
                             <td>{{ $del->warehouse->name ?? '-' }}</td>
+                            <td style="text-align:center;">
+                                @if($del->is_invoiced)
+                                    <span class="badge badge-done"><i class="fa-solid fa-check"></i> Sudah Di-Invoice</span>
+                                @else
+                                    <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Belum Di-Invoice</span>
+                                @endif
+                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="3" style="text-align:center; padding:20px; color:var(--text-secondary);">
+                            <td colspan="4" style="text-align:center; padding:20px; color:var(--text-secondary);">
                                 Belum ada Surat Jalan (pengiriman).
                             </td>
                         </tr>
@@ -226,9 +234,9 @@
             <div class="card-header">
                 <h3>Invoice Penjualan Terkait</h3>
                 @php
-                    $hasUnbilled = $order->items->sum('qty_unbilled') > 0;
+                    $hasUnbilledDel = $order->deliveries->where('is_invoiced', false)->count() > 0;
                 @endphp
-                @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']) && $hasUnbilled)
+                @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']) && $hasUnbilledDel)
                 <a href="{{ route('sales.invoices.create', ['so_id' => $order->id]) }}" class="btn btn-primary btn-sm">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice
                 </a>
@@ -239,6 +247,7 @@
                     <thead>
                         <tr>
                             <th>No. Invoice</th>
+                            <th>Ref. Surat Jalan</th>
                             <th>Total Tagihan</th>
                             <th style="text-align:center;">Status</th>
                         </tr>
@@ -251,6 +260,15 @@
                                     {{ $inv->invoice_number }}
                                 </a>
                             </td>
+                            <td>
+                                @if($inv->delivery)
+                                <a href="{{ route('sales.deliveries.show', $inv->delivery) }}" style="color:var(--primary); text-decoration:none; font-weight:500;">
+                                    {{ $inv->delivery->delivery_number }}
+                                </a>
+                                @else
+                                <span style="color:var(--text-secondary);">-</span>
+                                @endif
+                            </td>
                             <td style="font-weight:600;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
                             <td style="text-align:center;">
                                 <span class="badge badge-{{ $inv->status }}">
@@ -260,7 +278,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="3" style="text-align:center; padding:20px; color:var(--text-secondary);">
+                            <td colspan="4" style="text-align:center; padding:20px; color:var(--text-secondary);">
                                 Belum ada Invoice Penjualan.
                             </td>
                         </tr>

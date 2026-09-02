@@ -50,6 +50,9 @@
             <value>{{ $invoice->salesOrder->customer->name ?? '-' }}</value><br>
             <span style="color:#64748b; font-size:11px;">
                 Ref SO: {{ $invoice->salesOrder->so_number }}<br>
+                @if($invoice->delivery)
+                Ref Surat Jalan: {{ $invoice->delivery->delivery_number }}<br>
+                @endif
                 @if($invoice->salesOrder->customer?->isPkp())
                 Status: PKP @if($invoice->salesOrder->customer->npwp) · NPWP: {{ $invoice->salesOrder->customer->npwp }} @endif<br>
                 @endif

@@ -38,6 +38,7 @@
                         <x-sortable-header column="invoice_number" title="No. Invoice" />
                         <th>Customer</th>
                         <th>Ref. SO</th>
+                        <th>Ref. Surat Jalan</th>
                         <x-sortable-header column="invoice_date" title="Tgl Invoice" />
                         <x-sortable-header column="due_date" title="Jatuh Tempo" />
                         <x-sortable-header column="total_amount" title="Tagihan Efektif" align="right" />
@@ -62,6 +63,15 @@
                             </a>
                             @else
                             -
+                            @endif
+                        </td>
+                        <td>
+                            @if($inv->delivery)
+                            <a href="{{ route('sales.deliveries.show', $inv->delivery) }}" style="color:var(--primary); text-decoration:none; font-weight:500;">
+                                {{ $inv->delivery->delivery_number }}
+                            </a>
+                            @else
+                            <span style="color:var(--text-secondary);">-</span>
                             @endif
                         </td>
                         <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>

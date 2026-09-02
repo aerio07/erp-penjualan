@@ -7,7 +7,13 @@
     <div class="page-header">
         <div>
             <h1>{{ $invoice->invoice_number }}</h1>
-            <p>Ref SO: <a href="{{ route('sales.orders.show', $invoice->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->salesOrder->so_number }}</a> · Customer: <strong>{{ $invoice->salesOrder->customer->name ?? '-' }}</strong></p>
+            <p>
+                Ref SO: <a href="{{ route('sales.orders.show', $invoice->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->salesOrder->so_number }}</a>
+                @if($invoice->delivery)
+                    · Ref Surat Jalan: <a href="{{ route('sales.deliveries.show', $invoice->delivery) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->delivery->delivery_number }}</a>
+                @endif
+                · Customer: <strong>{{ $invoice->salesOrder->customer->name ?? '-' }}</strong>
+            </p>
         </div>
         <div style="display:flex; gap:8px;">
             @if($invoice->outstanding_amount > 0)
@@ -38,6 +44,18 @@
                             <span>{{ $invoice->salesOrder->customer->name ?? '-' }}</span>
                             @if($invoice->salesOrder->customer?->isPkp())
                                 <x-status-badge status="pkp" />
+                            @endif
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Surat Jalan (Delivery)</div>
+                        <div style="font-weight:600;">
+                            @if($invoice->delivery)
+                            <a href="{{ route('sales.deliveries.show', $invoice->delivery) }}" style="color:var(--primary); text-decoration:none;">
+                                {{ $invoice->delivery->delivery_number }}
+                            </a>
+                            @else
+                            <span style="color:var(--text-secondary);">-</span>
                             @endif
                         </div>
                     </div>

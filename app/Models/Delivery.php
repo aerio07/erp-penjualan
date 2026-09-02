@@ -10,15 +10,23 @@ class Delivery extends Model
 {
     protected $fillable = [
         'delivery_number', 'sales_order_id', 'warehouse_id',
-        'user_id', 'condition_status', 'delivery_date',
-        'shipping_address', 'recipient_name', 'notes',
+        'user_id', 'condition_status', 'is_invoiced', 'sales_invoice_id',
+        'delivery_date', 'shipping_address', 'recipient_name', 'notes',
     ];
 
-    protected $casts = ['delivery_date' => 'date'];
+    protected $casts = [
+        'delivery_date' => 'date',
+        'is_invoiced'   => 'boolean',
+    ];
 
     public function salesOrder(): BelongsTo
     {
         return $this->belongsTo(SalesOrder::class);
+    }
+
+    public function salesInvoice(): BelongsTo
+    {
+        return $this->belongsTo(SalesInvoice::class);
     }
 
     public function warehouse(): BelongsTo
@@ -39,5 +47,10 @@ class Delivery extends Model
     public function salesReturns(): HasMany
     {
         return $this->hasMany(SalesReturn::class);
+    }
+
+    public function getIsAvailableForInvoiceAttribute(): bool
+    {
+        return !$this->is_invoiced;
     }
 }

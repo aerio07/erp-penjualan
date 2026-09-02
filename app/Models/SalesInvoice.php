@@ -11,7 +11,7 @@ class SalesInvoice extends Model
     protected $appends = ['total_paid', 'total_reversed_amount', 'effective_total_amount', 'outstanding_amount'];
 
     protected $fillable = [
-        'invoice_number', 'tax_invoice_number', 'sales_order_id',
+        'invoice_number', 'tax_invoice_number', 'sales_order_id', 'delivery_id',
         'amount', 'tax_rate', 'tax_amount', 'total_amount',
         'invoice_date', 'due_date', 'status', 'notes',
     ];
@@ -28,6 +28,11 @@ class SalesInvoice extends Model
     public function salesOrder(): BelongsTo
     {
         return $this->belongsTo(SalesOrder::class);
+    }
+
+    public function delivery(): BelongsTo
+    {
+        return $this->belongsTo(Delivery::class);
     }
 
     public function payments(): HasMany
