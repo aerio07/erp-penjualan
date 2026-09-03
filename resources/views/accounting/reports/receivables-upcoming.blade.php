@@ -1,13 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Piutang Akan Jatuh Tempo')
+@section('title', 'Piutang Jatuh Tempo')
+@section('page-title', 'Piutang Jatuh Tempo')
 
 @section('content')
 <div class="content-header">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
         <div>
             <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">
-                Piutang Akan Jatuh Tempo
+                Piutang Jatuh Tempo
             </h1>
             <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">
                 Daftar tagihan penjualan yang mendekati jatuh tempo (belum telat) untuk tindakan penagihan proaktif
@@ -15,10 +16,10 @@
         </div>
         <div style="display: flex; gap: 8px;">
             <a href="{{ route('accounting.reports.cash-flow') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-chart-line"></i> Cash Flow & Forecast
+                <i class="fa-solid fa-chart-line"></i> Laporan Arus Kas
             </a>
             <a href="{{ route('accounting.reports.receivables') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-clock-rotate-left"></i> AP/AR Aging Piutang
+                <i class="fa-solid fa-clock-rotate-left"></i> Umur Piutang (AR Aging)
             </a>
         </div>
     </div>

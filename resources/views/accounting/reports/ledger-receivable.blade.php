@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Kartu Piutang - ' . $customer->name)
+@section('page-title', 'Kartu Piutang')
 
 @section('content')
 <div class="animate-in">

@@ -1,13 +1,14 @@
 @extends('layouts.app')
 
-@section('title', 'Tren Gross Profit & Profitabilitas')
+@section('title', 'Tren Laba Kotor')
+@section('page-title', 'Tren Laba Kotor')
 
 @section('content')
 <div class="content-header">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
         <div>
             <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">
-                Tren Gross Profit (Laba Kotor)
+                Tren Laba Kotor (Gross Profit)
             </h1>
             <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0 0;">
                 Analisis dinamika margin laba kotor bulanan dan per kategori produk setelah memperhitungkan retur penjualan

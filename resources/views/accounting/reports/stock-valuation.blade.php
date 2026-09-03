@@ -1,13 +1,13 @@
 @extends('layouts.app')
-@section('title', 'Laporan Valuasi Stok')
-@section('page-title', 'Laporan Valuasi Persediaan (Stock Valuation)')
+@section('title', 'Valuasi Persediaan')
+@section('page-title', 'Valuasi Persediaan')
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
-            <h1>Laporan Valuasi Persediaan</h1>
-            <p>Perhitungan nilai aset persediaan berdasarkan Average Cost (HPP)</p>
+            <h1>Valuasi Persediaan</h1>
+            <p>Perhitungan nilai persediaan barang berdasarkan Biaya Rata-Rata (Average Cost)</p>
         </div>
     </div>
 
@@ -17,7 +17,7 @@
                 <i class="fa-solid fa-boxes-stacked"></i>
             </div>
             <div class="stat-info">
-                <div class="stat-label">Total Nilai Persediaan Aset</div>
+                <div class="stat-label">Total Nilai Persediaan</div>
                 <div class="stat-value text-purple-700">Rp {{ number_format($totalValue, 0, ',', '.') }}</div>
             </div>
         </div>
@@ -31,9 +31,9 @@
                         <th>SKU</th>
                         <th>Nama Produk</th>
                         <th>Kategori</th>
-                        <th style="text-align:right;">Stok Fisik</th>
+                        <th style="text-align:right;">Jumlah Stok</th>
                         <th style="text-align:right;">Biaya Rata-Rata (Avg Cost)</th>
-                        <th style="text-align:right;">Total Valuasi Stok</th>
+                        <th style="text-align:right;">Total Nilai Persediaan</th>
                     </tr>
                 </thead>
                 <tbody>

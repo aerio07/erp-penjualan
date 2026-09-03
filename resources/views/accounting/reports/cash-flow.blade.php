@@ -1,12 +1,12 @@
 @extends('layouts.app')
 @section('title', 'Laporan Arus Kas')
-@section('page-title', 'Laporan Arus Kas (Cash Flow)')
+@section('page-title', 'Laporan Arus Kas')
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
-            <h1>Laporan Arus Kas (Cash Flow)</h1>
+            <h1>Laporan Arus Kas</h1>
             <p>Pelacakan rinci sumber penerimaan dan pengeluaran kas operasional perusahaan</p>
         </div>
     </div>

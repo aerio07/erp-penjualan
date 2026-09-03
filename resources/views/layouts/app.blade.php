@@ -54,6 +54,18 @@
             min-height: 100vh !important;
         }
 
+        /* Ensure sidebar links and buttons always have consistent text colors */
+        aside nav a, aside nav button {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+        }
+        aside nav a:hover, aside nav button:hover {
+            color: #ffffff !important;
+        }
+        aside nav a.font-bold, aside nav a.bg-\[\#1b2e52\] {
+            color: #ffffff !important;
+        }
+
         header, header.fixed, #erp-header {
             position: fixed !important;
             top: 0 !important;
@@ -81,9 +93,9 @@
         }
 
         .material-symbols-outlined {
-            font-family: 'Material Symbols Outlined';
-            font-weight: normal;
-            font-style: normal;
+            font-family: 'Material Symbols Outlined' !important;
+            font-weight: normal !important;
+            font-style: normal !important;
             font-size: 20px;
             line-height: 1;
             letter-spacing: normal;
@@ -91,8 +103,12 @@
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 1em !important;
-            height: 1em !important;
+            vertical-align: middle !important;
+            flex-shrink: 0 !important;
+            width: 20px !important;
+            min-width: 20px !important;
+            max-width: 20px !important;
+            height: 20px !important;
             overflow: hidden !important;
             white-space: nowrap !important;
             word-wrap: normal !important;
@@ -100,9 +116,29 @@
             -webkit-font-smoothing: antialiased !important;
             text-rendering: optimizeLegibility !important;
             font-feature-settings: 'liga' !important;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24 !important;
             user-select: none !important;
-            vertical-align: middle !important;
-            flex-shrink: 0 !important;
+        }
+        .material-symbols-outlined.text-sm {
+            font-size: 14px !important;
+            width: 14px !important;
+            min-width: 14px !important;
+            max-width: 14px !important;
+            height: 14px !important;
+        }
+        .material-symbols-outlined.text-xs {
+            font-size: 12px !important;
+            width: 12px !important;
+            min-width: 12px !important;
+            max-width: 12px !important;
+            height: 12px !important;
+        }
+        .material-symbols-outlined.text-base {
+            font-size: 16px !important;
+            width: 16px !important;
+            min-width: 16px !important;
+            max-width: 16px !important;
+            height: 16px !important;
         }
         ::-webkit-scrollbar { display: none; }
 
@@ -621,7 +657,7 @@
                         <span class="material-symbols-outlined mr-3">inventory_2</span>
                         <span class="text-sm font-medium">Master Data</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isMasterRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm" style="{{ $isMasterRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isMasterRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     @if($isAdmin || $isPurchasing || $isGudang || $isSales || $isFinance)
@@ -657,7 +693,7 @@
                         <span class="material-symbols-outlined mr-3">shopping_cart</span>
                         <span class="text-sm font-medium">Purchase</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isPurchaseRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm" style="{{ $isPurchaseRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     @if($isAdmin || $isPurchasing)
@@ -674,11 +710,11 @@
                     <a href="{{ route('purchase.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Pembelian</a>
                     @endif
                     @if($isAdmin || $isFinance)
-                    <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Bayar Hutang</a>
+                    <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
                     @endif
                     @if($isAdmin || $isPurchasing || $isFinance)
-                    <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i> Monitoring PO</a>
-                    <a href="{{ route('purchase.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-boxes-packing mr-1 text-[11px]"></i> Rekap Beli per Barang</a>
+                    <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring PO</a>
+                    <a href="{{ route('purchase.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Beli per Barang</a>
                     @endif
                 </div>
             </div>
@@ -693,7 +729,7 @@
                         <span class="material-symbols-outlined mr-3">warehouse</span>
                         <span class="text-sm font-medium">Inventory</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isInventoryRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm" style="{{ $isInventoryRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isInventoryRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     <a href="{{ route('inventory.stock-summary') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-summary') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Ringkasan Stok</a>
@@ -703,7 +739,7 @@
                     <a href="{{ route('inventory.transfers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.transfers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Transfer Gudang</a>
                     <a href="{{ route('inventory.opname.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.opname.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Stock Opname</a>
                     <a href="{{ route('inventory.dispositions.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.dispositions.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Disposisi Karantina</a>
-                    <a href="{{ route('inventory.reports.returns-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.reports.returns-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-rotate-left mr-1 text-[11px]"></i> Rekap Retur Barang</a>
+                    <a href="{{ route('inventory.reports.returns-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.reports.returns-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Retur Barang</a>
                     @endif
                 </div>
             </div>
@@ -718,7 +754,7 @@
                         <span class="material-symbols-outlined mr-3">sell</span>
                         <span class="text-sm font-medium">Sales</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isSalesRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm" style="{{ $isSalesRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isSalesRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     @if($isAdmin || $isSales)
@@ -734,11 +770,11 @@
                     <a href="{{ route('sales.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Penjualan</a>
                     @endif
                     @if($isAdmin || $isFinance)
-                    <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Terima Piutang</a>
+                    <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Piutang</a>
                     @endif
                     @if($isAdmin || $isSales || $isFinance)
-                    <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-pie mr-1 text-[11px]"></i> Monitoring SO</a>
-                    <a href="{{ route('sales.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}"><i class="fa-solid fa-chart-simple mr-1 text-[11px]"></i> Rekap Jual per Barang</a>
+                    <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring SO</a>
+                    <a href="{{ route('sales.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Jual per Barang</a>
                     @endif
                 </div>
             </div>
@@ -748,30 +784,80 @@
             @if($isAdmin || $isFinance)
             <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Finance</div>
 
-            @php $isAccountingRoute = request()->is('accounting/*'); @endphp
-            <div x-data="{ open: {{ $isAccountingRoute ? 'true' : 'false' }} }" class="group">
+            @php 
+                $isAccountingRoute = request()->is('accounting/*');
+                $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance');
+                $isHutangPiutang = request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
+                $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
+            @endphp
+            <div x-data="{ 
+                open: {{ $isAccountingRoute ? 'true' : 'false' }},
+                subBukuJurnal: {{ $isBukuJurnal ? 'true' : 'false' }},
+                subHutangPiutang: {{ $isHutangPiutang ? 'true' : 'false' }},
+                subLaporanKeuangan: {{ $isLaporanKeuangan ? 'true' : 'false' }}
+            }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">account_balance</span>
                         <span class="text-sm font-medium">Akuntansi</span>
                     </div>
-                    <span class="material-symbols-outlined text-sm {{ $isAccountingRoute ? 'rotate-180' : '' }}" :class="open ? 'rotate-180' : ''">expand_more</span>
+                    <span class="material-symbols-outlined text-sm" style="{{ $isAccountingRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isAccountingRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
-                    <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
-                    <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
-                    <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
-                    <a href="{{ route('accounting.reports.cash-flow') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.cash-flow') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Arus Kas & Forecast</a>
-                    <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Piutang Jatuh Tempo</a>
-                    <a href="{{ route('accounting.reports.payables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Hutang Jatuh Tempo</a>
-                    <a href="{{ route('accounting.reports.payables-by-vendor') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables-by-vendor') || request()->routeIs('accounting.reports.ledger-payable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Hutang Vendor</a>
-                    <a href="{{ route('accounting.reports.receivables-by-customer') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-by-customer') || request()->routeIs('accounting.reports.ledger-receivable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Piutang Customer</a>
-                    <a href="{{ route('accounting.reports.receivables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">AP/AR Aging Piutang</a>
-                    <a href="{{ route('accounting.reports.payables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">AP/AR Aging Hutang</a>
-                    <a href="{{ route('accounting.reports.profit-loss') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.profit-loss') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laba / Rugi</a>
-                    <a href="{{ route('accounting.reports.gross-profit') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.gross-profit') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Tren Gross Profit</a>
-                    <a href="{{ route('accounting.reports.balance-sheet') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.balance-sheet') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca</a>
-                    <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Stok</a>
+                <div x-show="open" @if(!$isAccountingRoute) x-cloak style="display: none;" @endif class="pl-6 pr-2 py-1 flex flex-col gap-1">
+                    
+                    <!-- Sub-Master 1: Buku & Jurnal -->
+                    <div class="group">
+                        <button @click="subBukuJurnal = !subBukuJurnal" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined mr-3">menu_book</span>
+                                <span class="text-xs font-medium">Buku & Jurnal</span>
+                            </div>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isBukuJurnal ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subBukuJurnal ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                        </button>
+                        <div x-show="subBukuJurnal" @if(!$isBukuJurnal) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
+                            <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
+                            <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Master 2: Hutang & Piutang -->
+                    <div class="group">
+                        <button @click="subHutangPiutang = !subHutangPiutang" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined mr-3">payments</span>
+                                <span class="text-xs font-medium">Hutang & Piutang</span>
+                            </div>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isHutangPiutang ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subHutangPiutang ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                        </button>
+                        <div x-show="subHutangPiutang" @if(!$isHutangPiutang) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Piutang Jatuh Tempo</a>
+                            <a href="{{ route('accounting.reports.receivables-by-customer') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-by-customer') || request()->routeIs('accounting.reports.ledger-receivable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Piutang per Customer</a>
+                            <a href="{{ route('accounting.reports.receivables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Umur Piutang (AR Aging)</a>
+                            <a href="{{ route('accounting.reports.payables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Hutang Jatuh Tempo</a>
+                            <a href="{{ route('accounting.reports.payables-by-vendor') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables-by-vendor') || request()->routeIs('accounting.reports.ledger-payable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Hutang per Vendor</a>
+                            <a href="{{ route('accounting.reports.payables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Umur Hutang (AP Aging)</a>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Master 3: Laporan Keuangan -->
+                    <div class="group">
+                        <button @click="subLaporanKeuangan = !subLaporanKeuangan" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined mr-3">bar_chart</span>
+                                <span class="text-xs font-medium">Laporan Keuangan</span>
+                            </div>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isLaporanKeuangan ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subLaporanKeuangan ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                        </button>
+                        <div x-show="subLaporanKeuangan" @if(!$isLaporanKeuangan) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('accounting.reports.profit-loss') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.profit-loss') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laba Rugi</a>
+                            <a href="{{ route('accounting.reports.balance-sheet') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.balance-sheet') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Keuangan</a>
+                            <a href="{{ route('accounting.reports.cash-flow') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.cash-flow') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laporan Arus Kas</a>
+                            <a href="{{ route('accounting.reports.gross-profit') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.gross-profit') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Tren Laba Kotor</a>
+                            <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Persediaan</a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             @endif

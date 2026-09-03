@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Neraca (Balance Sheet)')
-@section('page-title', 'Neraca Keuangan (Balance Sheet)')
+@section('title', 'Neraca Keuangan')
+@section('page-title', 'Neraca Keuangan')
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
-            <h1>Neraca Keuangan (Balance Sheet)</h1>
+            <h1>Neraca Keuangan</h1>
             <p>Posisi Aset, Kewajiban, dan Modal perusahaan pada titik waktu tertentu</p>
         </div>
     </div>

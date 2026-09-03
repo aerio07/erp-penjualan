@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Rekap Piutang by Customer')
+@section('title', 'Rekap Piutang per Customer')
+@section('page-title', 'Rekap Piutang per Customer')
 
 @section('content')
 <div class="animate-in">
@@ -9,7 +10,7 @@
         <div>
             <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
                 <i class="fa-solid fa-users" style="color: var(--primary); margin-right: 8px;"></i>
-                Rekap Piutang by Customer
+                Rekap Piutang per Customer
             </h1>
             <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
                 Ringkasan total tagihan piutang usaha yang dikelompokkan per customer beserta umur jatuh tempo invoice. Klik nama customer untuk melihat <strong>Kartu Piutang</strong> detail.
@@ -17,10 +18,10 @@
         </div>
         <div style="display: flex; gap: 8px;">
             <a href="{{ route('accounting.reports.receivables') }}" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-clock-rotate-left"></i> AR Aging Piutang
+                <i class="fa-solid fa-clock-rotate-left"></i> Umur Piutang (AR Aging)
             </a>
             <a href="{{ route('sales.payments.create') }}" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-hand-holding-dollar"></i> Terima Piutang
+                <i class="fa-solid fa-hand-holding-dollar"></i> Penerimaan Piutang
             </a>
         </div>
     </div>

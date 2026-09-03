@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Laporan Laba Rugi')
-@section('page-title', 'Laporan Laba Rugi (Profit & Loss)')
+@section('title', 'Laba Rugi')
+@section('page-title', 'Laba Rugi')
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
-            <h1>Laporan Laba Rugi (Profit & Loss)</h1>
+            <h1>Laporan Laba Rugi</h1>
             <p>Ringkasan kinerja pendapatan, HPP, beban operasional, dan laba bersih perusahaan</p>
         </div>
     </div>

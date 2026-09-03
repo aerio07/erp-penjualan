@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Laporan Piutang & AR Aging')
-@section('page-title', 'Laporan Piutang & AR Aging Report')
+@section('title', 'Umur Piutang (AR Aging)')
+@section('page-title', 'Umur Piutang (AR Aging)')
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
     <div class="page-header">
         <div>
-            <h1>Laporan Piutang & AR Aging</h1>
+            <h1>Umur Piutang (AR Aging)</h1>
             <p>Detail piutang penjualan per customer dikelompokkan berdasarkan umur penagihan (aging)</p>
         </div>
     </div>
