@@ -12,6 +12,8 @@ use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
 
+use Illuminate\Support\Facades\DB;
+
 class JournalEntryController extends Controller
 {
     use HasListFilters;
@@ -50,22 +52,26 @@ class JournalEntryController extends Controller
             'lines.*.credit'        => 'required|numeric|min:0',
         ]);
 
-        $entry = JournalEntry::create([
-            'entry_number' => $this->generateNumber(),
-            'entry_date'   => $request->entry_date,
-            'description'  => $request->description,
-            'status'       => 'draft',
-            'created_by'   => auth()->id(),
-        ]);
-
-        foreach ($request->lines as $line) {
-            $entry->lines()->create([
-                'chart_of_account_id' => $line['chart_of_account_id'],
-                'debit'               => $line['debit'] ?? 0,
-                'credit'              => $line['credit'] ?? 0,
-                'description'         => $line['description'] ?? null,
+        $entry = DB::transaction(function () use ($request) {
+            $entry = JournalEntry::create([
+                'entry_number' => $this->journalService->generateEntryNumber(),
+                'entry_date'   => $request->entry_date,
+                'description'  => $request->description,
+                'status'       => 'draft',
+                'created_by'   => auth()->id(),
             ]);
-        }
+
+            foreach ($request->lines as $line) {
+                $entry->lines()->create([
+                    'chart_of_account_id' => $line['chart_of_account_id'],
+                    'debit'               => $line['debit'] ?? 0,
+                    'credit'              => $line['credit'] ?? 0,
+                    'description'         => $line['description'] ?? null,
+                ]);
+            }
+
+            return $entry;
+        });
 
         return redirect()->route('accounting.journals.show', $entry)
             ->with('success', 'Journal Entry berhasil dibuat.');
@@ -94,20 +100,22 @@ class JournalEntryController extends Controller
             'lines'       => 'required|array|min:2',
         ]);
 
-        $journal->update([
-            'entry_date'  => $request->entry_date,
-            'description' => $request->description,
-        ]);
-
-        $journal->lines()->delete();
-        foreach ($request->lines as $line) {
-            $journal->lines()->create([
-                'chart_of_account_id' => $line['chart_of_account_id'],
-                'debit'               => $line['debit'] ?? 0,
-                'credit'              => $line['credit'] ?? 0,
-                'description'         => $line['description'] ?? null,
+        DB::transaction(function () use ($request, $journal) {
+            $journal->update([
+                'entry_date'  => $request->entry_date,
+                'description' => $request->description,
             ]);
-        }
+
+            $journal->lines()->delete();
+            foreach ($request->lines as $line) {
+                $journal->lines()->create([
+                    'chart_of_account_id' => $line['chart_of_account_id'],
+                    'debit'               => $line['debit'] ?? 0,
+                    'credit'              => $line['credit'] ?? 0,
+                    'description'         => $line['description'] ?? null,
+                ]);
+            }
+        });
 
         return redirect()->route('accounting.journals.show', $journal)
             ->with('success', 'Journal Entry berhasil diperbarui.');
@@ -133,10 +141,6 @@ class JournalEntryController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'JE-' . date('Ym') . '-';
-        $last   = \App\Models\JournalEntry::where('entry_number', 'like', $prefix . '%')
-            ->orderByDesc('id')->value('entry_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->journalService->generateEntryNumber();
     }
 }

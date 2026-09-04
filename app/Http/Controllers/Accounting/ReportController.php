@@ -570,14 +570,14 @@ class ReportController extends Controller
             ->get()
             ->map(function ($ret) {
                 // Cek jurnal pembalikan hutang untuk mendapatkan nilai tepat yang memotong hutang
-                $journal = JournalEntry::with('lines.account')
+                $journal = JournalEntry::with('lines.chartOfAccount')
                     ->where('reference_type', PurchaseReturn::class)
                     ->where('reference_id', $ret->id)
                     ->where('status', 'posted')
                     ->first();
 
                 $debtReversed = $journal
-                    ? (float) $journal->lines->where('account.code', '2-1100')->sum('debit')
+                    ? (float) $journal->lines->where('chartOfAccount.code', '2-1100')->sum('debit')
                     : (float) $ret->items->sum(fn($it) => $it->qty * $it->unit_cost);
 
                 return (object) [
@@ -692,14 +692,14 @@ class ReportController extends Controller
             ->whereIn('status', ['received', 'completed'])
             ->get()
             ->map(function ($ret) {
-                $journal = JournalEntry::with('lines.account')
+                $journal = JournalEntry::with('lines.chartOfAccount')
                     ->where('reference_type', SalesReturn::class)
                     ->where('reference_id', $ret->id)
                     ->where('status', 'posted')
                     ->first();
 
                 $receivableReversed = $journal
-                    ? (float) $journal->lines->where('account.code', '1-1200')->sum('credit')
+                    ? (float) $journal->lines->where('chartOfAccount.code', '1-1200')->sum('credit')
                     : (float) $ret->items->sum(fn($it) => $it->qty * ($it->product->selling_price ?? 0));
 
                 return (object) [

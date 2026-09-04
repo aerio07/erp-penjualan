@@ -40,12 +40,12 @@ class JournalEntry extends Model
 
     public function getTotalDebitAttribute(): float
     {
-        return (float) $this->lines()->sum('debit');
+        return (float) ($this->relationLoaded('lines') ? $this->lines->sum('debit') : $this->lines()->sum('debit'));
     }
 
     public function getTotalCreditAttribute(): float
     {
-        return (float) $this->lines()->sum('credit');
+        return (float) ($this->relationLoaded('lines') ? $this->lines->sum('credit') : $this->lines()->sum('credit'));
     }
 
     public function isBalanced(): bool

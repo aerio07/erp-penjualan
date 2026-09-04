@@ -26,4 +26,12 @@ class JournalLine extends Model
     {
         return $this->belongsTo(ChartOfAccount::class);
     }
+
+    /**
+     * Alias for chartOfAccount() to support with('lines.account')
+     */
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'chart_of_account_id');
+    }
 }

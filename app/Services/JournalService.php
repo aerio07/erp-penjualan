@@ -500,10 +500,11 @@ class JournalService
         return $account;
     }
 
-    private function generateEntryNumber(): string
+    public function generateEntryNumber(): string
     {
         $prefix = 'JE-' . date('Ym') . '-';
         $last   = JournalEntry::where('entry_number', 'like', $prefix . '%')
+            ->lockForUpdate()
             ->orderByDesc('id')
             ->value('entry_number');
 
