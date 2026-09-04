@@ -247,11 +247,14 @@ class PurchaseReturnController extends Controller
             }
 
             // Auto-journaling: balik hutang/PPN/persediaan proporsional (skip jika belum di-invoice)
-            $this->journalService->createFromPurchaseReturn($return);
+            $entry = $this->journalService->createFromPurchaseReturn($return);
+            if ($entry) {
+                $this->journalService->postEntry($entry);
+            }
 
             $return->update(['status' => 'completed']);
 
-            return back()->with('success', 'Retur Pembelian berhasil diselesaikan dan stok persediaan telah diperbarui.');
+            return back()->with('success', 'Retur Pembelian berhasil diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
         });
     }
 
