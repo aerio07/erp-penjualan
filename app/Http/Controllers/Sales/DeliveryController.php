@@ -44,7 +44,7 @@ class DeliveryController extends Controller
 
     public function create(Request $request): View
     {
-        $selectedSoId = $request->query('so_id');
+        $selectedSoId = old('sales_order_id', $request->query('so_id'));
         $confirmedSos = SalesOrder::with(['customer', 'items.product'])
             ->whereIn('status', ['confirmed', 'partially_delivered'])
             ->orderByDesc('id')
@@ -82,7 +82,9 @@ class DeliveryController extends Controller
             $productIds = [];
             foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
                 $soItem = $so->items->firstWhere('id', $soItemId);
-                abort_if(!$soItem, 422, 'Item pengiriman tidak sesuai dengan SO yang dipilih.');
+                if (!$soItem) {
+                    return back()->with('error', 'Item pengiriman tidak sesuai dengan SO yang dipilih.')->withInput();
+                }
 
                 if ($qtyDelivered > 0) {
                     $hasAnyDelivered = true;

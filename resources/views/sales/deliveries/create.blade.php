@@ -23,10 +23,12 @@
                 <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">Sales Order <span style="color:var(--danger);">*</span></label>
-                        <select name="sales_order_id" class="form-control" x-model="selectedSoId" @change="onSoChange()" required>
+                        <select name="sales_order_id" class="form-control" x-model="selectedSoId" @change="onSoChange(true)" required>
                             <option value="">-- Pilih Sales Order --</option>
                             @foreach($confirmedSos as $so)
-                            <option value="{{ $so->id }}">{{ $so->so_number }} - {{ $so->customer->name }} ({{ $so->order_date->format('d/m/Y') }})</option>
+                            <option value="{{ $so->id }}" {{ old('sales_order_id', $selectedSoId) == $so->id ? 'selected' : '' }}>
+                                {{ $so->so_number }} - {{ $so->customer->name }} ({{ $so->order_date->format('d/m/Y') }})
+                            </option>
                             @endforeach
                         </select>
                     </div>
@@ -36,7 +38,9 @@
                         <select name="warehouse_id" class="form-control" required>
                             <option value="">-- Pilih Gudang --</option>
                             @foreach($warehouses as $wh)
-                            <option value="{{ $wh->id }}">{{ $wh->name }} ({{ $wh->code }})</option>
+                            <option value="{{ $wh->id }}" {{ old('warehouse_id') == $wh->id ? 'selected' : '' }}>
+                                {{ $wh->name }} ({{ $wh->code }})
+                            </option>
                             @endforeach
                         </select>
                     </div>
@@ -61,7 +65,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Catatan Pengiriman / Nama Supir & No. Plat</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Nama supir, no. mobil, no. resi kurir..."></textarea>
+                    <textarea name="notes" class="form-control" rows="2" placeholder="Nama supir, no. mobil, no. resi kurir...">{{ old('notes') }}</textarea>
                 </div>
             </div>
         </div>
@@ -77,7 +81,7 @@
                             <th style="text-align:center; width:120px;">Qty Dipesan</th>
                             <th style="text-align:center; width:120px;">Sudah Dikirim</th>
                             <th style="text-align:center; width:120px;">Sisa SO</th>
-                            <th style="width:160px;">Qty Kirim Saat Ini</th>
+                            <th style="width:180px;">Qty Kirim Saat Ini</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,7 +98,17 @@
                                     <span class="badge badge-pending" x-text="item.qty_remaining"></span>
                                 </td>
                                 <td>
-                                    <input type="number" :name="`items[${idx}][qty_delivered]`" x-model.number="item.current_delivered" class="form-control" min="0" :max="item.qty_remaining" required>
+                                    <input type="number" 
+                                        :name="`items[${idx}][qty_delivered]`" 
+                                        x-model.number="item.current_delivered" 
+                                        class="form-control" 
+                                        :style="item.current_delivered > item.qty_remaining ? 'border-color:var(--danger); background:#fff5f5;' : ''"
+                                        min="0" 
+                                        :max="item.qty_remaining" 
+                                        required>
+                                    <div x-show="item.current_delivered > item.qty_remaining" style="color:var(--danger); font-size:11.5px; margin-top:4px; font-weight:500;">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Melebihi sisa SO (<span x-text="item.qty_remaining"></span>)
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -116,42 +130,69 @@
 @push('scripts')
 <script>
 const confirmedSos = @json($confirmedSos->keyBy('id'));
-const initialSoId = "{{ $selectedSoId ?? '' }}";
+const initialSoId = "{{ old('sales_order_id', $selectedSoId ?? '') }}";
+const oldRecipientName = @json(old('recipient_name', ''));
+const oldShippingAddress = @json(old('shipping_address', ''));
+const oldItemsData = @json(old('items', []));
+
+const oldItemsMap = {};
+if (Array.isArray(oldItemsData)) {
+    oldItemsData.forEach(item => {
+        if (item && item.sales_order_item_id !== undefined) {
+            oldItemsMap[item.sales_order_item_id] = item.qty_delivered;
+        }
+    });
+}
 
 function deliveryForm() {
     return {
         selectedSoId: initialSoId,
         selectedSo: null,
-        recipientName: '',
-        shippingAddress: '',
+        recipientName: oldRecipientName,
+        shippingAddress: oldShippingAddress,
         items: [],
+        isFirstLoad: true,
 
         init() {
             if (this.selectedSoId) {
-                this.onSoChange();
+                this.onSoChange(false);
             }
+            this.isFirstLoad = false;
         },
 
-        onSoChange() {
+        onSoChange(isManualUserChange = false) {
             if (!this.selectedSoId || !confirmedSos[this.selectedSoId]) {
                 this.selectedSo = null;
                 this.items = [];
+                if (isManualUserChange) {
+                    this.recipientName = '';
+                    this.shippingAddress = '';
+                }
                 return;
             }
 
             this.selectedSo = confirmedSos[this.selectedSoId];
-            this.recipientName = this.selectedSo.customer ? this.selectedSo.customer.name : '';
-            this.shippingAddress = this.selectedSo.customer ? this.selectedSo.customer.address : '';
+
+            if (isManualUserChange || (!this.recipientName && !this.shippingAddress)) {
+                this.recipientName = this.selectedSo.customer ? this.selectedSo.customer.name : '';
+                this.shippingAddress = this.selectedSo.customer ? this.selectedSo.customer.address : '';
+            }
 
             this.items = this.selectedSo.items.map(item => {
                 const remaining = Math.max(0, item.qty_ordered - item.qty_delivered);
+                let currentVal = remaining;
+
+                if (this.isFirstLoad && oldItemsMap[item.id] !== undefined) {
+                    currentVal = oldItemsMap[item.id];
+                }
+
                 return {
                     id: item.id,
                     product: item.product,
                     qty_ordered: item.qty_ordered,
                     qty_delivered: item.qty_delivered,
                     qty_remaining: remaining,
-                    current_delivered: remaining,
+                    current_delivered: currentVal,
                 };
             });
         }
