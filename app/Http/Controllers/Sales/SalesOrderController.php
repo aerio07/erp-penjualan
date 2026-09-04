@@ -69,18 +69,26 @@ class SalesOrderController extends Controller
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $so = DB::transaction(function () use ($request) {
-            $subtotal = 0;
+        // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
+        $subtotal = 0;
+        foreach ($request->items as $item) {
+            $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
+            $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
+            $subtotal += $lineSubtotal - $disc;
+        }
 
-            foreach ($request->items as $item) {
-                $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
-                $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
-                $subtotal += $lineSubtotal - $disc;
-            }
+        $discountHeader = (float) ($request->discount_amount ?? 0);
+        if ($discountHeader > $subtotal) {
+            return back()
+                ->withErrors([
+                    'discount_amount' => 'Diskon header (Rp ' . number_format($discountHeader, 0, ',', '.') . ') tidak boleh melebihi subtotal item (Rp ' . number_format($subtotal, 0, ',', '.') . ').'
+                ])
+                ->withInput();
+        }
 
-            $discountHeader = $request->discount_amount ?? 0;
-            $taxableAmount  = $subtotal - $discountHeader;
-            $taxAmount      = $taxableAmount * ($request->tax_rate / 100);
+        $so = DB::transaction(function () use ($request, $subtotal, $discountHeader) {
+            $taxableAmount  = max(0, $subtotal - $discountHeader);
+            $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
             $totalAmount    = $taxableAmount + $taxAmount;
 
             $salesOrder = SalesOrder::create([
@@ -147,25 +155,42 @@ class SalesOrderController extends Controller
         abort_if($order->status !== 'draft', 403);
 
         $request->validate([
-            'customer_id'  => 'required|exists:customers,id',
-            'order_date'   => 'required|date',
-            'tax_rate'     => 'required|numeric|min:0|max:100',
-            'items'        => 'required|array|min:1',
+            'customer_id'            => 'required|exists:customers,id',
+            'order_date'             => 'required|date',
+            'expected_delivery_date' => 'nullable|date|after_or_equal:order_date',
+            'tax_rate'               => 'required|numeric|min:0|max:100',
+            'discount_amount'        => 'nullable|numeric|min:0',
+            'notes'                  => 'nullable|string',
+            'items'                  => 'required|array|min:1',
+            'items.*.product_id'     => 'required|exists:products,id',
+            'items.*.qty_ordered'    => 'required|integer|min:1',
+            'items.*.unit_price'     => 'required|numeric|min:0',
+            'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        DB::transaction(function () use ($request, $order) {
+        // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
+        $subtotal = 0;
+        foreach ($request->items as $item) {
+            $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
+            $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
+            $subtotal += $lineSubtotal - $disc;
+        }
+
+        $discountHeader = (float) ($request->discount_amount ?? 0);
+        if ($discountHeader > $subtotal) {
+            return back()
+                ->withErrors([
+                    'discount_amount' => 'Diskon header (Rp ' . number_format($discountHeader, 0, ',', '.') . ') tidak boleh melebihi subtotal item (Rp ' . number_format($subtotal, 0, ',', '.') . ').'
+                ])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($request, $order, $subtotal, $discountHeader) {
             $order->items()->delete();
-            $subtotal = 0;
 
-            foreach ($request->items as $item) {
-                $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
-                $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
-                $subtotal += $lineSubtotal - $disc;
-            }
-
-            $discountHeader = $request->discount_amount ?? 0;
-            $taxableAmount  = $subtotal - $discountHeader;
-            $taxAmount      = $taxableAmount * ($request->tax_rate / 100);
+            $taxableAmount  = max(0, $subtotal - $discountHeader);
+            $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
+            $totalAmount    = $taxableAmount + $taxAmount;
 
             $order->update([
                 'customer_id'            => $request->customer_id,
@@ -174,7 +199,7 @@ class SalesOrderController extends Controller
                 'discount_amount'        => $discountHeader,
                 'tax_rate'               => $request->tax_rate,
                 'tax_amount'             => $taxAmount,
-                'total_amount'           => $taxableAmount + $taxAmount,
+                'total_amount'           => $totalAmount,
                 'notes'                  => $request->notes,
             ]);
 
@@ -203,6 +228,12 @@ class SalesOrderController extends Controller
     {
         $order = $salesOrder;
         abort_if($order->status !== 'draft', 403);
+
+        $order->approvalRequests()->where('status', 'pending')->update([
+            'status'           => 'rejected',
+            'rejection_reason' => 'Sales Order dihapus oleh pengguna.',
+        ]);
+
         $order->delete();
 
         return redirect()->route('sales.orders.index')
@@ -247,6 +278,13 @@ class SalesOrderController extends Controller
     {
         $order = $salesOrder;
         abort_if(!in_array($order->status, ['draft', 'waiting_approval', 'confirmed']), 403);
+
+        // Batalkan approval request yang masih pending jika ada
+        $order->approvalRequests()->where('status', 'pending')->update([
+            'status'           => 'rejected',
+            'rejection_reason' => 'Sales Order dibatalkan oleh pengguna.',
+        ]);
+
         $order->update(['status' => 'cancelled']);
         $this->stockService->releaseReservationsForSalesOrder($order);
 

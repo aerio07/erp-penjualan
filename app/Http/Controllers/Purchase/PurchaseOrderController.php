@@ -74,19 +74,26 @@ class PurchaseOrderController extends Controller
             'demand_ids.*'          => 'exists:procurement_demands,id',
         ]);
 
-        DB::transaction(function () use ($request) {
-            $subtotal = 0;
+        // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
+        $subtotal = 0;
+        foreach ($request->items as $item) {
+            $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
+            $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
+            $subtotal += $lineSubtotal - $disc;
+        }
 
-            // Hitung subtotal semua item
-            foreach ($request->items as $item) {
-                $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
-                $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
-                $subtotal += $lineSubtotal - $disc;
-            }
+        $discountHeader = (float) ($request->discount_amount ?? 0);
+        if ($discountHeader > $subtotal) {
+            return back()
+                ->withErrors([
+                    'discount_amount' => 'Diskon header (Rp ' . number_format($discountHeader, 0, ',', '.') . ') tidak boleh melebihi subtotal item (Rp ' . number_format($subtotal, 0, ',', '.') . ').'
+                ])
+                ->withInput();
+        }
 
-            $discountHeader = $request->discount_amount ?? 0;
-            $taxableAmount  = $subtotal - $discountHeader;
-            $taxAmount      = $taxableAmount * ($request->tax_rate / 100);
+        DB::transaction(function () use ($request, $subtotal, $discountHeader) {
+            $taxableAmount  = max(0, $subtotal - $discountHeader);
+            $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
             $totalAmount    = $taxableAmount + $taxAmount;
 
             $po = PurchaseOrder::create([
@@ -178,19 +185,29 @@ class PurchaseOrderController extends Controller
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        DB::transaction(function () use ($request, $order) {
+        // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
+        $subtotal = 0;
+        foreach ($request->items as $item) {
+            $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
+            $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
+            $subtotal += $lineSubtotal - $disc;
+        }
+
+        $discountHeader = (float) ($request->discount_amount ?? 0);
+        if ($discountHeader > $subtotal) {
+            return back()
+                ->withErrors([
+                    'discount_amount' => 'Diskon header (Rp ' . number_format($discountHeader, 0, ',', '.') . ') tidak boleh melebihi subtotal item (Rp ' . number_format($subtotal, 0, ',', '.') . ').'
+                ])
+                ->withInput();
+        }
+
+        DB::transaction(function () use ($request, $order, $subtotal, $discountHeader) {
             $order->items()->delete();
-            $subtotal = 0;
 
-            foreach ($request->items as $item) {
-                $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
-                $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
-                $subtotal += $lineSubtotal - $disc;
-            }
-
-            $discountHeader = $request->discount_amount ?? 0;
-            $taxableAmount  = $subtotal - $discountHeader;
-            $taxAmount      = $taxableAmount * ($request->tax_rate / 100);
+            $taxableAmount  = max(0, $subtotal - $discountHeader);
+            $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
+            $totalAmount    = $taxableAmount + $taxAmount;
 
             $order->update([
                 'supplier_id'    => $request->supplier_id,
@@ -200,7 +217,7 @@ class PurchaseOrderController extends Controller
                 'discount_amount'=> $discountHeader,
                 'tax_rate'       => $request->tax_rate,
                 'tax_amount'     => $taxAmount,
-                'total_amount'   => $taxableAmount + $taxAmount,
+                'total_amount'   => $totalAmount,
                 'notes'          => $request->notes,
                 'ship_to'        => $request->ship_to,
             ]);
@@ -230,6 +247,13 @@ class PurchaseOrderController extends Controller
     {
         $order = $purchaseOrder;
         abort_if($order->status !== 'draft', 403, 'Hanya PO berstatus draft yang dapat dihapus.');
+
+        // Reset linked procurement demands if any
+        $order->procurementDemands()->update([
+            'purchase_order_id' => null,
+            'status'            => 'pending',
+        ]);
+
         $order->delete();
 
         return redirect()->route('purchase.orders.index')
@@ -256,6 +280,19 @@ class PurchaseOrderController extends Controller
     {
         $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft', 'waiting_approval', 'confirmed']), 403);
+
+        // Batalkan approval request yang masih pending jika ada
+        $order->approvalRequests()->where('status', 'pending')->update([
+            'status'           => 'rejected',
+            'rejection_reason' => 'Purchase Order dibatalkan oleh pengguna.',
+        ]);
+
+        // Kembalikan procurement demands ke pending jika ada
+        $order->procurementDemands()->update([
+            'purchase_order_id' => null,
+            'status'            => 'pending',
+        ]);
+
         $order->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Purchase Order berhasil dibatalkan.');

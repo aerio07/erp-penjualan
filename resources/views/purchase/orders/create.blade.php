@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <form method="POST" action="{{ route('purchase.orders.store') }}" id="poForm">
+    <form method="POST" action="{{ route('purchase.orders.store') }}" id="poForm" @submit="if(discountHeader > subtotal){ $event.preventDefault(); alert('Diskon header tidak boleh melebihi subtotal item!'); return false; }">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -84,11 +84,26 @@
                         </div>
                         <div>
                             <label class="form-label">Diskon Header (Rp)</label>
-                            <input type="number" name="discount_amount" x-model.number="discountHeader" class="form-control" min="0" step="1000">
+                            <input type="number" 
+                                   name="discount_amount" 
+                                   x-model.number="discountHeader" 
+                                   :max="subtotal"
+                                   :class="{'is-invalid': discountHeader > subtotal}"
+                                   class="form-control" 
+                                   min="0" 
+                                   step="1000">
+                            <template x-if="discountHeader > subtotal">
+                                <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
+                                </div>
+                            </template>
+                            @error('discount_amount')
+                                <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
                             <span style="color:var(--text-secondary);">Setelah Diskon</span>
-                            <span x-text="'Rp ' + formatNum(subtotal - discountHeader)"></span>
+                            <span x-text="'Rp ' + formatNum(taxableAmount)"></span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
                             <span style="color:var(--text-secondary);">PPN (<span x-text="taxRate"></span>%)</span>
@@ -167,7 +182,7 @@
 
         <div style="display:flex; justify-content:flex-end; gap:12px;">
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn-primary" :disabled="discountHeader > subtotal" :style="discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''">
                 <i class="fa-solid fa-floppy-disk"></i> Simpan sebagai Draft
             </button>
         </div>
