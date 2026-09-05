@@ -18,10 +18,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class DeliveryController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(private StockService $stockService) {}
 
@@ -235,12 +236,6 @@ class DeliveryController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'SJ-' . date('Ym') . '-';
-        $last   = Delivery::where('delivery_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('delivery_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(Delivery::class, 'delivery_number', 'SJ');
     }
 }

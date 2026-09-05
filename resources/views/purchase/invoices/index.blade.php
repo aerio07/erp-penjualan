@@ -39,7 +39,7 @@
                         <th>Supplier</th>
                         <th>Ref. PO</th>
                         <th>Ref. LPB</th>
-                        <x-sortable-header column="invoice_date" title="Tgl Invoice" />
+                        <x-sortable-header column="invoice_date" title="Tgl Invoice" :isDefault="true" />
                         <x-sortable-header column="due_date" title="Jatuh Tempo" />
                         <x-sortable-header column="total_amount" title="Tagihan Efektif" align="right" />
                         <th style="text-align:right;">Sisa Hutang</th>

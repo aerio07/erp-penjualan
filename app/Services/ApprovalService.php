@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\ApprovalRequest;
+use App\Traits\GeneratesDocumentNumber;
 use Illuminate\Support\Facades\Auth;
 
 class ApprovalService
 {
+    use GeneratesDocumentNumber;
     /** Threshold nilai SO yang butuh approval (dalam Rupiah) */
     const SO_APPROVAL_THRESHOLD = 50_000_000;
 
@@ -73,11 +75,6 @@ class ApprovalService
 
     private function generateNumber(): string
     {
-        $prefix = 'APR-' . date('Ym') . '-';
-        $last   = ApprovalRequest::where('request_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('request_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(ApprovalRequest::class, 'request_number', 'APR');
     }
 }

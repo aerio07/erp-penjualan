@@ -2,13 +2,14 @@
     'column',
     'title',
     'align' => 'left',
+    'isDefault' => false,
 ])
 
 @php
     $currentSort = request('sort_by');
     $currentDir = strtolower(request('sort_dir', 'desc'));
-    $isSorted = ($currentSort === $column);
-    $nextDir = ($isSorted && $currentDir === 'asc') ? 'desc' : 'asc';
+    $isSorted = ($currentSort === $column) || (empty($currentSort) && $isDefault);
+    $nextDir = $isSorted ? (($currentDir === 'desc') ? 'asc' : 'desc') : 'desc';
     
     $queryParams = array_merge(request()->query(), [
         'sort_by' => $column,

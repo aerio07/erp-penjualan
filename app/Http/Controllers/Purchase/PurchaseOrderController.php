@@ -17,10 +17,11 @@ use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class PurchaseOrderController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(private ApprovalService $approvalService) {}
 
@@ -32,7 +33,7 @@ class PurchaseOrderController extends Controller
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyFilter($query, $request, 'supplier_id');
         $query = $this->applyDateRange($query, $request, 'order_date');
-        $query = $this->applySort($query, $request, ['po_number', 'order_date', 'total_amount', 'status', 'created_at'], 'created_at', 'desc');
+        $query = $this->applySort($query, $request, ['po_number', 'order_date', 'expected_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 15);
         $orders = $query->paginate($perPage)->withQueryString();
@@ -309,12 +310,6 @@ class PurchaseOrderController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'PO-' . date('Ym') . '-';
-        $last   = PurchaseOrder::where('po_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('po_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(PurchaseOrder::class, 'po_number', 'PO');
     }
 }

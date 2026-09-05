@@ -81,7 +81,8 @@ trait HasListFilters
     }
 
     /**
-     * Terapkan pengurutan kolom dengan pengamanan whitelisting.
+     * Terapkan pengurutan kolom dengan pengamanan whitelisting dan penanganan tie-breaker
+     * agar data/dokumen selalu terurut konsisten (dokumen terbaru selalu di atas).
      *
      * @param Builder $query
      * @param Request $request
@@ -95,6 +96,36 @@ trait HasListFilters
         $sortBy = in_array($request->sort_by, $allowedColumns, true) ? $request->sort_by : $defaultSort;
         $sortDir = strtolower($request->sort_dir) === 'asc' ? 'asc' : (strtolower($request->sort_dir) === 'desc' ? 'desc' : $defaultDir);
 
-        return $query->orderBy($sortBy, $sortDir);
+        $model = $query->getModel();
+        $table = $model->getTable();
+        $primaryKey = $model->getKeyName() ?: 'id';
+
+        $primaryCol = (str_contains($sortBy, '.') || $sortBy === 'products_count')
+            ? $sortBy
+            : $table . '.' . $sortBy;
+        $query->orderBy($primaryCol, $sortDir);
+
+        // Kolom-kolom temporal/tanggal
+        $temporalColumns = [
+            'order_date', 'return_date', 'received_date', 'invoice_date',
+            'delivery_date', 'payment_date', 'transfer_date', 'opname_date',
+            'movement_date', 'entry_date', 'disposed_at', 'expected_date',
+            'due_date', 'created_at', $primaryKey
+        ];
+
+        // Jika sort utama adalah kolom temporal dan user memilih ASC, secondary mengikuti ASC.
+        // Jika sort utama adalah kolom non-tanggal (misal status/supplier/customer), secondary SELALU 'desc'
+        // agar dokumen di dalam grup/filter tersebut selalu terurut dari yang terbaru ke terlama.
+        $secondaryDir = in_array($sortBy, $temporalColumns, true) ? $sortDir : 'desc';
+
+        if ($model->usesTimestamps() && !in_array($sortBy, ['created_at', $primaryKey], true)) {
+            $query->orderBy($table . '.created_at', $secondaryDir);
+        }
+
+        if ($sortBy !== $primaryKey) {
+            $query->orderBy($table . '.' . $primaryKey, $secondaryDir);
+        }
+
+        return $query;
     }
 }

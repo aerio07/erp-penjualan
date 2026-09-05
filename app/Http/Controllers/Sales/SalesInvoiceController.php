@@ -10,6 +10,7 @@ use App\Models\SalesInvoiceItem;
 use App\Models\SalesOrder;
 use App\Services\JournalService;
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ use Illuminate\View\View;
 
 class SalesInvoiceController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(private JournalService $journalService) {}
 
@@ -348,12 +349,6 @@ class SalesInvoiceController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'SINV-' . date('Ym') . '-';
-        $last   = SalesInvoice::where('invoice_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('invoice_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(SalesInvoice::class, 'invoice_number', 'SINV');
     }
 }

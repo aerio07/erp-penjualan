@@ -17,10 +17,11 @@ use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class SalesOrderController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(
         private ApprovalService $approvalService,
@@ -36,7 +37,7 @@ class SalesOrderController extends Controller
         $query = $this->applyFilter($query, $request, 'fulfillment_status');
         $query = $this->applyFilter($query, $request, 'customer_id');
         $query = $this->applyDateRange($query, $request, 'order_date');
-        $query = $this->applySort($query, $request, ['so_number', 'order_date', 'total_amount', 'status', 'created_at'], 'created_at', 'desc');
+        $query = $this->applySort($query, $request, ['so_number', 'order_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 15);
         $orders = $query->paginate($perPage)->withQueryString();
@@ -302,12 +303,6 @@ class SalesOrderController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'SO-' . date('Ym') . '-';
-        $last   = SalesOrder::where('so_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('so_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(SalesOrder::class, 'so_number', 'SO');
     }
 }

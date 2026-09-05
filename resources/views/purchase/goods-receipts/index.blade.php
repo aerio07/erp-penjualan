@@ -40,7 +40,7 @@
                         <th>No. PO</th>
                         <th>Supplier</th>
                         <th>Gudang Tujuan</th>
-                        <x-sortable-header column="received_date" title="Tgl Terima" />
+                        <x-sortable-header column="received_date" title="Tgl Terima" :isDefault="true" />
                         <th>Diterima Oleh</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>

@@ -38,7 +38,7 @@
                     <tr>
                         <x-sortable-header column="opname_number" title="No. Opname" />
                         <th>Gudang</th>
-                        <x-sortable-header column="opname_date" title="Tgl Opname" />
+                        <x-sortable-header column="opname_date" title="Tgl Opname" :isDefault="true" />
                         <th>Petugas</th>
                         <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>

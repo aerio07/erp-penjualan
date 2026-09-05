@@ -50,7 +50,7 @@
                     <tr>
                         <x-sortable-header column="so_number" title="No. SO" />
                         <th>Customer</th>
-                        <x-sortable-header column="order_date" title="Tgl Order" />
+                        <x-sortable-header column="order_date" title="Tgl Order" :isDefault="true" />
                         <x-sortable-header column="total_amount" title="Total" align="right" />
                         <x-sortable-header column="status" title="Status Order" align="center" />
                         <th style="text-align:center;">Status Pemenuhan</th>

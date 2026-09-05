@@ -31,7 +31,7 @@
                     <tr>
                         <th>No. Invoice</th>
                         <th>Supplier</th>
-                        <x-sortable-header column="payment_date" title="Tgl Bayar" />
+                        <x-sortable-header column="payment_date" title="Tgl Bayar" :isDefault="true" />
                         <x-sortable-header column="method" title="Metode" />
                         <th>No. Ref / Cek</th>
                         <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />

@@ -10,12 +10,13 @@ use App\Models\SalesOrderItem;
 use App\Models\StockMovement;
 use App\Models\StockReservation;
 use App\Models\Warehouse;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Traits\GeneratesDocumentNumber;
 
 class StockService
 {
+    use GeneratesDocumentNumber;
     /**
      * Catat stock movement dan kembalikan objectnya.
      */
@@ -606,12 +607,6 @@ class StockService
 
     private function generateDemandNumber(): string
     {
-        $prefix = 'DEM-' . date('Ym') . '-';
-        $last   = ProcurementDemand::where('demand_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('demand_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(ProcurementDemand::class, 'demand_number', 'DEM');
     }
 }

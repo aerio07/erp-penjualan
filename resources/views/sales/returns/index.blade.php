@@ -38,7 +38,7 @@
                         <x-sortable-header column="return_number" title="No. Retur" />
                         <th>Ref. Surat Jalan</th>
                         <th>Customer</th>
-                        <x-sortable-header column="return_date" title="Tgl Retur" />
+                        <x-sortable-header column="return_date" title="Tgl Retur" :isDefault="true" />
                         <th>Alasan Utama</th>
                         <x-sortable-header column="status" title="Status" align="center" />
                         <th style="text-align:center;">Aksi</th>

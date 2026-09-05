@@ -18,10 +18,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class PurchaseReturnController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(
         private StockService $stockService,
@@ -260,12 +261,6 @@ class PurchaseReturnController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'RET-' . date('Ym') . '-';
-        $last   = PurchaseReturn::where('return_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('return_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(PurchaseReturn::class, 'return_number', 'RET');
     }
 }

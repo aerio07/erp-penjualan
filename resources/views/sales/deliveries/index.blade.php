@@ -39,7 +39,7 @@
                         <th>Ref. SO</th>
                         <th>Customer</th>
                         <th>Gudang Asal</th>
-                        <x-sortable-header column="delivery_date" title="Tgl Kirim" />
+                        <x-sortable-header column="delivery_date" title="Tgl Kirim" :isDefault="true" />
                         <th>Penerima / Tujuan</th>
                         <th style="text-align:center;">Aksi</th>
                     </tr>

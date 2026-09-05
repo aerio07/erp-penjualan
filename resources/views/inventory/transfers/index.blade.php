@@ -47,7 +47,7 @@
                         <x-sortable-header column="transfer_number" title="No. Transfer" />
                         <th>Gudang Asal</th>
                         <th>Gudang Tujuan</th>
-                        <x-sortable-header column="transfer_date" title="Tgl Dokumen" />
+                        <x-sortable-header column="transfer_date" title="Tgl Dokumen" :isDefault="true" />
                         <th>Dikirim Oleh / Tgl</th>
                         <th>Diterima Oleh / Tgl</th>
                         <x-sortable-header column="status" title="Status" align="center" />

@@ -14,11 +14,13 @@ use App\Models\SalesInvoiceItem;
 use App\Models\SalesPayment;
 use App\Models\SalesReturn;
 use App\Models\StockDisposition;
+use App\Traits\GeneratesDocumentNumber;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class JournalService
 {
+    use GeneratesDocumentNumber;
     /**
      * Buat journal entry dari purchase invoice.
      * Debit: Persediaan | Credit: Hutang Usaha
@@ -502,15 +504,7 @@ class JournalService
 
     public function generateEntryNumber(): string
     {
-        $prefix = 'JE-' . date('Ym') . '-';
-        $last   = JournalEntry::where('entry_number', 'like', $prefix . '%')
-            ->lockForUpdate()
-            ->orderByDesc('id')
-            ->value('entry_number');
-
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(JournalEntry::class, 'entry_number', 'JE');
     }
 }
 

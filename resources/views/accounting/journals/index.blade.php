@@ -28,7 +28,7 @@
                 <thead>
                     <tr>
                         <x-sortable-header column="entry_number" title="No. Entri" />
-                        <x-sortable-header column="entry_date" title="Tanggal" />
+                        <x-sortable-header column="entry_date" title="Tanggal" :isDefault="true" />
                         <th>Keterangan / Referensi</th>
                         <th>Dibuat Oleh</th>
                         <x-sortable-header column="status" title="Status" align="center" />

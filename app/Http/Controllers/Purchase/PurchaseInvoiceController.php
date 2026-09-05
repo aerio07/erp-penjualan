@@ -16,10 +16,11 @@ use Illuminate\View\View;
 
 use App\Models\Supplier;
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class PurchaseInvoiceController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(private JournalService $journalService) {}
 
@@ -317,12 +318,6 @@ class PurchaseInvoiceController extends Controller
 
     private function generateNumber(): string
     {
-        $prefix = 'PINV-' . date('Ym') . '-';
-        $last   = PurchaseInvoice::where('invoice_number', 'like', $prefix . '%')
-            ->orderByDesc('id')
-            ->value('invoice_number');
-        $seq = $last ? (int) substr($last, strlen($prefix)) + 1 : 1;
-
-        return $prefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        return $this->generateDocumentNumber(PurchaseInvoice::class, 'invoice_number', 'PINV');
     }
 }
