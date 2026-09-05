@@ -79,6 +79,7 @@ class StockOpnameSurplusDeficitTest extends TestCase
                     'product_id' => $product->id,
                     'system_qty' => 50,
                     'physical_qty' => 60,
+                    'adjustment_reason' => 'found_extra',
                     'notes' => 'Ditemukan kelebihan 10 pcs di rak belakang',
                 ]
             ],
@@ -149,6 +150,7 @@ class StockOpnameSurplusDeficitTest extends TestCase
                     'product_id' => $product->id,
                     'system_qty' => 50,
                     'physical_qty' => 40,
+                    'adjustment_reason' => 'lost',
                     'notes' => 'Hilang / rusak 10 pcs',
                 ]
             ],
@@ -260,8 +262,8 @@ class StockOpnameSurplusDeficitTest extends TestCase
             'warehouse_id' => $warehouse->id,
             'opname_date' => now()->toDateString(),
             'items' => [
-                ['product_id' => $prodSurplus->id, 'system_qty' => 50, 'physical_qty' => 60],
-                ['product_id' => $prodDeficit->id, 'system_qty' => 50, 'physical_qty' => 40],
+                ['product_id' => $prodSurplus->id, 'system_qty' => 50, 'physical_qty' => 60, 'adjustment_reason' => 'found_extra'],
+                ['product_id' => $prodDeficit->id, 'system_qty' => 50, 'physical_qty' => 40, 'adjustment_reason' => 'lost'],
                 ['product_id' => $prodExact->id,   'system_qty' => 50, 'physical_qty' => 50],
             ],
         ]);
@@ -318,7 +320,7 @@ class StockOpnameSurplusDeficitTest extends TestCase
             'warehouse_id' => $warehouse->id,
             'opname_date' => now()->toDateString(),
             'items' => [
-                ['product_id' => $product->id, 'system_qty' => 50, 'physical_qty' => 60],
+                ['product_id' => $product->id, 'system_qty' => 50, 'physical_qty' => 60, 'adjustment_reason' => 'found_extra'],
             ],
         ]);
 

@@ -60,10 +60,11 @@
                         <tr>
                             <th>SKU</th>
                             <th>Nama Produk</th>
-                            <th style="text-align:right; width:130px;">Stok Sistem</th>
-                            <th style="width:160px;">Stok Fisik (Hasil Hitung)</th>
-                            <th style="text-align:right; width:160px;">Selisih</th>
-                            <th>Keterangan Selisih</th>
+                            <th style="text-align:right; width:120px;">Stok Sistem</th>
+                            <th style="width:130px;">Stok Fisik</th>
+                            <th style="text-align:right; width:150px;">Selisih</th>
+                            <th style="width:220px;">Alasan Selisih</th>
+                            <th>Catatan Penyesuaian</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,6 +72,7 @@
                         @php
                             $initPhysical = old("items.{$idx}.physical_qty", $p->system_qty);
                             $initDiff = $initPhysical - $p->system_qty;
+                            $initReason = old("items.{$idx}.adjustment_reason");
                         @endphp
                         <tr class="opname-row">
                             <td style="font-weight:600; color:var(--primary);">{{ $p->sku }}</td>
@@ -95,7 +97,27 @@
                                 @endif
                             </td>
                             <td>
-                                <input type="text" name="items[{{ $idx }}][notes]" value="{{ old("items.{$idx}.notes") }}" class="form-control" placeholder="Alasan selisih (rusak/hilang/surplus/dll)">
+                                <select name="items[{{ $idx }}][adjustment_reason]" class="form-control reason-select" style="{{ $initDiff == 0 ? 'display:none;' : '' }}">
+                                    <option value="">-- Pilih Alasan --</option>
+                                    <optgroup label="Defisit (Kekurangan Stok)">
+                                        <option value="lost" {{ $initReason === 'lost' ? 'selected' : '' }}>Barang Hilang</option>
+                                        <option value="damaged_unrecorded" {{ $initReason === 'damaged_unrecorded' ? 'selected' : '' }}>Rusak Belum Tercatat</option>
+                                    </optgroup>
+                                    <optgroup label="Surplus (Kelebihan Stok)">
+                                        <option value="found_extra" {{ $initReason === 'found_extra' ? 'selected' : '' }}>Ditemukan Lebih</option>
+                                    </optgroup>
+                                    <optgroup label="Umum">
+                                        <option value="counting_error" {{ $initReason === 'counting_error' ? 'selected' : '' }}>Salah Hitung</option>
+                                        <option value="other" {{ $initReason === 'other' ? 'selected' : '' }}>Lainnya</option>
+                                    </optgroup>
+                                </select>
+                                <span class="no-reason-text" style="{{ $initDiff != 0 ? 'display:none;' : '' }} color:var(--text-secondary); font-size:12.5px;">- Sesuai -</span>
+                                @error("items.{$idx}.adjustment_reason")
+                                    <div style="color:var(--danger); font-size:12px; margin-top:4px;">{{ $message }}</div>
+                                @enderror
+                            </td>
+                            <td>
+                                <input type="text" name="items[{{ $idx }}][adjustment_note]" value="{{ old("items.{$idx}.adjustment_note") }}" class="form-control note-input" placeholder="Keterangan tambahan..." style="{{ $initDiff == 0 ? 'display:none;' : '' }}">
                             </td>
                         </tr>
                         @endforeach
@@ -121,6 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const sysInput = row.querySelector('.system-qty-input');
         const physInput = row.querySelector('.physical-qty-input');
         const diffCell = row.querySelector('.diff-cell');
+        const reasonSelect = row.querySelector('.reason-select');
+        const noReasonText = row.querySelector('.no-reason-text');
+        const noteInput = row.querySelector('.note-input');
         
         if (!sysInput || !physInput || !diffCell) return;
 
@@ -131,10 +156,32 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (diff > 0) {
                 diffCell.innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-arrow-trend-up"></i> +${diff} (Surplus)</span>`;
+                if (reasonSelect) {
+                    reasonSelect.style.display = 'block';
+                    reasonSelect.required = true;
+                }
+                if (noReasonText) noReasonText.style.display = 'none';
+                if (noteInput) noteInput.style.display = 'block';
             } else if (diff < 0) {
                 diffCell.innerHTML = `<span style="color:var(--danger);"><i class="fa-solid fa-arrow-trend-down"></i> ${diff} (Defisit)</span>`;
+                if (reasonSelect) {
+                    reasonSelect.style.display = 'block';
+                    reasonSelect.required = true;
+                }
+                if (noReasonText) noReasonText.style.display = 'none';
+                if (noteInput) noteInput.style.display = 'block';
             } else {
                 diffCell.innerHTML = `<span style="color:var(--text-secondary);">0 (Sesuai)</span>`;
+                if (reasonSelect) {
+                    reasonSelect.style.display = 'none';
+                    reasonSelect.required = false;
+                    reasonSelect.value = '';
+                }
+                if (noReasonText) noReasonText.style.display = 'inline';
+                if (noteInput) {
+                    noteInput.style.display = 'none';
+                    noteInput.value = '';
+                }
             }
         }
 

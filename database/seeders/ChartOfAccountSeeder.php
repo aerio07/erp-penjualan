@@ -43,6 +43,7 @@ class ChartOfAccountSeeder extends Seeder
             ['code' => '4-1200', 'name' => 'Retur Penjualan',              'type' => 'revenue',   'parent_code' => '4-1100'],
             ['code' => '4-1300', 'name' => 'Potongan Penjualan',           'type' => 'revenue',   'parent_code' => '4-1100'],
             ['code' => '4-1400', 'name' => 'Pendapatan Penjualan Reject',   'type' => 'revenue',   'parent_code' => '4-1100'],
+            ['code' => '4-1500', 'name' => 'Pendapatan Selisih Stok Opname', 'type' => 'revenue',  'parent_code' => '4-1100'],
             ['code' => '4-9100', 'name' => 'Pendapatan Lain-lain',         'type' => 'revenue',   'parent_code' => null],
 
             // === BEBAN (5-xxxx) ===
@@ -50,6 +51,7 @@ class ChartOfAccountSeeder extends Seeder
             ['code' => '5-1200', 'name' => 'Retur Pembelian',               'type' => 'expense',   'parent_code' => '5-1100'],
             ['code' => '5-1300', 'name' => 'Kerugian Persediaan Rusak',     'type' => 'expense',   'parent_code' => '5-1100'],
             ['code' => '5-1400', 'name' => 'HPP Penjualan Reject',          'type' => 'expense',   'parent_code' => '5-1100'],
+            ['code' => '5-1600', 'name' => 'Kerugian Selisih Stok Opname',  'type' => 'expense',   'parent_code' => '5-1100'],
             ['code' => '5-2100', 'name' => 'Beban Gaji',                    'type' => 'expense',   'parent_code' => null],
             ['code' => '5-2200', 'name' => 'Beban Sewa',                    'type' => 'expense',   'parent_code' => null],
             ['code' => '5-2300', 'name' => 'Beban Listrik & Air',           'type' => 'expense',   'parent_code' => null],

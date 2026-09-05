@@ -14,6 +14,9 @@ use App\Models\SalesInvoiceItem;
 use App\Models\SalesPayment;
 use App\Models\SalesReturn;
 use App\Models\StockDisposition;
+use App\Models\StockMovement;
+use App\Models\StockOpname;
+use App\Models\StockOpnameItem;
 use App\Traits\GeneratesDocumentNumber;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -439,6 +442,207 @@ class JournalService
     }
 
     /**
+     * Buat journal entry dari dokumen Stock Opname (teragregasi per sesi opname).
+     *
+     * Logika:
+     * - Defisit: Debet Kerugian Selisih Stok Opname (5-1600), Kredit Persediaan (1-1400)
+     * - Surplus: Debet Persediaan (1-1400), Kredit Pendapatan Selisih Stok Opname (4-1500)
+     *
+     * Menjamin nominal selalu absolut (tidak pernah negatif) dan mengabaikan produk bernilai Rp0.
+     */
+    public function createFromStockOpname(StockOpname $opname): ?JournalEntry
+    {
+        // Idempotency guard pada level dokumen Stock Opname
+        $existing = JournalEntry::where('reference_type', StockOpname::class)
+            ->where('reference_id', $opname->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $opname->loadMissing(['items.product', 'warehouse']);
+
+        $lines = [];
+        $persediaan = $this->findAccount('1-1400'); // Persediaan Barang
+        $kerugian   = $this->findAccount('5-1600'); // Kerugian Selisih Stok Opname
+        $pendapatan = $this->findAccount('4-1500'); // Pendapatan Selisih Stok Opname
+
+        foreach ($opname->items as $item) {
+            $selisih = $item->physical_qty - $item->system_qty;
+            if ($selisih === 0) {
+                continue;
+            }
+
+            $unitCost = (float) ($item->product->purchase_price ?? 0);
+            if ($unitCost <= 0) {
+                // Lewati item bernilai 0 untuk mencegah jurnal Rp0
+                continue;
+            }
+
+            $absAmount = round(abs($selisih) * $unitCost, 2);
+            if ($absAmount <= 0) {
+                continue;
+            }
+
+            $productName = $item->product->name ?? 'Produk #' . $item->product_id;
+
+            if ($selisih < 0) {
+                // DEFISIT -> Beban Kerugian bertambah (Debit), Persediaan berkurang (Kredit)
+                $lines[] = [
+                    'account_id'  => $kerugian->id,
+                    'debit'       => $absAmount,
+                    'credit'      => 0,
+                    'description' => "Beban Selisih Kurang Stok Opname - {$productName} (" . abs($selisih) . " unit)",
+                ];
+                $lines[] = [
+                    'account_id'  => $persediaan->id,
+                    'debit'       => 0,
+                    'credit'      => $absAmount,
+                    'description' => "Pengurangan Persediaan Stok Opname - {$productName} (" . abs($selisih) . " unit)",
+                ];
+            } else {
+                // SURPLUS -> Persediaan bertambah (Debit), Pendapatan bertambah (Kredit)
+                $lines[] = [
+                    'account_id'  => $persediaan->id,
+                    'debit'       => $absAmount,
+                    'credit'      => 0,
+                    'description' => "Penambahan Persediaan Stok Opname - {$productName} (" . abs($selisih) . " unit)",
+                ];
+                $lines[] = [
+                    'account_id'  => $pendapatan->id,
+                    'debit'       => 0,
+                    'credit'      => $absAmount,
+                    'description' => "Pendapatan Selisih Lebih Stok Opname - {$productName} (" . abs($selisih) . " unit)",
+                ];
+            }
+        }
+
+        if (empty($lines)) {
+            return null;
+        }
+
+        $warehouseName = $opname->warehouse->name ?? 'Gudang #' . $opname->warehouse_id;
+        $entry = $this->createEntry(
+            date: $opname->opname_date?->toDateString() ?? now()->toDateString(),
+            description: "Penyesuaian Stok Opname #{$opname->opname_number} ({$warehouseName})",
+            referenceType: StockOpname::class,
+            referenceId: $opname->id,
+            lines: $lines
+        );
+
+        return $this->postEntry($entry);
+    }
+
+    /**
+     * Buat journal entry dari single StockOpnameItem (mendukung pemanggilan per baris item).
+     */
+    public function createFromStockAdjustment(StockOpnameItem $item): ?JournalEntry
+    {
+        $existing = JournalEntry::where('reference_type', StockOpnameItem::class)
+            ->where('reference_id', $item->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $item->loadMissing(['product', 'stockOpname']);
+
+        $selisih = $item->physical_qty - $item->system_qty;
+        if ($selisih === 0) {
+            return null;
+        }
+
+        $unitCost = (float) ($item->product->purchase_price ?? 0);
+        if ($unitCost <= 0) {
+            return null;
+        }
+
+        $absAmount = round(abs($selisih) * $unitCost, 2);
+        if ($absAmount <= 0) {
+            return null;
+        }
+
+        $persediaan = $this->findAccount('1-1400');
+        $productName = $item->product->name ?? 'Produk #' . $item->product_id;
+        $opnameNum = $item->stockOpname->opname_number ?? $item->stock_opname_id;
+
+        if ($selisih < 0) {
+            $kerugian = $this->findAccount('5-1600');
+            $lines = [
+                ['account_id' => $kerugian->id,   'debit' => $absAmount, 'credit' => 0,          'description' => "Beban Selisih Kurang Stok Opname - {$productName}"],
+                ['account_id' => $persediaan->id, 'debit' => 0,          'credit' => $absAmount, 'description' => "Pengurangan Persediaan Stok Opname - {$productName}"],
+            ];
+            $desc = "Penyesuaian Stok Opname (Defisit) #{$opnameNum} - {$productName}";
+        } else {
+            $pendapatan = $this->findAccount('4-1500');
+            $lines = [
+                ['account_id' => $persediaan->id, 'debit' => $absAmount, 'credit' => 0,          'description' => "Penambahan Persediaan Stok Opname - {$productName}"],
+                ['account_id' => $pendapatan->id, 'debit' => 0,          'credit' => $absAmount, 'description' => "Pendapatan Selisih Lebih Stok Opname - {$productName}"],
+            ];
+            $desc = "Penyesuaian Stok Opname (Surplus) #{$opnameNum} - {$productName}";
+        }
+
+        $entry = $this->createEntry(
+            date: $item->stockOpname->opname_date?->toDateString() ?? now()->toDateString(),
+            description: $desc,
+            referenceType: StockOpnameItem::class,
+            referenceId: $item->id,
+            lines: $lines
+        );
+
+        return $this->postEntry($entry);
+    }
+
+    /**
+     * Buat journal entry dari Saldo Awal Persediaan (Opening Balance).
+     * Debit: Persediaan (1-1400) | Credit: Modal Pemilik (3-1100).
+     * Tidak menyentuh akun pendapatan atau beban di Laba/Rugi.
+     */
+    public function createFromOpeningBalance(StockMovement $movement): ?JournalEntry
+    {
+        $existing = JournalEntry::where('reference_type', StockMovement::class)
+            ->where('reference_id', $movement->id)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $movement->loadMissing(['product', 'warehouse']);
+
+        $unitCost = (float) ($movement->unit_cost ?? $movement->product->purchase_price ?? 0);
+        $amount = round(abs($movement->quantity) * $unitCost, 2);
+
+        if ($amount <= 0) {
+            return null;
+        }
+
+        $persediaan = $this->findAccount('1-1400'); // Persediaan Barang
+        $modal      = $this->findAccount('3-1100'); // Modal Pemilik
+        $productName = $movement->product->name ?? 'Produk #' . $movement->product_id;
+        $whName = $movement->warehouse->name ?? 'Gudang #' . $movement->warehouse_id;
+
+        $lines = [
+            ['account_id' => $persediaan->id, 'debit' => $amount, 'credit' => 0,       'description' => "Saldo Awal Persediaan {$productName} ({$whName})"],
+            ['account_id' => $modal->id,      'debit' => 0,       'credit' => $amount, 'description' => "Modal Awal Persediaan {$productName} ({$whName})"],
+        ];
+
+        $desc = "Saldo Awal Persediaan - {$productName} ({$whName})";
+
+        $entry = $this->createEntry(
+            date: $movement->movement_date?->toDateString() ?? now()->toDateString(),
+            description: $desc,
+            referenceType: StockMovement::class,
+            referenceId: $movement->id,
+            lines: $lines
+        );
+
+        return $this->postEntry($entry);
+    }
+
+    /**
      * Helper: buat JournalEntry beserta JournalLines dalam satu transaksi DB.
      */
     private function createEntry(
@@ -456,7 +660,7 @@ class JournalService
                 'reference_id'   => $referenceId,
                 'description'    => $description,
                 'status'         => 'draft',
-                'created_by'     => Auth::id() ?? 1,
+                'created_by'     => Auth::id() ?? \App\Models\User::first()?->id ?? 1,
             ]);
 
             foreach ($lines as $line) {

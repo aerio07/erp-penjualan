@@ -75,9 +75,10 @@
                     @php
                         $m = $row['movement'];
                         $isDamaged = ($m->type === 'return_in_damaged');
+                        $isOpeningBalance = ($m->type === 'opening_balance');
                         $isAdjustmentSurplus = ($m->type === 'adjustment' && $m->quantity > 0);
                         $isAdjustmentDeficit = ($m->type === 'adjustment' && $m->quantity < 0);
-                        $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in']) || $isAdjustmentSurplus;
+                        $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in', 'opening_balance']) || $isAdjustmentSurplus;
                         $isOutgoing = in_array($m->type, ['out', 'return_out', 'transfer_out']) || $isAdjustmentDeficit;
                     @endphp
                     <tr>
@@ -86,6 +87,10 @@
                             @if($isDamaged)
                                 <span class="badge badge-warning" style="background:#fef3c7; color:#92400e; font-weight:700;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> RETUR KARANTINA
+                                </span>
+                            @elseif($isOpeningBalance)
+                                <span class="badge badge-done" style="background:#e0e7ff; color:#3730a3; font-weight:700;">
+                                    <i class="fa-solid fa-flag"></i> SALDO AWAL
                                 </span>
                             @elseif($isAdjustmentSurplus)
                                 <span class="badge badge-done" style="background:#dcfce7; color:#15803d; font-weight:700;">

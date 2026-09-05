@@ -79,7 +79,7 @@
                         <th style="text-align:right;">Stok Sistem</th>
                         <th style="text-align:right;">Stok Fisik</th>
                         <th style="text-align:right;">Selisih</th>
-                        <th>Keterangan</th>
+                        <th>Alasan & Catatan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,7 +95,20 @@
                         <td style="text-align:right; font-weight:700; color:{{ $item->difference < 0 ? 'var(--danger)' : ($item->difference > 0 ? 'var(--success)' : 'var(--text-primary)') }};">
                             {{ $item->difference > 0 ? '+'.$item->difference : $item->difference }}
                         </td>
-                        <td>{{ $item->notes ?? '-' }}</td>
+                        <td>
+                            @if($item->difference !== 0)
+                                <div style="font-weight:600; color:var(--primary);">
+                                    <i class="fa-solid fa-tag" style="font-size:11px;"></i> {{ $item->reason_label }}
+                                </div>
+                                @if($item->adjustment_note)
+                                    <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                                        {{ $item->adjustment_note }}
+                                    </div>
+                                @endif
+                            @else
+                                <span style="color:var(--text-secondary); font-size:12.5px;">- Cocok -</span>
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>

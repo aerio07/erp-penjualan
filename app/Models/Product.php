@@ -101,7 +101,7 @@ class Product extends Model
 
         return (int) $query->selectRaw(
             "SUM(CASE
-                WHEN type IN ('in','return_in','transfer_in','adjustment') AND quantity > 0 THEN quantity
+                WHEN type IN ('in','return_in','transfer_in','adjustment','opening_balance') AND quantity > 0 THEN quantity
                 WHEN type IN ('out','return_out','transfer_out') THEN -quantity
                 WHEN type = 'adjustment' AND quantity < 0 THEN quantity
                 ELSE 0

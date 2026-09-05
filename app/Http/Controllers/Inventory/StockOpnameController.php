@@ -21,7 +21,10 @@ class StockOpnameController extends Controller
 {
     use HasListFilters, GeneratesDocumentNumber;
 
-    public function __construct(private StockService $stockService) {}
+    public function __construct(
+        private StockService $stockService,
+        private \App\Services\JournalService $journalService
+    ) {}
 
     public function index(Request $request): View
     {
@@ -58,15 +61,29 @@ class StockOpnameController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'warehouse_id'           => 'required|exists:warehouses,id',
-            'opname_date'            => 'required|date',
-            'notes'                  => 'nullable|string',
-            'items'                  => 'required|array|min:1',
-            'items.*.product_id'     => 'required|exists:products,id',
-            'items.*.system_qty'     => 'required|integer',
-            'items.*.physical_qty'   => 'required|integer|min:0',
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'warehouse_id'              => 'required|exists:warehouses,id',
+            'opname_date'               => 'required|date',
+            'notes'                     => 'nullable|string',
+            'items'                     => 'required|array|min:1',
+            'items.*.product_id'        => 'required|exists:products,id',
+            'items.*.system_qty'        => 'required|integer',
+            'items.*.physical_qty'      => 'required|integer|min:0',
+            'items.*.adjustment_reason' => 'nullable|in:lost,damaged_unrecorded,counting_error,found_extra,other',
+            'items.*.adjustment_note'   => 'nullable|string',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->input('items', []) as $idx => $item) {
+                $sys  = (int) ($item['system_qty'] ?? 0);
+                $phys = (int) ($item['physical_qty'] ?? 0);
+                if ($sys !== $phys && empty($item['adjustment_reason'])) {
+                    $validator->errors()->add("items.{$idx}.adjustment_reason", "Alasan penyesuaian wajib dipilih untuk produk yang memiliki selisih stok.");
+                }
+            }
+        });
+
+        $validator->validate();
 
         DB::transaction(function () use ($request) {
             $opnameNumber = $this->generateNumber();
@@ -86,12 +103,14 @@ class StockOpnameController extends Controller
                 $difference  = $physicalQty - $systemQty;
 
                 StockOpnameItem::create([
-                    'stock_opname_id' => $opname->id,
-                    'product_id'      => $item['product_id'],
-                    'system_qty'      => $systemQty,
-                    'physical_qty'    => $physicalQty,
-                    'difference'      => $difference,
-                    'notes'           => $item['notes'] ?? null,
+                    'stock_opname_id'   => $opname->id,
+                    'product_id'        => $item['product_id'],
+                    'system_qty'        => $systemQty,
+                    'physical_qty'      => $physicalQty,
+                    'difference'        => $difference,
+                    'adjustment_reason' => $difference !== 0 ? ($item['adjustment_reason'] ?? null) : null,
+                    'adjustment_note'   => $difference !== 0 ? ($item['adjustment_note'] ?? null) : null,
+                    'notes'             => $item['notes'] ?? null,
                 ]);
             }
         });
@@ -136,7 +155,10 @@ class StockOpnameController extends Controller
 
             $opname->update(['status' => 'completed']);
 
-            return back()->with('success', 'Stock Opname telah diselesaikan dan penyesuaian stok otomatis dibuat.');
+            // Auto Journal Posting pada level dokumen Stock Opname
+            $this->journalService->createFromStockOpname($opname);
+
+            return back()->with('success', 'Stock Opname telah diselesaikan, penyesuaian stok dan jurnal penyesuaian otomatis dibuat.');
         });
     }
 
