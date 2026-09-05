@@ -1,6 +1,3 @@
-<div {{ $attributes->merge(['class' => 'inline-flex items-center gap-2']) }}>
-    <div class="h-9 w-9 rounded-lg bg-[#03193c] flex items-center justify-center text-white font-bold text-lg shadow-sm">
-        T
-    </div>
-    <span class="text-xl font-bold text-[#03193c] tracking-tight font-sans">TradePro</span>
+<div {{ $attributes->merge(['class' => 'inline-flex items-center justify-center']) }}>
+    <img src="{{ asset('assets/FlashSuitePro - Color.png') }}" alt="FlashSuite Pro" class="h-8 max-w-[200px] w-auto object-contain">
 </div>

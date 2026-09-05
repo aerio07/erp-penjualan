@@ -1,4 +1,4 @@
-# TradePro ERP (ERP Express)
+# FlashSuite Pro (ERP Express)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="280" alt="Laravel Logo">
@@ -20,7 +20,7 @@
 
 ## 📌 Tentang Aplikasi
 
-**TradePro ERP (ERP Express)** adalah aplikasi manajemen bisnis berbasis web yang dirancang khusus untuk mengelola siklus operasional bisnis trading, distributor, dan retail modern secara terintegrasi—mulai dari **Pengadaan (Purchasing)**, **Manajemen Stok & Multi-Gudang (Inventory)**, **Penjualan & Pengiriman (Sales & Delivery)**, hingga **Akuntansi & Keuangan (Accounting & Tax Compliance)**.
+**FlashSuite Pro (ERP Express)** adalah aplikasi manajemen bisnis berbasis web yang dirancang khusus untuk mengelola siklus operasional bisnis trading, distributor, dan retail modern secara terintegrasi—mulai dari **Pengadaan (Purchasing)**, **Manajemen Stok & Multi-Gudang (Inventory)**, **Penjualan & Pengiriman (Sales & Delivery)**, hingga **Akuntansi & Keuangan (Accounting & Tax Compliance)**.
 
 ---
 

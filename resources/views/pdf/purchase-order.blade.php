@@ -34,7 +34,7 @@
 <body>
     <div class="header">
         <div>
-            <div class="company-name">TradePro ERP</div>
+            <img src="{{ public_path('assets/logo-color.png') }}" style="height: 22px; margin-bottom: 3px; display: block;" alt="FlashSuite Pro">
             <div class="company-sub">Sistem ERP Trading Penjualan</div>
         </div>
         <div class="doc-title">

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') — TradePro ERP</title>
+    <title>@yield('title', 'Dashboard') — FlashSuite Pro</title>
 
 
 
@@ -624,10 +624,9 @@
     <!-- ========================================================= -->
     <aside class="fixed left-0 top-0 h-full w-[240px] bg-[#03193c] z-50 flex flex-col overflow-y-auto border-r border-[#1b2e52]">
         <!-- Brand Header -->
-        <div class="flex items-center gap-3 px-6 h-[56px] border-b border-[#1b2e52] mb-3">
-            <div class="h-8 w-8 rounded bg-[#1b2e52] flex items-center justify-center text-white font-bold text-lg">T</div>
-            <span class="text-white font-bold text-lg tracking-tight font-sans">TradePro</span>
-        </div>
+        <a href="{{ route('dashboard') }}" class="flex items-center justify-center px-6 h-[68px] border-b border-[#1b2e52] mb-4 hover:opacity-90 transition-opacity">
+            <img src="{{ asset('assets/FlashSuitePro - white.png') }}" alt="FlashSuite Pro" class="h-[21px] w-auto max-w-[172px] object-contain">
+        </a>
 
         <nav class="flex-1 flex flex-col gap-1 px-2">
             @php
@@ -900,7 +899,7 @@
             <div class="flex items-center gap-2 text-[#6B7280] text-sm font-sans whitespace-nowrap min-w-0">
                 <span class="material-symbols-outlined text-base shrink-0">home</span>
                 <span class="material-symbols-outlined text-xs shrink-0">chevron_right</span>
-                <span class="shrink-0 font-medium">TradePro</span>
+                <span class="shrink-0 font-medium">FlashSuite Pro</span>
                 <span class="material-symbols-outlined text-xs shrink-0">chevron_right</span>
                 <span class="text-[#03193c] font-bold truncate">@yield('page-title', 'Overview')</span>
             </div>
