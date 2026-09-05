@@ -75,8 +75,10 @@
                     @php
                         $m = $row['movement'];
                         $isDamaged = ($m->type === 'return_in_damaged');
-                        $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in']);
-                        $isOutgoing = in_array($m->type, ['out', 'return_out', 'transfer_out']);
+                        $isAdjustmentSurplus = ($m->type === 'adjustment' && $m->quantity > 0);
+                        $isAdjustmentDeficit = ($m->type === 'adjustment' && $m->quantity < 0);
+                        $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in']) || $isAdjustmentSurplus;
+                        $isOutgoing = in_array($m->type, ['out', 'return_out', 'transfer_out']) || $isAdjustmentDeficit;
                     @endphp
                     <tr>
                         <td>{{ $m->movement_date->format('d/m/Y') }}</td>
@@ -84,6 +86,14 @@
                             @if($isDamaged)
                                 <span class="badge badge-warning" style="background:#fef3c7; color:#92400e; font-weight:700;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> RETUR KARANTINA
+                                </span>
+                            @elseif($isAdjustmentSurplus)
+                                <span class="badge badge-done" style="background:#dcfce7; color:#15803d; font-weight:700;">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> OPNAME (SURPLUS)
+                                </span>
+                            @elseif($isAdjustmentDeficit)
+                                <span class="badge badge-cancelled" style="background:#fee2e2; color:#b91c1c; font-weight:700;">
+                                    <i class="fa-solid fa-arrow-trend-down"></i> OPNAME (DEFISIT)
                                 </span>
                             @elseif($isIncoming)
                                 <span class="badge badge-done">
@@ -95,12 +105,20 @@
                                 </span>
                             @endif
                         </td>
-                        <td>{{ $m->notes ?? '-' }}</td>
+                        <td>
+                            @if($m->source_url)
+                                <a href="{{ $m->source_url }}" style="color:var(--primary); font-weight:600; text-decoration:underline;" title="Buka Dokumen Sumber">
+                                    {{ $m->notes ?? 'Dokumen Sumber' }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>
+                                </a>
+                            @else
+                                {{ $m->notes ?? '-' }}
+                            @endif
+                        </td>
                         <td style="text-align:right; font-weight:600; {{ $isDamaged ? 'color:#92400e;' : 'color:var(--success);' }}">
-                            {{ $isIncoming ? '+'.number_format($m->quantity) : ($isDamaged ? '+'.number_format($m->quantity).' (Karantina)' : '-') }}
+                            {{ $isIncoming ? '+'.number_format(abs($m->quantity)) : ($isDamaged ? '+'.number_format(abs($m->quantity)).' (Karantina)' : '-') }}
                         </td>
                         <td style="text-align:right; color:var(--danger); font-weight:600;">
-                            {{ $isOutgoing ? '-'.number_format($m->quantity) : '-' }}
+                            {{ $isOutgoing ? '-'.number_format(abs($m->quantity)) : '-' }}
                         </td>
                         <td style="text-align:right; font-weight:700; font-size:14.5px;">
                             {{ number_format($row['running_qty']) }}

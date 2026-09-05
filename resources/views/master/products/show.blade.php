@@ -339,7 +339,7 @@
                                 $typeBadge = match($mov->type) {
                                     'in', 'return_in', 'transfer_in' => 'badge-done',
                                     'out', 'return_out', 'transfer_out' => 'badge-cancelled',
-                                    'adjustment' => 'badge-pending',
+                                    'adjustment' => $mov->quantity > 0 ? 'badge-done' : 'badge-cancelled',
                                     default => 'badge-confirmed',
                                 };
                             @endphp
@@ -350,7 +350,15 @@
                             {{ $mov->quantity > 0 ? '+' : '' }}{{ number_format($mov->quantity) }} {{ $product->unit }}
                         </td>
                         <td style="text-align:right;">Rp {{ number_format($mov->unit_cost ?? 0, 0, ',', '.') }}</td>
-                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ $mov->notes }}">{{ $mov->notes ?? '-' }}</td>
+                        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ $mov->notes }}">
+                            @if($mov->source_url)
+                                <a href="{{ $mov->source_url }}" style="color:var(--primary); font-weight:600; text-decoration:underline;">
+                                    {{ $mov->notes ?? 'Dokumen Sumber' }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
+                                </a>
+                            @else
+                                {{ $mov->notes ?? '-' }}
+                            @endif
+                        </td>
                         <td>{{ $mov->user->name ?? '-' }}</td>
                     </tr>
                     @empty

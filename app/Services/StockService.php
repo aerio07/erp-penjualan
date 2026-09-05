@@ -10,6 +10,7 @@ use App\Models\SalesOrderItem;
 use App\Models\StockMovement;
 use App\Models\StockReservation;
 use App\Models\Warehouse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Traits\GeneratesDocumentNumber;

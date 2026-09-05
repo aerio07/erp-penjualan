@@ -60,7 +60,9 @@
                     @forelse($movements as $m)
                     @php 
                         $isDamaged = ($m->type === 'return_in_damaged');
-                        $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in']); 
+                        $isAdjustmentSurplus = ($m->type === 'adjustment' && $m->quantity > 0);
+                        $isAdjustmentDeficit = ($m->type === 'adjustment' && $m->quantity < 0);
+                        $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in']) || $isAdjustmentSurplus; 
                     @endphp
                     <tr>
                         <td>{{ $m->movement_date ? $m->movement_date->format('d/m/Y') : '-' }}</td>
@@ -74,6 +76,14 @@
                                 <span class="badge badge-warning" style="background:#fef3c7; color:#92400e; font-weight:700;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> RETUR KARANTINA
                                 </span>
+                            @elseif($isAdjustmentSurplus)
+                                <span class="badge badge-done" style="background:#dcfce7; color:#15803d; font-weight:700;">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> OPNAME (SURPLUS)
+                                </span>
+                            @elseif($isAdjustmentDeficit)
+                                <span class="badge badge-cancelled" style="background:#fee2e2; color:#b91c1c; font-weight:700;">
+                                    <i class="fa-solid fa-arrow-trend-down"></i> OPNAME (DEFISIT)
+                                </span>
                             @else
                                 <span class="badge {{ $isIncoming ? 'badge-done' : 'badge-cancelled' }}">
                                     {{ strtoupper(str_replace('_', ' ', $m->type)) }}
@@ -81,10 +91,18 @@
                             @endif
                         </td>
                         <td style="text-align:right; font-weight:700; color:{{ $isDamaged ? '#92400e' : ($isIncoming ? 'var(--success)' : 'var(--danger)') }};">
-                            {{ $isIncoming || $isDamaged ? '+' : '-' }}{{ number_format($m->quantity) }} {{ $m->product->unit ?? 'pcs' }}
+                            {{ $isIncoming || $isDamaged ? '+' : '-' }}{{ number_format(abs($m->quantity)) }} {{ $m->product->unit ?? 'pcs' }}
                         </td>
                         <td style="text-align:right;">Rp {{ number_format($m->unit_cost, 0, ',', '.') }}</td>
-                        <td>{{ $m->notes ?? '-' }}</td>
+                        <td>
+                            @if($m->source_url)
+                                <a href="{{ $m->source_url }}" style="color:var(--primary); font-weight:600; text-decoration:underline;" title="Buka Dokumen Sumber">
+                                    {{ $m->notes ?? 'Dokumen Sumber' }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>
+                                </a>
+                            @else
+                                {{ $m->notes ?? '-' }}
+                            @endif
+                        </td>
                         <td>{{ $m->user->name ?? '-' }}</td>
                     </tr>
                     @empty

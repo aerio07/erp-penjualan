@@ -37,4 +37,25 @@ class StockMovement extends Model
     {
         return $this->morphTo();
     }
+
+    public function getSourceUrlAttribute(): ?string
+    {
+        if (!$this->reference_id || !$this->reference_type) {
+            return null;
+        }
+
+        try {
+            return match ($this->reference_type) {
+                StockOpname::class, 'App\Models\StockOpname' => route('inventory.opname.show', $this->reference_id),
+                GoodsReceipt::class, 'App\Models\GoodsReceipt' => route('purchase.goods-receipts.show', $this->reference_id),
+                Delivery::class, 'App\Models\Delivery' => route('sales.deliveries.show', $this->reference_id),
+                WarehouseTransfer::class, 'App\Models\WarehouseTransfer' => route('inventory.transfers.show', $this->reference_id),
+                PurchaseReturn::class, 'App\Models\PurchaseReturn' => route('purchase.returns.show', $this->reference_id),
+                SalesReturn::class, 'App\Models\SalesReturn' => route('sales.returns.show', $this->reference_id),
+                default => null,
+            };
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
 }

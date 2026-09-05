@@ -60,28 +60,42 @@
                         <tr>
                             <th>SKU</th>
                             <th>Nama Produk</th>
-                            <th style="text-align:right; width:140px;">Stok Sistem</th>
+                            <th style="text-align:right; width:130px;">Stok Sistem</th>
                             <th style="width:160px;">Stok Fisik (Hasil Hitung)</th>
+                            <th style="text-align:right; width:160px;">Selisih</th>
                             <th>Keterangan Selisih</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($products as $idx => $p)
-                        <tr>
+                        @php
+                            $initPhysical = old("items.{$idx}.physical_qty", $p->system_qty);
+                            $initDiff = $initPhysical - $p->system_qty;
+                        @endphp
+                        <tr class="opname-row">
                             <td style="font-weight:600; color:var(--primary);">{{ $p->sku }}</td>
                             <td>
                                 {{ $p->name }}
                                 <input type="hidden" name="items[{{ $idx }}][product_id]" value="{{ $p->id }}">
-                                <input type="hidden" name="items[{{ $idx }}][system_qty]" value="{{ $p->system_qty }}">
+                                <input type="hidden" class="system-qty-input" name="items[{{ $idx }}][system_qty]" value="{{ $p->system_qty }}">
                             </td>
                             <td style="text-align:right; font-weight:600;">
                                 {{ number_format($p->system_qty) }} {{ $p->unit }}
                             </td>
                             <td>
-                                <input type="number" name="items[{{ $idx }}][physical_qty]" value="{{ old("items.{$idx}.physical_qty", $p->system_qty) }}" class="form-control" min="0" required>
+                                <input type="number" name="items[{{ $idx }}][physical_qty]" value="{{ $initPhysical }}" class="form-control physical-qty-input" min="0" required>
+                            </td>
+                            <td style="text-align:right; font-weight:700;" class="diff-cell">
+                                @if($initDiff > 0)
+                                    <span style="color:var(--success);"><i class="fa-solid fa-arrow-trend-up"></i> +{{ number_format($initDiff) }} (Surplus)</span>
+                                @elseif($initDiff < 0)
+                                    <span style="color:var(--danger);"><i class="fa-solid fa-arrow-trend-down"></i> {{ number_format($initDiff) }} (Defisit)</span>
+                                @else
+                                    <span style="color:var(--text-secondary);">0 (Sesuai)</span>
+                                @endif
                             </td>
                             <td>
-                                <input type="text" name="items[{{ $idx }}][notes]" value="{{ old("items.{$idx}.notes") }}" class="form-control" placeholder="Alasan selisih (rusak/hilang/dll)">
+                                <input type="text" name="items[{{ $idx }}][notes]" value="{{ old("items.{$idx}.notes") }}" class="form-control" placeholder="Alasan selisih (rusak/hilang/surplus/dll)">
                             </td>
                         </tr>
                         @endforeach
@@ -99,4 +113,33 @@
     </form>
     @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.opname-row');
+    rows.forEach(function(row) {
+        const sysInput = row.querySelector('.system-qty-input');
+        const physInput = row.querySelector('.physical-qty-input');
+        const diffCell = row.querySelector('.diff-cell');
+        
+        if (!sysInput || !physInput || !diffCell) return;
+
+        function updateDiff() {
+            const sys = parseInt(sysInput.value) || 0;
+            const phys = parseInt(physInput.value) || 0;
+            const diff = phys - sys;
+            
+            if (diff > 0) {
+                diffCell.innerHTML = `<span style="color:var(--success);"><i class="fa-solid fa-arrow-trend-up"></i> +${diff} (Surplus)</span>`;
+            } else if (diff < 0) {
+                diffCell.innerHTML = `<span style="color:var(--danger);"><i class="fa-solid fa-arrow-trend-down"></i> ${diff} (Defisit)</span>`;
+            } else {
+                diffCell.innerHTML = `<span style="color:var(--text-secondary);">0 (Sesuai)</span>`;
+            }
+        }
+
+        physInput.addEventListener('input', updateDiff);
+    });
+});
+</script>
 @endsection
