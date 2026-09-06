@@ -29,7 +29,11 @@
 <body>
     <div class="header">
         <div>
-            <img src="{{ public_path('assets/logo-color.png') }}" style="height: 22px; margin-bottom: 3px; display: block;" alt="FlashSuite Pro">
+            @if(extension_loaded('gd') && file_exists(public_path('assets/logo-color.png')))
+                <img src="{{ public_path('assets/logo-color.png') }}" style="height: 22px; margin-bottom: 3px; display: block;" alt="FlashSuite Pro">
+            @else
+                <div class="company-name">FlashSuite Pro</div>
+            @endif
             <div class="company-sub">Sistem ERP Trading Penjualan</div>
         </div>
         <div class="doc-title">
