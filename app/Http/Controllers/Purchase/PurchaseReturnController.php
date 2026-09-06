@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\Product;
+use App\Models\PurchaseInvoice;
 use App\Models\PurchaseReturn;
 use App\Models\PurchaseReturnItem;
 use App\Models\Supplier;
@@ -49,18 +50,26 @@ class PurchaseReturnController extends Controller
     public function create(Request $request): View
     {
         $selectedGrnId = $request->query('grn_id');
-        $receipts = GoodsReceipt::with(['purchaseOrder.supplier', 'items.purchaseOrderItem.product', 'warehouse'])
-            ->with('items.purchaseReturnItems')
+        $receipts = GoodsReceipt::with([
+            'purchaseOrder.supplier',
+            'warehouse',
+            'items.purchaseOrderItem.product',
+            'items.purchaseReturnItems',
+            'items.purchaseInvoiceItem',
+            'purchaseInvoice.items',
+            'purchaseInvoice.payments',
+        ])
+            ->whereIn('qc_status', ['passed', 'partial'])
             ->orderByDesc('id')
             ->get();
 
         // Hitung ketersediaan stok fisik riil di gudang untuk setiap item GRN
         foreach ($receipts as $grn) {
             foreach ($grn->items as $item) {
-                $whId = $item->warehouse_id ?? $grn->warehouse_id;
-                $productId = $item->purchaseOrderItem?->product_id;
+                $productId   = $item->purchaseOrderItem->product_id ?? null;
+                $whId        = $item->warehouse_id ?? $grn->warehouse_id;
 
-                if ($productId) {
+                if ($productId && $whId) {
                     $onHand    = $this->stockService->getOnHandStock($productId, $whId);
                     $reserved  = $this->stockService->getReservedStock($productId, $whId);
                     $available = $this->stockService->getAvailableStock($productId, $whId);
@@ -96,9 +105,27 @@ class PurchaseReturnController extends Controller
             'items.*.unit_cost'             => 'required|numeric|min:0',
         ]);
 
-        $grn = GoodsReceipt::with(['purchaseOrder', 'warehouse'])->findOrFail($request->goods_receipt_id);
+        $grn = GoodsReceipt::with([
+            'purchaseOrder.supplier',
+            'warehouse',
+            'items.purchaseOrderItem.product',
+            'items.purchaseInvoiceItem',
+            'purchaseInvoice.items',
+            'purchaseInvoice.payments',
+        ])->findOrFail($request->goods_receipt_id);
+
+        $invoice = $grn->purchaseInvoice ?? PurchaseInvoice::with(['items', 'payments'])->where('goods_receipt_id', $grn->id)->first();
+        $sisaBelumBayar = $invoice ? round((float) $invoice->effective_total_amount - (float) $invoice->total_paid, 2) : null;
+
+        // Jika invoice sudah lunas penuh (outstanding <= 0.01), tolak retur otomatis untuk mencegah overpayment
+        if ($invoice && $sisaBelumBayar !== null && $sisaBelumBayar <= 0.01) {
+            $msg = "Invoice pembelian {$invoice->invoice_number} sudah lunas dibayar penuh ke supplier. Retur tidak dapat diproses otomatis karena akan menyebabkan kelebihan pembayaran dari sisi kita. Silakan koordinasikan dengan supplier untuk penanganan manual.";
+            return back()->with('error', $msg)->withErrors(['items' => $msg])->withInput();
+        }
 
         $hasAnyQty = false;
+        $totalNilaiRetur = 0;
+
         foreach ($request->items as $itemData) {
             $qty = (int) $itemData['qty'];
             if ($qty <= 0) {
@@ -106,7 +133,7 @@ class PurchaseReturnController extends Controller
             }
 
             $hasAnyQty = true;
-            $grnItem = GoodsReceiptItem::with('purchaseOrderItem.product')->findOrFail($itemData['goods_receipt_item_id']);
+            $grnItem = GoodsReceiptItem::with(['purchaseOrderItem.product', 'purchaseInvoiceItem'])->findOrFail($itemData['goods_receipt_item_id']);
             abort_if($grnItem->goods_receipt_id !== $grn->id, 422, 'Item retur tidak sesuai dengan GRN yang dipilih.');
             abort_if($grnItem->purchaseOrderItem->product_id !== (int) $itemData['product_id'], 422, 'Produk retur tidak sesuai dengan item GRN.');
 
@@ -120,34 +147,57 @@ class PurchaseReturnController extends Controller
 
                 if ($qty > $maxReturnable) {
                     if ($physicalAvailable <= 0) {
-                        return back()
-                            ->with('error', "Gagal membuat retur '{$product->name}'. Stok fisik di gudang saat ini 0 {$product->unit} (barang telah habis terjual/dikirim ke pelanggan atau di-booking Sales Order). Barang tidak dapat diretur ke supplier.")
-                            ->withInput();
+                        $errMsg = "Gagal membuat retur '{$product->name}'. Stok fisik di gudang saat ini 0 {$product->unit} (barang telah habis terjual/dikirim ke pelanggan atau di-booking Sales Order). Barang tidak dapat diretur ke supplier.";
+                        return back()->with('error', $errMsg)->withErrors(['items' => $errMsg])->withInput();
                     }
 
                     if ($qty > $physicalAvailable) {
-                        return back()
-                            ->with('error', "Qty retur '{$product->name}' ({$qty} {$product->unit}) melebihi stok fisik bebas yang ada di gudang ({$physicalAvailable} {$product->unit}).")
-                            ->withInput();
+                        $errMsg = "Qty retur '{$product->name}' ({$qty} {$product->unit}) melebihi stok fisik bebas yang ada di gudang ({$physicalAvailable} {$product->unit}).";
+                        return back()->with('error', $errMsg)->withErrors(['items' => $errMsg])->withInput();
                     }
 
-                    return back()
-                        ->with('error', "Qty retur '{$product->name}' (diterima stok) melebihi kuota sisa GRN yang bisa diretur ({$grnQuotaRemaining} {$product->unit}).")
-                        ->withInput();
+                    $errMsg = "Qty retur '{$product->name}' (diterima stok) melebihi kuota sisa GRN yang bisa diretur ({$grnQuotaRemaining} {$product->unit}).";
+                    return back()->with('error', $errMsg)->withErrors(['items' => $errMsg])->withInput();
                 }
             } else {
-                // source_type === 'rejected'
                 $available = $grnItem->qty_available_for_return_rejected;
                 if ($qty > $available) {
-                    return back()
-                        ->with('error', "Qty retur '{$product->name}' (rusak/reject) melebihi sisa yang bisa diretur. Sisa: {$available}, diinput: {$qty}.")
-                        ->withInput();
+                    $errMsg = "Qty retur '{$product->name}' (rusak/reject) melebihi sisa yang bisa diretur. Sisa: {$available}, diinput: {$qty}.";
+                    return back()->with('error', $errMsg)->withErrors(['items' => $errMsg])->withInput();
                 }
+            }
+
+            // Batas 2: Batas finansial berbasis sisa hutang invoice (jika sudah di-invoice)
+            if ($invoice) {
+                $maxAllowedQty = $invoice->calculateMaxReturnQty($grnItem, $itemData['source_type']);
+                if ($qty > $maxAllowedQty) {
+                    $errorMsg = $maxAllowedQty === 0
+                        ? "Qty retur untuk '{$product->name}' tidak dapat diproses karena akan menyebabkan kelebihan pembayaran ke supplier (sisa tagihan hutang tidak mencukupi)."
+                        : "Qty retur untuk '{$product->name}' maksimal {$maxAllowedQty} unit (dibatasi oleh sisa hutang invoice yang belum dibayar).";
+
+                    return back()->with('error', $errorMsg)->withErrors(['items' => $errorMsg])->withInput();
+                }
+
+                $invoiceItem = $grnItem->purchaseInvoiceItem ?? $invoice->items->firstWhere('goods_receipt_item_id', $grnItem->id);
+                $effectiveUnitPrice = ($invoiceItem && (int) $invoiceItem->qty_invoiced > 0)
+                    ? ((float) $invoiceItem->subtotal + (float) $invoiceItem->tax_amount) / (int) $invoiceItem->qty_invoiced
+                    : (float) $itemData['unit_cost'];
+
+                $totalNilaiRetur += round($qty * $effectiveUnitPrice, 2);
             }
         }
 
         if (!$hasAnyQty) {
             return back()->with('error', 'Isi minimal satu qty barang yang akan diretur.')->withInput();
+        }
+
+        // Validasi Tambahan Agregat: Total nilai retur multi-item tidak boleh melebihi sisa belum bayar
+        if ($invoice && $sisaBelumBayar !== null && $totalNilaiRetur > ($sisaBelumBayar + 0.009)) {
+            $formattedTotal = number_format($totalNilaiRetur, 0, ',', '.');
+            $formattedSisa  = number_format($sisaBelumBayar, 0, ',', '.');
+            $multiItemMsg = "Total nilai retur (Rp {$formattedTotal}) melebihi sisa hutang yang belum dibayar (Rp {$formattedSisa}).";
+
+            return back()->with('error', $multiItemMsg)->withErrors(['items' => $multiItemMsg])->withInput();
         }
 
         DB::transaction(function () use ($request, $grn) {
@@ -254,9 +304,35 @@ class PurchaseReturnController extends Controller
             }
 
             $return->update(['status' => 'completed']);
+            $this->refreshAffectedInvoiceStatuses($return);
 
             return back()->with('success', 'Retur Pembelian berhasil diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
         });
+    }
+
+    private function refreshAffectedInvoiceStatuses(PurchaseReturn $return): void
+    {
+        $grnItemIds = $return->items->pluck('goods_receipt_item_id')->filter()->unique();
+
+        if ($grnItemIds->isEmpty()) {
+            return;
+        }
+
+        PurchaseInvoice::with(['items', 'payments'])
+            ->whereHas('items', fn($query) => $query->whereIn('goods_receipt_item_id', $grnItemIds))
+            ->get()
+            ->each(function (PurchaseInvoice $invoice) {
+                $invoice->update(['status' => $this->statusFromOutstanding($invoice)]);
+            });
+    }
+
+    private function statusFromOutstanding(PurchaseInvoice $invoice): string
+    {
+        if ($invoice->outstanding_amount <= 0.01) {
+            return 'paid';
+        }
+
+        return $invoice->total_paid > 0 ? 'partial' : 'unpaid';
     }
 
     private function generateNumber(): string

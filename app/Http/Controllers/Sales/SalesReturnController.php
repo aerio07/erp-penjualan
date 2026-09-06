@@ -49,7 +49,15 @@ class SalesReturnController extends Controller
     public function create(Request $request): View
     {
         $selectedDeliveryId = $request->query('delivery_id');
-        $deliveries = Delivery::with(['salesOrder.customer', 'items.salesOrderItem.product', 'items.salesReturnItems', 'warehouse'])
+        $deliveries = Delivery::with([
+            'salesOrder.customer',
+            'items.salesOrderItem.product',
+            'items.salesReturnItems',
+            'items.salesInvoiceItem',
+            'salesInvoice.items',
+            'salesInvoice.payments',
+            'warehouse'
+        ])
             ->orderByDesc('id')
             ->get();
 
@@ -69,28 +77,79 @@ class SalesReturnController extends Controller
             'items.*.qty'              => 'required|integer|min:0',
         ]);
 
-        $delivery = Delivery::with(['salesOrder', 'items.salesReturnItems'])->findOrFail($request->delivery_id);
+        $delivery = Delivery::with([
+            'salesOrder',
+            'items.salesOrderItem.product',
+            'items.salesReturnItems',
+            'items.salesInvoiceItem',
+            'salesInvoice.items',
+            'salesInvoice.payments',
+        ])->findOrFail($request->delivery_id);
+
+        $invoice = $delivery->salesInvoice ?? SalesInvoice::with(['items', 'payments'])->where('delivery_id', $delivery->id)->first();
+        $sisaBelumBayar = $invoice ? round((float) $invoice->effective_total_amount - (float) $invoice->total_paid, 2) : null;
+
+        // Jika invoice sudah lunas penuh (outstanding <= 0.01), tolak retur otomatis untuk mencegah overpayment
+        if ($invoice && $sisaBelumBayar !== null && $sisaBelumBayar <= 0.01) {
+            $msg = "Invoice {$invoice->invoice_number} sudah lunas dibayar penuh. Retur tidak dapat diproses otomatis karena akan menyebabkan kelebihan bayar. Silakan hubungi Finance untuk penanganan manual.";
+            return back()->with('error', $msg)->withErrors(['items' => $msg])->withInput();
+        }
 
         $hasAnyQty = false;
+        $totalNilaiRetur = 0;
+
         foreach ($request->items as $itemData) {
             $qty = (int) ($itemData['qty'] ?? 0);
             if ($qty <= 0) continue;
 
             $hasAnyQty = true;
-            $delItem = DeliveryItem::with(['salesOrderItem.product', 'salesReturnItems'])->findOrFail($itemData['delivery_item_id']);
+            $delItem = DeliveryItem::with(['salesOrderItem.product', 'salesReturnItems', 'salesInvoiceItem'])->findOrFail($itemData['delivery_item_id']);
             abort_if($delItem->delivery_id !== $delivery->id, 422, 'Item retur tidak sesuai dengan Surat Jalan yang dipilih.');
             abort_if($delItem->salesOrderItem->product_id !== (int) $itemData['product_id'], 422, 'Produk retur tidak sesuai dengan item Surat Jalan.');
 
-            $available = $delItem->qty_available_for_return;
-            if ($qty > $available) {
+            $productName = $delItem->salesOrderItem->product->name ?? 'Produk';
+
+            // Batas 1: Batas fisik (qty terkirim - sudah diretur)
+            $availablePhysical = $delItem->qty_available_for_return;
+            if ($qty > $availablePhysical) {
                 return back()
-                    ->with('error', "Qty retur untuk '{$delItem->salesOrderItem->product->name}' melebihi sisa yang bisa diretur (Terkirim: {$delItem->qty_delivered}, Sudah diretur: {$delItem->qty_returned}, Maks bisa diretur: {$available}).")
+                    ->with('error', "Qty retur untuk '{$productName}' melebihi sisa yang bisa diretur (Terkirim: {$delItem->qty_delivered}, Sudah diretur: {$delItem->qty_returned}, Maks bisa diretur: {$availablePhysical}).")
+                    ->withErrors(['items' => "Qty retur untuk '{$productName}' melebihi kuota sisa fisik yang dapat diretur."])
                     ->withInput();
+            }
+
+            // Batas 2: Batas finansial berbasis sisa tagihan invoice (jika sudah di-invoice)
+            if ($invoice) {
+                $maxAllowedQty = $invoice->calculateMaxReturnQty($delItem);
+                if ($qty > $maxAllowedQty) {
+                    $errorMsg = $maxAllowedQty === 0
+                        ? "Qty retur untuk '{$productName}' tidak dapat diproses karena akan menyebabkan kelebihan bayar (sisa tagihan invoice tidak mencukupi)."
+                        : "Qty retur untuk '{$productName}' maksimal {$maxAllowedQty} unit (dibatasi oleh sisa tagihan invoice yang belum dibayar).";
+
+                    return back()->with('error', $errorMsg)->withErrors(['items' => $errorMsg])->withInput();
+                }
+
+                // Hitung akumulasi nilai retur efektif untuk validasi multi-item
+                $invoiceItem = $delItem->salesInvoiceItem ?? $invoice->items->firstWhere('delivery_item_id', $delItem->id);
+                $effectiveUnitPrice = ($invoiceItem && (int) $invoiceItem->qty_invoiced > 0)
+                    ? ((float) $invoiceItem->subtotal + (float) $invoiceItem->tax_amount) / (int) $invoiceItem->qty_invoiced
+                    : 0;
+
+                $totalNilaiRetur += round($qty * $effectiveUnitPrice, 2);
             }
         }
 
         if (!$hasAnyQty) {
             return back()->with('error', 'Isi minimal satu qty barang yang akan diretur.')->withInput();
+        }
+
+        // Validasi Tambahan Agregat: Total nilai retur multi-item tidak boleh melebihi sisa belum bayar
+        if ($invoice && $sisaBelumBayar !== null && $totalNilaiRetur > ($sisaBelumBayar + 0.009)) {
+            $formattedTotal = number_format($totalNilaiRetur, 0, ',', '.');
+            $formattedSisa  = number_format($sisaBelumBayar, 0, ',', '.');
+            $multiItemMsg = "Total nilai retur (Rp {$formattedTotal}) melebihi sisa tagihan yang belum dibayar (Rp {$formattedSisa}).";
+
+            return back()->with('error', $multiItemMsg)->withErrors(['items' => $multiItemMsg])->withInput();
         }
 
         DB::transaction(function () use ($request, $delivery) {

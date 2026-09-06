@@ -79,4 +79,27 @@ class SalesInvoice extends Model
     {
         return max(0, round($this->effective_total_amount - $this->total_paid, 2));
     }
+
+    public function calculateMaxReturnQty(DeliveryItem $deliveryItem): int
+    {
+        $invoiceItem = $deliveryItem->relationLoaded('salesInvoiceItem')
+            ? $deliveryItem->salesInvoiceItem
+            : ($this->relationLoaded('items')
+                ? $this->items->firstWhere('delivery_item_id', $deliveryItem->id)
+                : ($deliveryItem->salesInvoiceItem()->first() ?? $this->items()->where('delivery_item_id', $deliveryItem->id)->first()));
+
+        if (!$invoiceItem || (int) $invoiceItem->qty_invoiced <= 0) {
+            return $deliveryItem->qty_available_for_return;
+        }
+
+        $effectiveUnitPrice = ((float) $invoiceItem->subtotal + (float) $invoiceItem->tax_amount) / (int) $invoiceItem->qty_invoiced;
+        if ($effectiveUnitPrice <= 0) {
+            return $deliveryItem->qty_available_for_return;
+        }
+
+        $sisaBelumBayar = (float) $this->effective_total_amount - (float) $this->total_paid;
+        $batasNilai = (int) floor(max(0, $sisaBelumBayar) / $effectiveUnitPrice);
+
+        return min($deliveryItem->qty_available_for_return, $batasNilai);
+    }
 }

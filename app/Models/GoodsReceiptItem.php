@@ -43,6 +43,11 @@ class GoodsReceiptItem extends Model
         return $this->hasMany(PurchaseReturnItem::class);
     }
 
+    public function purchaseInvoiceItem(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PurchaseInvoiceItem::class, 'goods_receipt_item_id');
+    }
+
     public function getQtyReturnedAcceptedAttribute(): int
     {
         if ($this->relationLoaded('purchaseReturnItems')) {

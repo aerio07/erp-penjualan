@@ -80,4 +80,31 @@ class PurchaseInvoice extends Model
     {
         return max(0, round($this->effective_total_amount - $this->total_paid, 2));
     }
+
+    public function calculateMaxReturnQty(GoodsReceiptItem $grnItem, string $sourceType = 'accepted'): int
+    {
+        $physicalLimit = ($sourceType === 'accepted')
+            ? (int) $grnItem->qty_available_for_return_accepted
+            : (int) $grnItem->qty_available_for_return_rejected;
+
+        $invoiceItem = $grnItem->relationLoaded('purchaseInvoiceItem')
+            ? $grnItem->purchaseInvoiceItem
+            : ($this->relationLoaded('items')
+                ? $this->items->firstWhere('goods_receipt_item_id', $grnItem->id)
+                : ($grnItem->purchaseInvoiceItem()->first() ?? $this->items()->where('goods_receipt_item_id', $grnItem->id)->first()));
+
+        if (!$invoiceItem || (int) $invoiceItem->qty_invoiced <= 0) {
+            return $physicalLimit;
+        }
+
+        $effectiveUnitPrice = ((float) $invoiceItem->subtotal + (float) $invoiceItem->tax_amount) / (int) $invoiceItem->qty_invoiced;
+        if ($effectiveUnitPrice <= 0) {
+            return $physicalLimit;
+        }
+
+        $sisaBelumBayar = (float) $this->effective_total_amount - (float) $this->total_paid;
+        $batasNilai = (int) floor(max(0, $sisaBelumBayar) / $effectiveUnitPrice);
+
+        return min($physicalLimit, $batasNilai);
+    }
 }

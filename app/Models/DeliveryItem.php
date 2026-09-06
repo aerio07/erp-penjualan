@@ -35,6 +35,11 @@ class DeliveryItem extends Model
         return $this->hasMany(SalesReturnItem::class);
     }
 
+    public function salesInvoiceItem(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(SalesInvoiceItem::class, 'delivery_item_id');
+    }
+
     /** Qty terkirim yang belum pernah di-invoice, dikurangi retur yang sudah diterima/selesai */
     public function getQtyAvailableForInvoiceAttribute(): int
     {
