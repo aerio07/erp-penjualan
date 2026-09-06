@@ -218,10 +218,81 @@
             </div>
         </div>
 
+        {{-- Auto-Generate Purchase Invoice Option --}}
+        <div class="card" style="margin-bottom:20px; border-left: 4px solid var(--primary);" x-show="selectedPo">
+            <div class="card-header" style="background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:15px;">
+                        <i class="fa-solid fa-file-invoice-dollar" style="color:var(--primary);"></i>
+                        Faktur Pembelian (Purchase Invoice) & Jurnal Akuntansi
+                    </h3>
+                    <p style="margin:4px 0 0 0; font-size:12.5px; color:var(--text-secondary);">
+                        Tentukan apakah penerimaan barang ini langsung diterbitkan tagihan/faktur pembayarannya ke supplier.
+                    </p>
+                </div>
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:13px; box-shadow:0 1px 2px rgba(0,0,0,0.05); user-select:none;">
+                    <input type="checkbox" name="auto_generate_invoice" value="1" x-model="autoGenerateInvoice" @change="onToggleAutoInvoice()" style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+                    <span>Langsung Terbitkan Purchase Invoice & Posting Jurnal</span>
+                </label>
+            </div>
+            <div class="card-body">
+                <template x-if="!autoGenerateInvoice">
+                    <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:#eff6ff; border-radius:8px; color:#1e40af; font-size:13px;">
+                        <i class="fa-solid fa-circle-info" style="font-size:18px; flex-shrink:0;"></i>
+                        <div>
+                            <strong>Alur Bertahap (Default):</strong> Penerimaan barang hanya akan menambah stok fisik di gudang. Tagihan supplier (Purchase Invoice) dan pengakuan hutang akuntansi dapat diterbitkan terpisah nanti oleh bagian Finance.
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="autoGenerateInvoice">
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:#ecfdf5; border-radius:8px; color:#065f46; font-size:13px;">
+                            <i class="fa-solid fa-check-double" style="font-size:18px; flex-shrink:0;"></i>
+                            <div>
+                                <strong>Alur Terintegrasi:</strong> Stok masuk ke gudang, Faktur Pembelian langsung terbit, dan Jurnal Akuntansi (Persediaan, PPN Masukan, dan Hutang Usaha) langsung otomatis terposting ke buku besar!
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-3">
+                            <div class="form-group">
+                                <label class="form-label">No. Faktur / Nota Supplier</label>
+                                <input type="text" name="supplier_invoice_number" x-model="supplierInvoiceNumber" class="form-control" placeholder="No. invoice resmi vendor (opsional)">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Nomor referensi faktur fisik vendor</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Faktur / Invoice <span style="color:var(--danger);">*</span></label>
+                                <input type="date" name="invoice_date" x-model="invoiceDate" @change="onInvoiceDateChange()" class="form-control" :required="autoGenerateInvoice">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Tgl pengakuan hutang dagang</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
+                                <input type="date" name="due_date" x-model="dueDate" class="form-control" :required="autoGenerateInvoice">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">
+                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="(paymentTerm || 0) + ' hari'"></span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">Tarif PPN (%)</label>
+                                <input type="number" name="invoice_tax_rate" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Diambil otomatis dari tarif pajak PO</small>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
         <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedPo">
             <a href="{{ route('purchase.goods-receipts.index') }}" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary" :disabled="hasExceededAllocation || totalPhysicalQty <= 0 || hasInvalidRejection">
-                <i class="fa-solid fa-boxes-packing"></i> Simpan & Update Stok Gudang
+                <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-boxes-packing'"></i>
+                <span x-text="autoGenerateInvoice ? 'Simpan Penerimaan & Terbitkan Faktur Pembelian' : 'Simpan & Update Stok Gudang'"></span>
             </button>
         </div>
     </form>
@@ -240,6 +311,13 @@ function grnForm() {
         selectedPo: null,
         rows: [],
         nextUid: 1,
+        autoGenerateInvoice: {{ old('auto_generate_invoice') ? 'true' : 'false' }},
+        supplierInvoiceNumber: @json(old('supplier_invoice_number', '')),
+        receivedDate: "{{ old('received_date', date('Y-m-d')) }}",
+        invoiceDate: "{{ old('invoice_date', date('Y-m-d')) }}",
+        dueDate: "{{ old('due_date', '') }}",
+        taxRate: 11,
+        paymentTerm: 30,
 
         init() {
             if (this.selectedPoId) {
@@ -255,6 +333,15 @@ function grnForm() {
             }
 
             this.selectedPo = confirmedPos[this.selectedPoId];
+            this.taxRate = parseFloat(this.selectedPo.tax_rate) || 0;
+            this.paymentTerm = (this.selectedPo.supplier && this.selectedPo.supplier.payment_term !== null)
+                ? parseInt(this.selectedPo.supplier.payment_term)
+                : 30;
+
+            if (!this.dueDate) {
+                this.calculateDueDate();
+            }
+
             this.rows = [];
 
             const poWarehouseId = (this.selectedPo && this.selectedPo.warehouse_id) 
@@ -403,6 +490,29 @@ function grnForm() {
                 return false;
             }
             return true;
+        },
+
+        onToggleAutoInvoice() {
+            if (this.autoGenerateInvoice) {
+                if (!this.invoiceDate) this.invoiceDate = this.receivedDate;
+                this.calculateDueDate();
+            }
+        },
+
+        onInvoiceDateChange() {
+            this.calculateDueDate();
+        },
+
+        calculateDueDate() {
+            if (!this.invoiceDate) return;
+            const d = new Date(this.invoiceDate);
+            if (isNaN(d.getTime())) return;
+            const term = parseInt(this.paymentTerm) || 0;
+            d.setDate(d.getDate() + term);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            this.dueDate = `${yyyy}-${mm}-${dd}`;
         }
     }
 }

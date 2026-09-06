@@ -24,15 +24,19 @@ class GoodsReceiptController extends Controller
 {
     use HasListFilters, GeneratesDocumentNumber;
 
-    public function __construct(private StockService $stockService) {}
+    public function __construct(
+        private StockService $stockService,
+        private \App\Services\PurchaseInvoiceService $purchaseInvoiceService
+    ) {}
 
     public function index(Request $request): View
     {
-        $query = GoodsReceipt::with(['purchaseOrder.supplier', 'items.warehouse', 'user']);
+        $query = GoodsReceipt::with(['purchaseOrder.supplier', 'items.warehouse', 'user', 'purchaseInvoice']);
 
         $query = $this->applySearch($query, $request, ['receipt_number', 'purchaseOrder.po_number', 'purchaseOrder.supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'qc_status');
         $query = $this->applyFilter($query, $request, 'warehouse_id');
+        $query = $this->applyFilter($query, $request, 'is_invoiced');
         $query = $this->applyDateRange($query, $request, 'received_date');
         $query = $this->applySort($query, $request, ['receipt_number', 'received_date', 'qc_status', 'created_at'], 'received_date', 'desc');
 
@@ -62,6 +66,11 @@ class GoodsReceiptController extends Controller
             'purchase_order_id'                  => 'required|exists:purchase_orders,id',
             'received_date'                      => 'required|date',
             'notes'                              => 'nullable|string',
+            'auto_generate_invoice'              => 'nullable|boolean',
+            'supplier_invoice_number'            => 'nullable|string',
+            'invoice_date'                       => 'nullable|date',
+            'due_date'                           => 'nullable|date|after_or_equal:invoice_date',
+            'invoice_tax_rate'                   => 'nullable|numeric|min:0|max:100',
             'items'                              => 'required|array|min:1',
             'items.*.purchase_order_item_id'    => 'required|exists:purchase_order_items,id',
             'items.*.warehouse_id'               => 'required|exists:warehouses,id',
@@ -235,9 +244,32 @@ class GoodsReceiptController extends Controller
                 'status' => $allDone ? 'done' : 'partially_received'
             ]);
 
+            $isAutoInvoice = $request->boolean('auto_generate_invoice');
+            $invoiceNumber = null;
+            if ($isAutoInvoice) {
+                $invoice = $this->purchaseInvoiceService->createFromGoodsReceipt($grn, [
+                    'supplier_invoice_number' => $request->supplier_invoice_number,
+                    'invoice_date'            => $request->invoice_date ?? $request->received_date,
+                    'due_date'                => $request->due_date ?? ($request->invoice_date ?? $request->received_date),
+                    'tax_rate'                => $request->filled('invoice_tax_rate') ? (float) $request->invoice_tax_rate : (float) ($po->tax_rate ?? 0),
+                    'notes'                   => $request->notes ?? ("Auto-generated dari LPB #{$grnNumber}"),
+                ]);
+                $invoiceNumber = $invoice->invoice_number;
+            }
+
+            if ($autoReturn && $isAutoInvoice) {
+                return redirect()->route('purchase.goods-receipts.index')
+                    ->with('success', "Penerimaan Barang #{$grn->receipt_number} berhasil dicatat, Faktur Pembelian #{$invoiceNumber} otomatis diterbitkan beserta Jurnal Akuntansi, dan Draft Retur Pembelian (#{$autoReturn->return_number}) dibuat untuk item rusak.");
+            }
+
             if ($autoReturn) {
                 return redirect()->route('purchase.goods-receipts.index')
                     ->with('success', "Penerimaan Barang berhasil dicatat. Draft Retur Pembelian (#{$autoReturn->return_number}) otomatis dibuat untuk item yang rusak.");
+            }
+
+            if ($isAutoInvoice) {
+                return redirect()->route('purchase.goods-receipts.index')
+                    ->with('success', "Penerimaan Barang #{$grn->receipt_number} berhasil dicatat dan Faktur Pembelian #{$invoiceNumber} otomatis diterbitkan beserta Jurnal Akuntansi.");
             }
 
             return redirect()->route('purchase.goods-receipts.index')
@@ -253,6 +285,7 @@ class GoodsReceiptController extends Controller
             'user',
             'items.purchaseOrderItem.product',
             'purchaseReturns',
+            'purchaseInvoice',
         ]);
 
         return view('purchase.goods-receipts.show', compact('goodsReceipt'));

@@ -9,15 +9,22 @@
             <h1>{{ $goodsReceipt->receipt_number }}</h1>
             <p>Penerimaan untuk PO: <a href="{{ route('purchase.orders.show', $goodsReceipt->purchaseOrder) }}" style="color:var(--primary); font-weight:600;">{{ $goodsReceipt->purchaseOrder->po_number }}</a></p>
         </div>
-        <div style="display:flex; gap:8px;">
-            <a href="{{ route('purchase.goods-receipts.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            @if(!$goodsReceipt->is_invoiced)
+            <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Lempar ke Invoice / Buat Tagihan
             </a>
+            @endif
+
             @if($goodsReceipt->items->sum('qty_rejected') > 0 || $goodsReceipt->items->sum('qty_received') > 0)
             <a href="{{ route('purchase.returns.create', ['grn_id' => $goodsReceipt->id]) }}" class="btn btn-warning">
                 <i class="fa-solid fa-rotate-left"></i> Buat Retur Pembelian
             </a>
             @endif
+
+            <a href="{{ route('purchase.goods-receipts.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
+            </a>
         </div>
     </div>
 
@@ -95,6 +102,39 @@
                             <span class="badge badge-{{ $ret->status === 'completed' ? 'done' : ($ret->status === 'sent' ? 'confirmed' : 'pending') }}">{{ ucfirst($ret->status) }}</span>
                         </a>
                         @endforeach
+                    </div>
+                    @endif
+
+                    @if($goodsReceipt->is_invoiced && $goodsReceipt->purchaseInvoice)
+                    <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+                    <div style="padding:12px; background:#eff6ff; border-radius:8px; border:1px solid #bfdbfe;">
+                        <div style="font-size:12px; font-weight:600; color:#1e40af; margin-bottom:4px;">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> Faktur Pembelian Terkait:
+                        </div>
+                        <a href="{{ route('purchase.invoices.show', $goodsReceipt->purchaseInvoice) }}" style="font-size:14.5px; font-weight:700; color:var(--primary); text-decoration:none; display:block;">
+                            #{{ $goodsReceipt->purchaseInvoice->invoice_number }}
+                        </a>
+                        <div style="font-size:12.5px; color:var(--text-secondary); margin-top:2px;">
+                            Total Tagihan: <strong>Rp {{ number_format($goodsReceipt->purchaseInvoice->total_amount, 0, ',', '.') }}</strong>
+                        </div>
+                        <div style="margin-top:6px;">
+                            <span class="badge {{ $goodsReceipt->purchaseInvoice->status === 'paid' ? 'badge-success' : 'badge-warning' }}">
+                                {{ ucfirst($goodsReceipt->purchaseInvoice->status) }}
+                            </span>
+                        </div>
+                    </div>
+                    @elseif(!$goodsReceipt->is_invoiced)
+                    <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+                    <div style="padding:12px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0;">
+                        <div style="font-size:12px; font-weight:600; color:#166534; margin-bottom:4px;">
+                            <i class="fa-solid fa-circle-check"></i> Siap Diterbitkan Invoice
+                        </div>
+                        <p style="font-size:12px; color:var(--text-secondary); margin:0 0 10px 0;">
+                            Barang telah masuk gudang. Anda dapat langsung menerbitkan faktur tagihan supplier sekarang.
+                        </p>
+                        <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice Pembelian
+                        </a>
                     </div>
                     @endif
                 </div>
