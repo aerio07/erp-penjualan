@@ -100,6 +100,16 @@ class PurchaseInvoiceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Auto-resolve goods_receipt_id jika hanya ada 1 LPB yang belum di-invoice
+        if (!$request->filled('goods_receipt_id') && $request->filled('purchase_order_id')) {
+            $singleReceipt = GoodsReceipt::where('purchase_order_id', $request->purchase_order_id)
+                ->where('is_invoiced', false)
+                ->first();
+            if ($singleReceipt) {
+                $request->merge(['goods_receipt_id' => $singleReceipt->id]);
+            }
+        }
+
         $request->validate([
             'purchase_order_id'       => 'required|exists:purchase_orders,id',
             'goods_receipt_id'        => 'required|exists:goods_receipts,id',

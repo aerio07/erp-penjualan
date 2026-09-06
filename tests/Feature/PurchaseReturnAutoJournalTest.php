@@ -51,6 +51,8 @@ class PurchaseReturnAutoJournalTest extends TestCase
             'name' => 'Gudang Retur Jurnal',
             'is_active' => true,
         ]);
+
+        (new \Database\Seeders\ChartOfAccountSeeder)->run();
     }
 
     public function test_completing_purchase_return_creates_posted_journal_entry(): void

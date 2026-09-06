@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
 use App\Models\SalesInvoice;
+use App\Models\SalesOrder;
 use App\Models\SalesReturn;
 use App\Models\SalesReturnItem;
 use App\Services\JournalService;
@@ -49,6 +50,8 @@ class SalesReturnController extends Controller
     public function create(Request $request): View
     {
         $selectedDeliveryId = $request->query('delivery_id');
+        $selectedSoId       = $request->query('so_id');
+
         $deliveries = Delivery::with([
             'salesOrder.customer',
             'items.salesOrderItem.product',
@@ -58,15 +61,32 @@ class SalesReturnController extends Controller
             'salesInvoice.payments',
             'warehouse'
         ])
+            ->where('status', 'delivered')
             ->orderByDesc('id')
             ->get();
 
-        return view('sales.returns.create', compact('deliveries', 'selectedDeliveryId'));
+        // If delivery_id is given but not so_id, resolve so_id
+        if ($selectedDeliveryId && !$selectedSoId) {
+            $matchedDel = $deliveries->firstWhere('id', (int) $selectedDeliveryId);
+            if ($matchedDel) {
+                $selectedSoId = $matchedDel->sales_order_id;
+            }
+        }
+
+        // Get unique SOs that have delivered shipments
+        $soIds = $deliveries->pluck('sales_order_id')->unique()->filter();
+        $salesOrders = SalesOrder::with('customer')
+            ->whereIn('id', $soIds)
+            ->orderByDesc('id')
+            ->get();
+
+        return view('sales.returns.create', compact('deliveries', 'salesOrders', 'selectedDeliveryId', 'selectedSoId'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            'sales_order_id'           => 'nullable|exists:sales_orders,id',
             'delivery_id'              => 'required|exists:deliveries,id',
             'return_date'              => 'required|date',
             'reason'                   => 'nullable|string',

@@ -200,6 +200,7 @@ class PreInvoiceReturnDeductionTest extends TestCase
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
             'condition_status' => 'baik',
+            'status' => 'delivered',
             'delivery_date' => now()->toDateString(),
         ]);
         $delItem = DeliveryItem::create([

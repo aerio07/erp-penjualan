@@ -119,9 +119,9 @@
 
         {{-- Auto-Generate Invoice & Confirmation Option --}}
         <div class="card" style="margin-bottom:20px; border-left: 4px solid var(--primary);" x-show="selectedSo">
-            <div class="card-header" style="background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                <div>
-                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:15px;">
+            <div class="card-header" style="background:#f8fafc; display:flex !important; flex-direction:row !important; justify-content:space-between !important; align-items:center !important; flex-wrap:wrap !important; gap:16px !important;">
+                <div style="flex:1 1 300px; min-width:250px;">
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:15px; font-weight:700;">
                         <i class="fa-solid fa-receipt" style="color:var(--primary);"></i>
                         Penerimaan Barang & Faktur Penjualan (Sales Invoice)
                     </h3>
@@ -129,10 +129,12 @@
                         Tentukan apakah Surat Jalan ini langsung dikonfirmasi diterima dan diterbitkan tagihannya, atau dikirim bertahap.
                     </p>
                 </div>
-                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:13px; box-shadow:0 1px 2px rgba(0,0,0,0.05); user-select:none;">
-                    <input type="checkbox" name="auto_generate_invoice" value="1" x-model="autoGenerateInvoice" @change="onToggleAutoInvoice()" style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
-                    <span>Langsung Terbitkan Invoice & Konfirmasi Diterima</span>
-                </label>
+                <div style="display:inline-flex !important; width:auto !important; flex:0 0 auto !important;">
+                    <label style="display:inline-flex !important; width:auto !important; align-items:center !important; gap:10px !important; cursor:pointer !important; background:#ffffff !important; padding:8px 14px !important; border:1px solid var(--border) !important; border-radius:8px !important; font-weight:600 !important; font-size:13px !important; box-shadow:0 1px 2px rgba(0,0,0,0.05) !important; user-select:none !important; margin:0 !important; text-transform:none !important; letter-spacing:normal !important;">
+                        <input type="checkbox" name="auto_generate_invoice" value="1" x-model="autoGenerateInvoice" @change="onToggleAutoInvoice()" style="width:18px !important; height:18px !important; accent-color:var(--primary); cursor:pointer; margin:0 !important;">
+                        <span style="color:#0e1b35; font-size:13px; font-weight:600;">Langsung Terbitkan Invoice & Konfirmasi Diterima</span>
+                    </label>
+                </div>
             </div>
             <div class="card-body">
                 <template x-if="!autoGenerateInvoice">

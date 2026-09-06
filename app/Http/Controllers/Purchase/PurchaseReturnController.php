@@ -7,6 +7,7 @@ use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\Product;
 use App\Models\PurchaseInvoice;
+use App\Models\PurchaseOrder;
 use App\Models\PurchaseReturn;
 use App\Models\PurchaseReturnItem;
 use App\Models\Supplier;
@@ -50,6 +51,8 @@ class PurchaseReturnController extends Controller
     public function create(Request $request): View
     {
         $selectedGrnId = $request->query('grn_id');
+        $selectedPoId  = $request->query('po_id');
+
         $receipts = GoodsReceipt::with([
             'purchaseOrder.supplier',
             'warehouse',
@@ -60,6 +63,21 @@ class PurchaseReturnController extends Controller
             'purchaseInvoice.payments',
         ])
             ->whereIn('qc_status', ['passed', 'partial'])
+            ->orderByDesc('id')
+            ->get();
+
+        // If grn_id is given but not po_id, resolve po_id
+        if ($selectedGrnId && !$selectedPoId) {
+            $matchedGrn = $receipts->firstWhere('id', (int) $selectedGrnId);
+            if ($matchedGrn) {
+                $selectedPoId = $matchedGrn->purchase_order_id;
+            }
+        }
+
+        // Get unique POs that have eligible receipts
+        $poIds = $receipts->pluck('purchase_order_id')->unique()->filter();
+        $purchaseOrders = PurchaseOrder::with('supplier')
+            ->whereIn('id', $poIds)
             ->orderByDesc('id')
             ->get();
 
@@ -87,12 +105,13 @@ class PurchaseReturnController extends Controller
             }
         }
 
-        return view('purchase.returns.create', compact('receipts', 'selectedGrnId'));
+        return view('purchase.returns.create', compact('receipts', 'purchaseOrders', 'selectedGrnId', 'selectedPoId'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            'purchase_order_id'             => 'nullable|exists:purchase_orders,id',
             'goods_receipt_id'              => 'required|exists:goods_receipts,id',
             'return_date'                   => 'required|date',
             'reason'                        => 'nullable|string',

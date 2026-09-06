@@ -100,13 +100,15 @@ class SalesInvoiceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Auto-resolve delivery_id jika hanya ada 1 delivery yang sudah delivered dan belum di-invoice
+        // Auto-resolve delivery_id jika hanya ada 1 delivery yang belum di-invoice
         if (!$request->filled('delivery_id') && $request->filled('sales_order_id')) {
             $singleDelivery = Delivery::where('sales_order_id', $request->sales_order_id)
-                ->where('status', 'delivered')
                 ->where('is_invoiced', false)
                 ->first();
             if ($singleDelivery) {
+                if ($singleDelivery->status !== 'delivered') {
+                    $singleDelivery->update(['status' => 'delivered']);
+                }
                 $request->merge(['delivery_id' => $singleDelivery->id]);
             }
         }

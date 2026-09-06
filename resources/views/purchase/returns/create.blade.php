@@ -22,29 +22,45 @@
             <div class="card-body">
                 <div class="form-row form-row-3">
                     <div class="form-group">
-                        <label class="form-label">Bukti Penerimaan (GRN) <span style="color:var(--danger);">*</span></label>
-                        <select name="goods_receipt_id" class="form-control" x-model="selectedGrnId" @change="onGrnChange()" required>
-                            <option value="">-- Pilih GRN --</option>
-                            @foreach($receipts as $grn)
-                            <option value="{{ $grn->id }}">{{ $grn->receipt_number }} - Supplier: {{ $grn->purchaseOrder->supplier->name ?? '-' }} (Gudang: {{ $grn->warehouse_names }})</option>
+                        <label class="form-label">Purchase Order (PO) <span style="color:var(--danger);">*</span></label>
+                        <select name="purchase_order_id" class="form-control" x-model="selectedPoId" @change="onPoChange()" required>
+                            <option value="">-- Pilih Purchase Order --</option>
+                            @foreach($purchaseOrders as $po)
+                            <option value="{{ $po->id }}">
+                                {{ $po->po_number }} — {{ $po->supplier->name ?? '-' }} ({{ $po->order_date ? $po->order_date->format('d/m/Y') : '-' }})
+                            </option>
                             @endforeach
                         </select>
+                        <small style="color:var(--text-secondary); font-size:11.5px;">Pilih PO untuk memfilter bukti penerimaan / invoice</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bukti Penerimaan (LPB) / Faktur <span style="color:var(--danger);">*</span></label>
+                        <select name="goods_receipt_id" class="form-control" x-model="selectedGrnId" @change="onGrnChange()" :disabled="!selectedPoId" required>
+                            <option value="">-- Pilih LPB / Invoice --</option>
+                            <template x-for="r in filteredReceipts" :key="r.id">
+                                <option :value="r.id" x-text="`${r.receipt_number} (${formatDate(r.received_date)}) ${r.purchase_invoice ? '• Faktur: #' + r.purchase_invoice.invoice_number : '• Belum Di-invoice'}`"></option>
+                            </template>
+                        </select>
+                        <small style="color:var(--text-secondary); font-size:11.5px;" x-text="selectedPoId ? (filteredReceipts.length + ' LPB ditemukan untuk PO ini') : 'Pilih PO terlebih dahulu'"></small>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Tanggal Retur <span style="color:var(--danger);">*</span></label>
                         <input type="date" name="return_date" value="{{ old('return_date', date('Y-m-d')) }}" class="form-control" required>
                     </div>
+                </div>
 
+                <div class="form-row form-row-2">
                     <div class="form-group">
                         <label class="form-label">Alasan Retur Utama</label>
                         <input type="text" name="reason" value="{{ old('reason') }}" class="form-control" placeholder="Contoh: Cacat pabrik / Rusak / Klaim garansi">
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Catatan Tambahan</label>
-                    <textarea name="notes" class="form-control" rows="1" placeholder="Catatan pengiriman retur..."></textarea>
+                    <div class="form-group">
+                        <label class="form-label">Catatan Tambahan</label>
+                        <input type="text" name="notes" value="{{ old('notes') }}" class="form-control" placeholder="Catatan pengiriman retur...">
+                    </div>
                 </div>
             </div>
         </div>
@@ -150,11 +166,27 @@
 
 @push('scripts')
 <script>
-const receipts = @json($receipts->keyBy('id'));
-const initialGrnId = "{{ $selectedGrnId ?? '' }}";
+const allReceipts = @json($receipts->values());
+const initialPoId = "{{ old('purchase_order_id', $selectedPoId ?? '') }}";
+const initialGrnId = "{{ old('goods_receipt_id', $selectedGrnId ?? '') }}";
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return dateStr;
+    }
+}
 
 function returnForm() {
     return {
+        selectedPoId: initialPoId,
         selectedGrnId: initialGrnId,
         selectedGrn: null,
         invoice: null,
@@ -163,12 +195,38 @@ function returnForm() {
 
         init() {
             if (this.selectedGrnId) {
+                const found = allReceipts.find(r => r.id == this.selectedGrnId);
+                if (found && !this.selectedPoId) {
+                    this.selectedPoId = String(found.purchase_order_id);
+                }
+                this.onGrnChange();
+            } else if (this.selectedPoId) {
+                this.onPoChange();
+            }
+        },
+
+        get filteredReceipts() {
+            if (!this.selectedPoId) return [];
+            return allReceipts.filter(r => r.purchase_order_id == this.selectedPoId);
+        },
+
+        onPoChange() {
+            const available = this.filteredReceipts;
+            if (!available.some(r => r.id == this.selectedGrnId)) {
+                this.selectedGrnId = '';
+                this.selectedGrn = null;
+                this.invoice = null;
+                this.isFullyPaid = false;
+                this.items = [];
+            }
+            if (available.length === 1) {
+                this.selectedGrnId = String(available[0].id);
                 this.onGrnChange();
             }
         },
 
         onGrnChange() {
-            if (!this.selectedGrnId || !receipts[this.selectedGrnId]) {
+            if (!this.selectedGrnId) {
                 this.selectedGrn = null;
                 this.invoice = null;
                 this.isFullyPaid = false;
@@ -176,7 +234,19 @@ function returnForm() {
                 return;
             }
 
-            this.selectedGrn = receipts[this.selectedGrnId];
+            const found = allReceipts.find(r => r.id == this.selectedGrnId);
+            if (!found) {
+                this.selectedGrn = null;
+                this.invoice = null;
+                this.isFullyPaid = false;
+                this.items = [];
+                return;
+            }
+
+            this.selectedGrn = found;
+            if (this.selectedGrn.purchase_order_id) {
+                this.selectedPoId = String(this.selectedGrn.purchase_order_id);
+            }
             this.invoice = this.selectedGrn.purchase_invoice || null;
 
             let sisaBelumBayar = null;

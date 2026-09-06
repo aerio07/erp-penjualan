@@ -22,29 +22,45 @@
             <div class="card-body">
                 <div class="form-row form-row-3">
                     <div class="form-group">
-                        <label class="form-label">Bukti Pengiriman (Surat Jalan) <span style="color:var(--danger);">*</span></label>
-                        <select name="delivery_id" class="form-control" x-model="selectedDeliveryId" @change="onDeliveryChange()" required>
-                            <option value="">-- Pilih Surat Jalan --</option>
-                            @foreach($deliveries as $del)
-                            <option value="{{ $del->id }}">{{ $del->delivery_number }} - Customer: {{ $del->salesOrder->customer->name ?? '-' }} (Gudang: {{ $del->warehouse->name ?? '-' }})</option>
+                        <label class="form-label">Sales Order (SO) <span style="color:var(--danger);">*</span></label>
+                        <select name="sales_order_id" class="form-control" x-model="selectedSoId" @change="onSoChange()" required>
+                            <option value="">-- Pilih Sales Order --</option>
+                            @foreach($salesOrders as $so)
+                            <option value="{{ $so->id }}">
+                                {{ $so->so_number }} — {{ $so->customer->name ?? '-' }} ({{ $so->order_date ? $so->order_date->format('d/m/Y') : '-' }})
+                            </option>
                             @endforeach
                         </select>
+                        <small style="color:var(--text-secondary); font-size:11.5px;">Pilih SO untuk memfilter surat jalan / invoice pengiriman</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Surat Jalan (SJ) / Faktur <span style="color:var(--danger);">*</span></label>
+                        <select name="delivery_id" class="form-control" x-model="selectedDeliveryId" @change="onDeliveryChange()" :disabled="!selectedSoId" required>
+                            <option value="">-- Pilih Surat Jalan --</option>
+                            <template x-for="d in filteredDeliveries" :key="d.id">
+                                <option :value="d.id" x-text="`${d.delivery_number} (${formatDate(d.delivery_date)}) ${d.sales_invoice ? '• Faktur: #' + d.sales_invoice.invoice_number : '• Belum Di-invoice'}`"></option>
+                            </template>
+                        </select>
+                        <small style="color:var(--text-secondary); font-size:11.5px;" x-text="selectedSoId ? (filteredDeliveries.length + ' Surat Jalan ditemukan untuk SO ini') : 'Pilih SO terlebih dahulu'"></small>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Tanggal Retur <span style="color:var(--danger);">*</span></label>
                         <input type="date" name="return_date" value="{{ old('return_date', date('Y-m-d')) }}" class="form-control" required>
                     </div>
+                </div>
 
+                <div class="form-row form-row-2">
                     <div class="form-group">
                         <label class="form-label">Alasan Retur Utama</label>
                         <input type="text" name="reason" value="{{ old('reason') }}" class="form-control" placeholder="Contoh: Barang cacat / rusak transit">
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Catatan Tambahan</label>
-                    <textarea name="notes" class="form-control" rows="1" placeholder="Catatan retur...">{{ old('notes') }}</textarea>
+                    <div class="form-group">
+                        <label class="form-label">Catatan Tambahan</label>
+                        <input type="text" name="notes" value="{{ old('notes') }}" class="form-control" placeholder="Catatan retur...">
+                    </div>
                 </div>
             </div>
         </div>
@@ -150,11 +166,27 @@
 
 @push('scripts')
 <script>
-const deliveries = @json($deliveries->keyBy('id'));
-const initialDeliveryId = "{{ $selectedDeliveryId ?? '' }}";
+const allDeliveries = @json($deliveries->values());
+const initialSoId = "{{ old('sales_order_id', $selectedSoId ?? '') }}";
+const initialDeliveryId = "{{ old('delivery_id', $selectedDeliveryId ?? '') }}";
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return dateStr;
+    }
+}
 
 function returnForm() {
     return {
+        selectedSoId: initialSoId,
         selectedDeliveryId: initialDeliveryId,
         selectedDelivery: null,
         invoice: null,
@@ -163,12 +195,38 @@ function returnForm() {
 
         init() {
             if (this.selectedDeliveryId) {
+                const found = allDeliveries.find(d => d.id == this.selectedDeliveryId);
+                if (found && !this.selectedSoId) {
+                    this.selectedSoId = String(found.sales_order_id);
+                }
+                this.onDeliveryChange();
+            } else if (this.selectedSoId) {
+                this.onSoChange();
+            }
+        },
+
+        get filteredDeliveries() {
+            if (!this.selectedSoId) return [];
+            return allDeliveries.filter(d => d.sales_order_id == this.selectedSoId);
+        },
+
+        onSoChange() {
+            const available = this.filteredDeliveries;
+            if (!available.some(d => d.id == this.selectedDeliveryId)) {
+                this.selectedDeliveryId = '';
+                this.selectedDelivery = null;
+                this.invoice = null;
+                this.isFullyPaid = false;
+                this.items = [];
+            }
+            if (available.length === 1) {
+                this.selectedDeliveryId = String(available[0].id);
                 this.onDeliveryChange();
             }
         },
 
         onDeliveryChange() {
-            if (!this.selectedDeliveryId || !deliveries[this.selectedDeliveryId]) {
+            if (!this.selectedDeliveryId) {
                 this.selectedDelivery = null;
                 this.invoice = null;
                 this.isFullyPaid = false;
@@ -176,7 +234,19 @@ function returnForm() {
                 return;
             }
 
-            this.selectedDelivery = deliveries[this.selectedDeliveryId];
+            const found = allDeliveries.find(d => d.id == this.selectedDeliveryId);
+            if (!found) {
+                this.selectedDelivery = null;
+                this.invoice = null;
+                this.isFullyPaid = false;
+                this.items = [];
+                return;
+            }
+
+            this.selectedDelivery = found;
+            if (this.selectedDelivery.sales_order_id) {
+                this.selectedSoId = String(this.selectedDelivery.sales_order_id);
+            }
             this.invoice = this.selectedDelivery.sales_invoice || null;
 
             let sisaBelumBayar = null;
