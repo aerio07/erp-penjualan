@@ -785,7 +785,7 @@
 
             @php 
                 $isAccountingRoute = request()->is('accounting/*');
-                $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance');
+                $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance') || request()->routeIs('accounting.opening-balance.*');
                 $isHutangPiutang = request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
                 $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
             @endphp
@@ -817,6 +817,7 @@
                             <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
                             <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
                             <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
+                            <a href="{{ route('accounting.opening-balance.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.opening-balance.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Saldo Awal Neraca</a>
                         </div>
                     </div>
 
@@ -838,6 +839,14 @@
                             <a href="{{ route('accounting.reports.payables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Umur Hutang (AP Aging)</a>
                         </div>
                     </div>
+
+                    <!-- Sub-Master: Fixed Asset & Inventaris -->
+                    <a href="{{ route('accounting.fixed-assets.index') }}" class="flex items-center justify-between px-3 py-1.5 rounded {{ request()->routeIs('accounting.fixed-assets.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined mr-3 text-base">precision_manufacturing</span>
+                            <span class="text-xs font-medium">Aset Tetap & Inventaris</span>
+                        </div>
+                    </a>
 
                     <!-- Sub-Master 3: Laporan Keuangan -->
                     <div class="group">

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\ChartOfAccount;
+use App\Models\FixedAsset;
+use App\Models\FixedAssetCategory;
 use App\Models\JournalEntry;
 use App\Models\JournalLine;
 use App\Models\PurchaseInvoice;
@@ -693,6 +695,133 @@ class JournalService
         ]);
 
         return $entry->fresh();
+    }
+
+    /**
+     * Buat atau update jurnal Saldo Awal Neraca (Opening Balance).
+     * Memvalidasi keseimbangan Debit == Kredit.
+     */
+    public function postOpeningBalance(array $lines, string $date, ?string $notes = null): JournalEntry
+    {
+        $totalDebit  = 0;
+        $totalCredit = 0;
+        $validLines  = [];
+
+        foreach ($lines as $line) {
+            $debit  = round((float) ($line['debit'] ?? 0), 2);
+            $credit = round((float) ($line['credit'] ?? 0), 2);
+
+            if ($debit > 0 || $credit > 0) {
+                $totalDebit  += $debit;
+                $totalCredit += $credit;
+                $validLines[] = [
+                    'account_id'  => (int) $line['account_id'],
+                    'debit'       => $debit,
+                    'credit'      => $credit,
+                    'description' => $line['description'] ?? 'Saldo Awal',
+                ];
+            }
+        }
+
+        if (abs($totalDebit - $totalCredit) > 0.01) {
+            $diff = abs($totalDebit - $totalCredit);
+            $formattedDiff = number_format($diff, 2, ',', '.');
+            throw new \InvalidArgumentException("Saldo awal neraca tidak seimbang! Total Debit (Rp " . number_format($totalDebit, 2, ',', '.') . ") ≠ Total Kredit (Rp " . number_format($totalCredit, 2, ',', '.') . "). Selisih: Rp {$formattedDiff}.");
+        }
+
+        if (empty($validLines)) {
+            throw new \InvalidArgumentException("Tidak ada baris saldo awal yang memiliki nilai nominal > 0.");
+        }
+
+        return DB::transaction(function () use ($date, $notes, $validLines) {
+            $entry = JournalEntry::where('reference_type', 'OpeningBalance')->first();
+
+            if ($entry) {
+                $entry->update([
+                    'entry_date'  => $date,
+                    'description' => $notes ?: 'Saldo Awal Neraca (Opening Balance)',
+                    'status'      => 'posted',
+                    'posted_by'   => Auth::id() ?? 1,
+                    'posted_at'   => now(),
+                ]);
+                $entry->lines()->delete();
+            } else {
+                $entry = JournalEntry::create([
+                    'entry_number'   => $this->generateEntryNumber(),
+                    'entry_date'     => $date,
+                    'reference_type' => 'OpeningBalance',
+                    'reference_id'   => null,
+                    'description'    => $notes ?: 'Saldo Awal Neraca (Opening Balance)',
+                    'status'         => 'posted',
+                    'created_by'     => Auth::id() ?? 1,
+                    'posted_by'      => Auth::id() ?? 1,
+                    'posted_at'      => now(),
+                ]);
+            }
+
+            foreach ($validLines as $vl) {
+                JournalLine::create([
+                    'journal_entry_id'    => $entry->id,
+                    'chart_of_account_id' => $vl['account_id'],
+                    'debit'               => $vl['debit'],
+                    'credit'              => $vl['credit'],
+                    'description'         => $vl['description'],
+                ]);
+            }
+
+            return $entry->fresh(['lines.chartOfAccount']);
+        });
+    }
+
+    /**
+     * Buat jurnal pembelian tunai aset tetap:
+     * Debit: Akun Aset Tetap Kategori | Kredit: Kas/Bank
+     */
+    public function createFromFixedAssetPurchase(
+        FixedAssetCategory $category,
+        float $totalCost,
+        int $paymentAccountId,
+        string $date,
+        string $description,
+        ?string $batchRef = null
+    ): JournalEntry {
+        if ($totalCost <= 0) {
+            throw new \InvalidArgumentException("Nilai pembelian aset harus lebih besar dari 0.");
+        }
+
+        return DB::transaction(function () use ($category, $totalCost, $paymentAccountId, $date, $description) {
+            $entry = JournalEntry::create([
+                'entry_number'   => $this->generateEntryNumber(),
+                'entry_date'     => $date,
+                'reference_type' => FixedAsset::class,
+                'reference_id'   => null,
+                'description'    => $description,
+                'status'         => 'posted',
+                'created_by'     => Auth::id() ?? 1,
+                'posted_by'      => Auth::id() ?? 1,
+                'posted_at'      => now(),
+            ]);
+
+            // Baris 1: Debit Akun Aset Tetap
+            JournalLine::create([
+                'journal_entry_id'    => $entry->id,
+                'chart_of_account_id' => $category->chart_of_account_id,
+                'debit'               => $totalCost,
+                'credit'              => 0,
+                'description'         => "Perolehan Aset Tetap: {$category->name}",
+            ]);
+
+            // Baris 2: Kredit Akun Kas/Bank
+            JournalLine::create([
+                'journal_entry_id'    => $entry->id,
+                'chart_of_account_id' => $paymentAccountId,
+                'debit'               => 0,
+                'credit'              => $totalCost,
+                'description'         => "Pembelian Tunai Aset - {$category->name}",
+            ]);
+
+            return $entry;
+        });
     }
 
     private function findAccount(string $code): ChartOfAccount

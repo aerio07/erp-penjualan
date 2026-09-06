@@ -433,36 +433,36 @@ class ReportController extends Controller
             ->get()
             ->keyBy('code');
 
-        // --- ASET ---
-        $assetCodes = ['1-1100', '1-1110', '1-1120', '1-1200', '1-1210', '1-1300', '1-1400', '1-1500', '1-1900', '1-2100', '1-2900'];
-        $assets = collect($assetCodes)->map(function ($code) use ($lines) {
-            $l     = $lines->get($code);
+        // --- ASET (Dinamis seluruh CoA tipe asset) ---
+        $assetAccounts = ChartOfAccount::where('type', 'asset')->where('is_active', true)->orderBy('code')->get();
+        $assets = $assetAccounts->map(function ($acc) use ($lines) {
+            $l      = $lines->get($acc->code);
             $debit  = $l ? (float) $l->total_debit : 0;
             $credit = $l ? (float) $l->total_credit : 0;
-            $name   = $l ? $l->name : ChartOfAccount::where('code', $code)->value('name');
 
-            // Untuk Akumulasi Penyusutan (1-2900), saldo normalnya Kredit (mengurangi Aset)
-            $balance = ($code === '1-2900') ? ($credit - $debit) : ($debit - $credit);
+            // Akun kontra aset (seperti Akumulasi Penyusutan 1-2900) bersaldo normal kredit (mengurangi total aset)
+            $isContra = ($acc->code === '1-2900' || $acc->normal_balance === 'credit');
+            $balance  = $isContra ? ($debit - $credit) : ($debit - $credit);
 
             return [
-                'code'    => $code,
-                'name'    => $name ?? $code,
-                'balance' => $balance,
+                'code'      => $acc->code,
+                'name'      => $acc->name,
+                'balance'   => $balance,
+                'is_contra' => $isContra,
             ];
         });
         $totalAssets = $assets->sum('balance');
 
-        // --- KEWAJIBAN ---
-        $liabilityCodes = ['2-1100', '2-1200', '2-1300', '2-1400', '2-1500', '2-2100'];
-        $liabilities = collect($liabilityCodes)->map(function ($code) use ($lines) {
-            $l     = $lines->get($code);
+        // --- KEWAJIBAN (Dinamis seluruh CoA tipe liability) ---
+        $liabilityAccounts = ChartOfAccount::where('type', 'liability')->where('is_active', true)->orderBy('code')->get();
+        $liabilities = $liabilityAccounts->map(function ($acc) use ($lines) {
+            $l      = $lines->get($acc->code);
             $debit  = $l ? (float) $l->total_debit : 0;
             $credit = $l ? (float) $l->total_credit : 0;
-            $name   = $l ? $l->name : ChartOfAccount::where('code', $code)->value('name');
 
             return [
-                'code'    => $code,
-                'name'    => $name ?? $code,
+                'code'    => $acc->code,
+                'name'    => $acc->name,
                 'balance' => $credit - $debit,
             ];
         });

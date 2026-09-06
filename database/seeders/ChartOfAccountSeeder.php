@@ -22,8 +22,11 @@ class ChartOfAccountSeeder extends Seeder
             ['code' => '1-1500', 'name' => 'PPN Masukan',            'type' => 'asset',     'parent_code' => null],
             ['code' => '1-1900', 'name' => 'Biaya Dibayar Dimuka',   'type' => 'asset',     'parent_code' => null],
             // Aset Tetap
+            ['code' => '1-2010', 'name' => 'Tanah',                  'type' => 'asset',     'parent_code' => null],
+            ['code' => '1-2020', 'name' => 'Bangunan',               'type' => 'asset',     'parent_code' => null],
+            ['code' => '1-2030', 'name' => 'Kendaraan',              'type' => 'asset',     'parent_code' => null],
             ['code' => '1-2100', 'name' => 'Peralatan Kantor',       'type' => 'asset',     'parent_code' => null],
-            ['code' => '1-2900', 'name' => 'Akumulasi Penyusutan',   'type' => 'asset',     'parent_code' => '1-2100'],
+            ['code' => '1-2900', 'name' => 'Akumulasi Penyusutan',   'type' => 'asset',     'parent_code' => null],
 
             // === KEWAJIBAN (2-xxxx) ===
             ['code' => '2-1100', 'name' => 'Hutang Usaha',            'type' => 'liability', 'parent_code' => null],

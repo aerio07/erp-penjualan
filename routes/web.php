@@ -34,6 +34,8 @@ use App\Http\Controllers\Sales\SalesReportController;
 // Accounting
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReportController;
+use App\Http\Controllers\Accounting\FixedAssetController;
+use App\Http\Controllers\Accounting\OpeningBalanceController;
 // Approval
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Route;
@@ -159,6 +161,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin,finance')->prefix('accounting')->name('accounting.')->group(function () {
         Route::resource('journals', JournalEntryController::class);
         Route::patch('journals/{journal}/post', [JournalEntryController::class, 'post'])->name('journals.post');
+
+        // Fixed Assets & Inventaris
+        Route::resource('fixed-assets', FixedAssetController::class);
+
+        // Saldo Awal Neraca
+        Route::get('opening-balance', [OpeningBalanceController::class, 'index'])->name('opening-balance.index');
+        Route::post('opening-balance', [OpeningBalanceController::class, 'store'])->name('opening-balance.store');
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
