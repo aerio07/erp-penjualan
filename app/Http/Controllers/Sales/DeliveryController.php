@@ -24,17 +24,21 @@ class DeliveryController extends Controller
 {
     use HasListFilters, GeneratesDocumentNumber;
 
-    public function __construct(private StockService $stockService) {}
+    public function __construct(
+        private StockService $stockService,
+        private \App\Services\SalesInvoiceService $salesInvoiceService
+    ) {}
 
     public function index(Request $request): View
     {
-        $query = Delivery::with(['salesOrder.customer', 'warehouse', 'user']);
+        $query = Delivery::with(['salesOrder.customer', 'warehouse', 'user', 'salesInvoice']);
 
         $query = $this->applySearch($query, $request, ['delivery_number', 'salesOrder.so_number', 'salesOrder.customer.name', 'recipient_name', 'notes']);
         $query = $this->applyFilter($query, $request, 'warehouse_id');
+        $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyFilter($query, $request, 'condition_status');
         $query = $this->applyDateRange($query, $request, 'delivery_date');
-        $query = $this->applySort($query, $request, ['delivery_number', 'delivery_date', 'condition_status', 'created_at'], 'delivery_date', 'desc');
+        $query = $this->applySort($query, $request, ['delivery_number', 'delivery_date', 'status', 'condition_status', 'created_at'], 'delivery_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $deliveries = $query->paginate($perPage)->withQueryString();
@@ -60,12 +64,18 @@ class DeliveryController extends Controller
     {
         $request->validate([
             'sales_order_id'                 => 'required|exists:sales_orders,id',
-            'warehouse_id'                  => 'required|exists:warehouses,id',
-            'delivery_date'                 => 'required|date',
-            'shipping_address'              => 'nullable|string',
-            'recipient_name'                => 'nullable|string',
-            'notes'                         => 'nullable|string',
-            'items'                         => 'required|array|min:1',
+            'warehouse_id'                   => 'required|exists:warehouses,id',
+            'delivery_date'                  => 'required|date',
+            'shipping_address'               => 'nullable|string',
+            'recipient_name'                 => 'nullable|string',
+            'notes'                          => 'nullable|string',
+            'auto_generate_invoice'          => 'nullable|boolean',
+            'received_date'                  => 'nullable|date|after_or_equal:delivery_date',
+            'invoice_date'                   => 'nullable|date',
+            'due_date'                       => 'nullable|date|after_or_equal:invoice_date',
+            'invoice_tax_rate'               => 'nullable|numeric|min:0|max:100',
+            'receipt_notes'                  => 'nullable|string',
+            'items'                          => 'required|array|min:1',
             'items.*.sales_order_item_id'   => 'required|exists:sales_order_items,id',
             'items.*.qty_delivered'          => 'required|integer|min:0',
         ]);
@@ -133,13 +143,21 @@ class DeliveryController extends Controller
 
             $deliveryNumber = $this->generateNumber();
 
+            $isAutoInvoice = $request->boolean('auto_generate_invoice');
+            $status = $isAutoInvoice ? 'delivered' : 'in_transit';
+            $receivedDate = $isAutoInvoice ? ($request->received_date ?? $request->delivery_date) : null;
+            $receiptNotes = $isAutoInvoice ? ($request->receipt_notes ?? 'Dikonfirmasi langsung saat pembuatan Surat Jalan') : null;
+
             $delivery = Delivery::create([
                 'delivery_number'  => $deliveryNumber,
                 'sales_order_id'   => $so->id,
                 'warehouse_id'     => $request->warehouse_id,
                 'user_id'          => Auth::id(),
                 'condition_status' => 'baik',
+                'status'           => $status,
                 'delivery_date'    => $request->delivery_date,
+                'received_date'    => $receivedDate,
+                'receipt_notes'    => $receiptNotes,
                 'shipping_address' => $request->shipping_address ?? $so->customer->address,
                 'recipient_name'   => $request->recipient_name ?? $so->customer->name,
                 'notes'            => $request->notes,
@@ -214,14 +232,75 @@ class DeliveryController extends Controller
                 'status' => $allDone ? 'done' : 'partially_delivered'
             ]);
 
+            if ($isAutoInvoice) {
+                $invoice = $this->salesInvoiceService->createFromDelivery($delivery, [
+                    'invoice_date' => $request->invoice_date ?? $receivedDate,
+                    'due_date'     => $request->due_date ?? ($request->invoice_date ?? $receivedDate),
+                    'tax_rate'     => $request->filled('invoice_tax_rate') ? (float) $request->invoice_tax_rate : (float) ($so->tax_rate ?? 0),
+                    'notes'        => $request->notes ?? ("Auto-generated dari Surat Jalan #{$deliveryNumber}"),
+                ]);
+
+                return redirect()->route('sales.deliveries.index')
+                    ->with('success', "Surat Jalan #{$delivery->delivery_number} berhasil dibuat (status Diterima) dan Invoice Penjualan #{$invoice->invoice_number} berhasil diterbitkan secara otomatis.");
+            }
+
             return redirect()->route('sales.deliveries.index')
-                ->with('success', 'Surat Jalan berhasil dibuat dan stok barang telah berkurang.');
+                ->with('success', "Surat Jalan #{$delivery->delivery_number} berhasil dibuat dengan status Dalam Pengiriman (In Transit). Stok barang telah dikurangi.");
+        });
+    }
+
+    public function confirmReceipt(Request $request, Delivery $delivery): RedirectResponse
+    {
+        if ($delivery->status === 'delivered') {
+            return back()->with('error', 'Surat Jalan ini sudah pernah dikonfirmasi diterima.');
+        }
+
+        if ($delivery->status === 'cancelled') {
+            return back()->with('error', 'Surat Jalan yang dibatalkan tidak dapat dikonfirmasi.');
+        }
+
+        $request->validate([
+            'received_date'          => 'required|date|after_or_equal:' . $delivery->delivery_date->toDateString(),
+            'recipient_name'         => 'nullable|string|max:255',
+            'receipt_notes'          => 'nullable|string',
+            'auto_generate_invoice'  => 'nullable|boolean',
+            'invoice_date'           => 'nullable|date',
+            'due_date'               => 'nullable|date|after_or_equal:invoice_date',
+        ]);
+
+        return DB::transaction(function () use ($request, $delivery) {
+            $delivery->lockForUpdate();
+
+            $delivery->update([
+                'status'         => 'delivered',
+                'received_date'  => $request->received_date,
+                'recipient_name' => $request->filled('recipient_name') ? $request->recipient_name : $delivery->recipient_name,
+                'receipt_notes'  => $request->receipt_notes,
+            ]);
+
+            $invoiceMessage = '';
+            if ($request->boolean('auto_generate_invoice') && !$delivery->is_invoiced) {
+                $delivery->loadMissing(['salesOrder.customer']);
+                $invoiceDate = $request->invoice_date ?? $request->received_date;
+                $paymentTerm = (int) ($delivery->salesOrder?->customer?->payment_term ?? 0);
+                $dueDate = $request->due_date ?? \Carbon\Carbon::parse($invoiceDate)->addDays($paymentTerm)->toDateString();
+
+                $invoice = $this->salesInvoiceService->createFromDelivery($delivery, [
+                    'invoice_date' => $invoiceDate,
+                    'due_date'     => $dueDate,
+                    'tax_rate'     => (float) ($delivery->salesOrder?->tax_rate ?? 0),
+                    'notes'        => "Diterbitkan saat konfirmasi penerimaan Surat Jalan #{$delivery->delivery_number}",
+                ]);
+                $invoiceMessage = " dan Invoice Penjualan #{$invoice->invoice_number} langsung diterbitkan.";
+            }
+
+            return back()->with('success', "Penerimaan barang Surat Jalan #{$delivery->delivery_number} berhasil dikonfirmasi{$invoiceMessage}");
         });
     }
 
     public function show(Delivery $delivery): View
     {
-        $delivery->load(['salesOrder.customer', 'warehouse', 'user', 'items.salesOrderItem.product']);
+        $delivery->load(['salesOrder.customer', 'warehouse', 'user', 'items.salesOrderItem.product', 'salesInvoice']);
 
         return view('sales.deliveries.show', compact('delivery'));
     }

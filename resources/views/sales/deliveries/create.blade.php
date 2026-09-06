@@ -117,10 +117,86 @@
             </div>
         </div>
 
+        {{-- Auto-Generate Invoice & Confirmation Option --}}
+        <div class="card" style="margin-bottom:20px; border-left: 4px solid var(--primary);" x-show="selectedSo">
+            <div class="card-header" style="background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <h3 style="display:flex; align-items:center; gap:8px; margin:0; font-size:15px;">
+                        <i class="fa-solid fa-receipt" style="color:var(--primary);"></i>
+                        Penerimaan Barang & Faktur Penjualan (Sales Invoice)
+                    </h3>
+                    <p style="margin:4px 0 0 0; font-size:12.5px; color:var(--text-secondary);">
+                        Tentukan apakah Surat Jalan ini langsung dikonfirmasi diterima dan diterbitkan tagihannya, atau dikirim bertahap.
+                    </p>
+                </div>
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff; padding:8px 14px; border:1px solid var(--border); border-radius:8px; font-weight:600; font-size:13px; box-shadow:0 1px 2px rgba(0,0,0,0.05); user-select:none;">
+                    <input type="checkbox" name="auto_generate_invoice" value="1" x-model="autoGenerateInvoice" @change="onToggleAutoInvoice()" style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+                    <span>Langsung Terbitkan Invoice & Konfirmasi Diterima</span>
+                </label>
+            </div>
+            <div class="card-body">
+                <template x-if="!autoGenerateInvoice">
+                    <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:#eff6ff; border-radius:8px; color:#1e40af; font-size:13px;">
+                        <i class="fa-solid fa-circle-info" style="font-size:18px; flex-shrink:0;"></i>
+                        <div>
+                            <strong>Alur Bertahap (Default):</strong> Surat Jalan akan dibuat dengan status <strong>Dalam Pengiriman (In Transit)</strong>. Invoice belum dapat dibuat sampai barang tiba di customer dan dikonfirmasi penerimaannya untuk mencegah kasus barang belum sampai tetapi sudah ditagih.
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="autoGenerateInvoice">
+                    <div style="display:flex; flex-direction:column; gap:16px;">
+                        <div style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:#ecfdf5; border-radius:8px; color:#065f46; font-size:13px;">
+                            <i class="fa-solid fa-check-double" style="font-size:18px; flex-shrink:0;"></i>
+                            <div>
+                                <strong>Alur Instan (Direct Handover / COD):</strong> Barang langsung berstatus <strong>Diterima (Delivered)</strong>. Sales Invoice dan Jurnal Piutang, Penjualan, & HPP akan langsung diposting otomatis ke buku besar.
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-3">
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Barang Diterima <span style="color:var(--danger);">*</span></label>
+                                <input type="date" name="received_date" x-model="receivedDate" class="form-control" :required="autoGenerateInvoice">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Tgl fisik barang sampai di tangan customer</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Faktur / Invoice <span style="color:var(--danger);">*</span></label>
+                                <input type="date" name="invoice_date" x-model="invoiceDate" @change="onInvoiceDateChange()" class="form-control" :required="autoGenerateInvoice">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Tgl pengakuan piutang & penjualan</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
+                                <input type="date" name="due_date" x-model="dueDate" class="form-control" :required="autoGenerateInvoice">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">
+                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="(paymentTerm || 0) + ' hari'"></span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">Tarif PPN (%)</label>
+                                <input type="number" name="invoice_tax_rate" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Diambil otomatis dari tarif pajak SO</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Catatan Penerimaan / No. Resi</label>
+                                <input type="text" name="receipt_notes" x-model="receiptNotes" class="form-control" placeholder="Contoh: Diterima oleh staf gudang customer">
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
         <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedSo">
             <a href="{{ route('sales.deliveries.index') }}" class="btn btn-secondary">Batal</a>
             <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-truck-fast"></i> Cetak Surat Jalan & Potong Stok
+                <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-truck-fast'"></i>
+                <span x-text="autoGenerateInvoice ? 'Cetak Surat Jalan & Terbitkan Invoice' : 'Cetak Surat Jalan & Kirim Barang'"></span>
             </button>
         </div>
     </form>
@@ -152,6 +228,14 @@ function deliveryForm() {
         shippingAddress: oldShippingAddress,
         items: [],
         isFirstLoad: true,
+        autoGenerateInvoice: {{ old('auto_generate_invoice') ? 'true' : 'false' }},
+        deliveryDate: "{{ old('delivery_date', date('Y-m-d')) }}",
+        receivedDate: "{{ old('received_date', date('Y-m-d')) }}",
+        invoiceDate: "{{ old('invoice_date', date('Y-m-d')) }}",
+        dueDate: "{{ old('due_date', '') }}",
+        taxRate: 11,
+        paymentTerm: 30,
+        receiptNotes: @json(old('receipt_notes', '')),
 
         init() {
             if (this.selectedSoId) {
@@ -178,6 +262,15 @@ function deliveryForm() {
                 this.shippingAddress = this.selectedSo.customer ? this.selectedSo.customer.address : '';
             }
 
+            this.taxRate = parseFloat(this.selectedSo.tax_rate) || 0;
+            this.paymentTerm = (this.selectedSo.customer && this.selectedSo.customer.payment_term !== null) 
+                ? parseInt(this.selectedSo.customer.payment_term) 
+                : 30;
+
+            if (!this.dueDate || isManualUserChange) {
+                this.calculateDueDate();
+            }
+
             this.items = this.selectedSo.items.map(item => {
                 const remaining = Math.max(0, item.qty_ordered - item.qty_delivered);
                 let currentVal = remaining;
@@ -195,6 +288,30 @@ function deliveryForm() {
                     current_delivered: currentVal,
                 };
             });
+        },
+
+        onToggleAutoInvoice() {
+            if (this.autoGenerateInvoice) {
+                if (!this.receivedDate) this.receivedDate = this.deliveryDate;
+                if (!this.invoiceDate) this.invoiceDate = this.receivedDate;
+                this.calculateDueDate();
+            }
+        },
+
+        onInvoiceDateChange() {
+            this.calculateDueDate();
+        },
+
+        calculateDueDate() {
+            if (!this.invoiceDate) return;
+            const d = new Date(this.invoiceDate);
+            if (isNaN(d.getTime())) return;
+            const term = parseInt(this.paymentTerm) || 0;
+            d.setDate(d.getDate() + term);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            this.dueDate = `${yyyy}-${mm}-${dd}`;
         }
     }
 }

@@ -45,7 +45,7 @@
                             </select>
                             <template x-if="selectedSoId && availableDeliveries.length === 0">
                                 <div style="color:var(--warning); font-size:12px; margin-top:4px; font-weight:600;">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> Semua Surat Jalan pada Sales Order ini sudah pernah di-invoice.
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Tidak ada Surat Jalan berstatus 'Diterima' (Delivered) yang belum di-invoice pada Sales Order ini. (Jika barang masih Dalam Pengiriman, konfirmasi penerimaan terlebih dahulu).
                                 </div>
                             </template>
                         </div>

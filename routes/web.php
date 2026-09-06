@@ -141,6 +141,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:admin,gudang')->prefix('sales')->name('sales.')->group(function () {
+        Route::patch('deliveries/{delivery}/confirm-receipt', [DeliveryController::class, 'confirmReceipt'])->name('deliveries.confirm-receipt');
         Route::resource('deliveries', DeliveryController::class)->only(['index', 'create', 'store', 'show']);
     });
 

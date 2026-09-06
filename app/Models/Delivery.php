@@ -10,12 +10,13 @@ class Delivery extends Model
 {
     protected $fillable = [
         'delivery_number', 'sales_order_id', 'warehouse_id',
-        'user_id', 'condition_status', 'is_invoiced', 'sales_invoice_id',
-        'delivery_date', 'shipping_address', 'recipient_name', 'notes',
+        'user_id', 'status', 'condition_status', 'is_invoiced', 'sales_invoice_id',
+        'delivery_date', 'received_date', 'shipping_address', 'recipient_name', 'receipt_notes', 'notes',
     ];
 
     protected $casts = [
         'delivery_date' => 'date',
+        'received_date' => 'date',
         'is_invoiced'   => 'boolean',
     ];
 
@@ -51,6 +52,26 @@ class Delivery extends Model
 
     public function getIsAvailableForInvoiceAttribute(): bool
     {
-        return !$this->is_invoiced;
+        return !$this->is_invoiced && $this->status === 'delivered';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'in_transit' => 'Dalam Pengiriman',
+            'delivered'  => 'Telah Diterima',
+            'cancelled'  => 'Dibatalkan',
+            default      => ucfirst($this->status),
+        };
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return match ($this->status) {
+            'in_transit' => 'badge-pending',
+            'delivered'  => 'badge-confirmed',
+            'cancelled'  => 'badge-cancelled',
+            default      => 'badge-neutral',
+        };
     }
 }
