@@ -960,9 +960,35 @@
                     </div>
                 @endif
                 @if(session('error'))
-                    <div class="bg-[#FDE2E1] border border-[#B91C1C]/20 text-[#B91C1C] px-4 py-3 rounded-lg mb-4 flex items-center gap-2 text-sm font-medium">
-                        <span class="material-symbols-outlined text-base">error</span> {{ session('error') }}
-                    </div>
+                    @php
+                        $isPeriodLocked = str_contains(session('error'), 'periode yang sudah ditutup') || str_contains(session('error'), 'periode ini terkunci');
+                    @endphp
+                    @if($isPeriodLocked)
+                        <div class="bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 rounded-lg mb-4 flex items-start gap-3 text-sm shadow-sm">
+                            <span class="material-symbols-outlined text-xl text-amber-600 shrink-0 mt-0.5">lock</span>
+                            <div class="flex-1">
+                                <span class="font-bold text-amber-800 block mb-0.5">Periode Akuntansi Terkunci</span>
+                                <span>{{ session('error') }}</span>
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                if (typeof Swal !== 'undefined') {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Periode Terkunci',
+                                        text: @json(session('error')),
+                                        confirmButtonText: 'Mengerti',
+                                        confirmButtonColor: '#d97706'
+                                    });
+                                }
+                            });
+                        </script>
+                    @else
+                        <div class="bg-[#FDE2E1] border border-[#B91C1C]/20 text-[#B91C1C] px-4 py-3 rounded-lg mb-4 flex items-center gap-2 text-sm font-medium">
+                            <span class="material-symbols-outlined text-base">error</span> {{ session('error') }}
+                        </div>
+                    @endif
                 @endif
 
                 <!-- Page Content -->

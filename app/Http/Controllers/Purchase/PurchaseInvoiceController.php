@@ -120,27 +120,23 @@ class PurchaseInvoiceController extends Controller
             'notes'                   => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($request) {
-            // Lock GRN untuk cegah race condition
-            $grn = GoodsReceipt::with(['items.purchaseOrderItem'])
-                ->lockForUpdate()
-                ->findOrFail($request->goods_receipt_id);
+        try {
+            return DB::transaction(function () use ($request) {
+                // Lock GRN untuk cegah race condition
+                $grn = GoodsReceipt::with(['items.purchaseOrderItem'])
+                    ->lockForUpdate()
+                    ->findOrFail($request->goods_receipt_id);
 
-            // Guard: pastikan LPB ini milik PO yang dipilih
-            if ((int) $grn->purchase_order_id !== (int) $request->purchase_order_id) {
-                return back()
-                    ->with('error', 'LPB yang dipilih bukan milik Purchase Order yang dipilih.')
-                    ->withInput();
-            }
+                // Guard: pastikan LPB ini milik PO yang dipilih
+                if ((int) $grn->purchase_order_id !== (int) $request->purchase_order_id) {
+                    throw new \InvalidArgumentException('LPB yang dipilih bukan milik Purchase Order yang dipilih.');
+                }
 
-            // Guard: pastikan LPB belum pernah dipakai untuk invoice lain
-            if ($grn->is_invoiced) {
-                return back()
-                    ->with('error', 'LPB ini sudah pernah digunakan untuk invoice lain. Satu LPB hanya bisa dipakai untuk satu invoice.')
-                    ->withInput();
-            }
+                // Guard: pastikan LPB belum pernah dipakai untuk invoice lain
+                if ($grn->is_invoiced) {
+                    throw new \InvalidArgumentException('LPB ini sudah pernah digunakan untuk invoice lain. Satu LPB hanya bisa dipakai untuk satu invoice.');
+                }
 
-            try {
                 $invoice = $this->purchaseInvoiceService->createFromGoodsReceipt($grn, [
                     'supplier_invoice_number' => $request->supplier_invoice_number,
                     'invoice_date'            => $request->invoice_date,
@@ -151,10 +147,10 @@ class PurchaseInvoiceController extends Controller
 
                 return redirect()->route('purchase.invoices.index')
                     ->with('success', 'Invoice Pembelian berhasil diterbitkan dari LPB ' . $grn->receipt_number . ' dan Jurnal Akuntansi otomatis diposting.');
-            } catch (\InvalidArgumentException $e) {
-                return back()->with('error', $e->getMessage())->withInput();
-            }
-        });
+            });
+        } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
     }
 
     public function show(PurchaseInvoice $invoice): View

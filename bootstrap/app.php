@@ -16,5 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\App\Exceptions\PeriodClosedException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson() || $request->isXmlHttpRequest() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'error'   => 'period_closed',
+                ], 422);
+            }
+
+            return back()->withInput()->with('error', $e->getMessage());
+        });
     })->create();

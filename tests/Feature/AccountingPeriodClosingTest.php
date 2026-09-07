@@ -289,4 +289,104 @@ class AccountingPeriodClosingTest extends TestCase
         // Setelah reopen, transaksi di tanggal tersebut kembali diizinkan
         $this->assertFalse($this->periodService->isDateLocked(Carbon::parse('2026-06-15')));
     }
+
+    /**
+     * Saat periode ditutup, percobaan pembuatan invoice tidak boleh crash 500
+     * melainkan harus redirect back dengan flash alert session 'error'.
+     */
+    public function test_closed_period_returns_friendly_session_error_alert_on_invoice_creation(): void
+    {
+        // Tutup periode September 2026
+        AccountingPeriod::create([
+            'fiscal_year' => 2026,
+            'month'       => 9,
+            'start_date'  => '2026-09-01',
+            'end_date'    => '2026-09-30',
+            'status'      => 'closed',
+            'closed_by'   => $this->adminUser->id,
+            'closed_at'   => now(),
+        ]);
+
+        $supplier = Supplier::create([
+            'code'         => 'SUPP-PERIOD-TEST',
+            'name'         => 'Vendor Uji Periode',
+            'payment_term' => 30,
+            'is_active'    => true,
+        ]);
+
+        $warehouse = \App\Models\Warehouse::create([
+            'code'      => 'WH-PERIOD-TEST',
+            'name'      => 'Gudang Periode',
+            'is_active' => true,
+        ]);
+
+        $product = \App\Models\Product::create([
+            'sku'            => 'PROD-PERIOD-1',
+            'name'           => 'Barang Uji',
+            'unit'           => 'pcs',
+            'purchase_price' => 100000,
+            'sell_price'     => 150000,
+            'is_active'      => true,
+        ]);
+
+        $po = PurchaseOrder::create([
+            'po_number'    => 'PO-TEST-' . uniqid(),
+            'supplier_id'  => $supplier->id,
+            'user_id'      => $this->adminUser->id,
+            'warehouse_id' => $warehouse->id,
+            'order_date'   => '2026-09-02',
+            'status'       => 'confirmed',
+            'subtotal'     => 500000,
+            'tax_rate'     => 0,
+            'tax_amount'   => 0,
+            'total_amount' => 500000,
+        ]);
+
+        \App\Models\PurchaseOrderItem::create([
+            'purchase_order_id' => $po->id,
+            'product_id'        => $product->id,
+            'qty_ordered'       => 5,
+            'qty_received'      => 5,
+            'unit_price'        => 100000,
+            'subtotal'          => 500000,
+        ]);
+
+        $grn = \App\Models\GoodsReceipt::create([
+            'receipt_number'    => 'GRN-TEST-' . uniqid(),
+            'purchase_order_id' => $po->id,
+            'warehouse_id'      => $warehouse->id,
+            'user_id'           => $this->adminUser->id,
+            'received_by'       => $this->adminUser->id,
+            'received_date'     => '2026-09-05',
+            'qc_status'         => 'passed',
+            'is_invoiced'       => false,
+        ]);
+
+        \App\Models\GoodsReceiptItem::create([
+            'goods_receipt_id'       => $grn->id,
+            'purchase_order_item_id' => $po->items->first()->id,
+            'warehouse_id'           => $warehouse->id,
+            'qty_received'           => 5,
+            'qty_accepted'           => 5,
+            'qty_rejected'           => 0,
+            'unit_cost'              => 100000,
+        ]);
+
+        // Coba terbitkan invoice pada tanggal yang berada di periode tertutup (07/09/2026)
+        $response = $this->actingAs($this->adminUser)
+            ->from(route('purchase.invoices.create', ['grn_id' => $grn->id]))
+            ->post(route('purchase.invoices.store'), [
+                'purchase_order_id' => $po->id,
+                'goods_receipt_id'  => $grn->id,
+                'invoice_date'      => '2026-09-07',
+                'due_date'          => '2026-10-07',
+                'tax_rate'          => 0,
+            ]);
+
+        // Harus redirect back dan memiliki session error bersahabat, BUKAN 500 error screen
+        $response->assertRedirect(route('purchase.invoices.create', ['grn_id' => $grn->id]));
+        $response->assertSessionHas('error');
+        $this->assertStringContainsString('periode yang sudah ditutup', session('error'));
+        $this->assertEquals(0, PurchaseInvoice::count());
+    }
 }

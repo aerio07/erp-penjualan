@@ -122,34 +122,28 @@ class SalesInvoiceController extends Controller
             'notes'          => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($request) {
-            // Lock Delivery untuk cegah race condition
-            $delivery = Delivery::with(['items.salesOrderItem.product'])
-                ->lockForUpdate()
-                ->findOrFail($request->delivery_id);
+        try {
+            return DB::transaction(function () use ($request) {
+                // Lock Delivery untuk cegah race condition
+                $delivery = Delivery::with(['items.salesOrderItem.product'])
+                    ->lockForUpdate()
+                    ->findOrFail($request->delivery_id);
 
-            // Guard: pastikan Surat Jalan ini milik SO yang dipilih
-            if ((int) $delivery->sales_order_id !== (int) $request->sales_order_id) {
-                return back()
-                    ->with('error', 'Surat Jalan yang dipilih bukan milik Sales Order yang dipilih.')
-                    ->withInput();
-            }
+                // Guard: pastikan Surat Jalan ini milik SO yang dipilih
+                if ((int) $delivery->sales_order_id !== (int) $request->sales_order_id) {
+                    throw new \InvalidArgumentException('Surat Jalan yang dipilih bukan milik Sales Order yang dipilih.');
+                }
 
-            // Guard: pastikan Surat Jalan belum pernah dipakai untuk invoice lain
-            if ($delivery->is_invoiced) {
-                return back()
-                    ->with('error', 'Surat Jalan ini sudah pernah digunakan untuk invoice lain. Satu Surat Jalan hanya bisa dipakai untuk satu invoice.')
-                    ->withInput();
-            }
+                // Guard: pastikan Surat Jalan belum pernah dipakai untuk invoice lain
+                if ($delivery->is_invoiced) {
+                    throw new \InvalidArgumentException('Surat Jalan ini sudah pernah digunakan untuk invoice lain. Satu Surat Jalan hanya bisa dipakai untuk satu invoice.');
+                }
 
-            // Guard: pastikan Surat Jalan sudah berstatus delivered (sudah diterima)
-            if ($delivery->status !== 'delivered') {
-                return back()
-                    ->with('error', "Surat Jalan #{$delivery->delivery_number} masih dalam pengiriman (In Transit). Barang harus dikonfirmasi telah diterima pembeli sebelum invoice diterbitkan.")
-                    ->withInput();
-            }
+                // Guard: pastikan Surat Jalan sudah berstatus delivered (sudah diterima)
+                if ($delivery->status !== 'delivered') {
+                    throw new \InvalidArgumentException("Surat Jalan #{$delivery->delivery_number} masih dalam pengiriman (In Transit). Barang harus dikonfirmasi telah diterima pembeli sebelum invoice diterbitkan.");
+                }
 
-            try {
                 $invoice = $this->salesInvoiceService->createFromDelivery($delivery, [
                     'invoice_date' => $request->invoice_date,
                     'due_date'     => $request->due_date,
@@ -159,10 +153,10 @@ class SalesInvoiceController extends Controller
 
                 return redirect()->route('sales.invoices.index')
                     ->with('success', "Invoice Penjualan #{$invoice->invoice_number} berhasil diterbitkan dari Surat Jalan #{$delivery->delivery_number} dan Jurnal Akuntansi otomatis diposting.");
-            } catch (\InvalidArgumentException $e) {
-                return back()->with('error', $e->getMessage())->withInput();
-            }
-        });
+            });
+        } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
     }
 
     public function show(SalesInvoice $invoice): View
