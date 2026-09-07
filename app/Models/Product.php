@@ -23,6 +23,7 @@ class Product extends Model
 
     protected $appends = [
         'image_url',
+        'category_name',
     ];
 
     public function getImageUrlAttribute(): ?string
@@ -31,6 +32,27 @@ class Product extends Model
             return asset('storage/' . $this->image);
         }
         return null;
+    }
+
+    public function getCategoryNameAttribute(): string
+    {
+        if ($this->relationLoaded('productCategory') && $this->productCategory) {
+            return $this->productCategory->name;
+        }
+
+        if ($this->category_id) {
+            $cat = $this->productCategory;
+            if ($cat) {
+                return $cat->name;
+            }
+        }
+
+        $raw = $this->attributes['category'] ?? null;
+        if (!empty($raw) && is_string($raw)) {
+            return $raw;
+        }
+
+        return 'Uncategorized';
     }
 
     public function productCategory(): BelongsTo

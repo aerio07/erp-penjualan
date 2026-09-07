@@ -138,7 +138,7 @@
                                 {{ $p->name }}
                             </div>
                             <div style="font-size: 11.5px; color: var(--text-secondary); font-family: monospace;">
-                                SKU: {{ $p->sku }} · {{ $p->category->name ?? 'Uncategorized' }}
+                                SKU: {{ $p->sku }} · {{ $p->category_name }}
                             </div>
                         </td>
 

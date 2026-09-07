@@ -145,7 +145,7 @@
                         {{-- Kategori --}}
                         <td>
                             <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 11px;">
-                                {{ $p->category->name ?? 'Uncategorized' }}
+                                {{ $p->category_name }}
                             </span>
                         </td>
 

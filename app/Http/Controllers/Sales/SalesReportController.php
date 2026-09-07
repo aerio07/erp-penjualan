@@ -164,7 +164,7 @@ class SalesReportController extends Controller
 
         $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
 
-        $query = Product::with('category')
+        $query = Product::with(['productCategory', 'category'])
             ->where('is_active', true)
             ->withSum(['salesInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
                 if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));

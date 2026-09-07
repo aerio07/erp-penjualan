@@ -243,34 +243,38 @@
     {{-- Modal Reopen Periode --}}
     <div x-show="showReopenModal" 
          x-cloak 
-         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+         style="position: fixed !important; inset: 0 !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(15, 23, 42, 0.65) !important; backdrop-filter: blur(4px); z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 20px !important; box-sizing: border-box !important;">
         <div @click.outside="showReopenModal = false" 
-             class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
-                        <i class="fa-solid fa-lock-open text-xs"></i>
+             style="background: #ffffff !important; border-radius: 16px !important; max-width: 480px !important; width: 100% !important; margin: auto !important; padding: 24px !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important; border: 1px solid #e2e8f0 !important; position: relative !important;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                        <i class="fa-solid fa-lock-open"></i>
                     </div>
-                    <h3 class="text-base font-extrabold text-slate-900">Buka Kembali Periode</h3>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Buka Kembali Periode</h3>
                 </div>
-                <button @click="showReopenModal = false" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button @click="showReopenModal = false" type="button" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1;">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <p class="text-xs text-slate-500 mb-4">
+            <p style="font-size: 12.5px; color: #64748b; margin: 0 0 16px 0; line-height: 1.5;">
                 Membuka kembali periode <strong>{{ $period->period_name }}</strong> akan mengizinkan pembuatan dan pengeditan transaksi bertanggal di periode ini. Harap cantumkan alasan yang jelas untuk audit trail.
             </p>
-            <form method="POST" action="{{ route('accounting.periods.reopen', $period) }}" class="space-y-4">
+            <form method="POST" action="{{ route('accounting.periods.reopen', $period) }}">
                 @csrf
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Alasan Pembukaan Kembali <span class="text-rose-500">*</span></label>
-                    <textarea name="reopen_reason" rows="3" required placeholder="Contoh: Perlu menginput faktur pembelian retur yang terlambat diterima dari vendor..."
-                              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px;">
+                        Alasan Pembukaan Kembali <span style="color: #ef4444;">*</span>
+                    </label>
+                    <textarea name="reopen_reason" rows="3" required placeholder="Contoh: Perlu menginput faktur pembelian retur yang terlambat diterima dari vendor..." class="form-control"
+                              style="width: 100%; min-height: 80px; padding: 10px 14px; font-size: 13px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box;"></textarea>
                 </div>
-                <div class="flex items-center justify-end gap-2.5 pt-2">
-                    <button @click="showReopenModal = false" type="button" class="btn btn-secondary px-4 py-2 rounded-xl text-xs font-bold">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 border-amber-600 shadow-md shadow-amber-600/20">
-                        Konfirmasi Buka Kembali
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+                    <button @click="showReopenModal = false" type="button" class="btn btn-secondary btn-sm" style="padding: 8px 16px; border-radius: 8px; font-weight: 600;">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-warning btn-sm" style="padding: 8px 18px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.2);">
+                        <i class="fa-solid fa-lock-open" style="margin-right: 6px;"></i> Konfirmasi Buka Kembali
                     </button>
                 </div>
             </form>

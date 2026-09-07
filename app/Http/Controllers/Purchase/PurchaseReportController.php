@@ -164,7 +164,7 @@ class PurchaseReportController extends Controller
 
         $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
 
-        $query = Product::with('category')
+        $query = Product::with(['productCategory', 'category'])
             ->where('is_active', true)
             ->withSum(['purchaseInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
                 if ($dateFrom) $q->whereHas('purchaseInvoice', fn($pi) => $pi->where('invoice_date', '>=', $dateFrom));

@@ -22,7 +22,7 @@ class InventoryReportController extends Controller
 
         $categories = ProductCategory::where('is_active', true)->orderBy('name')->get();
 
-        $query = Product::with('category')
+        $query = Product::with(['productCategory', 'category'])
             ->where('is_active', true)
             // 1. Qty Retur Pembelian (ke supplier)
             ->withSum(['purchaseReturnItems as purchase_return_qty' => function ($q) use ($dateFrom, $dateTo) {

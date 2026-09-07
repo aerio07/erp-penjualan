@@ -134,28 +134,40 @@
     {{-- Modal Generate Periode Baru --}}
     <div x-show="showGenerateModal" 
          x-cloak 
-         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+         style="position: fixed !important; inset: 0 !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(15, 23, 42, 0.65) !important; backdrop-filter: blur(4px); z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 20px !important; box-sizing: border-box !important;">
         <div @click.outside="showGenerateModal = false" 
-             class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-extrabold text-slate-900">Buat Periode Akuntansi Baru</h3>
-                <button @click="showGenerateModal = false" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+             style="background: #ffffff !important; border-radius: 16px !important; max-width: 440px !important; width: 100% !important; margin: auto !important; padding: 24px !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important; border: 1px solid #e2e8f0 !important; position: relative !important;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                    </div>
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Buat Periode Akuntansi Baru</h3>
+                </div>
+                <button @click="showGenerateModal = false" type="button" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; padding: 4px; line-height: 1;">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <p class="text-xs text-slate-500 mb-5">
-                Masukkan tahun fiskal. Sistem akan secara otomatis menginisialisasi 12 bulan (Januari s/d Desember) berstatus terbuka (*open*).
+            
+            <p style="font-size: 12.5px; color: #64748b; margin: 0 0 20px 0; line-height: 1.5;">
+                Masukkan tahun fiskal yang ingin diinisialisasi. Sistem akan otomatis membuat 12 bulan (Januari s/d Desember) berstatus terbuka (*open*).
             </p>
-            <form method="POST" action="{{ route('accounting.periods.generate') }}" class="space-y-4">
+
+            <form method="POST" action="{{ route('accounting.periods.generate') }}">
                 @csrf
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Tahun Fiskal</label>
-                    <input type="number" name="year" value="{{ $selectedYear }}" min="2000" max="2099" required 
-                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 8px;">Tahun Fiskal</label>
+                    <input type="number" name="year" value="{{ $selectedYear }}" min="2000" max="2099" required class="form-control"
+                           style="height: 42px; font-size: 14px; font-weight: 600; border-radius: 8px; border: 1px solid #cbd5e1; padding: 0 14px; width: 100%; box-sizing: border-box;">
                 </div>
-                <div class="flex items-center justify-end gap-2.5 pt-2">
-                    <button @click="showGenerateModal = false" type="button" class="btn btn-secondary px-4 py-2 rounded-xl text-xs font-bold">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-xl text-xs font-bold shadow-md shadow-blue-600/20">Generate 12 Bulan</button>
+
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid #f1f5f9;">
+                    <button @click="showGenerateModal = false" type="button" class="btn btn-secondary btn-sm" style="padding: 8px 16px; border-radius: 8px; font-weight: 600;">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-sm" style="padding: 8px 18px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">
+                        <i class="fa-solid fa-calendar-check" style="margin-right: 6px;"></i> Generate 12 Bulan
+                    </button>
                 </div>
             </form>
         </div>

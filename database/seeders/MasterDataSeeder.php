@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\Supplier;
 use App\Models\Warehouse;
 use Illuminate\Database\Seeder;
@@ -19,6 +20,17 @@ class MasterDataSeeder extends Seeder
         ];
         foreach ($warehouses as $w) {
             Warehouse::firstOrCreate(['code' => $w['code']], $w);
+        }
+
+        // Product Categories
+        $categories = [
+            ['code' => 'KAT-ELK', 'name' => 'Elektronik', 'description' => 'Produk elektronik dan komputer'],
+            ['code' => 'KAT-AKS', 'name' => 'Aksesoris', 'description' => 'Aksesoris komputer dan gadget'],
+        ];
+        $categoryMap = [];
+        foreach ($categories as $cat) {
+            $created = ProductCategory::firstOrCreate(['code' => $cat['code']], $cat);
+            $categoryMap[$cat['name']] = $created->id;
         }
 
         // Suppliers
@@ -90,6 +102,7 @@ class MasterDataSeeder extends Seeder
             [
                 'sku'            => 'PRD-001',
                 'name'           => 'Laptop Acer Aspire 5',
+                'category_id'    => $categoryMap['Elektronik'] ?? null,
                 'category'       => 'Elektronik',
                 'unit'           => 'pcs',
                 'purchase_price' => 6_500_000,
@@ -99,6 +112,7 @@ class MasterDataSeeder extends Seeder
             [
                 'sku'            => 'PRD-002',
                 'name'           => 'Mouse Wireless Logitech M170',
+                'category_id'    => $categoryMap['Aksesoris'] ?? null,
                 'category'       => 'Aksesoris',
                 'unit'           => 'pcs',
                 'purchase_price' => 75_000,
@@ -108,6 +122,7 @@ class MasterDataSeeder extends Seeder
             [
                 'sku'            => 'PRD-003',
                 'name'           => 'Keyboard Mechanical Keychron K2',
+                'category_id'    => $categoryMap['Aksesoris'] ?? null,
                 'category'       => 'Aksesoris',
                 'unit'           => 'pcs',
                 'purchase_price' => 850_000,
@@ -117,6 +132,7 @@ class MasterDataSeeder extends Seeder
             [
                 'sku'            => 'PRD-004',
                 'name'           => 'Monitor LG 24" IPS',
+                'category_id'    => $categoryMap['Elektronik'] ?? null,
                 'category'       => 'Elektronik',
                 'unit'           => 'pcs',
                 'purchase_price' => 2_200_000,
@@ -125,7 +141,9 @@ class MasterDataSeeder extends Seeder
             ],
         ];
         foreach ($products as $p) {
-            Product::firstOrCreate(['sku' => $p['sku']], $p);
+            $product = Product::firstOrNew(['sku' => $p['sku']]);
+            $product->fill($p);
+            $product->save();
         }
     }
 }
