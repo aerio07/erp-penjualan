@@ -95,6 +95,16 @@
                             <span style="display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:9999px; {{ $fBadge }}">
                                 {{ $fLabel }}
                             </span>
+                            @php
+                                $whCount = $order->items->flatMap->reservations->where('status', 'active')->filter(fn($r) => ($r->qty_reserved - $r->qty_delivered) > 0)->pluck('warehouse_id')->unique()->count();
+                            @endphp
+                            @if($whCount > 1)
+                            <div>
+                                <span style="display:inline-block; font-size:10px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:4px; padding:1px 5px; margin-top:3px;">
+                                    <i class="fa-solid fa-boxes-stacked" style="color:var(--primary);"></i> {{ $whCount }} Gudang
+                                </span>
+                            </div>
+                            @endif
                         </td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:6px; justify-content:center;">

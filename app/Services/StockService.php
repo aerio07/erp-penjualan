@@ -542,7 +542,123 @@ class StockService
 
         $maxDeliverable = $activeReservationForThisItem + $freeUnreservedStock;
 
-        return min($onHand, $maxDeliverable);
+        return min($soItem->qty_remaining, min($onHand, $maxDeliverable));
+    }
+
+    /**
+     * Ambil matriks stok per gudang untuk setiap item pada Sales Order.
+     * Digunakan oleh form Surat Jalan (Delivery) untuk validasi dan display real-time.
+     */
+    public function getWarehouseStockMatrixForOrder(SalesOrder $order): array
+    {
+        $order->loadMissing(['items.product', 'items.reservations']);
+        $warehouses = Warehouse::where('is_active', true)->orderBy('id')->get();
+
+        $matrix = [];
+        foreach ($order->items as $item) {
+            $itemMatrix = [
+                'item_id'       => $item->id,
+                'product_id'    => $item->product_id,
+                'qty_ordered'   => $item->qty_ordered,
+                'qty_delivered' => $item->qty_delivered,
+                'qty_remaining' => $item->qty_remaining,
+                'warehouses'    => [],
+            ];
+
+            foreach ($warehouses as $wh) {
+                $onHand = $this->getOnHandStock($item->product_id, $wh->id);
+                $activeRes = (int) $item->reservations
+                    ->where('warehouse_id', $wh->id)
+                    ->where('status', 'active')
+                    ->sum(fn($r) => max(0, $r->qty_reserved - $r->qty_delivered));
+                $freeStock = $this->getAvailableStock($item->product_id, $wh->id);
+                $deliverable = min($item->qty_remaining, min($onHand, $activeRes + $freeStock));
+
+                $itemMatrix['warehouses'][$wh->id] = [
+                    'warehouse_id'     => $wh->id,
+                    'warehouse_name'   => $wh->name,
+                    'warehouse_code'   => $wh->code,
+                    'on_hand'          => $onHand,
+                    'reserved_for_so'  => $activeRes,
+                    'free_stock'       => $freeStock,
+                    'max_deliverable'  => max(0, $deliverable),
+                ];
+            }
+
+            $matrix[$item->id] = $itemMatrix;
+        }
+
+        return $matrix;
+    }
+
+    /**
+     * Konsumsi reservasi stok saat Surat Jalan dibuat.
+     * Jika pengiriman menggunakan stok bebas dari gudang yang berbeda dari reservasi awal,
+     * otomatis kurangi/lepaskan reservasi yang menggantung di gudang lain agar tidak terjadi phantom reservation.
+     */
+    public function consumeDeliveryReservations(SalesOrderItem $soItem, int $warehouseId, int $qtyDelivered): void
+    {
+        if ($qtyDelivered <= 0) {
+            return;
+        }
+
+        // 1. Konsumsi reservasi aktif di gudang pengiriman terlebih dahulu
+        $remainingToFulfill = $qtyDelivered;
+        $currentWarehouseReservations = StockReservation::where('sales_order_item_id', $soItem->id)
+            ->where('warehouse_id', $warehouseId)
+            ->where('status', 'active')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($currentWarehouseReservations as $res) {
+            $unconsumed = max(0, $res->qty_reserved - $res->qty_delivered);
+            $consume = min($unconsumed, $remainingToFulfill);
+            if ($consume > 0) {
+                $newDelivered = $res->qty_delivered + $consume;
+                $resStatus = ($newDelivered >= $res->qty_reserved) ? 'fulfilled' : 'active';
+                $res->update([
+                    'qty_delivered' => $newDelivered,
+                    'status'        => $resStatus,
+                ]);
+                $remainingToFulfill -= $consume;
+            }
+            if ($remainingToFulfill <= 0) {
+                break;
+            }
+        }
+
+        // 2. Jika pengiriman menggunakan stok bebas gudang ini melebihi reservasi yang ada ($remainingToFulfill > 0),
+        // lepaskan/kurangi reservasi aktif di gudang lain agar tidak mengunci stok gudang lain secara ganda.
+        if ($remainingToFulfill > 0) {
+            $otherReservations = StockReservation::where('sales_order_item_id', $soItem->id)
+                ->where('warehouse_id', '!=', $warehouseId)
+                ->where('status', 'active')
+                ->orderBy('id', 'desc')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($otherReservations as $otherRes) {
+                $activeInOther = max(0, $otherRes->qty_reserved - $otherRes->qty_delivered);
+                $release = min($activeInOther, $remainingToFulfill);
+                if ($release > 0) {
+                    $newReserved = $otherRes->qty_reserved - $release;
+                    if ($newReserved <= $otherRes->qty_delivered) {
+                        $otherRes->update([
+                            'qty_reserved' => $otherRes->qty_delivered,
+                            'status'       => $otherRes->qty_delivered > 0 ? 'fulfilled' : 'cancelled',
+                        ]);
+                    } else {
+                        $otherRes->update([
+                            'qty_reserved' => $newReserved,
+                        ]);
+                    }
+                    $remainingToFulfill -= $release;
+                }
+                if ($remainingToFulfill <= 0) {
+                    break;
+                }
+            }
+        }
     }
 
     public function getLowStockProducts(): Collection

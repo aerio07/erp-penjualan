@@ -50,14 +50,20 @@ class DeliveryController extends Controller
     public function create(Request $request): View
     {
         $selectedSoId = old('sales_order_id', $request->query('so_id'));
-        $confirmedSos = SalesOrder::with(['customer', 'items.product'])
+        $confirmedSos = SalesOrder::with(['customer', 'items.product', 'items.reservations'])
             ->whereIn('status', ['confirmed', 'partially_delivered'])
             ->orderByDesc('id')
             ->get();
 
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
-        return view('sales.deliveries.create', compact('confirmedSos', 'warehouses', 'selectedSoId'));
+        // Siapkan stock matrix per SO untuk seluruh gudang aktif
+        $stockMatrixBySo = [];
+        foreach ($confirmedSos as $so) {
+            $stockMatrixBySo[$so->id] = $this->stockService->getWarehouseStockMatrixForOrder($so);
+        }
+
+        return view('sales.deliveries.create', compact('confirmedSos', 'warehouses', 'selectedSoId', 'stockMatrixBySo'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -81,7 +87,7 @@ class DeliveryController extends Controller
         ]);
 
         return DB::transaction(function () use ($request) {
-            $so = SalesOrder::with(['items.product', 'items.deliveryItems', 'customer'])->lockForUpdate()->findOrFail($request->sales_order_id);
+            $so = SalesOrder::with(['items.product', 'items.deliveryItems', 'items.reservations', 'customer'])->lockForUpdate()->findOrFail($request->sales_order_id);
 
             $deliveredByItem = [];
             foreach ($request->items as $itemData) {
@@ -113,21 +119,24 @@ class DeliveryController extends Controller
                 return back()->with('error', 'Isi minimal satu qty barang yang akan dikirim.')->withInput();
             }
 
-            // Lock all involved product rows and active reservations to serialize stock & reservation checks
+            // Pessimistic Lock: Kunci baris Produk, Item SO, dan seluruh Reservasi aktif untuk SO ini
             Product::whereIn('id', array_unique($productIds))->lockForUpdate()->get();
-            \App\Models\StockReservation::whereIn('sales_order_item_id', array_keys($deliveredByItem))
-                ->where('warehouse_id', $request->warehouse_id)
+            SalesOrderItem::where('sales_order_id', $so->id)->lockForUpdate()->get();
+            \App\Models\StockReservation::whereIn('sales_order_item_id', $so->items->pluck('id'))
                 ->where('status', 'active')
                 ->lockForUpdate()
                 ->get();
 
-            // Check stock deliverability under lock (Reservation allocation + Free stock check)
+            $warehouse = Warehouse::findOrFail($request->warehouse_id);
+
+            // Validasi deliverable stock di gudang yang dipilih under pessimistic lock
             foreach ($deliveredByItem as $soItemId => $qtyDelivered) {
                 if ($qtyDelivered <= 0) continue;
                 $soItem = $so->items->firstWhere('id', $soItemId);
 
                 $maxDeliverable = $this->stockService->getDeliverableStockForOrderItem($soItem, $request->warehouse_id);
                 if ($qtyDelivered > $maxDeliverable) {
+                    $onHand = $this->stockService->getOnHandStock($soItem->product_id, $request->warehouse_id);
                     $reservedForThis = (int) \App\Models\StockReservation::where('sales_order_item_id', $soItem->id)
                         ->where('warehouse_id', $request->warehouse_id)
                         ->where('status', 'active')
@@ -136,7 +145,7 @@ class DeliveryController extends Controller
                     $freeStock = $this->stockService->getAvailableStock($soItem->product_id, $request->warehouse_id);
 
                     return back()
-                        ->with('error', "Stok untuk produk '{$soItem->product->name}' tidak mencukupi untuk dikirim (Teralokasi untuk SO ini: {$reservedForThis}, Stok Bebas: {$freeStock}, Maksimal Kirim: {$maxDeliverable}, Ingin Dikirim: {$qtyDelivered}).")
+                        ->with('error', "Stok untuk produk '{$soItem->product->name}' di {$warehouse->name} tidak mencukupi untuk dikirim (Stok Fisik: {$onHand}, Teralokasi untuk SO ini: {$reservedForThis}, Stok Bebas: {$freeStock}, Maksimal Kirim: {$maxDeliverable}, Ingin Dikirim: {$qtyDelivered}).")
                         ->withInput();
                 }
             }
@@ -175,30 +184,10 @@ class DeliveryController extends Controller
                     'condition'           => 'Good',
                 ]);
 
-                // Consume active stock reservations for this item with pessimistic lock
-                $remainingToFulfill = $qtyDelivered;
-                $activeReservations = \App\Models\StockReservation::where('sales_order_item_id', $soItem->id)
-                    ->where('warehouse_id', $request->warehouse_id)
-                    ->where('status', 'active')
-                    ->lockForUpdate()
-                    ->get();
+                // Konsumsi reservasi aktif dan seimbangkan lintas gudang jika memakai stok bebas
+                $this->stockService->consumeDeliveryReservations($soItem, $request->warehouse_id, $qtyDelivered);
 
-                foreach ($activeReservations as $res) {
-                    $unconsumed = max(0, $res->qty_reserved - $res->qty_delivered);
-                    $consume = min($unconsumed, $remainingToFulfill);
-                    if ($consume > 0) {
-                        $newDelivered = $res->qty_delivered + $consume;
-                        $resStatus = ($newDelivered >= $res->qty_reserved) ? 'fulfilled' : 'active';
-                        $res->update([
-                            'qty_delivered' => $newDelivered,
-                            'status'        => $resStatus,
-                        ]);
-                        $remainingToFulfill -= $consume;
-                    }
-                    if ($remainingToFulfill <= 0) break;
-                }
-
-                // Record stock movement OUT
+                // Record stock movement OUT pada gudang pengiriman terpilih
                 $this->stockService->recordMovement([
                     'product_id'     => $soItem->product_id,
                     'warehouse_id'   => $request->warehouse_id,
@@ -233,9 +222,14 @@ class DeliveryController extends Controller
             ]);
 
             if ($isAutoInvoice) {
+                $delivery->loadMissing(['salesOrder.customer']);
+                $invDate = $request->invoice_date ?? $receivedDate;
+                $termDays = $delivery->salesOrder?->customer?->payment_term_days ?? 30;
+                $calcDueDate = $request->due_date ?? \Carbon\Carbon::parse($invDate)->addDays($termDays)->toDateString();
+
                 $invoice = $this->salesInvoiceService->createFromDelivery($delivery, [
-                    'invoice_date' => $request->invoice_date ?? $receivedDate,
-                    'due_date'     => $request->due_date ?? ($request->invoice_date ?? $receivedDate),
+                    'invoice_date' => $invDate,
+                    'due_date'     => $calcDueDate,
                     'tax_rate'     => $request->filled('invoice_tax_rate') ? (float) $request->invoice_tax_rate : (float) ($so->tax_rate ?? 0),
                     'notes'        => $request->notes ?? ("Auto-generated dari Surat Jalan #{$deliveryNumber}"),
                 ]);
@@ -282,8 +276,8 @@ class DeliveryController extends Controller
             if ($request->boolean('auto_generate_invoice') && !$delivery->is_invoiced) {
                 $delivery->loadMissing(['salesOrder.customer']);
                 $invoiceDate = $request->invoice_date ?? $request->received_date;
-                $paymentTerm = (int) ($delivery->salesOrder?->customer?->payment_term ?? 0);
-                $dueDate = $request->due_date ?? \Carbon\Carbon::parse($invoiceDate)->addDays($paymentTerm)->toDateString();
+                $paymentTermDays = $delivery->salesOrder?->customer?->payment_term_days ?? 30;
+                $dueDate = $request->due_date ?? \Carbon\Carbon::parse($invoiceDate)->addDays($paymentTermDays)->toDateString();
 
                 $invoice = $this->salesInvoiceService->createFromDelivery($delivery, [
                     'invoice_date' => $invoiceDate,

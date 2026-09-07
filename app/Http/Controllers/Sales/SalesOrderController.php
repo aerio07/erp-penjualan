@@ -30,7 +30,7 @@ class SalesOrderController extends Controller
 
     public function index(Request $request): View
     {
-        $query = SalesOrder::with(['customer', 'user']);
+        $query = SalesOrder::with(['customer', 'user', 'items.reservations.warehouse']);
 
         $query = $this->applySearch($query, $request, ['so_number', 'customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -133,7 +133,7 @@ class SalesOrderController extends Controller
     public function show(SalesOrder $salesOrder): View
     {
         $order = $salesOrder;
-        $order->load(['customer', 'user', 'items.product', 'deliveries.warehouse', 'invoices']);
+        $order->load(['customer', 'user', 'items.product', 'items.reservations.warehouse', 'items.procurementDemands', 'deliveries.warehouse', 'invoices']);
 
         return view('sales.orders.show', compact('order'));
     }

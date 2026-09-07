@@ -115,6 +115,71 @@
         </div>
     </div>
 
+    @php
+        $whAllocations = [];
+        $totalActiveReserved = 0;
+        $totalActiveDemanded = 0;
+
+        foreach($order->items as $it) {
+            $totalActiveDemanded += (int) $it->qty_demanded;
+            foreach($it->reservations->where('status', 'active') as $res) {
+                $act = max(0, $res->qty_reserved - $res->qty_delivered);
+                if ($act > 0) {
+                    $wName = $res->warehouse->name ?? ('Gudang #' . $res->warehouse_id);
+                    $whAllocations[$wName] = ($whAllocations[$wName] ?? 0) + $act;
+                    $totalActiveReserved += $act;
+                }
+            }
+        }
+    @endphp
+
+    {{-- Multi-Warehouse Allocation & Fulfillment Breakdown Banner --}}
+    @if(count($whAllocations) > 0 || $totalActiveDemanded > 0)
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid var(--primary); background: #f8fafc;">
+        <div class="card-body" style="padding:14px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <h4 style="margin:0; font-size:14px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-boxes-stacked" style="color:var(--primary);"></i>
+                        Rincian Lokasi Alokasi Stok Fisik
+                        @if(count($whAllocations) > 1)
+                            <span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:11px; font-weight:700;">Multi-Gudang</span>
+                        @endif
+                    </h4>
+                    <p style="margin:4px 0 0 0; font-size:12.5px; color:var(--text-secondary);">
+                        @if(count($whAllocations) > 1)
+                            Pesanan ini mengambil stok dari <strong>{{ count($whAllocations) }} lokasi gudang berbeda</strong>. Anda dapat menerbitkan Surat Jalan terpisah per gudang atau melakukan Transfer Antar Gudang terlebih dahulu.
+                        @else
+                            Pesanan ini dialokasikan dari gudang perusahaan berikut:
+                        @endif
+                    </p>
+                </div>
+                @if($order->canCreateDelivery())
+                <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan
+                </a>
+                @endif
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                @foreach($whAllocations as $wName => $qty)
+                <div style="background:#ffffff; border:1px solid var(--border); border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.03);">
+                    <i class="fa-solid fa-warehouse" style="color:var(--primary); margin-right:4px;"></i>
+                    {{ $wName }}: <span style="color:#0284c7; font-weight:700;">{{ number_format($qty) }} unit</span>
+                </div>
+                @endforeach
+
+                @if($totalActiveDemanded > 0)
+                <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; color:#be123c;">
+                    <i class="fa-solid fa-clock-rotate-left" style="margin-right:4px;"></i>
+                    Backorder (Menunggu PO): <span style="font-weight:700;">{{ number_format($totalActiveDemanded) }} unit</span>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Item Table --}}
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header"><h3>Item Pesanan & Alokasi Stok</h3></div>
@@ -124,8 +189,8 @@
                     <tr>
                         <th>Produk</th>
                         <th style="text-align:center;">Qty Pesan</th>
-                        <th style="text-align:center; background:rgba(37, 99, 235, 0.06);">Reserved</th>
-                        <th style="text-align:center; background:rgba(220, 38, 38, 0.06);">Backorder</th>
+                        <th style="text-align:center; background:rgba(37, 99, 235, 0.06); width:180px;">Reserved (Teralokasi)</th>
+                        <th style="text-align:center; background:rgba(220, 38, 38, 0.06); width:150px;">Backorder</th>
                         <th style="text-align:center;">Qty Terkirim</th>
                         <th style="text-align:center;">Sisa Kirim</th>
                         <th style="text-align:center; background:rgba(16, 185, 129, 0.06);">Sisa Unbilled</th>
@@ -142,11 +207,29 @@
                             <div style="font-size:12px; color:var(--text-secondary);">{{ $item->product->sku }}</div>
                         </td>
                         <td style="text-align:center; font-weight:600;">{{ $item->qty_ordered }} {{ $item->product->unit }}</td>
-                        <td style="text-align:center; font-weight:700; color:#2563eb; background:rgba(37, 99, 235, 0.03);">
-                            {{ $item->qty_reserved }}
+                        <td style="text-align:center; background:rgba(37, 99, 235, 0.03);">
+                            <div style="font-weight:700; color:#2563eb; font-size:14px;">
+                                {{ $item->qty_reserved }}
+                            </div>
+                            {{-- Tag Lokasi Gudang --}}
+                            @foreach($item->reservations->where('status', 'active') as $res)
+                                @php $activeRes = max(0, $res->qty_reserved - $res->qty_delivered); @endphp
+                                @if($activeRes > 0)
+                                    <div style="font-size:10.5px; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; padding:2px 6px; margin-top:3px; display:inline-block; font-weight:600;">
+                                        <i class="fa-solid fa-warehouse"></i> {{ $res->warehouse->name ?? 'Gudang' }}: {{ $activeRes }}
+                                    </div>
+                                @endif
+                            @endforeach
                         </td>
-                        <td style="text-align:center; font-weight:700; color:#dc2626; background:rgba(220, 38, 38, 0.03);">
-                            {{ $item->qty_demanded }}
+                        <td style="text-align:center; background:rgba(220, 38, 38, 0.03);">
+                            <div style="font-weight:700; color:#dc2626; font-size:14px;">
+                                {{ $item->qty_demanded }}
+                            </div>
+                            @if($item->qty_demanded > 0)
+                                <div style="font-size:10.5px; color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:4px; padding:2px 6px; margin-top:3px; display:inline-block; font-weight:600;">
+                                    <i class="fa-solid fa-clock"></i> Menunggu PO
+                                </div>
+                            @endif
                         </td>
                         <td style="text-align:center; color:var(--success); font-weight:600;">{{ $item->qty_delivered }}</td>
                         <td style="text-align:center;">

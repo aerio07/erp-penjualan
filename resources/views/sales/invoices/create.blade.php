@@ -54,12 +54,17 @@
                     <div class="form-row form-row-3">
                         <div class="form-group">
                             <label class="form-label">Tanggal Invoice <span style="color:var(--danger);">*</span></label>
-                            <input type="date" name="invoice_date" value="{{ old('invoice_date', date('Y-m-d')) }}" class="form-control" required>
+                            <input type="date" name="invoice_date" x-model="invoiceDate" @change="calculateDueDate()" class="form-control" required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Jatuh Tempo <span style="color:var(--danger);">*</span></label>
-                            <input type="date" name="due_date" value="{{ old('due_date', date('Y-m-d', strtotime('+30 days'))) }}" class="form-control" required>
+                            <label class="form-label">
+                                Jatuh Tempo <span style="color:var(--danger);">*</span>
+                                <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);" x-show="selectedSoData">
+                                    (Syarat: <strong style="color:var(--primary);" x-text="paymentTermLabel || (paymentTerm + ' hari')"></strong>)
+                                </span>
+                            </label>
+                            <input type="date" name="due_date" x-model="dueDate" class="form-control" required>
                         </div>
 
                         <div class="form-group">
@@ -195,6 +200,14 @@ const deliveriesData = @json($availableDeliveries->keyBy('id'));
 const initialSoId = "{{ $selectedSoId ?? '' }}";
 const initialDeliveryId = "{{ $selectedDeliveryId ?? '' }}";
 
+function parseTermDays(term) {
+    if (typeof term === 'number') return term;
+    if (!term) return 30;
+    if (String(term).toUpperCase().trim() === 'COD') return 0;
+    const match = String(term).match(/\d+/);
+    return match ? parseInt(match[0], 10) : 30;
+}
+
 function invForm() {
     return {
         selectedSoId: initialSoId,
@@ -204,6 +217,22 @@ function invForm() {
         availableDeliveries: [],
         deliveryItems: [],
         taxRate: 11,
+        invoiceDate: "{{ old('invoice_date', date('Y-m-d')) }}",
+        dueDate: "{{ old('due_date', date('Y-m-d', strtotime('+30 days'))) }}",
+        paymentTerm: 30,
+        paymentTermLabel: 'NET 30',
+
+        calculateDueDate() {
+            if (!this.invoiceDate) return;
+            const d = new Date(this.invoiceDate);
+            if (isNaN(d.getTime())) return;
+            const term = parseInt(this.paymentTerm) || 0;
+            d.setDate(d.getDate() + term);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            this.dueDate = `${yyyy}-${mm}-${dd}`;
+        },
 
         init() {
             if (this.selectedSoId) {
@@ -228,6 +257,10 @@ function invForm() {
             }
             this.selectedSoData = ordersData[this.selectedSoId];
             this.taxRate = parseFloat(this.selectedSoData.tax_rate) || 11;
+            const cust = this.selectedSoData.customer;
+            this.paymentTerm = cust ? (cust.payment_term_days ?? parseTermDays(cust.payment_term)) : 30;
+            this.paymentTermLabel = cust ? (cust.payment_term || (this.paymentTerm + ' hari')) : 'NET 30';
+            this.calculateDueDate();
 
             // Bangun daftar Surat Jalan yang belum di-invoice dari data server
             this.availableDeliveries = Object.values(deliveriesData)

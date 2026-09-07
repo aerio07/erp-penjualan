@@ -49,7 +49,8 @@ class SalesInvoiceService
 
         $taxRate = isset($data['tax_rate']) ? (float) $data['tax_rate'] : (float) ($so->tax_rate ?? 0);
         $invoiceDate = $data['invoice_date'] ?? now()->toDateString();
-        $dueDate = $data['due_date'] ?? $invoiceDate;
+        $termDays = $so->customer?->payment_term_days ?? 30;
+        $dueDate = $data['due_date'] ?? \Carbon\Carbon::parse($invoiceDate)->addDays($termDays)->toDateString();
         $notes = $data['notes'] ?? ("Auto-generated from Surat Jalan #" . $delivery->delivery_number);
 
         $subtotalDelivery = 0;

@@ -3,18 +3,24 @@
 @section('page-title', 'Detail Surat Jalan (Pengiriman)')
 
 @section('content')
+@php
+    $customerTermDays = $delivery->salesOrder?->customer?->payment_term_days ?? 30;
+    $customerTermLabel = $delivery->salesOrder?->customer?->payment_term ?? ($customerTermDays . ' hari');
+    $defaultDueDate = date('Y-m-d', strtotime('+' . $customerTermDays . ' days'));
+@endphp
 <div class="animate-in" x-data="{ 
     showConfirmModal: false, 
     autoInvoice: false,
     receivedDate: '{{ date('Y-m-d') }}',
     invoiceDate: '{{ date('Y-m-d') }}',
-    dueDate: '{{ date('Y-m-d', strtotime('+' . ($delivery->salesOrder?->customer?->payment_term ?? 30) . ' days')) }}',
-    paymentTerm: {{ (int) ($delivery->salesOrder?->customer?->payment_term ?? 30) }},
+    dueDate: '{{ $defaultDueDate }}',
+    paymentTerm: {{ $customerTermDays }},
+    paymentTermLabel: '{{ $customerTermLabel }}',
     onInvoiceDateChange() {
         if (!this.invoiceDate) return;
         const d = new Date(this.invoiceDate);
         if (isNaN(d.getTime())) return;
-        d.setDate(d.getDate() + this.paymentTerm);
+        d.setDate(d.getDate() + (parseInt(this.paymentTerm) || 0));
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
@@ -230,20 +236,20 @@
     </div>
 
     {{-- Modal Konfirmasi Penerimaan Barang --}}
-    <div x-show="showConfirmModal" x-cloak style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px;">
-        <div @click.away="showConfirmModal = false" class="card" style="width:100%; max-width:560px; background:#fff; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); border-radius:12px; overflow:hidden;">
-            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-bottom:1px solid var(--border);">
+    <div x-show="showConfirmModal" x-cloak style="position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px; overflow-y:auto;">
+        <div @click.away="showConfirmModal = false" class="card" style="width:100%; max-width:560px; max-height:calc(100vh - 32px); display:flex; flex-direction:column; background:#fff; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); border-radius:12px; margin:auto; overflow:hidden;">
+            <div class="card-header" style="flex-shrink:0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-bottom:1px solid var(--border);">
                 <h3 style="margin:0; font-size:16px; display:flex; align-items:center; gap:8px;">
                     <i class="fa-solid fa-clipboard-check" style="color:var(--primary);"></i> Konfirmasi Penerimaan Barang
                 </h3>
                 <button type="button" @click="showConfirmModal = false" style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--text-secondary);">&times;</button>
             </div>
 
-            <form method="POST" action="{{ route('sales.deliveries.confirm-receipt', $delivery) }}">
+            <form method="POST" action="{{ route('sales.deliveries.confirm-receipt', $delivery) }}" style="display:flex; flex-direction:column; flex:1; min-height:0; margin:0;">
                 @csrf
                 @method('PATCH')
 
-                <div class="card-body" style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+                <div class="card-body" style="padding:20px; display:flex; flex-direction:column; gap:16px; overflow-y:auto; flex:1; min-height:0;">
                     <div style="font-size:13px; color:var(--text-secondary);">
                         Pastikan fisik barang telah benar-benar diterima oleh pihak customer / pembeli sebelum konfirmasi dilakukan.
                     </div>
@@ -277,7 +283,7 @@
                                     <input type="date" name="invoice_date" x-model="invoiceDate" @change="onInvoiceDateChange()" class="form-control" style="font-size:12.5px;">
                                 </div>
                                 <div class="form-group" style="margin:0;">
-                                    <label class="form-label" style="font-size:12px;">Jatuh Tempo (TOP: <span x-text="paymentTerm + ' hari'"></span>)</label>
+                                    <label class="form-label" style="font-size:12px;">Jatuh Tempo (Syarat: <span style="font-weight:700; color:var(--primary);" x-text="paymentTermLabel || (paymentTerm + ' hari')"></span> · <span x-text="paymentTerm + ' hari'"></span>)</label>
                                     <input type="date" name="due_date" x-model="dueDate" class="form-control" style="font-size:12.5px;">
                                 </div>
                             </div>
@@ -286,7 +292,7 @@
                     @endif
                 </div>
 
-                <div style="padding:16px 20px; background:#f8fafc; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;">
+                <div style="flex-shrink:0; padding:16px 20px; background:#f8fafc; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px;">
                     <button type="button" @click="showConfirmModal = false" class="btn btn-secondary">Batal</button>
                     <button type="submit" class="btn btn-primary">
                         <i class="fa-solid fa-check"></i> Simpan Konfirmasi

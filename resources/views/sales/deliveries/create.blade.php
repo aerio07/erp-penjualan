@@ -35,7 +35,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Gudang Asal Barang <span style="color:var(--danger);">*</span></label>
-                        <select name="warehouse_id" class="form-control" required>
+                        <select name="warehouse_id" class="form-control" x-model="selectedWarehouseId" @change="onWarehouseChange()" required>
                             <option value="">-- Pilih Gudang --</option>
                             @foreach($warehouses as $wh)
                             <option value="{{ $wh->id }}" {{ old('warehouse_id') == $wh->id ? 'selected' : '' }}>
@@ -72,16 +72,23 @@
 
         {{-- Items Table --}}
         <div class="card" style="margin-bottom:20px;" x-show="selectedSo">
-            <div class="card-header"><h3>Item Barang Dikirim</h3></div>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <h3>Item Barang Dikirim</h3>
+                <div x-show="selectedWarehouseId" style="font-size:12.5px; color:var(--text-secondary);">
+                    <i class="fa-solid fa-warehouse" style="color:var(--primary); margin-right:4px;"></i>
+                    Stok diperiksa untuk: <strong x-text="getWarehouseName(selectedWarehouseId)" style="color:var(--text-primary);"></strong>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="erp-table">
                     <thead>
                         <tr>
                             <th>Produk</th>
-                            <th style="text-align:center; width:120px;">Qty Dipesan</th>
-                            <th style="text-align:center; width:120px;">Sudah Dikirim</th>
-                            <th style="text-align:center; width:120px;">Sisa SO</th>
-                            <th style="width:180px;">Qty Kirim Saat Ini</th>
+                            <th style="text-align:center; width:110px;">Qty Dipesan</th>
+                            <th style="text-align:center; width:100px;">Sudah Dikirim</th>
+                            <th style="text-align:center; width:100px;">Sisa SO</th>
+                            <th style="width:230px;">Ketersediaan di Gudang Terpilih</th>
+                            <th style="width:190px;">Qty Kirim Saat Ini</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,14 +105,45 @@
                                     <span class="badge badge-pending" x-text="item.qty_remaining"></span>
                                 </td>
                                 <td>
+                                    <template x-if="!selectedWarehouseId">
+                                        <span style="font-size:12px; color:var(--text-secondary); font-style:italic;">
+                                            <i class="fa-solid fa-circle-info"></i> Pilih gudang asal terlebih dahulu
+                                        </span>
+                                    </template>
+                                    <template x-if="selectedWarehouseId">
+                                        <div>
+                                            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                                <span class="badge" 
+                                                    :style="item.max_deliverable > 0 ? 'background:#dcfce7; color:#15803d; font-weight:700;' : 'background:#fee2e2; color:#b91c1c; font-weight:700;'">
+                                                    <i class="fa-solid" :class="item.max_deliverable > 0 ? 'fa-circle-check' : 'fa-circle-xmark'"></i>
+                                                    Siap Kirim: <span x-text="item.max_deliverable"></span> <span x-text="item.product.unit"></span>
+                                                </span>
+                                            </div>
+                                            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
+                                                Fisik: <strong x-text="item.warehouse_on_hand"></strong> · Teralokasi SO: <strong x-text="item.warehouse_reserved"></strong> · Bebas: <strong x-text="item.warehouse_free"></strong>
+                                            </div>
+                                            <template x-if="item.other_warehouses && item.other_warehouses.length > 0">
+                                                <div style="margin-top:4px; font-size:11px; color:#475569; background:#f1f5f9; padding:2px 6px; border-radius:4px; display:inline-block;">
+                                                    <i class="fa-solid fa-location-dot" style="color:#0284c7;"></i>
+                                                    Tersedia di gudang lain: 
+                                                    <span x-text="item.other_warehouses.map(w => `${w.name} (${w.deliverable})`).join(', ')"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </td>
+                                <td>
                                     <input type="number" 
                                         :name="`items[${idx}][qty_delivered]`" 
                                         x-model.number="item.current_delivered" 
                                         class="form-control" 
-                                        :style="item.current_delivered > item.qty_remaining ? 'border-color:var(--danger); background:#fff5f5;' : ''"
+                                        :style="(item.current_delivered > item.max_deliverable || item.current_delivered > item.qty_remaining) ? 'border-color:var(--danger); background:#fff5f5;' : ''"
                                         min="0" 
-                                        :max="item.qty_remaining" 
+                                        :max="selectedWarehouseId ? item.max_deliverable : item.qty_remaining" 
                                         required>
+                                    <div x-show="selectedWarehouseId && item.current_delivered > item.max_deliverable" style="color:var(--danger); font-size:11.5px; margin-top:4px; font-weight:500;">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> Melebihi stok gudang ini (Maks: <span x-text="item.max_deliverable"></span>)
+                                    </div>
                                     <div x-show="item.current_delivered > item.qty_remaining" style="color:var(--danger); font-size:11.5px; margin-top:4px; font-weight:500;">
                                         <i class="fa-solid fa-triangle-exclamation"></i> Melebihi sisa SO (<span x-text="item.qty_remaining"></span>)
                                     </div>
@@ -172,7 +210,7 @@
                                 <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
                                 <input type="date" name="due_date" x-model="dueDate" class="form-control" :required="autoGenerateInvoice">
                                 <small style="color:var(--text-secondary); font-size:11.5px;">
-                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="(paymentTerm || 0) + ' hari'"></span>
+                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="paymentTermLabel ? (paymentTermLabel + ' (' + paymentTerm + ' hari)') : (paymentTerm + ' hari')"></span>
                                 </small>
                             </div>
                         </div>
@@ -208,7 +246,10 @@
 @push('scripts')
 <script>
 const confirmedSos = @json($confirmedSos->keyBy('id'));
+const stockMatrixBySo = @json($stockMatrixBySo ?? []);
+const warehousesMap = @json($warehouses->keyBy('id'));
 const initialSoId = "{{ old('sales_order_id', $selectedSoId ?? '') }}";
+const initialWarehouseId = "{{ old('warehouse_id', '') }}";
 const oldRecipientName = @json(old('recipient_name', ''));
 const oldShippingAddress = @json(old('shipping_address', ''));
 const oldItemsData = @json(old('items', []));
@@ -222,9 +263,18 @@ if (Array.isArray(oldItemsData)) {
     });
 }
 
+function parseTermDays(term) {
+    if (typeof term === 'number') return term;
+    if (!term) return 30;
+    if (String(term).toUpperCase().trim() === 'COD') return 0;
+    const match = String(term).match(/\d+/);
+    return match ? parseInt(match[0], 10) : 30;
+}
+
 function deliveryForm() {
     return {
         selectedSoId: initialSoId,
+        selectedWarehouseId: initialWarehouseId,
         selectedSo: null,
         recipientName: oldRecipientName,
         shippingAddress: oldShippingAddress,
@@ -237,13 +287,63 @@ function deliveryForm() {
         dueDate: "{{ old('due_date', '') }}",
         taxRate: 11,
         paymentTerm: 30,
+        paymentTermLabel: 'NET 30',
         receiptNotes: @json(old('receipt_notes', '')),
+
+        getWarehouseName(whId) {
+            return warehousesMap[whId] ? warehousesMap[whId].name : '-';
+        },
 
         init() {
             if (this.selectedSoId) {
                 this.onSoChange(false);
             }
             this.isFirstLoad = false;
+        },
+
+        onWarehouseChange() {
+            this.recalculateItemStock(true);
+        },
+
+        recalculateItemStock(isManualWhChange = true) {
+            if (!this.items || this.items.length === 0) return;
+
+            const soMatrix = stockMatrixBySo[this.selectedSoId] || {};
+            const whId = parseInt(this.selectedWarehouseId) || null;
+
+            this.items.forEach(item => {
+                const itemData = soMatrix[item.id] || null;
+                const whInfo = (itemData && whId && itemData.warehouses && itemData.warehouses[whId])
+                    ? itemData.warehouses[whId]
+                    : null;
+
+                const maxDeliverable = whInfo ? whInfo.max_deliverable : 0;
+                item.warehouse_on_hand = whInfo ? whInfo.on_hand : 0;
+                item.warehouse_reserved = whInfo ? whInfo.reserved_for_so : 0;
+                item.warehouse_free = whInfo ? whInfo.free_stock : 0;
+                item.max_deliverable = Math.min(item.qty_remaining, maxDeliverable);
+
+                // Cari gudang lain yang punya stok deliverable
+                const otherWhs = [];
+                if (itemData && itemData.warehouses) {
+                    Object.values(itemData.warehouses).forEach(w => {
+                        if (w.warehouse_id != whId && w.max_deliverable > 0) {
+                            otherWhs.push({
+                                name: w.warehouse_name,
+                                deliverable: w.max_deliverable
+                            });
+                        }
+                    });
+                }
+                item.other_warehouses = otherWhs;
+
+                // Batasi nilai Qty Kirim saat ini
+                if (whId) {
+                    if (isManualWhChange || item.current_delivered > item.max_deliverable) {
+                        item.current_delivered = item.max_deliverable;
+                    }
+                }
+            });
         },
 
         onSoChange(isManualUserChange = false) {
@@ -265,9 +365,9 @@ function deliveryForm() {
             }
 
             this.taxRate = parseFloat(this.selectedSo.tax_rate) || 0;
-            this.paymentTerm = (this.selectedSo.customer && this.selectedSo.customer.payment_term !== null) 
-                ? parseInt(this.selectedSo.customer.payment_term) 
-                : 30;
+            const cust = this.selectedSo.customer;
+            this.paymentTerm = cust ? (cust.payment_term_days ?? parseTermDays(cust.payment_term)) : 30;
+            this.paymentTermLabel = cust ? (cust.payment_term || (this.paymentTerm + ' hari')) : 'NET 30';
 
             if (!this.dueDate || isManualUserChange) {
                 this.calculateDueDate();
@@ -288,8 +388,15 @@ function deliveryForm() {
                     qty_delivered: item.qty_delivered,
                     qty_remaining: remaining,
                     current_delivered: currentVal,
+                    warehouse_on_hand: 0,
+                    warehouse_reserved: 0,
+                    warehouse_free: 0,
+                    max_deliverable: remaining,
+                    other_warehouses: [],
                 };
             });
+
+            this.recalculateItemStock(!this.isFirstLoad);
         },
 
         onToggleAutoInvoice() {

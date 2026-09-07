@@ -44,7 +44,8 @@ class PurchaseInvoiceService
 
         $taxRate = isset($data['tax_rate']) ? (float) $data['tax_rate'] : (float) ($po->tax_rate ?? 0);
         $invoiceDate = $data['invoice_date'] ?? ($grn->received_date ? $grn->received_date->toDateString() : now()->toDateString());
-        $dueDate = $data['due_date'] ?? $invoiceDate;
+        $termDays = $po->supplier?->payment_term_days ?? 30;
+        $dueDate = $data['due_date'] ?? \Carbon\Carbon::parse($invoiceDate)->addDays($termDays)->toDateString();
         $notes = $data['notes'] ?? ("Auto-generated dari LPB #" . $grn->receipt_number);
         $supplierInvoiceNumber = $data['supplier_invoice_number'] ?? null;
 

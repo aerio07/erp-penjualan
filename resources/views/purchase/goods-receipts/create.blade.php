@@ -273,7 +273,7 @@
                                 <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
                                 <input type="date" name="due_date" x-model="dueDate" class="form-control" :required="autoGenerateInvoice">
                                 <small style="color:var(--text-secondary); font-size:11.5px;">
-                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="(paymentTerm || 0) + ' hari'"></span>
+                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="paymentTermLabel ? (paymentTermLabel + ' (' + paymentTerm + ' hari)') : (paymentTerm + ' hari')"></span>
                                 </small>
                             </div>
                         </div>
@@ -307,6 +307,14 @@ const confirmedPos = @json($confirmedPos->keyBy('id'));
 const defaultWarehouseId = "{{ $warehouses->first()?->id ?? '' }}";
 const initialPoId = "{{ $selectedPoId ?? '' }}";
 
+function parseTermDays(term) {
+    if (typeof term === 'number') return term;
+    if (!term) return 30;
+    if (String(term).toUpperCase().trim() === 'COD') return 0;
+    const match = String(term).match(/\d+/);
+    return match ? parseInt(match[0], 10) : 30;
+}
+
 function grnForm() {
     return {
         selectedPoId: initialPoId,
@@ -320,6 +328,7 @@ function grnForm() {
         dueDate: "{{ old('due_date', '') }}",
         taxRate: 11,
         paymentTerm: 30,
+        paymentTermLabel: 'NET 30',
 
         init() {
             if (this.selectedPoId) {
@@ -336,9 +345,9 @@ function grnForm() {
 
             this.selectedPo = confirmedPos[this.selectedPoId];
             this.taxRate = parseFloat(this.selectedPo.tax_rate) || 0;
-            this.paymentTerm = (this.selectedPo.supplier && this.selectedPo.supplier.payment_term !== null)
-                ? parseInt(this.selectedPo.supplier.payment_term)
-                : 30;
+            const supp = this.selectedPo.supplier;
+            this.paymentTerm = supp ? (supp.payment_term_days ?? parseTermDays(supp.payment_term)) : 30;
+            this.paymentTermLabel = supp ? (supp.payment_term || (this.paymentTerm + ' hari')) : 'NET 30';
 
             if (!this.dueDate) {
                 this.calculateDueDate();

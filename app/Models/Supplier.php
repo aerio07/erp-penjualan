@@ -16,6 +16,22 @@ class Supplier extends Model
 
     protected $casts = ['is_active' => 'boolean'];
 
+    protected $appends = ['payment_term_days'];
+
+    public function getPaymentTermDaysAttribute(): int
+    {
+        if (empty($this->payment_term)) {
+            return 30;
+        }
+        if (strtoupper(trim($this->payment_term)) === 'COD') {
+            return 0;
+        }
+        if (preg_match('/\d+/', (string) $this->payment_term, $matches)) {
+            return (int) $matches[0];
+        }
+        return 30;
+    }
+
     public function purchaseOrders(): HasMany
     {
         return $this->hasMany(PurchaseOrder::class);
