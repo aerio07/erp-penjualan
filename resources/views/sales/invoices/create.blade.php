@@ -58,12 +58,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">
-                                Jatuh Tempo <span style="color:var(--danger);">*</span>
-                                <span style="font-size:11px; font-weight:normal; color:var(--text-secondary);" x-show="selectedSoData">
-                                    (Syarat: <strong style="color:var(--primary);" x-text="paymentTermLabel || (paymentTerm + ' hari')"></strong>)
-                                </span>
-                            </label>
+                            <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="due_date" x-model="dueDate" class="form-control" required>
                         </div>
 

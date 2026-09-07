@@ -272,9 +272,6 @@
                             <div class="form-group">
                                 <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
                                 <input type="date" name="due_date" x-model="dueDate" class="form-control" :required="autoGenerateInvoice">
-                                <small style="color:var(--text-secondary); font-size:11.5px;">
-                                    Term of Payment (TOP): <span style="font-weight:600; color:var(--primary);" x-text="paymentTermLabel ? (paymentTermLabel + ' (' + paymentTerm + ' hari)') : (paymentTerm + ' hari')"></span>
-                                </small>
                             </div>
                         </div>
 

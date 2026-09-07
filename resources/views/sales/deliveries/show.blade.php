@@ -283,7 +283,7 @@
                                     <input type="date" name="invoice_date" x-model="invoiceDate" @change="onInvoiceDateChange()" class="form-control" style="font-size:12.5px;">
                                 </div>
                                 <div class="form-group" style="margin:0;">
-                                    <label class="form-label" style="font-size:12px;">Jatuh Tempo (Syarat: <span style="font-weight:700; color:var(--primary);" x-text="paymentTermLabel || (paymentTerm + ' hari')"></span> · <span x-text="paymentTerm + ' hari'"></span>)</label>
+                                    <label class="form-label" style="font-size:12px;">Tanggal Jatuh Tempo</label>
                                     <input type="date" name="due_date" x-model="dueDate" class="form-control" style="font-size:12.5px;">
                                 </div>
                             </div>
