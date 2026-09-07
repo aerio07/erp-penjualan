@@ -52,6 +52,12 @@ class JournalEntryController extends Controller
             'lines.*.credit'        => 'required|numeric|min:0',
         ]);
 
+        try {
+            app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked(\Carbon\Carbon::parse($request->entry_date));
+        } catch (\App\Exceptions\PeriodClosedException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
         $entry = DB::transaction(function () use ($request) {
             $entry = JournalEntry::create([
                 'entry_number' => $this->journalService->generateEntryNumber(),
@@ -99,6 +105,12 @@ class JournalEntryController extends Controller
             'description' => 'nullable|string',
             'lines'       => 'required|array|min:2',
         ]);
+
+        try {
+            app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked(\Carbon\Carbon::parse($request->entry_date));
+        } catch (\App\Exceptions\PeriodClosedException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         DB::transaction(function () use ($request, $journal) {
             $journal->update([

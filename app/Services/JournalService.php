@@ -20,6 +20,7 @@ use App\Models\StockMovement;
 use App\Models\StockOpname;
 use App\Models\StockOpnameItem;
 use App\Traits\GeneratesDocumentNumber;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -654,6 +655,8 @@ class JournalService
         int $referenceId,
         array $lines
     ): JournalEntry {
+        app(AccountingPeriodService::class)->assertDateNotLocked(Carbon::parse($date));
+
         return DB::transaction(function () use ($date, $description, $referenceType, $referenceId, $lines) {
             $entry = JournalEntry::create([
                 'entry_number'   => $this->generateEntryNumber(),
@@ -732,6 +735,8 @@ class JournalService
         if (empty($validLines)) {
             throw new \InvalidArgumentException("Tidak ada baris saldo awal yang memiliki nilai nominal > 0.");
         }
+
+        app(AccountingPeriodService::class)->assertDateNotLocked(Carbon::parse($date));
 
         return DB::transaction(function () use ($date, $notes, $validLines) {
             $entry = JournalEntry::where('reference_type', 'OpeningBalance')->first();

@@ -36,6 +36,7 @@ use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReportController;
 use App\Http\Controllers\Accounting\FixedAssetController;
 use App\Http\Controllers\Accounting\OpeningBalanceController;
+use App\Http\Controllers\Accounting\PeriodController;
 // Approval
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Route;
@@ -169,6 +170,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Saldo Awal Neraca
         Route::get('opening-balance', [OpeningBalanceController::class, 'index'])->name('opening-balance.index');
         Route::post('opening-balance', [OpeningBalanceController::class, 'store'])->name('opening-balance.store');
+
+        // Periode Akuntansi & Closing
+        Route::get('periods', [PeriodController::class, 'index'])->name('periods.index');
+        Route::post('periods/generate', [PeriodController::class, 'generate'])->name('periods.generate');
+        Route::get('periods/{period}', [PeriodController::class, 'show'])->name('periods.show');
+        Route::post('periods/{period}/close', [PeriodController::class, 'close'])->name('periods.close');
+        Route::post('periods/{period}/reopen', [PeriodController::class, 'reopen'])->name('periods.reopen');
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
