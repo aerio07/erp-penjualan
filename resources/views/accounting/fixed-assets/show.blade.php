@@ -3,176 +3,169 @@
 @section('page-title', 'Detail Aset #' . $fixedAsset->asset_code)
 
 @section('content')
-<div class="animate-in max-w-5xl mx-auto flex flex-col gap-6 pb-12">
+<div class="animate-in">
     {{-- Header Section --}}
-    <div class="page-header flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="page-header">
         <div>
-            <div class="flex items-center gap-2.5">
-                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">{{ $fixedAsset->name }}</h1>
-                <span class="font-mono text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-extrabold border border-blue-200">
+            <h1>{{ $fixedAsset->name }}
+                <span style="font-family: 'Inter', monospace; font-size: 12px; padding: 4px 10px; border-radius: 6px; background-color: #eff6ff; color: #1e40af; font-weight: 700; border: 1px solid #bfdbfe; margin-left: 8px; vertical-align: middle;">
                     {{ $fixedAsset->asset_code }}
                 </span>
-                <span class="badge {{ $fixedAsset->status_badge_class }}">
+                <span class="badge {{ $fixedAsset->status_badge_class }}" style="vertical-align: middle; margin-left: 4px;">
                     {{ $fixedAsset->status_label }}
                 </span>
-            </div>
-            <p class="text-xs text-slate-500 mt-1">
-                Kategori: <strong>{{ $fixedAsset->category->name }}</strong> &bull; Akun Pembukuan: <span class="font-mono">{{ $fixedAsset->category->account?->code }} - {{ $fixedAsset->category->account?->name }}</span>
+            </h1>
+            <p>
+                Kategori: <strong>{{ $fixedAsset->category->name }}</strong> &bull; Akun Pembukuan: <span style="font-family: 'Inter', monospace;">{{ $fixedAsset->category->account?->code }} - {{ $fixedAsset->category->account?->name }}</span>
             </p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="{{ route('accounting.fixed-assets.index') }}" class="btn btn-secondary px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Kembali</span>
-            </a>
-        </div>
+        <a href="{{ route('accounting.fixed-assets.index') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Kembali
+        </a>
     </div>
 
     @if(session('success'))
-    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm flex items-center gap-3 shadow-xs">
-        <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
-            <i class="fa-solid fa-circle-check text-base"></i>
-        </div>
+    <div class="alert alert-success mb-4">
+        <i class="fa-solid fa-circle-check"></i>
         <div>
-            <div class="font-bold">Berhasil Diperbarui!</div>
-            <div class="text-xs text-emerald-700 mt-0.5">{{ session('success') }}</div>
+            <strong>Berhasil Diperbarui!</strong>
+            <div>{{ session('success') }}</div>
         </div>
     </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {{-- Kolom Kiri: Detail Informasi & Jurnal --}}
-        <div class="lg:col-span-2 flex flex-col gap-6">
+    <div class="form-row form-row-3" style="align-items: start;">
+        {{-- Kolom Kiri (span 2): Detail Informasi & Jurnal --}}
+        <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 24px;">
             {{-- Kartu Spesifikasi & Perolehan --}}
-            <div class="card p-6 border border-slate-200 rounded-2xl shadow-xs bg-white">
-                <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-blue-600"></i> Rincian Spesifikasi & Perolehan
-                </h3>
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-circle-info" style="color: #2563eb; margin-right: 6px;"></i> Rincian Spesifikasi & Perolehan</h3>
+                </div>
+                <div class="card-body">
+                    <div class="detail-grid">
+                        <div class="detail-group">
+                            <div class="detail-label">Harga Perolehan</div>
+                            <div class="detail-value" style="font-family: 'Inter', monospace;">Rp {{ number_format($fixedAsset->purchase_cost, 0, ',', '.') }}</div>
+                        </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Harga Perolehan</div>
-                        <div class="text-base font-extrabold text-slate-900 font-mono mt-1">Rp {{ number_format($fixedAsset->purchase_cost, 0, ',', '.') }}</div>
-                    </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Tanggal Perolehan</div>
+                            <div class="detail-value">{{ $fixedAsset->purchase_date ? $fixedAsset->purchase_date->format('d M Y') : '-' }}</div>
+                        </div>
 
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tanggal Perolehan</div>
-                        <div class="text-sm font-bold text-slate-800 mt-1">{{ $fixedAsset->purchase_date ? $fixedAsset->purchase_date->format('d M Y') : '-' }}</div>
-                    </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Sumber Perolehan</div>
+                            <div class="detail-value">
+                                @if($fixedAsset->acquisition_type === 'purchase')
+                                    <span class="badge" style="background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;">
+                                        <i class="fa-solid fa-money-bill-wave" style="font-size: 10px;"></i> Beli Baru
+                                    </span>
+                                @else
+                                    <span class="badge" style="background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a;">
+                                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 10px;"></i> Saldo Awal
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
 
-                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Sumber Perolehan</div>
-                        <div class="mt-1">
-                            @if($fixedAsset->acquisition_type === 'purchase')
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
-                                    <i class="fa-solid fa-cart-shopping text-[10px]"></i> Beli Baru
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">
-                                    <i class="fa-solid fa-clock-rotate-left text-[10px]"></i> Saldo Awal
-                                </span>
-                            @endif
+                        <div class="detail-group">
+                            <div class="detail-label">No. Seri / Rangka</div>
+                            <div class="detail-value" style="font-family: 'Inter', monospace;">{{ $fixedAsset->serial_number ?: '-' }}</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">Lokasi Penempatan</div>
+                            <div class="detail-value">{{ $fixedAsset->location ?: '-' }}</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">Batch Referensi</div>
+                            <div class="detail-value" style="font-family: 'Inter', monospace; font-size: 12px;">{{ $fixedAsset->batch_reference ?: '-' }}</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">Masa Manfaat</div>
+                            <div class="detail-value">{{ $fixedAsset->useful_life_months ?: 0 }} Bulan</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">Nilai Residu</div>
+                            <div class="detail-value" style="font-family: 'Inter', monospace;">Rp {{ number_format($fixedAsset->salvage_value, 0, ',', '.') }}</div>
+                        </div>
+
+                        <div class="detail-group">
+                            <div class="detail-label">Didaftarkan Oleh</div>
+                            <div class="detail-value">{{ $fixedAsset->creator?->name ?: 'Sistem' }}</div>
                         </div>
                     </div>
 
-                    <div>
-                        <div class="text-xs text-slate-400 font-medium">No. Seri / Rangka</div>
-                        <div class="text-sm font-mono font-bold text-slate-800 mt-0.5">{{ $fixedAsset->serial_number ?: '-' }}</div>
+                    @if($fixedAsset->notes)
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                        <div style="font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: 'Public Sans', sans-serif;">Catatan Khusus:</div>
+                        <div style="font-size: 13px; color: #334155; background: #f8fafc; padding: 12px 14px; border-radius: 6px; border: 1px solid #e2e8f0; line-height: 1.6; font-family: 'Inter', sans-serif;">{{ $fixedAsset->notes }}</div>
                     </div>
-
-                    <div>
-                        <div class="text-xs text-slate-400 font-medium">Lokasi Penempatan</div>
-                        <div class="text-sm font-semibold text-slate-800 mt-0.5">{{ $fixedAsset->location ?: '-' }}</div>
-                    </div>
-
-                    <div>
-                        <div class="text-xs text-slate-400 font-medium">Batch Referensi</div>
-                        <div class="text-xs font-mono text-slate-500 mt-0.5">{{ $fixedAsset->batch_reference ?: '-' }}</div>
-                    </div>
-
-                    <div>
-                        <div class="text-xs text-slate-400 font-medium">Masa Manfaat</div>
-                        <div class="text-sm font-semibold text-slate-800 mt-0.5">{{ $fixedAsset->useful_life_months ?: 0 }} Bulan</div>
-                    </div>
-
-                    <div>
-                        <div class="text-xs text-slate-400 font-medium">Nilai Residu</div>
-                        <div class="text-sm font-semibold text-slate-800 font-mono mt-0.5">Rp {{ number_format($fixedAsset->salvage_value, 0, ',', '.') }}</div>
-                    </div>
-
-                    <div>
-                        <div class="text-xs text-slate-400 font-medium">Didaftarkan Oleh</div>
-                        <div class="text-sm font-semibold text-slate-800 mt-0.5">{{ $fixedAsset->creator?->name ?: 'Sistem' }}</div>
-                    </div>
+                    @endif
                 </div>
-
-                @if($fixedAsset->notes)
-                <div class="mt-5 pt-4 border-t border-slate-100">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Catatan Khusus:</div>
-                    <div class="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200 leading-relaxed">{{ $fixedAsset->notes }}</div>
-                </div>
-                @endif
             </div>
 
             {{-- Jurnal Transaksi Pembukuan --}}
             @if($fixedAsset->journalEntry)
-            <div class="card p-6 border border-slate-200 rounded-2xl shadow-xs bg-white">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                            Jurnal Pembelian Kas Terkait
-                        </h3>
-                    </div>
-                    <a href="{{ route('accounting.journals.show', $fixedAsset->journalEntry) }}" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-                        <span>Buka Entri Jurnal #{{ $fixedAsset->journalEntry->entry_number }}</span>
-                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            <div class="card">
+                <div class="card-header">
+                    <h3>
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #059669; margin-right: 8px;"></span>
+                        Jurnal Pembelian Kas Terkait
+                    </h3>
+                    <a href="{{ route('accounting.journals.show', $fixedAsset->journalEntry) }}" style="font-size: 12px; font-weight: 700; color: #2563eb; text-decoration: none; font-family: 'Inter', sans-serif;">
+                        Buka Entri Jurnal #{{ $fixedAsset->journalEntry->entry_number }} <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
                     </a>
                 </div>
+                <div class="card-body">
+                    <div style="font-size: 13px; color: #64748b; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 16px; font-family: 'Inter', sans-serif;">
+                        <span>No. Entri: <strong style="font-family: 'Inter', monospace; color: #0e1b35;">{{ $fixedAsset->journalEntry->entry_number }}</strong></span>
+                        <span>Tanggal: <strong style="color: #0e1b35;">{{ $fixedAsset->journalEntry->entry_date->format('d/m/Y') }}</strong></span>
+                        <span>Status: <span class="badge" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 10px; text-transform: uppercase;">{{ $fixedAsset->journalEntry->status }}</span></span>
+                    </div>
 
-                <div class="text-xs text-slate-500 mb-3.5 flex flex-wrap items-center gap-5">
-                    <span>No. Entri: <strong class="font-mono text-slate-800">{{ $fixedAsset->journalEntry->entry_number }}</strong></span>
-                    <span>Tanggal: <strong class="text-slate-800">{{ $fixedAsset->journalEntry->entry_date->format('d/m/Y') }}</strong></span>
-                    <span>Status: <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">{{ $fixedAsset->journalEntry->status }}</span></span>
-                </div>
-
-                <div class="table-responsive rounded-xl border border-slate-200 overflow-hidden">
-                    <table class="erp-table text-xs">
-                        <thead>
-                            <tr class="bg-slate-50">
-                                <th class="py-2.5 px-4 font-bold text-slate-700">Akun Pembukuan</th>
-                                <th style="text-align:right;" class="py-2.5 px-4 font-bold text-slate-700">Debit</th>
-                                <th style="text-align:right;" class="py-2.5 px-4 font-bold text-slate-700">Kredit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($fixedAsset->journalEntry->lines as $line)
-                            <tr class="border-b border-slate-100">
-                                <td class="py-2.5 px-4">
-                                    <div class="font-bold text-slate-900">{{ $line->chartOfAccount?->code }} - {{ $line->chartOfAccount?->name }}</div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5">{{ $line->description }}</div>
-                                </td>
-                                <td style="text-align:right;" class="py-2.5 px-4 font-mono font-bold text-blue-700">
-                                    {{ $line->debit > 0 ? 'Rp ' . number_format($line->debit, 0, ',', '.') : '-' }}
-                                </td>
-                                <td style="text-align:right;" class="py-2.5 px-4 font-mono font-bold text-purple-700">
-                                    {{ $line->credit > 0 ? 'Rp ' . number_format($line->credit, 0, ',', '.') : '-' }}
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="erp-table">
+                            <thead>
+                                <tr>
+                                    <th>Akun Pembukuan</th>
+                                    <th style="text-align:right;">Debit</th>
+                                    <th style="text-align:right;">Kredit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($fixedAsset->journalEntry->lines as $line)
+                                <tr>
+                                    <td>
+                                        <div style="font-weight: 700;">{{ $line->chartOfAccount?->code }} - {{ $line->chartOfAccount?->name }}</div>
+                                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">{{ $line->description }}</div>
+                                    </td>
+                                    <td style="text-align:right; font-family: 'Inter', monospace; font-weight: 700; color: #1d4ed8;">
+                                        {{ $line->debit > 0 ? 'Rp ' . number_format($line->debit, 0, ',', '.') : '-' }}
+                                    </td>
+                                    <td style="text-align:right; font-family: 'Inter', monospace; font-weight: 700; color: #7c3aed;">
+                                        {{ $line->credit > 0 ? 'Rp ' . number_format($line->credit, 0, ',', '.') : '-' }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             @elseif($fixedAsset->acquisition_type === 'opening_balance')
-            <div class="card p-5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl">
-                <div class="flex items-start gap-3.5">
-                    <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <div class="card" style="background: linear-gradient(135deg, #fffbeb, #fff7ed); border-color: #fde68a;">
+                <div class="card-body" style="display: flex; align-items: flex-start; gap: 14px;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: #d97706; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-sm text-amber-950">Aset Saldo Awal Neraca</div>
-                        <div class="text-xs text-amber-800 mt-1 leading-relaxed">
+                        <div style="font-weight: 700; font-size: 14px; color: #451a03; font-family: 'Public Sans', sans-serif;">Aset Saldo Awal Neraca</div>
+                        <div style="font-size: 13px; color: #78350f; margin-top: 4px; line-height: 1.6; font-family: 'Inter', sans-serif;">
                             Aset ini didaftarkan dari saldo awal perusahaan. Nilai perolehannya telah diakui melalui pengisian <strong>Saldo Awal Neraca</strong> sehingga tidak ada jurnal pengeluaran kas tambahan hari ini.
                         </div>
                     </div>
@@ -182,45 +175,45 @@
         </div>
 
         {{-- Kolom Kanan: Form Update Metadata Aset --}}
-        <div class="card p-6 border border-slate-200 rounded-2xl shadow-xs bg-white">
-            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
-                <i class="fa-solid fa-pen-to-square text-blue-600"></i> Kelola Status & Lokasi
-            </h3>
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-pen-to-square" style="color: #2563eb; margin-right: 6px;"></i> Kelola Status & Lokasi</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('accounting.fixed-assets.update', $fixedAsset) }}">
+                    @csrf
+                    @method('PUT')
 
-            <form method="POST" action="{{ route('accounting.fixed-assets.update', $fixedAsset) }}" class="flex flex-col gap-4">
-                @csrf
-                @method('PUT')
+                    <div class="form-group">
+                        <label class="form-label">Status Unit Aset</label>
+                        <select name="status" class="form-control">
+                            <option value="active" {{ $fixedAsset->status === 'active' ? 'selected' : '' }}>Aktif / Digunakan</option>
+                            <option value="maintenance" {{ $fixedAsset->status === 'maintenance' ? 'selected' : '' }}>Dalam Perbaikan / Servis</option>
+                            <option value="disposed" {{ $fixedAsset->status === 'disposed' ? 'selected' : '' }}>Afkir / Dihapus</option>
+                            <option value="sold" {{ $fixedAsset->status === 'sold' ? 'selected' : '' }}>Terjual</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Status Unit Aset</label>
-                    <select name="status" class="form-control text-sm h-10 rounded-xl border-slate-200">
-                        <option value="active" {{ $fixedAsset->status === 'active' ? 'selected' : '' }}>Aktif / Digunakan</option>
-                        <option value="maintenance" {{ $fixedAsset->status === 'maintenance' ? 'selected' : '' }}>Dalam Perbaikan / Servis</option>
-                        <option value="disposed" {{ $fixedAsset->status === 'disposed' ? 'selected' : '' }}>Afkir / Dihapus</option>
-                        <option value="sold" {{ $fixedAsset->status === 'sold' ? 'selected' : '' }}>Terjual</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Lokasi Penempatan</label>
+                        <input type="text" name="location" value="{{ old('location', $fixedAsset->location) }}" class="form-control">
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Lokasi Penempatan</label>
-                    <input type="text" name="location" value="{{ old('location', $fixedAsset->location) }}" class="form-control text-sm h-10 rounded-xl border-slate-200">
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Nomor Seri / Rangka</label>
+                        <input type="text" name="serial_number" value="{{ old('serial_number', $fixedAsset->serial_number) }}" class="form-control">
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nomor Seri / Rangka</label>
-                    <input type="text" name="serial_number" value="{{ old('serial_number', $fixedAsset->serial_number) }}" class="form-control text-sm h-10 rounded-xl border-slate-200">
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Catatan Tambahan</label>
+                        <textarea name="notes" rows="3" class="form-control">{{ old('notes', $fixedAsset->notes) }}</textarea>
+                    </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Catatan Tambahan</label>
-                    <textarea name="notes" rows="3" class="form-control text-xs rounded-xl border-slate-200">{{ old('notes', $fixedAsset->notes) }}</textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-full py-2.5 rounded-xl font-bold text-xs shadow-md shadow-blue-600/20 mt-1 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    <span>Simpan Perubahan</span>
-                </button>
-            </form>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 4px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
