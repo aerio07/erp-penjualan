@@ -74,6 +74,7 @@ class ChartOfAccountSeeder extends Seeder
                     'type'           => $account['type'],
                     'normal_balance' => $normalBalance,
                     'is_active'      => true,
+                    'is_cash_bank'   => str_starts_with($account['code'], '1-11'),
                 ]
             );
         }

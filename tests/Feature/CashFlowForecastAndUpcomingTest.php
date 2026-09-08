@@ -208,17 +208,20 @@ class CashFlowForecastAndUpcomingTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('accounting.reports.cash-flow'));
         $response->assertStatus(200);
 
-        $forecastWeeks = $response->viewData('forecastWeeks');
-        $totalProjectedInflow = $response->viewData('totalProjectedInflow');
-        $totalProjectedOutflow = $response->viewData('totalProjectedOutflow');
+        $fcTotalReceivable = $response->viewData('fcTotalReceivable');
+        $fcTotalPayable = $response->viewData('fcTotalPayable');
+        $fcReceivableByCustomer = $response->viewData('fcReceivableByCustomer');
+        $fcPayableBySupplier = $response->viewData('fcPayableBySupplier');
 
-        // SI: 80jt - (2/10 * 80jt = 16jt) = 64jt di Minggu ke-1
-        $this->assertEquals(64000000, $forecastWeeks[1]['inflow']);
-        $this->assertEquals(64000000, $totalProjectedInflow);
+        // SI: 80jt - (2/10 * 80jt = 16jt) = 64jt
+        $this->assertEquals(64000000, $fcTotalReceivable);
+        $this->assertEquals('PT Customer Prioritas', $fcReceivableByCustomer->first()->customer_name);
+        $this->assertEquals(64000000, $fcReceivableByCustomer->first()->total);
 
-        // PI: 50jt - (2/10 * 50jt = 10jt) = 40jt di Minggu ke-2
-        $this->assertEquals(40000000, $forecastWeeks[2]['outflow']);
-        $this->assertEquals(40000000, $totalProjectedOutflow);
+        // PI: 50jt - (2/10 * 50jt = 10jt) = 40jt
+        $this->assertEquals(40000000, $fcTotalPayable);
+        $this->assertEquals('PT Supplier Utama', $fcPayableBySupplier->first()->supplier_name);
+        $this->assertEquals(40000000, $fcPayableBySupplier->first()->total);
     }
 
     public function test_receivables_upcoming_excludes_overdue_and_applies_return_deduction(): void

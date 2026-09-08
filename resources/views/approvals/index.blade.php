@@ -68,10 +68,10 @@
                         <td style="text-align:center;">
                             <div style="display:flex; gap:8px; justify-content:center;">
                                 {{-- Form Setujui --}}
-                                <form method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline;">
+                                <form id="approve-form-{{ $app->id }}" method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline;">
                                     @csrf 
                                     @method('PATCH')
-                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Setujui transaksi {{ $docNum }} sebesar Rp {{ number_format($app->amount, 0, ',', '.') }}?')">
+                                    <button type="button" class="btn btn-success btn-sm" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ number_format($app->amount, 0, ',', '.') }}')">
                                         <i class="fa-solid fa-check"></i> Setujui
                                     </button>
                                 </form>
@@ -157,6 +157,26 @@
 
 @push('scripts')
 <script>
+function approveApproval(id, docNum, amount) {
+    Swal.fire({
+        title: 'Konfirmasi Persetujuan',
+        html: `Setujui transaksi <strong>${docNum}</strong> sebesar <strong style="color:var(--primary);">Rp ${amount}</strong>?`,
+        icon: 'question',
+        iconColor: '#16a34a',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-check"></i> Ya, Setujui',
+        confirmButtonColor: '#16a34a',
+        cancelButtonText: 'Batal',
+        cancelButtonColor: '#64748b',
+        reverseButtons: true,
+        focusConfirm: true,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('approve-form-' + id).submit();
+        }
+    });
+}
+
 function rejectApproval(id, docNum) {
     Swal.fire({
         title: 'Tolak Approval ' + docNum,

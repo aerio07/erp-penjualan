@@ -121,12 +121,13 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from', date('Y-m-01'));
         $dateTo   = $request->input('date_to', date('Y-m-d'));
 
-        // Akun Kas & Bank (1-1100, 1-1110, 1-1120)
-        $cashAccounts = ChartOfAccount::whereIn('code', ['1-1100', '1-1110', '1-1120'])->pluck('id');
+        // Akun Kas & Bank (dinamis via flag is_cash_bank)
+        $cashAccountIds = ChartOfAccount::cashAndBank()->pluck('id');
+        $cashAccountsList = ChartOfAccount::cashAndBank()->orderBy('code')->get();
 
         // Saldo Kas Awal Periode (sebelum date_from)
         $openingBalance = (float) JournalLine::join('journal_entries', 'journal_lines.journal_entry_id', '=', 'journal_entries.id')
-            ->whereIn('journal_lines.chart_of_account_id', $cashAccounts)
+            ->whereIn('journal_lines.chart_of_account_id', $cashAccountIds)
             ->where('journal_entries.status', 'posted')
             ->whereDate('journal_entries.entry_date', '<', $dateFrom)
             ->sum(DB::raw('debit - credit'));
@@ -134,7 +135,7 @@ class ReportController extends Controller
         // Transaksi Kas Periode date_from s/d date_to
         $cashLines = JournalLine::with(['journalEntry.reference', 'chartOfAccount'])
             ->join('journal_entries', 'journal_lines.journal_entry_id', '=', 'journal_entries.id')
-            ->whereIn('journal_lines.chart_of_account_id', $cashAccounts)
+            ->whereIn('journal_lines.chart_of_account_id', $cashAccountIds)
             ->where('journal_entries.status', 'posted')
             ->whereDate('journal_entries.entry_date', '>=', $dateFrom)
             ->whereDate('journal_entries.entry_date', '<=', $dateTo)
@@ -166,112 +167,188 @@ class ReportController extends Controller
         $closingBalance = $openingBalance + $totalInflow - $totalOutflow;
 
         // =========================================================================
-        // PROYEKSI ARUS KAS 30 HARI KE DEPAN (FORECAST LIKUIDITAS)
-        // Berbasis tagihan belum lunas & belum jatuh tempo, memperhitungkan retur (effective_total_amount)
+        // FORECAST: Proyeksi Kas Per Periode (Bulan Ini / Depan / +2)
         // =========================================================================
         $today = Carbon::today();
-        $forecastEndDate = $today->copy()->addDays(30);
+        $forecastPeriod = $request->input('forecast_period', 'current');
 
-        // Saldo Kas Riil saat ini (per hari ini)
-        $currentCashBalance = (float) JournalLine::join('journal_entries', 'journal_lines.journal_entry_id', '=', 'journal_entries.id')
-            ->whereIn('journal_lines.chart_of_account_id', $cashAccounts)
-            ->where('journal_entries.status', 'posted')
-            ->whereDate('journal_entries.entry_date', '<=', $today)
-            ->sum(DB::raw('debit - credit'));
+        // Parse periode forecast
+        [$fcStart, $fcEnd, $fcLabel, $fcIsCurrent] = $this->parseForecastPeriod($forecastPeriod, $today);
 
-        // Tagihan Piutang Customer belum lunas yang jatuh tempo dalam 30 hari ke depan
-        $upcomingSales = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
+        // Saldo Awal Forecast (aktual atau estimasi berantai)
+        $fcSaldoAwal = $this->getForecastSaldoAwal($fcStart, $cashAccountIds, $fcIsCurrent);
+        $fcSaldoAwalLabel = $fcIsCurrent ? 'Posisi Kas Aktual' : 'Estimasi Berantai';
+
+        // Breakdown saldo awal per akun
+        $fcSaldoBreakdown = $cashAccountsList->map(function ($account) use ($fcStart, $fcIsCurrent, $today) {
+            $query = JournalLine::join('journal_entries', 'journal_lines.journal_entry_id', '=', 'journal_entries.id')
+                ->where('journal_lines.chart_of_account_id', $account->id)
+                ->where('journal_entries.status', 'posted');
+
+            if ($fcIsCurrent) {
+                $query->whereDate('journal_entries.entry_date', '<=', $today->toDateString());
+            } else {
+                $query->whereDate('journal_entries.entry_date', '<', $fcStart->toDateString());
+            }
+
+            $balance = (float) $query->sum(DB::raw('debit - credit'));
+            return (object) ['code' => $account->code, 'name' => $account->name, 'balance' => $balance];
+        });
+
+        // Est. Penerimaan dari Piutang (jatuh tempo s/d akhir periode)
+        $fcReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
             ->where('status', '!=', 'paid')
-            ->whereDate('due_date', '>=', $today)
-            ->whereDate('due_date', '<=', $forecastEndDate)
+            ->whereDate('due_date', '<=', $fcEnd->toDateString())
             ->get()
             ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
-        // Tagihan Hutang Supplier belum lunas yang jatuh tempo dalam 30 hari ke depan
-        $upcomingPurchases = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
+        $fcTotalReceivable = (float) $fcReceivables->sum('outstanding_amount');
+
+        $fcReceivableByCustomer = $fcReceivables
+            ->groupBy(fn($inv) => $inv->salesOrder?->customer?->id ?? 0)
+            ->map(function ($invoices) {
+                $customer = $invoices->first()->salesOrder?->customer;
+                $notes = $invoices->sortBy('due_date')->map(fn($inv) => (object) [
+                    'invoice_number' => $inv->invoice_number,
+                    'invoice_date'   => $inv->invoice_date,
+                    'due_date'       => $inv->due_date,
+                    'total_amount'   => (float) $inv->effective_total_amount,
+                    'paid'           => (float) $inv->total_paid,
+                    'outstanding'    => (float) $inv->outstanding_amount,
+                    'is_overdue'     => Carbon::parse($inv->due_date)->lt(Carbon::today()),
+                ]);
+                return (object) [
+                    'customer_name' => $customer?->name ?? 'Tanpa Customer',
+                    'total'         => (float) $invoices->sum('outstanding_amount'),
+                    'count'         => $invoices->count(),
+                    'invoices'      => $notes->values(),
+                ];
+            })->sortByDesc('total')->values();
+
+        // Est. Pengeluaran dari Hutang
+        $fcPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->where('status', '!=', 'paid')
-            ->whereDate('due_date', '>=', $today)
-            ->whereDate('due_date', '<=', $forecastEndDate)
+            ->whereDate('due_date', '<=', $fcEnd->toDateString())
             ->get()
             ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
-        // 4 Rolling Week Buckets:
-        // Week 1: today s/d today+7
-        // Week 2: today+8 s/d today+14
-        // Week 3: today+15 s/d today+21
-        // Week 4: today+22 s/d today+30
-        $forecastWeeks = [
-            1 => [
-                'label'   => 'Minggu ke-1',
-                'range'   => $today->copy()->addDay()->format('d M') . ' - ' . $today->copy()->addDays(7)->format('d M'),
-                'end'     => $today->copy()->addDays(7)->toDateString(),
-                'inflow'  => 0,
-                'outflow' => 0,
-            ],
-            2 => [
-                'label'   => 'Minggu ke-2',
-                'range'   => $today->copy()->addDays(8)->format('d M') . ' - ' . $today->copy()->addDays(14)->format('d M'),
-                'end'     => $today->copy()->addDays(14)->toDateString(),
-                'inflow'  => 0,
-                'outflow' => 0,
-            ],
-            3 => [
-                'label'   => 'Minggu ke-3',
-                'range'   => $today->copy()->addDays(15)->format('d M') . ' - ' . $today->copy()->addDays(21)->format('d M'),
-                'end'     => $today->copy()->addDays(21)->toDateString(),
-                'inflow'  => 0,
-                'outflow' => 0,
-            ],
-            4 => [
-                'label'   => 'Minggu ke-4',
-                'range'   => $today->copy()->addDays(22)->format('d M') . ' - ' . $today->copy()->addDays(30)->format('d M'),
-                'end'     => $today->copy()->addDays(30)->toDateString(),
-                'inflow'  => 0,
-                'outflow' => 0,
-            ],
+        $fcTotalPayable = (float) $fcPayables->sum('outstanding_amount');
+
+        $fcPayableBySupplier = $fcPayables
+            ->groupBy(fn($inv) => $inv->purchaseOrder?->supplier?->id ?? 0)
+            ->map(function ($invoices) {
+                $supplier = $invoices->first()->purchaseOrder?->supplier;
+                $notes = $invoices->sortBy('due_date')->map(fn($inv) => (object) [
+                    'invoice_number' => $inv->invoice_number,
+                    'invoice_date'   => $inv->invoice_date,
+                    'due_date'       => $inv->due_date,
+                    'total_amount'   => (float) $inv->effective_total_amount,
+                    'paid'           => (float) $inv->total_paid,
+                    'outstanding'    => (float) $inv->outstanding_amount,
+                    'is_overdue'     => Carbon::parse($inv->due_date)->lt(Carbon::today()),
+                ]);
+                return (object) [
+                    'supplier_name' => $supplier?->name ?? 'Tanpa Supplier',
+                    'total'         => (float) $invoices->sum('outstanding_amount'),
+                    'count'         => $invoices->count(),
+                    'invoices'      => $notes->values(),
+                ];
+            })->sortByDesc('total')->values();
+
+        // Saldo Akhir + Health Badge
+        $fcSaldoAkhir = $fcSaldoAwal + $fcTotalReceivable - $fcTotalPayable;
+        $fcHealthThreshold = $fcTotalPayable * 0.20;
+        if ($fcSaldoAkhir < 0) {
+            $fcHealthBadge = 'danger';  $fcHealthLabel = 'Defisit Kas';
+        } elseif ($fcSaldoAkhir < $fcHealthThreshold) {
+            $fcHealthBadge = 'warning'; $fcHealthLabel = 'Kas Menipis';
+        } else {
+            $fcHealthBadge = 'success'; $fcHealthLabel = 'Kas Sehat';
+        }
+
+        $fcPeriodOptions = [
+            'current' => 'Bulan Ini (' . $today->copy()->startOfMonth()->translatedFormat('F Y') . ')',
+            'next'    => 'Bulan Depan (' . $today->copy()->addMonth()->startOfMonth()->translatedFormat('F Y') . ')',
+            'next2'   => '2 Bulan Depan (' . $today->copy()->addMonths(2)->startOfMonth()->translatedFormat('F Y') . ')',
         ];
-
-        foreach ($upcomingSales as $inv) {
-            $dueStr = Carbon::parse($inv->due_date)->toDateString();
-            $netOutstanding = $inv->outstanding_amount; // otomatis memperhitungkan retur (effective_total_amount - total_paid)
-
-            if ($dueStr <= $forecastWeeks[1]['end']) {
-                $forecastWeeks[1]['inflow'] += $netOutstanding;
-            } elseif ($dueStr <= $forecastWeeks[2]['end']) {
-                $forecastWeeks[2]['inflow'] += $netOutstanding;
-            } elseif ($dueStr <= $forecastWeeks[3]['end']) {
-                $forecastWeeks[3]['inflow'] += $netOutstanding;
-            } else {
-                $forecastWeeks[4]['inflow'] += $netOutstanding;
-            }
-        }
-
-        foreach ($upcomingPurchases as $inv) {
-            $dueStr = Carbon::parse($inv->due_date)->toDateString();
-            $netOutstanding = $inv->outstanding_amount; // otomatis memperhitungkan retur (effective_total_amount - total_paid)
-
-            if ($dueStr <= $forecastWeeks[1]['end']) {
-                $forecastWeeks[1]['outflow'] += $netOutstanding;
-            } elseif ($dueStr <= $forecastWeeks[2]['end']) {
-                $forecastWeeks[2]['outflow'] += $netOutstanding;
-            } elseif ($dueStr <= $forecastWeeks[3]['end']) {
-                $forecastWeeks[3]['outflow'] += $netOutstanding;
-            } else {
-                $forecastWeeks[4]['outflow'] += $netOutstanding;
-            }
-        }
-
-        $totalProjectedInflow  = array_sum(array_column($forecastWeeks, 'inflow'));
-        $totalProjectedOutflow = array_sum(array_column($forecastWeeks, 'outflow'));
-        $projectedNetChange    = $totalProjectedInflow - $totalProjectedOutflow;
-        $projectedEndingCash   = $currentCashBalance + $projectedNetChange;
 
         return view('accounting.reports.cash-flow', compact(
             'dateFrom', 'dateTo', 'openingBalance', 'inflows', 'outflows',
             'totalInflow', 'totalOutflow', 'closingBalance',
-            'currentCashBalance', 'forecastWeeks', 'totalProjectedInflow',
-            'totalProjectedOutflow', 'projectedNetChange', 'projectedEndingCash'
+            // Forecast variables
+            'forecastPeriod', 'fcStart', 'fcEnd', 'fcLabel', 'fcIsCurrent',
+            'fcPeriodOptions',
+            'fcSaldoAwal', 'fcSaldoAwalLabel', 'fcSaldoBreakdown',
+            'fcTotalReceivable', 'fcReceivableByCustomer',
+            'fcTotalPayable', 'fcPayableBySupplier',
+            'fcSaldoAkhir', 'fcHealthBadge', 'fcHealthLabel',
+            'cashAccountsList'
         ));
+    }
+
+    /**
+     * Parse pilihan periode forecast dropdown.
+     */
+    private function parseForecastPeriod(string $period, Carbon $today): array
+    {
+        switch ($period) {
+            case 'next':
+                $start = $today->copy()->addMonth()->startOfMonth();
+                $end   = $start->copy()->endOfMonth();
+                $label = $start->translatedFormat('F Y');
+                return [$start, $end, $label, false];
+            case 'next2':
+                $start = $today->copy()->addMonths(2)->startOfMonth();
+                $end   = $start->copy()->endOfMonth();
+                $label = $start->translatedFormat('F Y');
+                return [$start, $end, $label, false];
+            case 'current':
+            default:
+                $start = $today->copy()->startOfMonth();
+                $end   = $today->copy()->endOfMonth();
+                $label = $start->translatedFormat('F Y');
+                return [$start, $end, $label, true];
+        }
+    }
+
+    /**
+     * Hitung Saldo Awal Kas rekursif untuk forecast.
+     */
+    private function getForecastSaldoAwal(Carbon $periodStart, $cashAccountIds, bool $isCurrent = false): float
+    {
+        $today = Carbon::today();
+        $currentMonthStart = $today->copy()->startOfMonth();
+
+        if ($periodStart->lte($currentMonthStart)) {
+            $query = JournalLine::join('journal_entries', 'journal_lines.journal_entry_id', '=', 'journal_entries.id')
+                ->whereIn('journal_lines.chart_of_account_id', $cashAccountIds)
+                ->where('journal_entries.status', 'posted');
+
+            if ($isCurrent) {
+                $query->whereDate('journal_entries.entry_date', '<=', $today->toDateString());
+            } else {
+                $query->whereDate('journal_entries.entry_date', '<', $periodStart->toDateString());
+            }
+
+            return (float) $query->sum(DB::raw('debit - credit'));
+        }
+
+        $prevStart = $periodStart->copy()->subMonth()->startOfMonth();
+        $prevEnd   = $prevStart->copy()->endOfMonth();
+        $prevIsCurrent = $prevStart->isSameMonth($currentMonthStart);
+        $prevSaldoAwal = $this->getForecastSaldoAwal($prevStart, $cashAccountIds, $prevIsCurrent);
+
+        $prevReceivable = (float) SalesInvoice::with(['payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '<=', $prevEnd->toDateString())
+            ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01)->sum('outstanding_amount');
+
+        $prevPayable = (float) PurchaseInvoice::with(['payments', 'items'])
+            ->where('status', '!=', 'paid')
+            ->whereDate('due_date', '<=', $prevEnd->toDateString())
+            ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01)->sum('outstanding_amount');
+
+        return $prevSaldoAwal + $prevReceivable - $prevPayable;
     }
 
     /**
