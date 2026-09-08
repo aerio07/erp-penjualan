@@ -175,19 +175,22 @@
                 </div>
 
                 {{-- Action Buttons (Top) --}}
-                <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2.5">
+                    {{-- Auto-Balance Button (Secondary Style) --}}
                     <button type="button"
                             @click="autoBalanceToModal()"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-sm cursor-pointer active:scale-95">
-                        <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                            class="btn btn-secondary text-amber-700 hover:text-amber-800 border-amber-300 hover:border-amber-400 bg-amber-50 hover:bg-amber-100"
+                            title="Otomatis isi selisih ke akun modal agar neraca seimbang">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i>
                         <span>Auto-Balance ke Modal</span>
                     </button>
 
+                    {{-- Simpan & Posting Button (Standard Primary Style) --}}
                     <button type="submit"
                             :disabled="!isBalanced"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all shadow-sm cursor-pointer"
-                            :class="isBalanced ? 'bg-blue-600 hover:bg-blue-700 text-white active:scale-95 shadow-md shadow-blue-600/20' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
-                        <i class="fa-solid fa-floppy-disk text-sm"></i>
+                            class="btn btn-primary"
+                            :class="!isBalanced ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''">
+                        <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan & Posting Saldo Awal</span>
                     </button>
                 </div>
@@ -197,31 +200,32 @@
 
         {{-- Parameter Header Card --}}
         <div class="card p-5 border border-slate-200 rounded-2xl shadow-xs bg-white">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
                 <div class="md:col-span-4">
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                         <i class="fa-regular fa-calendar text-blue-600 mr-1"></i> Tanggal Cut-Off Pembukuan <span class="text-rose-500">*</span>
                     </label>
-                    <input type="date" name="cut_off_date" x-model="cutOffDate" class="form-control text-sm font-semibold h-11 rounded-xl" required>
-                    <p class="text-[11px] text-slate-400 mt-1.5">Tanggal penetapan posisi saldo awal neraca.</p>
+                    <input type="date" name="cut_off_date" x-model="cutOffDate" class="form-control text-sm font-semibold" style="height: 40px !important; border-radius: 8px;" required>
+                    <p class="text-[11px] text-slate-400 mt-1.5 leading-normal">Tanggal penetapan posisi saldo awal neraca.</p>
                 </div>
 
                 <div class="md:col-span-5">
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                         <i class="fa-regular fa-pen-to-square text-blue-600 mr-1"></i> Keterangan Dokumen Jurnal
                     </label>
-                    <input type="text" name="notes" x-model="notes" placeholder="Contoh: Saldo Awal Neraca Awal Tahun 2026" class="form-control text-sm h-11 rounded-xl">
-                    <p class="text-[11px] text-slate-400 mt-1.5">Akan tercatat sebagai deskripsi pada bukti jurnal pembuka.</p>
+                    <input type="text" name="notes" x-model="notes" placeholder="Contoh: Saldo Awal Neraca Awal Tahun 2026" class="form-control text-sm" style="height: 40px !important; border-radius: 8px;">
+                    <p class="text-[11px] text-slate-400 mt-1.5 leading-normal">Akan tercatat sebagai deskripsi pada bukti jurnal pembuka.</p>
                 </div>
 
                 <div class="md:col-span-3">
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                         <i class="fa-solid fa-magnifying-glass text-blue-600 mr-1"></i> Cari Akun Cepat
                     </label>
-                    <div class="relative">
-                        <input type="text" x-model="searchQuery" placeholder="Ketik kode / nama akun..." class="form-control text-sm h-11 pl-9 rounded-xl">
-                        <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                    <div style="position: relative; width: 100%;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 13px; pointer-events: none; z-index: 2;"></i>
+                        <input type="text" x-model="searchQuery" placeholder="Ketik kode / nama akun..." class="form-control" style="padding-left: 38px !important; height: 40px !important; font-size: 13px; border-radius: 8px;">
                     </div>
+                    <p class="text-[11px] text-slate-400 mt-1.5 leading-normal">Filter instan baris akun pada tabel.</p>
                 </div>
             </div>
 
@@ -401,18 +405,20 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2.5">
                     <button type="button"
                             @click="autoBalanceToModal()"
-                            class="btn btn-secondary px-4 py-2 rounded-xl text-xs font-bold border-amber-300 text-amber-900 bg-amber-50 hover:bg-amber-100 cursor-pointer">
-                        <i class="fa-solid fa-wand-magic-sparkles text-amber-600 mr-1.5"></i> Auto-Balance ke Modal
+                            class="btn btn-secondary text-amber-700 hover:text-amber-800 border-amber-300 hover:border-amber-400 bg-amber-50 hover:bg-amber-100">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i>
+                        <span>Auto-Balance ke Modal</span>
                     </button>
 
                     <button type="submit"
                             :disabled="!isBalanced"
-                            class="btn btn-primary px-6 py-2 rounded-xl text-xs font-extrabold cursor-pointer"
-                            :class="!isBalanced ? 'opacity-50 cursor-not-allowed' : ''">
-                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Simpan & Posting Saldo Awal
+                            class="btn btn-primary"
+                            :class="!isBalanced ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Simpan & Posting Saldo Awal</span>
                     </button>
                 </div>
             </div>
