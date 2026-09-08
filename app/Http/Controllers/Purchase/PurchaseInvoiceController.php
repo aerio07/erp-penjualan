@@ -165,7 +165,9 @@ class PurchaseInvoiceController extends Controller
         $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
         $pdf = Pdf::loadView('pdf.purchase-invoice', compact('invoice'));
 
-        return $pdf->download("INV-{$invoice->invoice_number}.pdf");
+        $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);
+
+        return $pdf->download("INV-{$safeNumber}.pdf");
     }
 
     private function generateNumber(): string

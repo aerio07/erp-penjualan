@@ -51,11 +51,11 @@
     <div class="info-grid">
         <div class="info-block">
             <label>Kepada (Supplier)</label>
-            <value>{{ $order->supplier->name }}</value><br>
+            <value>{{ $order->supplier->name ?? '-' }}</value><br>
             <span style="color:#64748b; font-size:11px;">
-                {{ $order->supplier->contact_person }}<br>
-                {{ $order->supplier->phone }}<br>
-                {{ $order->supplier->address }}
+                {{ $order->supplier->contact_person ?? '' }}<br>
+                {{ $order->supplier->phone ?? '' }}<br>
+                {{ $order->supplier->address ?? '' }}
             </span>
         </div>
         <div class="info-block">
@@ -66,10 +66,10 @@
         </div>
         <div class="info-block">
             <label>Tanggal PO</label>
-            <value>{{ $order->order_date->format('d F Y') }}</value><br><br>
+            <value>{{ $order->order_date ? $order->order_date->format('d F Y') : '-' }}</value><br><br>
             <label>Status / Dibuat Oleh</label>
-            <div class="badge">{{ strtoupper($order->status) }}</div>
-            <div style="font-size:11px; color:#64748b; margin-top:3px;">{{ $order->user->name }}</div>
+            <div class="badge">{{ strtoupper($order->status ?? 'DRAFT') }}</div>
+            <div style="font-size:11px; color:#64748b; margin-top:3px;">{{ $order->user->name ?? '-' }}</div>
         </div>
     </div>
 
@@ -90,13 +90,13 @@
             @foreach($order->items as $i => $item)
             <tr>
                 <td>{{ $i+1 }}</td>
-                <td>{{ $item->product->name }}</td>
-                <td>{{ $item->product->sku }}</td>
-                <td>{{ $item->product->unit }}</td>
-                <td class="text-right">{{ number_format($item->qty_ordered) }}</td>
-                <td class="text-right">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                <td class="text-right">{{ $item->discount_percent > 0 ? $item->discount_percent.'%' : '-' }}</td>
-                <td class="text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                <td>{{ $item->product->name ?? '-' }}</td>
+                <td>{{ $item->product->sku ?? '-' }}</td>
+                <td>{{ $item->product->unit ?? '-' }}</td>
+                <td class="text-right">{{ number_format($item->qty_ordered ?? 0) }}</td>
+                <td class="text-right">Rp {{ number_format($item->unit_price ?? 0, 0, ',', '.') }}</td>
+                <td class="text-right">{{ ($item->discount_percent ?? 0) > 0 ? $item->discount_percent.'%' : '-' }}</td>
+                <td class="text-right">Rp {{ number_format($item->subtotal ?? 0, 0, ',', '.') }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -106,11 +106,11 @@
         <div style="width:280px;">
             <div class="total-section">
                 <div class="total-row"><span>Subtotal:</span><span>Rp {{ number_format($order->items->sum('subtotal'), 0, ',', '.') }}</span></div>
-                @if($order->discount_amount > 0)
+                @if(($order->discount_amount ?? 0) > 0)
                 <div class="total-row" style="color:#ef4444;"><span>Diskon Header:</span><span>- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span></div>
                 @endif
-                <div class="total-row"><span>PPN ({{ $order->tax_rate }}%):</span><span>Rp {{ number_format($order->tax_amount, 0, ',', '.') }}</span></div>
-                <div class="total-row total-grand"><span>TOTAL:</span><span>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span></div>
+                <div class="total-row"><span>PPN ({{ $order->tax_rate ?? 0 }}%):</span><span>Rp {{ number_format($order->tax_amount ?? 0, 0, ',', '.') }}</span></div>
+                <div class="total-row total-grand"><span>TOTAL:</span><span>Rp {{ number_format($order->total_amount ?? 0, 0, ',', '.') }}</span></div>
             </div>
         </div>
     </div>
@@ -124,12 +124,12 @@
     <div class="footer">
         <div class="sig-block">
             <div class="sig-line"></div>
-            <div class="sig-name">{{ $order->supplier->name }}</div>
+            <div class="sig-name">{{ $order->supplier->name ?? 'Supplier' }}</div>
             <div class="sig-role">Supplier</div>
         </div>
         <div class="sig-block">
             <div class="sig-line"></div>
-            <div class="sig-name">{{ $order->user->name }}</div>
+            <div class="sig-name">{{ $order->user->name ?? 'Purchasing' }}</div>
             <div class="sig-role">Purchasing</div>
         </div>
         <div class="sig-block">

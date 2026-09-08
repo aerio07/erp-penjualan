@@ -298,7 +298,9 @@ class SalesOrderController extends Controller
         $order->load(['customer', 'user', 'items.product']);
         $pdf = Pdf::loadView('pdf.sales-order', compact('order'));
 
-        return $pdf->download("SO-{$order->so_number}.pdf");
+        $safeNumber = str_replace(['/', '\\'], '-', $order->so_number);
+
+        return $pdf->download("SO-{$safeNumber}.pdf");
     }
 
     private function generateNumber(): string

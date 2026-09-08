@@ -186,7 +186,9 @@ class SalesInvoiceController extends Controller
         $invoice->load(['salesOrder.customer', 'delivery.warehouse', 'items.product', 'items.deliveryItem.delivery', 'payments']);
         $pdf = Pdf::loadView('pdf.sales-invoice', compact('invoice'));
 
-        return $pdf->download("SINV-{$invoice->invoice_number}.pdf");
+        $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);
+
+        return $pdf->download("SINV-{$safeNumber}.pdf");
     }
 
     private function generateNumber(): string

@@ -210,10 +210,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PDF EXPORT
     // =========================================================
     Route::middleware('role:admin,purchasing,sales,finance,gudang')->prefix('pdf')->name('pdf.')->group(function () {
-        Route::get('purchase-order/{order}', [PurchaseOrderController::class, 'exportPdf'])->name('purchase-order');
+        Route::get('purchase-order/{purchase_order}', [PurchaseOrderController::class, 'exportPdf'])->name('purchase-order');
         Route::get('purchase-invoice/{invoice}', [PurchaseInvoiceController::class, 'exportPdf'])->name('purchase-invoice');
         Route::get('delivery/{delivery}', [DeliveryController::class, 'exportPdf'])->name('delivery');
-        Route::get('sales-order/{order}', [SalesOrderController::class, 'exportPdf'])->name('sales-order');
+        Route::get('sales-order/{sales_order}', [SalesOrderController::class, 'exportPdf'])->name('sales-order');
         Route::get('sales-invoice/{invoice}', [SalesInvoiceController::class, 'exportPdf'])->name('sales-invoice');
     });
 });

@@ -305,7 +305,10 @@ class PurchaseOrderController extends Controller
         $order->load(['supplier', 'warehouse', 'user', 'items.product']);
         $pdf = Pdf::loadView('pdf.purchase-order', compact('order'));
 
-        return $pdf->download("PO-{$order->po_number}.pdf");
+        $safeNumber = str_replace(['/', '\\'], '-', $order->po_number);
+        $filename = str_starts_with($safeNumber, 'PO-') ? "{$safeNumber}.pdf" : "PO-{$safeNumber}.pdf";
+
+        return $pdf->download($filename);
     }
 
     private function generateNumber(): string

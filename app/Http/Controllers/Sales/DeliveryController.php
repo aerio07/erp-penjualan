@@ -304,7 +304,9 @@ class DeliveryController extends Controller
         $delivery->load(['salesOrder.customer', 'warehouse', 'user', 'items.salesOrderItem.product']);
         $pdf = Pdf::loadView('pdf.delivery', compact('delivery'));
 
-        return $pdf->download("SJ-{$delivery->delivery_number}.pdf");
+        $safeNumber = str_replace(['/', '\\'], '-', $delivery->delivery_number);
+
+        return $pdf->download("SJ-{$safeNumber}.pdf");
     }
 
     private function generateNumber(): string
