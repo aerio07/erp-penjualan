@@ -234,8 +234,8 @@
                             <span style="color:var(--text-secondary);">-</span>
                             @endif
                         </td>
-                        <td>{{ $line->journalEntry ? $line->journalEntry->date->format('d/m/Y') : '-' }}</td>
-                        <td>{{ $line->memo ?: ($line->journalEntry ? $line->journalEntry->description : '-') }}</td>
+                        <td>{{ $line->journalEntry && $line->journalEntry->entry_date ? $line->journalEntry->entry_date->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $line->description ?: ($line->journalEntry ? $line->journalEntry->description : '-') }}</td>
                         <td style="text-align:right; font-family:monospace; font-weight:{{ $line->debit > 0 ? '600' : '400' }}; color:{{ $line->debit > 0 ? '#2563eb' : 'inherit' }};">
                             {{ $line->debit > 0 ? 'Rp ' . number_format($line->debit, 0, ',', '.') : '-' }}
                         </td>

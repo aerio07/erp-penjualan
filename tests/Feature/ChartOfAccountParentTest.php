@@ -148,4 +148,39 @@ class ChartOfAccountParentTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertDatabaseHas('chart_of_accounts', ['id' => $parent->id]);
     }
+
+    public function test_can_view_chart_of_account_detail_page_with_journal_entries(): void
+    {
+        $account = ChartOfAccount::create([
+            'code'           => '1-1110',
+            'name'           => 'Bank BCA',
+            'type'           => 'asset',
+            'normal_balance' => 'debit',
+            'is_active'      => true,
+        ]);
+
+        $entry = \App\Models\JournalEntry::create([
+            'entry_number' => 'JE-TEST-001',
+            'entry_date'   => now()->toDateString(),
+            'description'  => 'Test Jurnal',
+            'status'       => 'posted',
+            'created_by'   => $this->admin->id,
+            'posted_by'    => $this->admin->id,
+            'posted_at'    => now(),
+        ]);
+
+        \App\Models\JournalLine::create([
+            'journal_entry_id'   => $entry->id,
+            'chart_of_account_id' => $account->id,
+            'debit'              => 5000000,
+            'credit'             => 0,
+            'description'        => 'Setoran modal',
+        ]);
+
+        $response = $this->actingAs($this->finance)->get(route('master.chart-of-accounts.show', $account));
+        $response->assertStatus(200);
+        $response->assertSee('Bank BCA');
+        $response->assertSee('JE-TEST-001');
+        $response->assertSee('5.000.000');
+    }
 }
