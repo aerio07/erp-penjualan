@@ -248,9 +248,13 @@
                 <tbody>
                     @forelse($invoice->payments as $payment)
                     <tr>
-                        <td style="font-weight:600; color:var(--primary);">{{ $payment->payment_number }}</td>
+                        <td style="font-weight:600; color:var(--primary);">
+                            <a href="{{ route('sales.payments.show', $payment) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Penerimaan">
+                                {{ $payment->reference_number ?: ('REC-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT)) }}
+                            </a>
+                        </td>
                         <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
-                        <td><span class="badge badge-confirmed">{{ strtoupper($payment->payment_method) }}</span></td>
+                        <td><span class="badge badge-confirmed">{{ strtoupper($payment->method) }}</span></td>
                         <td>{{ $payment->reference_number ?? '-' }}</td>
                         <td style="text-align:right; font-weight:600; color:var(--success);">
                             Rp {{ number_format($payment->amount, 0, ',', '.') }}

@@ -23,7 +23,9 @@ trait HasListFilters
             $query->where(function (Builder $q) use ($keyword, $searchableColumns) {
                 foreach ($searchableColumns as $index => $column) {
                     if (str_contains($column, '.')) {
-                        [$relation, $relColumn] = explode('.', $column, 2);
+                        $parts = explode('.', $column);
+                        $relColumn = array_pop($parts);
+                        $relation = implode('.', $parts);
                         $whereMethod = $index === 0 ? 'whereHas' : 'orWhereHas';
                         $q->$whereMethod($relation, function (Builder $relQuery) use ($relColumn, $keyword) {
                             $relQuery->where($relColumn, 'like', '%' . $keyword . '%');
