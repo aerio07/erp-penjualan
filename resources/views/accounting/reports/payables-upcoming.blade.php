@@ -15,8 +15,8 @@
             </p>
         </div>
         <div style="display: flex; gap: 8px;">
-            <a href="{{ route('accounting.reports.cash-flow') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-chart-line"></i> Laporan Arus Kas
+            <a href="{{ route('accounting.reports.cash-forecast') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-chart-line"></i> Proyeksi Kas
             </a>
             <a href="{{ route('accounting.reports.payables') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-clock-rotate-left"></i> Umur Hutang (AP Aging)

@@ -182,6 +182,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
             Route::get('trial-balance', [ReportController::class, 'trialBalance'])->name('trial-balance');
             Route::get('cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow');
+            Route::get('cash-forecast', [ReportController::class, 'cashForecast'])->name('cash-forecast');
             Route::get('receivables', [ReportController::class, 'receivables'])->name('receivables');
             Route::get('payables', [ReportController::class, 'payables'])->name('payables');
             Route::get('receivables-upcoming', [ReportController::class, 'receivablesUpcoming'])->name('receivables-upcoming');

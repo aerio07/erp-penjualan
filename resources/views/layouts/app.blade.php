@@ -787,7 +787,7 @@
                 $isAccountingRoute = request()->is('accounting/*');
                 $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance') || request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
                 $isHutangPiutang = request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
-                $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
+                $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.cash-forecast') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
             @endphp
             <div x-data="{ 
                 open: {{ $isAccountingRoute ? 'true' : 'false' }},
@@ -862,6 +862,7 @@
                             <a href="{{ route('accounting.reports.profit-loss') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.profit-loss') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laba Rugi</a>
                             <a href="{{ route('accounting.reports.balance-sheet') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.balance-sheet') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Keuangan</a>
                             <a href="{{ route('accounting.reports.cash-flow') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.cash-flow') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laporan Arus Kas</a>
+                            <a href="{{ route('accounting.reports.cash-forecast') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.cash-forecast') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Proyeksi Kas</a>
                             <a href="{{ route('accounting.reports.gross-profit') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.gross-profit') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Tren Laba Kotor</a>
                             <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Persediaan</a>
                         </div>

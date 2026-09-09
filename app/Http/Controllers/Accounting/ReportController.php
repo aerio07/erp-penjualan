@@ -166,11 +166,35 @@ class ReportController extends Controller
         $totalOutflow  = $cashLines->sum('credit');
         $closingBalance = $openingBalance + $totalInflow - $totalOutflow;
 
-        // =========================================================================
-        // FORECAST: Proyeksi Kas Per Periode (Bulan Ini / Depan / +2)
-        // =========================================================================
-        $today = Carbon::today();
+        // Data forecast tetap disertakan untuk kompatibilitas pengujian/backward compatibility
         $forecastPeriod = $request->input('forecast_period', 'current');
+        $forecastData = $this->getForecastData($forecastPeriod);
+
+        return view('accounting.reports.cash-flow', array_merge(compact(
+            'dateFrom', 'dateTo', 'openingBalance', 'inflows', 'outflows',
+            'totalInflow', 'totalOutflow', 'closingBalance'
+        ), $forecastData));
+    }
+
+    /**
+     * 3b. Proyeksi Kas / Cash Flow Forecast (Dedicated Menu & Halaman)
+     */
+    public function cashForecast(Request $request): View
+    {
+        $forecastPeriod = $request->input('forecast_period', 'current');
+        $data = $this->getForecastData($forecastPeriod);
+
+        return view('accounting.reports.cash-forecast', $data);
+    }
+
+    /**
+     * Helper perhitungan data Proyeksi Kas (Forecast)
+     */
+    private function getForecastData(string $forecastPeriod): array
+    {
+        $today = Carbon::today();
+        $cashAccountIds = ChartOfAccount::cashAndBank()->pluck('id');
+        $cashAccountsList = ChartOfAccount::cashAndBank()->orderBy('code')->get();
 
         // Parse periode forecast
         [$fcStart, $fcEnd, $fcLabel, $fcIsCurrent] = $this->parseForecastPeriod($forecastPeriod, $today);
@@ -211,7 +235,7 @@ class ReportController extends Controller
             $fcTotalReceivablePeriod = $fcTotalReceivableCumulative;
         } else {
             $fcTotalReceivablePrior  = (float) $fcReceivables->filter(fn($inv) => Carbon::parse($inv->due_date)->lt($fcStart))->sum('outstanding_amount');
-            $fcTotalReceivablePeriod = $fcTotalReceivableCumulative - $fcTotalReceivablePrior; // Turunan matematis tunggal
+            $fcTotalReceivablePeriod = $fcTotalReceivableCumulative - $fcTotalReceivablePrior;
         }
 
         $fcReceivableByCustomer = $fcReceivables
@@ -267,7 +291,7 @@ class ReportController extends Controller
             $fcTotalPayablePeriod = $fcTotalPayableCumulative;
         } else {
             $fcTotalPayablePrior  = (float) $fcPayables->filter(fn($inv) => Carbon::parse($inv->due_date)->lt($fcStart))->sum('outstanding_amount');
-            $fcTotalPayablePeriod = $fcTotalPayableCumulative - $fcTotalPayablePrior; // Turunan matematis tunggal
+            $fcTotalPayablePeriod = $fcTotalPayableCumulative - $fcTotalPayablePrior;
         }
 
         $fcPayableBySupplier = $fcPayables
@@ -307,7 +331,7 @@ class ReportController extends Controller
                 ];
             })->sortByDesc('total')->values();
 
-        // Saldo Akhir Proyeksi (Bebas Double-Counting menggunakan metrik Period)
+        // Saldo Akhir Proyeksi
         $fcSaldoAkhir = $fcSaldoAwal + $fcTotalReceivablePeriod - $fcTotalPayablePeriod;
         $fcHealthThreshold = ($fcIsCurrent ? $fcTotalPayableCumulative : $fcTotalPayablePeriod) * 0.20;
         if ($fcSaldoAkhir < 0) {
@@ -328,10 +352,7 @@ class ReportController extends Controller
         $fcTotalReceivable = $fcTotalReceivableCumulative;
         $fcTotalPayable    = $fcTotalPayableCumulative;
 
-        return view('accounting.reports.cash-flow', compact(
-            'dateFrom', 'dateTo', 'openingBalance', 'inflows', 'outflows',
-            'totalInflow', 'totalOutflow', 'closingBalance',
-            // Forecast variables
+        return compact(
             'forecastPeriod', 'fcStart', 'fcEnd', 'fcLabel', 'fcIsCurrent',
             'fcPeriodOptions',
             'fcSaldoAwal', 'fcSaldoAwalLabel', 'fcSaldoBreakdown',
@@ -339,7 +360,7 @@ class ReportController extends Controller
             'fcTotalPayable', 'fcTotalPayableCumulative', 'fcTotalPayablePeriod', 'fcTotalPayablePrior', 'fcPayableBySupplier',
             'fcSaldoAkhir', 'fcHealthBadge', 'fcHealthLabel',
             'cashAccountsList'
-        ));
+        );
     }
 
     /**

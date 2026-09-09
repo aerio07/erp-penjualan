@@ -151,7 +151,7 @@
                 <span class="text-[11px] text-[#7e22ce] font-semibold">
                     Likuiditas Riil
                 </span>
-                <a href="{{ route('accounting.reports.cash-flow') }}" class="text-xs text-[#7e22ce] font-bold hover:underline">Forecast 30H &rarr;</a>
+                <a href="{{ route('accounting.reports.cash-forecast') }}" class="text-xs text-[#7e22ce] font-bold hover:underline">Forecast 30H &rarr;</a>
             </div>
         </div>
 
