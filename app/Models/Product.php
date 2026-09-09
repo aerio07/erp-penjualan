@@ -11,15 +11,35 @@ class Product extends Model
 {
     protected $fillable = [
         'sku', 'name', 'category_id', 'category', 'unit',
-        'purchase_price', 'sell_price', 'min_stock',
-        'is_active', 'notes', 'image',
+        'purchase_price', 'sell_price', 'price_online', 'price_offline',
+        'length_cm', 'width_cm', 'height_cm', 'weight_kg',
+        'min_stock', 'is_active', 'notes', 'image',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'purchase_price' => 'decimal:2',
         'sell_price' => 'decimal:2',
+        'price_online' => 'decimal:2',
+        'price_offline' => 'decimal:2',
+        'length_cm' => 'decimal:2',
+        'width_cm' => 'decimal:2',
+        'height_cm' => 'decimal:2',
+        'weight_kg' => 'decimal:2',
     ];
+
+    /**
+     * Dapatkan harga efektif sesuai channel penjualan ('online' atau 'offline').
+     * Fallback ke sell_price bila harga channel tidak diisi (null).
+     */
+    public function getEffectivePrice(?string $channel = null): float
+    {
+        return match ($channel) {
+            'online'  => (float) ($this->price_online ?? $this->sell_price),
+            'offline' => (float) ($this->price_offline ?? $this->sell_price),
+            default   => (float) $this->sell_price,
+        };
+    }
 
     protected $appends = [
         'image_url',

@@ -6,8 +6,19 @@
 <div class="animate-in">
     <div class="page-header">
         <div>
-            <h1>{{ $order->so_number }}</h1>
-            <p>Customer: <strong>{{ $order->customer->name ?? '-' }}</strong> · Tgl Order: {{ $order->order_date->format('d/m/Y') }}</p>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <h1 style="margin-bottom:0;">{{ $order->so_number }}</h1>
+                @if($order->channel === 'online')
+                    <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:11px; padding:3px 8px;">
+                        <i class="fa-solid fa-globe" style="font-size:10px;"></i> Online
+                    </span>
+                @else
+                    <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:11px; padding:3px 8px;">
+                        <i class="fa-solid fa-store" style="font-size:10px;"></i> Offline
+                    </span>
+                @endif
+            </div>
+            <p style="margin-top:4px;">Customer: <strong>{{ $order->customer->name ?? '-' }}</strong> · Tgl Order: {{ $order->order_date->format('d/m/Y') }}</p>
         </div>
         <div style="display:flex; gap:8px;">
             @if($order->status === 'draft')
@@ -33,7 +44,16 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header">
                 <h3>Informasi Sales Order</h3>
-                <div style="display:flex; gap:6px;">
+                <div style="display:flex; gap:6px; align-items:center;">
+                    @if($order->channel === 'online')
+                        <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe;">
+                            <i class="fa-solid fa-globe" style="font-size:10px;"></i> Online
+                        </span>
+                    @else
+                        <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0;">
+                            <i class="fa-solid fa-store" style="font-size:10px;"></i> Offline
+                        </span>
+                    @endif
                     <span class="badge badge-{{ $order->status }}">Order: {{ ucfirst(str_replace('_',' ',$order->status)) }}</span>
                     @php
                         $fBadge = match($order->fulfillment_status) {

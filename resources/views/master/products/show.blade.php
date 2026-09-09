@@ -219,7 +219,7 @@
                         <div style="font-weight:700; font-size:16px;">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</div>
                     </div>
                     <div>
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:2px;">Harga Jual Standar</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:2px;">Harga Jual Standar (Default)</div>
                         <div style="font-weight:700; font-size:16px; color:#16a34a;">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</div>
                     </div>
                     <div>
@@ -228,6 +228,41 @@
                             Rp {{ number_format($marginRp, 0, ',', '.') }}
                             <span style="font-size:12px; font-weight:500;">({{ number_format($marginPct, 1) }}%)</span>
                         </div>
+                    </div>
+                </div>
+
+                <div class="form-row form-row-2" style="background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border); margin-bottom:16px;">
+                    <div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:2px; display:flex; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-globe" style="color:#2563eb;"></i> <strong>Harga Online:</strong>
+                        </div>
+                        @if($product->price_online)
+                            <div style="font-weight:700; font-size:15px; color:#1e40af;">Rp {{ number_format($product->price_online, 0, ',', '.') }}</div>
+                        @else
+                            <div style="font-size:13px; color:var(--text-secondary);">Mengikuti harga standar (Rp {{ number_format($product->sell_price, 0, ',', '.') }})</div>
+                        @endif
+                    </div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:2px; display:flex; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-store" style="color:#16a34a;"></i> <strong>Harga Offline:</strong>
+                        </div>
+                        @if($product->price_offline)
+                            <div style="font-weight:700; font-size:15px; color:#15803d;">Rp {{ number_format($product->price_offline, 0, ',', '.') }}</div>
+                        @else
+                            <div style="font-size:13px; color:var(--text-secondary);">Mengikuti harga standar (Rp {{ number_format($product->sell_price, 0, ',', '.') }})</div>
+                        @endif
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; padding:10px 14px; background:#f1f5f9; border-radius:6px; font-size:13px; color:#334155; margin-bottom:12px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-ruler-combined" style="color:var(--primary);"></i>
+                        <span>Dimensi: <strong>{{ $product->length_cm ? (float) $product->length_cm . ' cm' : '-' }} &times; {{ $product->width_cm ? (float) $product->width_cm . ' cm' : '-' }} &times; {{ $product->height_cm ? (float) $product->height_cm . ' cm' : '-' }}</strong></span>
+                    </div>
+                    <div style="color:#cbd5e1;">|</div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-weight-scale" style="color:var(--primary);"></i>
+                        <span>Berat: <strong>{{ $product->weight_kg ? (float) $product->weight_kg . ' kg' : '-' }}</strong></span>
                     </div>
                 </div>
 
@@ -310,9 +345,15 @@
                 </button>
             </div>
             <div>
-                <a x-show="tab === 'movements'" href="{{ route('inventory.movements.index') }}" class="btn btn-secondary btn-sm">Lihat Semua Mutasi</a>
-                <a x-show="tab === 'sales'" href="{{ route('sales.orders.index') }}" class="btn btn-secondary btn-sm">Lihat Semua SO</a>
-                <a x-show="tab === 'purchases'" href="{{ route('purchase.orders.index') }}" class="btn btn-secondary btn-sm">Lihat Semua PO</a>
+                <template x-if="tab === 'movements'">
+                    <a href="{{ route('inventory.movements.index') }}" class="btn btn-secondary btn-sm">Lihat Semua Mutasi</a>
+                </template>
+                <template x-if="tab === 'sales'">
+                    <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary btn-sm">Lihat Semua SO</a>
+                </template>
+                <template x-if="tab === 'purchases'">
+                    <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary btn-sm">Lihat Semua PO</a>
+                </template>
             </div>
         </div>
 

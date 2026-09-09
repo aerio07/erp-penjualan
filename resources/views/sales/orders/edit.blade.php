@@ -44,6 +44,39 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Informasi Sales Order</h3></div>
                 <div class="card-body">
+                    <!-- Channel Penjualan (Offline / Online) -->
+                    <div style="margin-bottom:16px; padding:12px 16px; background:#f8fafc; border-radius:10px; border:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <div style="font-weight:700; font-size:13px; color:#0e1b35; display:flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-route" style="color:var(--primary);"></i> Channel Penjualan <span style="color:var(--danger);">*</span>
+                            </div>
+                            <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Channel penjualan SO. Harga item yang sudah ada tetap terjaga (snapshot).</div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="hidden" name="channel" :value="channel">
+                            <button type="button"
+                                    @click="setChannel('offline')"
+                                    class="px-4 py-2 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-2 cursor-pointer border shadow-xs select-none"
+                                    :class="channel === 'offline' 
+                                        ? 'bg-emerald-600 text-white border-emerald-600' 
+                                        : 'bg-white text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/60 border-slate-200'">
+                                <i class="fa-solid fa-store text-xs" :class="channel === 'offline' ? 'text-white' : 'text-emerald-600'"></i>
+                                <span>Offline</span>
+                                <i x-show="channel === 'offline'" class="fa-solid fa-check text-[10px] ml-0.5"></i>
+                            </button>
+                            <button type="button"
+                                    @click="setChannel('online')"
+                                    class="px-4 py-2 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-2 cursor-pointer border shadow-xs select-none"
+                                    :class="channel === 'online' 
+                                        ? 'bg-blue-600 text-white border-blue-600' 
+                                        : 'bg-white text-slate-600 hover:text-blue-700 hover:bg-blue-50/60 border-slate-200'">
+                                <i class="fa-solid fa-globe text-xs" :class="channel === 'online' ? 'text-white' : 'text-blue-600'"></i>
+                                <span>Online</span>
+                                <i x-show="channel === 'online'" class="fa-solid fa-check text-[10px] ml-0.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Customer <span style="color:var(--danger);">*</span></label>
@@ -193,16 +226,34 @@ const products = @json($products->keyBy('id'));
 function soForm() {
     return {
         rows: @json($initialRows),
+        channel: '{{ old('channel', $order->channel ?? 'offline') }}',
         taxRate: {{ old('tax_rate', $order->tax_rate ?? 11) }},
         discountHeader: {{ old('discount_amount', $order->discount_amount ?? 0) }},
 
         addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0 }); },
         removeRow(idx) { this.rows.splice(idx, 1); },
 
+        getEffectivePrice(prod) {
+            if (!prod) return 0;
+            if (this.channel === 'online') {
+                return (prod.price_online !== null && prod.price_online !== undefined && prod.price_online !== '')
+                    ? parseFloat(prod.price_online)
+                    : (parseFloat(prod.sell_price) || 0);
+            } else {
+                return (prod.price_offline !== null && prod.price_offline !== undefined && prod.price_offline !== '')
+                    ? parseFloat(prod.price_offline)
+                    : (parseFloat(prod.sell_price) || 0);
+            }
+        },
+
+        setChannel(newChannel) {
+            this.channel = newChannel;
+        },
+
         onProductChange(idx) {
             const id = this.rows[idx].product_id;
             if (id && products[id]) {
-                this.rows[idx].price = parseFloat(products[id].sell_price) || 0;
+                this.rows[idx].price = this.getEffectivePrice(products[id]);
             }
         },
 

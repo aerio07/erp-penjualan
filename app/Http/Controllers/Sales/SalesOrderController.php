@@ -35,6 +35,7 @@ class SalesOrderController extends Controller
         $query = $this->applySearch($query, $request, ['so_number', 'customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyFilter($query, $request, 'fulfillment_status');
+        $query = $this->applyFilter($query, $request, 'channel');
         $query = $this->applyFilter($query, $request, 'customer_id');
         $query = $this->applyDateRange($query, $request, 'order_date');
         $query = $this->applySort($query, $request, ['so_number', 'order_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
@@ -58,6 +59,7 @@ class SalesOrderController extends Controller
     {
         $request->validate([
             'customer_id'            => 'required|exists:customers,id',
+            'channel'                => 'nullable|in:online,offline',
             'order_date'             => 'required|date',
             'expected_delivery_date' => 'nullable|date|after_or_equal:order_date',
             'tax_rate'               => 'required|numeric|min:0|max:100',
@@ -95,6 +97,7 @@ class SalesOrderController extends Controller
             $salesOrder = SalesOrder::create([
                 'so_number'              => $this->generateNumber(),
                 'customer_id'            => $request->customer_id,
+                'channel'                => $request->input('channel', 'offline'),
                 'user_id'                => Auth::id(),
                 'status'                 => 'draft',
                 'fulfillment_status'     => 'pending',
@@ -157,6 +160,7 @@ class SalesOrderController extends Controller
 
         $request->validate([
             'customer_id'            => 'required|exists:customers,id',
+            'channel'                => 'nullable|in:online,offline',
             'order_date'             => 'required|date',
             'expected_delivery_date' => 'nullable|date|after_or_equal:order_date',
             'tax_rate'               => 'required|numeric|min:0|max:100',
@@ -195,6 +199,7 @@ class SalesOrderController extends Controller
 
             $order->update([
                 'customer_id'            => $request->customer_id,
+                'channel'                => $request->input('channel', $order->channel ?? 'offline'),
                 'order_date'             => $request->order_date,
                 'expected_delivery_date' => $request->expected_delivery_date,
                 'discount_amount'        => $discountHeader,

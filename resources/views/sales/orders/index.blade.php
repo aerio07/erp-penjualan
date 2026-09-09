@@ -41,7 +41,32 @@
             <option value="partially_delivered" {{ request('fulfillment_status') == 'partially_delivered' ? 'selected' : '' }}>Partially Delivered</option>
             <option value="delivered" {{ request('fulfillment_status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
         </select>
+
+        <select name="channel" class="form-control" onchange="this.form.submit()" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+            <option value="">-- Semua Channel --</option>
+            <option value="offline" {{ request('channel') == 'offline' ? 'selected' : '' }}>Offline</option>
+            <option value="online" {{ request('channel') == 'online' ? 'selected' : '' }}>Online</option>
+        </select>
     </x-list-filter-bar>
+
+    {{-- Quick Filter Channel Pills --}}
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">
+            <i class="fa-solid fa-route text-slate-400 mr-1"></i> Channel:
+        </span>
+        <a href="{{ request()->fullUrlWithQuery(['channel' => '']) }}"
+           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ empty(request('channel')) ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
+            Semua Channel
+        </a>
+        <a href="{{ request()->fullUrlWithQuery(['channel' => 'offline']) }}"
+           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ request('channel') === 'offline' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-slate-200 hover:bg-emerald-50/60' }}">
+            <i class="fa-solid fa-store text-xs" :class="'{{ request('channel') }}' === 'offline' ? 'text-white' : 'text-emerald-600'"></i> Offline
+        </a>
+        <a href="{{ request()->fullUrlWithQuery(['channel' => 'online']) }}"
+           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ request('channel') === 'online' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-700 border-slate-200 hover:bg-blue-50/60' }}">
+            <i class="fa-solid fa-globe text-xs" :class="'{{ request('channel') }}' === 'online' ? 'text-white' : 'text-blue-600'"></i> Online
+        </a>
+    </div>
 
     <div class="card">
         <div class="table-responsive">
@@ -60,10 +85,21 @@
                 <tbody>
                     @forelse($orders as $order)
                     <tr>
-                        <td>
-                            <a href="{{ route('sales.orders.show', $order) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                                {{ $order->so_number }}
-                            </a>
+                        <td style="white-space:nowrap;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <a href="{{ route('sales.orders.show', $order) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                                    {{ $order->so_number }}
+                                </a>
+                                @if($order->channel === 'online')
+                                    <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:10px; padding:2px 6px;">
+                                        <i class="fa-solid fa-globe" style="font-size:9px;"></i> Online
+                                    </span>
+                                @else
+                                    <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:10px; padding:2px 6px;">
+                                        <i class="fa-solid fa-store" style="font-size:9px;"></i> Offline
+                                    </span>
+                                @endif
+                            </div>
                         </td>
                         <td>{{ $order->customer->name ?? '-' }}</td>
                         <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>

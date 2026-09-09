@@ -74,19 +74,68 @@
                     </div>
                 </div>
 
-                <!-- Row 2: 3 Kolom (Harga Beli, Harga Jual, Min Stok) -->
+                <!-- Row 2: Harga Beli, Harga Jual Umum, Min Stok -->
                 <div class="form-row form-row-3">
                     <div class="form-group">
-                        <label class="form-label">Harga Beli (Rp)</label>
+                        <label class="form-label">Harga Beli / HPP (Rp)</label>
                         <input type="number" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price ?? 0) }}" class="form-control" min="0" step="100">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Harga Jual (Rp)</label>
-                        <input type="number" name="sell_price" value="{{ old('sell_price', $product->sell_price ?? 0) }}" class="form-control" min="0" step="100">
+                        <label class="form-label">Harga Jual Umum / Default (Rp) <span style="color:var(--danger);">*</span></label>
+                        <input type="number" name="sell_price" value="{{ old('sell_price', $product->sell_price ?? 0) }}" class="form-control" min="0" step="100" required>
+                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Harga fallback jika harga online/offline tidak diisi.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Min Stok (Restock Alert)</label>
                         <input type="number" name="min_stock" value="{{ old('min_stock', $product->min_stock ?? 0) }}" class="form-control" min="0">
+                    </div>
+                </div>
+
+                <!-- Row 2b: Channel Pricing (Online & Offline) -->
+                <div class="form-row form-row-2" style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" style="display:flex; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-globe" style="color:#2563eb;"></i>
+                            <span>Harga Online (Rp)</span>
+                            <span class="badge" style="background:#dbeafe; color:#1e40af; font-size:10px; font-weight:600;">Opsional</span>
+                        </label>
+                        <input type="number" name="price_online" value="{{ old('price_online', $product->price_online ?? '') }}" class="form-control" min="0" step="100" placeholder="Kosongkan jika sama dengan harga umum">
+                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Otomatis dipakai saat Sales Order memilih channel <strong>Online</strong>.</span>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label" style="display:flex; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-store" style="color:#16a34a;"></i>
+                            <span>Harga Offline (Rp)</span>
+                            <span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px; font-weight:600;">Opsional</span>
+                        </label>
+                        <input type="number" name="price_offline" value="{{ old('price_offline', $product->price_offline ?? '') }}" class="form-control" min="0" step="100" placeholder="Kosongkan jika sama dengan harga umum">
+                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Otomatis dipakai saat Sales Order memilih channel <strong>Offline</strong>.</span>
+                    </div>
+                </div>
+
+                <!-- Row 2c: Dimensi & Berat Produk (Pengiriman & Ongkir) -->
+                <div style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
+                    <div style="font-weight:600; font-size:13px; color:#1e293b; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-box-open" style="color:var(--primary);"></i>
+                        <span>Dimensi & Berat Produk (Perhitungan Ongkos Kirim / Ekspedisi)</span>
+                    </div>
+                    <div class="form-row form-row-4">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Panjang (cm)</label>
+                            <input type="number" name="length_cm" value="{{ old('length_cm', $product->length_cm ?? '') }}" class="form-control" min="0" step="0.1" placeholder="Contoh: 30">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Lebar (cm)</label>
+                            <input type="number" name="width_cm" value="{{ old('width_cm', $product->width_cm ?? '') }}" class="form-control" min="0" step="0.1" placeholder="Contoh: 20">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Tinggi (cm)</label>
+                            <input type="number" name="height_cm" value="{{ old('height_cm', $product->height_cm ?? '') }}" class="form-control" min="0" step="0.1" placeholder="Contoh: 5">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Berat (kg)</label>
+                            <input type="number" name="weight_kg" value="{{ old('weight_kg', $product->weight_kg ?? '') }}" class="form-control" min="0" step="0.01" placeholder="Contoh: 1.25">
+                        </div>
                     </div>
                 </div>
 

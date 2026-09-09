@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class SalesOrder extends Model
 {
     protected $fillable = [
-        'so_number', 'customer_id', 'user_id', 'status',
+        'so_number', 'customer_id', 'channel', 'user_id', 'status',
         'fulfillment_status', 'order_date', 'expected_delivery_date',
         'discount_amount', 'tax_rate', 'tax_amount', 'total_amount', 'notes',
     ];

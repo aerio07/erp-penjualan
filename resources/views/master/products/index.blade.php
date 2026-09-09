@@ -48,12 +48,12 @@
                 <tbody>
                     @forelse($products as $product)
                     <tr>
-                        <td style="font-weight:600;">
+                        <td style="font-weight:600; white-space:nowrap;">
                             <a href="{{ route('master.products.show', $product) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Produk">
                                 {{ $product->sku }}
                             </a>
                         </td>
-                        <td>
+                        <td style="min-width:180px;">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 @if($product->image_url)
                                     <img src="{{ $product->image_url }}" alt="{{ $product->name }}" style="width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid #e2e8f0; flex-shrink:0;">
@@ -78,9 +78,25 @@
                                 {{ $product->category ?? '-' }}
                             @endif
                         </td>
-                        <td>{{ $product->unit }}</td>
-                        <td style="text-align:right;">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
-                        <td style="text-align:right;">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</td>
+                        <td style="text-align:center;">{{ $product->unit }}</td>
+                        <td style="text-align:right; white-space:nowrap;">Rp {{ number_format($product->purchase_price, 0, ',', '.') }}</td>
+                        <td style="text-align:right; white-space:nowrap;">
+                            <div style="font-weight:600;">Rp {{ number_format($product->sell_price, 0, ',', '.') }}</div>
+                            @if($product->price_online || $product->price_offline)
+                            <div style="font-size:11px; color:#64748b; margin-top:2px; display:flex; gap:6px; justify-content:flex-end;">
+                                @if($product->price_online)
+                                    <span title="Harga Online" style="color:#2563eb; font-weight:500;">
+                                        <i class="fa-solid fa-globe" style="font-size:10px;"></i> {{ number_format($product->price_online, 0, ',', '.') }}
+                                    </span>
+                                @endif
+                                @if($product->price_offline)
+                                    <span title="Harga Offline" style="color:#16a34a; font-weight:500;">
+                                        <i class="fa-solid fa-store" style="font-size:10px;"></i> {{ number_format($product->price_offline, 0, ',', '.') }}
+                                    </span>
+                                @endif
+                            </div>
+                            @endif
+                        </td>
                         <td style="text-align:center;">{{ $product->min_stock }}</td>
                         <td style="text-align:center;">
                             <form method="POST" action="{{ route('master.products.toggle-status', $product) }}" style="display:inline;">
