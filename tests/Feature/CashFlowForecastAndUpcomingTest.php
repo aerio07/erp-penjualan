@@ -224,6 +224,83 @@ class CashFlowForecastAndUpcomingTest extends TestCase
         $this->assertEquals(40000000, $fcPayableBySupplier->first()->total);
     }
 
+    public function test_cash_flow_forecast_next_period_keeps_prior_invoices_in_breakdown_without_double_counting(): void
+    {
+        $today = Carbon::today();
+        $nextMonth = $today->copy()->addMonth();
+
+        $so = SalesOrder::create([
+            'so_number' => 'SO-FC-NEXT',
+            'customer_id' => $this->customer->id,
+            'user_id' => $this->admin->id,
+            'order_date' => $today->toDateString(),
+            'status' => 'confirmed',
+            'tax_rate' => 0,
+        ]);
+
+        // Invoice 1: Overdue dari bulan lalu (misal 5 hari lalu)
+        SalesInvoice::create([
+            'invoice_number' => 'INV-PRIOR-01',
+            'sales_order_id' => $so->id,
+            'invoice_date' => $today->copy()->subDays(15)->toDateString(),
+            'due_date' => $today->copy()->subDays(5)->toDateString(),
+            'amount' => 15000000,
+            'tax_amount' => 0,
+            'total_amount' => 15000000,
+            'status' => 'unpaid',
+        ]);
+
+        // Invoice 2: Jatuh tempo di Bulan Depan
+        SalesInvoice::create([
+            'invoice_number' => 'INV-NEXT-01',
+            'sales_order_id' => $so->id,
+            'invoice_date' => $today->toDateString(),
+            'due_date' => $nextMonth->copy()->startOfMonth()->addDays(5)->toDateString(),
+            'amount' => 25000000,
+            'tax_amount' => 0,
+            'total_amount' => 25000000,
+            'status' => 'unpaid',
+        ]);
+
+        // Request periode "next"
+        $response = $this->actingAs($this->admin)->get(route('accounting.reports.cash-flow', ['forecast_period' => 'next']));
+        $response->assertStatus(200);
+
+        $cumRec = $response->viewData('fcTotalReceivableCumulative');
+        $priorRec = $response->viewData('fcTotalReceivablePrior');
+        $periodRec = $response->viewData('fcTotalReceivablePeriod');
+        $saldoAwal = $response->viewData('fcSaldoAwal');
+        $saldoAkhir = $response->viewData('fcSaldoAkhir');
+        $customerGroups = $response->viewData('fcReceivableByCustomer');
+
+        // 1. Verifikasi breakdown tetap menyertakan KEDUA invoice (Cumulative = 15jt + 25jt = 40jt)
+        $this->assertEquals(40000000, $cumRec);
+        $this->assertEquals(15000000, $priorRec);
+        $this->assertEquals(25000000, $periodRec);
+
+        // 2. Verifikasi identitas matematis: Cumulative == Prior + Period
+        $this->assertEquals($cumRec, $priorRec + $periodRec);
+
+        // 3. Verifikasi breakdown detail punya flag is_prior yang benar
+        $customerGroup = $customerGroups->first();
+        $this->assertNotNull($customerGroup);
+        $this->assertEquals(2, $customerGroup->count);
+        $this->assertEquals(1, $customerGroup->count_prior);
+        $this->assertEquals(1, $customerGroup->count_current);
+
+        $invPrior = collect($customerGroup->invoices)->firstWhere('invoice_number', 'INV-PRIOR-01');
+        $this->assertTrue($invPrior->is_prior);
+        $this->assertTrue($invPrior->is_overdue);
+
+        $invNext = collect($customerGroup->invoices)->firstWhere('invoice_number', 'INV-NEXT-01');
+        $this->assertFalse($invNext->is_prior);
+
+        // 4. Verifikasi saldo akhir bulan depan:
+        // Saldo awal bulan depan sudah memasukkan INV-PRIOR (15jt) karena masuk di proyeksi bulan ini.
+        // Saldo akhir bulan depan = Saldo Awal + Piutang Period (25jt) - Hutang Period (0jt)
+        $this->assertEquals($saldoAwal + $periodRec, $saldoAkhir);
+    }
+
     public function test_receivables_upcoming_excludes_overdue_and_applies_return_deduction(): void
     {
         $today = Carbon::today();

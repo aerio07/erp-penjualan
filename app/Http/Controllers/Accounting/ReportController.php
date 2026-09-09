@@ -195,69 +195,121 @@ class ReportController extends Controller
             return (object) ['code' => $account->code, 'name' => $account->name, 'balance' => $balance];
         });
 
-        // Est. Penerimaan dari Piutang (jatuh tempo s/d akhir periode)
+        // Est. Penerimaan dari Piutang (jatuh tempo s/d akhir periode - visibilitas penuh s/d $fcEnd)
         $fcReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->whereDate('due_date', '<=', $fcEnd->toDateString())
             ->get()
             ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
-        $fcTotalReceivable = (float) $fcReceivables->sum('outstanding_amount');
+        // Metrik Kumulatif s/d Akhir Periode
+        $fcTotalReceivableCumulative = (float) $fcReceivables->sum('outstanding_amount');
+
+        // Klasifikasi & Turunan Matematis Tunggal (Cumulative - Prior)
+        if ($fcIsCurrent) {
+            $fcTotalReceivablePrior  = 0.0;
+            $fcTotalReceivablePeriod = $fcTotalReceivableCumulative;
+        } else {
+            $fcTotalReceivablePrior  = (float) $fcReceivables->filter(fn($inv) => Carbon::parse($inv->due_date)->lt($fcStart))->sum('outstanding_amount');
+            $fcTotalReceivablePeriod = $fcTotalReceivableCumulative - $fcTotalReceivablePrior; // Turunan matematis tunggal
+        }
 
         $fcReceivableByCustomer = $fcReceivables
             ->groupBy(fn($inv) => $inv->salesOrder?->customer?->id ?? 0)
-            ->map(function ($invoices) {
+            ->map(function ($invoices) use ($today, $fcStart, $fcIsCurrent) {
                 $customer = $invoices->first()->salesOrder?->customer;
-                $notes = $invoices->sortBy('due_date')->map(fn($inv) => (object) [
-                    'invoice_number' => $inv->invoice_number,
-                    'invoice_date'   => $inv->invoice_date,
-                    'due_date'       => $inv->due_date,
-                    'total_amount'   => (float) $inv->effective_total_amount,
-                    'paid'           => (float) $inv->total_paid,
-                    'outstanding'    => (float) $inv->outstanding_amount,
-                    'is_overdue'     => Carbon::parse($inv->due_date)->lt(Carbon::today()),
-                ]);
+                $notes = $invoices->sortBy('due_date')->map(function ($inv) use ($today, $fcStart, $fcIsCurrent) {
+                    $dueDate = Carbon::parse($inv->due_date);
+                    $isOverdue = $dueDate->lt($today);
+                    $isPrior = !$fcIsCurrent && $dueDate->lt($fcStart);
+                    return (object) [
+                        'id'                 => $inv->id,
+                        'invoice_number'     => $inv->invoice_number,
+                        'invoice_date'       => $inv->invoice_date,
+                        'due_date'           => $inv->due_date,
+                        'due_date_formatted' => $dueDate->format('d/m/Y'),
+                        'total_amount'       => (float) $inv->effective_total_amount,
+                        'paid'               => (float) $inv->total_paid,
+                        'outstanding'        => (float) $inv->outstanding_amount,
+                        'is_overdue'         => $isOverdue,
+                        'is_prior'           => $isPrior,
+                        'classification'     => $isPrior ? 'prior' : 'current',
+                        'days_overdue'       => $isOverdue ? $dueDate->diffInDays($today) : 0,
+                    ];
+                });
                 return (object) [
+                    'customer_id'   => $customer?->id ?? 0,
                     'customer_name' => $customer?->name ?? 'Tanpa Customer',
+                    'customer_code' => $customer?->code ?? '-',
                     'total'         => (float) $invoices->sum('outstanding_amount'),
+                    'total_current' => (float) $notes->where('is_prior', false)->sum('outstanding'),
+                    'total_prior'   => (float) $notes->where('is_prior', true)->sum('outstanding'),
                     'count'         => $invoices->count(),
+                    'count_current' => $notes->where('is_prior', false)->count(),
+                    'count_prior'   => $notes->where('is_prior', true)->count(),
                     'invoices'      => $notes->values(),
                 ];
             })->sortByDesc('total')->values();
 
-        // Est. Pengeluaran dari Hutang
+        // Est. Pengeluaran dari Hutang (jatuh tempo s/d akhir periode - visibilitas penuh s/d $fcEnd)
         $fcPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->where('status', '!=', 'paid')
             ->whereDate('due_date', '<=', $fcEnd->toDateString())
             ->get()
             ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
-        $fcTotalPayable = (float) $fcPayables->sum('outstanding_amount');
+        // Metrik Kumulatif s/d Akhir Periode
+        $fcTotalPayableCumulative = (float) $fcPayables->sum('outstanding_amount');
+
+        // Klasifikasi & Turunan Matematis Tunggal (Cumulative - Prior)
+        if ($fcIsCurrent) {
+            $fcTotalPayablePrior  = 0.0;
+            $fcTotalPayablePeriod = $fcTotalPayableCumulative;
+        } else {
+            $fcTotalPayablePrior  = (float) $fcPayables->filter(fn($inv) => Carbon::parse($inv->due_date)->lt($fcStart))->sum('outstanding_amount');
+            $fcTotalPayablePeriod = $fcTotalPayableCumulative - $fcTotalPayablePrior; // Turunan matematis tunggal
+        }
 
         $fcPayableBySupplier = $fcPayables
             ->groupBy(fn($inv) => $inv->purchaseOrder?->supplier?->id ?? 0)
-            ->map(function ($invoices) {
+            ->map(function ($invoices) use ($today, $fcStart, $fcIsCurrent) {
                 $supplier = $invoices->first()->purchaseOrder?->supplier;
-                $notes = $invoices->sortBy('due_date')->map(fn($inv) => (object) [
-                    'invoice_number' => $inv->invoice_number,
-                    'invoice_date'   => $inv->invoice_date,
-                    'due_date'       => $inv->due_date,
-                    'total_amount'   => (float) $inv->effective_total_amount,
-                    'paid'           => (float) $inv->total_paid,
-                    'outstanding'    => (float) $inv->outstanding_amount,
-                    'is_overdue'     => Carbon::parse($inv->due_date)->lt(Carbon::today()),
-                ]);
+                $notes = $invoices->sortBy('due_date')->map(function ($inv) use ($today, $fcStart, $fcIsCurrent) {
+                    $dueDate = Carbon::parse($inv->due_date);
+                    $isOverdue = $dueDate->lt($today);
+                    $isPrior = !$fcIsCurrent && $dueDate->lt($fcStart);
+                    return (object) [
+                        'id'                 => $inv->id,
+                        'invoice_number'     => $inv->invoice_number,
+                        'invoice_date'       => $inv->invoice_date,
+                        'due_date'           => $inv->due_date,
+                        'due_date_formatted' => $dueDate->format('d/m/Y'),
+                        'total_amount'       => (float) $inv->effective_total_amount,
+                        'paid'               => (float) $inv->total_paid,
+                        'outstanding'        => (float) $inv->outstanding_amount,
+                        'is_overdue'         => $isOverdue,
+                        'is_prior'           => $isPrior,
+                        'classification'     => $isPrior ? 'prior' : 'current',
+                        'days_overdue'       => $isOverdue ? $dueDate->diffInDays($today) : 0,
+                    ];
+                });
                 return (object) [
+                    'supplier_id'   => $supplier?->id ?? 0,
                     'supplier_name' => $supplier?->name ?? 'Tanpa Supplier',
+                    'supplier_code' => $supplier?->code ?? '-',
                     'total'         => (float) $invoices->sum('outstanding_amount'),
+                    'total_current' => (float) $notes->where('is_prior', false)->sum('outstanding'),
+                    'total_prior'   => (float) $notes->where('is_prior', true)->sum('outstanding'),
                     'count'         => $invoices->count(),
+                    'count_current' => $notes->where('is_prior', false)->count(),
+                    'count_prior'   => $notes->where('is_prior', true)->count(),
                     'invoices'      => $notes->values(),
                 ];
             })->sortByDesc('total')->values();
 
-        // Saldo Akhir + Health Badge
-        $fcSaldoAkhir = $fcSaldoAwal + $fcTotalReceivable - $fcTotalPayable;
-        $fcHealthThreshold = $fcTotalPayable * 0.20;
+        // Saldo Akhir Proyeksi (Bebas Double-Counting menggunakan metrik Period)
+        $fcSaldoAkhir = $fcSaldoAwal + $fcTotalReceivablePeriod - $fcTotalPayablePeriod;
+        $fcHealthThreshold = ($fcIsCurrent ? $fcTotalPayableCumulative : $fcTotalPayablePeriod) * 0.20;
         if ($fcSaldoAkhir < 0) {
             $fcHealthBadge = 'danger';  $fcHealthLabel = 'Defisit Kas';
         } elseif ($fcSaldoAkhir < $fcHealthThreshold) {
@@ -272,6 +324,10 @@ class ReportController extends Controller
             'next2'   => '2 Bulan Depan (' . $today->copy()->addMonths(2)->startOfMonth()->translatedFormat('F Y') . ')',
         ];
 
+        // Alias untuk kompatibilitas view & test lama
+        $fcTotalReceivable = $fcTotalReceivableCumulative;
+        $fcTotalPayable    = $fcTotalPayableCumulative;
+
         return view('accounting.reports.cash-flow', compact(
             'dateFrom', 'dateTo', 'openingBalance', 'inflows', 'outflows',
             'totalInflow', 'totalOutflow', 'closingBalance',
@@ -279,8 +335,8 @@ class ReportController extends Controller
             'forecastPeriod', 'fcStart', 'fcEnd', 'fcLabel', 'fcIsCurrent',
             'fcPeriodOptions',
             'fcSaldoAwal', 'fcSaldoAwalLabel', 'fcSaldoBreakdown',
-            'fcTotalReceivable', 'fcReceivableByCustomer',
-            'fcTotalPayable', 'fcPayableBySupplier',
+            'fcTotalReceivable', 'fcTotalReceivableCumulative', 'fcTotalReceivablePeriod', 'fcTotalReceivablePrior', 'fcReceivableByCustomer',
+            'fcTotalPayable', 'fcTotalPayableCumulative', 'fcTotalPayablePeriod', 'fcTotalPayablePrior', 'fcPayableBySupplier',
             'fcSaldoAkhir', 'fcHealthBadge', 'fcHealthLabel',
             'cashAccountsList'
         ));
@@ -312,7 +368,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Hitung Saldo Awal Kas rekursif untuk forecast.
+     * Hitung Saldo Awal Kas rekursif untuk forecast (bebas double-counting antar bulan).
      */
     private function getForecastSaldoAwal(Carbon $periodStart, $cashAccountIds, bool $isCurrent = false): float
     {
@@ -338,17 +394,31 @@ class ReportController extends Controller
         $prevIsCurrent = $prevStart->isSameMonth($currentMonthStart);
         $prevSaldoAwal = $this->getForecastSaldoAwal($prevStart, $cashAccountIds, $prevIsCurrent);
 
-        $prevReceivable = (float) SalesInvoice::with(['payments', 'items'])
+        $prevReceivables = SalesInvoice::with(['payments', 'items'])
             ->where('status', '!=', 'paid')
             ->whereDate('due_date', '<=', $prevEnd->toDateString())
-            ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01)->sum('outstanding_amount');
+            ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
-        $prevPayable = (float) PurchaseInvoice::with(['payments', 'items'])
+        $prevPayables = PurchaseInvoice::with(['payments', 'items'])
             ->where('status', '!=', 'paid')
             ->whereDate('due_date', '<=', $prevEnd->toDateString())
-            ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01)->sum('outstanding_amount');
+            ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
-        return $prevSaldoAwal + $prevReceivable - $prevPayable;
+        $prevRecCumulative = (float) $prevReceivables->sum('outstanding_amount');
+        $prevPayCumulative = (float) $prevPayables->sum('outstanding_amount');
+
+        if ($prevIsCurrent) {
+            $netChange = $prevRecCumulative - $prevPayCumulative;
+        } else {
+            // Menggunakan turunan selisih: Cumulative - Prior
+            $prevRecPrior = (float) $prevReceivables->filter(fn($inv) => Carbon::parse($inv->due_date)->lt($prevStart))->sum('outstanding_amount');
+            $prevPayPrior = (float) $prevPayables->filter(fn($inv) => Carbon::parse($inv->due_date)->lt($prevStart))->sum('outstanding_amount');
+            $prevRecPeriod = $prevRecCumulative - $prevRecPrior;
+            $prevPayPeriod = $prevPayCumulative - $prevPayPrior;
+            $netChange = $prevRecPeriod - $prevPayPeriod;
+        }
+
+        return $prevSaldoAwal + $netChange;
     }
 
     /**
