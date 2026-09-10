@@ -35,9 +35,9 @@
                                     @click="setChannel('offline')"
                                     class="px-4 py-2 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-2 cursor-pointer border shadow-xs select-none"
                                     :class="channel === 'offline' 
-                                        ? 'bg-emerald-600 text-white border-emerald-600' 
-                                        : 'bg-white text-slate-600 hover:text-emerald-700 hover:bg-emerald-50/60 border-slate-200'">
-                                <i class="fa-solid fa-store text-xs" :class="channel === 'offline' ? 'text-white' : 'text-emerald-600'"></i>
+                                        ? 'bg-slate-900 text-white border-slate-900' 
+                                        : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'">
+                                <i class="fa-solid fa-store text-xs" :class="channel === 'offline' ? 'text-white' : 'text-slate-500'"></i>
                                 <span>Offline</span>
                                 <i x-show="channel === 'offline'" class="fa-solid fa-check text-[10px] ml-0.5"></i>
                             </button>
@@ -45,9 +45,9 @@
                                     @click="setChannel('online')"
                                     class="px-4 py-2 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-2 cursor-pointer border shadow-xs select-none"
                                     :class="channel === 'online' 
-                                        ? 'bg-blue-600 text-white border-blue-600' 
-                                        : 'bg-white text-slate-600 hover:text-blue-700 hover:bg-blue-50/60 border-slate-200'">
-                                <i class="fa-solid fa-globe text-xs" :class="channel === 'online' ? 'text-white' : 'text-blue-600'"></i>
+                                        ? 'bg-slate-900 text-white border-slate-900' 
+                                        : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200'">
+                                <i class="fa-solid fa-globe text-xs" :class="channel === 'online' ? 'text-white' : 'text-slate-500'"></i>
                                 <span>Online</span>
                                 <i x-show="channel === 'online'" class="fa-solid fa-check text-[10px] ml-0.5"></i>
                             </button>

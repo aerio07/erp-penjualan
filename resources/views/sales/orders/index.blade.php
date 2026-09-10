@@ -59,12 +59,12 @@
             Semua Channel
         </a>
         <a href="{{ request()->fullUrlWithQuery(['channel' => 'offline']) }}"
-           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ request('channel') === 'offline' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-slate-200 hover:bg-emerald-50/60' }}">
-            <i class="fa-solid fa-store text-xs" :class="'{{ request('channel') }}' === 'offline' ? 'text-white' : 'text-emerald-600'"></i> Offline
+           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ request('channel') === 'offline' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
+            <i class="fa-solid fa-store text-xs {{ request('channel') === 'offline' ? 'text-white' : 'text-slate-500' }}"></i> Offline
         </a>
         <a href="{{ request()->fullUrlWithQuery(['channel' => 'online']) }}"
-           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ request('channel') === 'online' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-700 border-slate-200 hover:bg-blue-50/60' }}">
-            <i class="fa-solid fa-globe text-xs" :class="'{{ request('channel') }}' === 'online' ? 'text-white' : 'text-blue-600'"></i> Online
+           class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all no-underline inline-flex items-center gap-1.5 border shadow-xs {{ request('channel') === 'online' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' }}">
+            <i class="fa-solid fa-globe text-xs {{ request('channel') === 'online' ? 'text-white' : 'text-slate-500' }}"></i> Online
         </a>
     </div>
 
