@@ -154,7 +154,7 @@
 
                     <div class="form-group" x-show="resolutionType === 'sold_as_reject'" x-transition>
                         <label class="form-label">Harga Jual Per Unit (Rp) <span style="color:var(--danger);">*</span></label>
-                        <input type="number" step="0.01" min="0" name="sale_price" x-model.number="salePrice" class="form-control" placeholder="Contoh: 15000">
+                        <input type="text" inputmode="numeric" name="sale_price" x-currency="salePrice" class="form-control format-currency" placeholder="Contoh: 15.000">
                     </div>
 
                     <div class="form-group">

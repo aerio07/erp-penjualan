@@ -160,7 +160,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Harga Satuan / Unit Cost (Rp) <span style="color: #e11d48;">*</span></label>
-                        <input type="number" name="unit_cost" min="0" step="1000" x-model.number="unitCost" placeholder="0" class="form-control" style="font-family: 'Inter', monospace; font-weight: 700;" required>
+                        <input type="text" inputmode="numeric" name="unit_cost" x-currency="unitCost" placeholder="0" class="form-control format-currency" style="font-family: 'Inter', monospace; font-weight: 700;" required>
                         <p style="font-size: 11px; color: #64748b; margin-top: 4px; font-family: 'Inter', sans-serif;" x-text="formatRupiah(unitCost) + ' / unit'"></p>
                     </div>
 

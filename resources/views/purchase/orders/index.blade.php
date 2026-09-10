@@ -56,7 +56,20 @@
                         <td>{{ $order->supplier->name ?? '-' }}</td>
                         <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
                         <td>{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
-                        <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                        <td style="text-align:right;">
+                            <div style="font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
+                            @php
+                                $itemDiscountTotal = $order->items->sum(function($item) {
+                                    return ($item->qty_ordered * $item->unit_price) * (($item->discount_percent ?? 0) / 100);
+                                });
+                                $totalDiscount = ($order->discount_amount ?? 0) + $itemDiscountTotal;
+                            @endphp
+                            @if($totalDiscount > 0)
+                                <div style="font-size:11px; color:var(--danger); font-weight:500; margin-top:2px;" title="Total diskon item & header">
+                                    <i class="fa-solid fa-tag text-[10px]"></i> Diskon: -Rp {{ number_format($totalDiscount, 0, ',', '.') }}
+                                </div>
+                            @endif
+                        </td>
                         <td style="text-align:center;">
                             <span class="badge badge-{{ $order->status }}">
                                 {{ ucfirst(str_replace('_', ' ', $order->status)) }}

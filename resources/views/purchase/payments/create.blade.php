@@ -37,16 +37,13 @@
                         <div class="form-group">
                             <label class="form-label">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
                             <div style="position:relative;">
-                                <input type="number" 
+                                <input type="text" 
+                                       inputmode="numeric"
                                        name="amount" 
-                                       x-model.number="amount" 
-                                       class="form-control" 
-                                       min="1" 
-                                       :max="maxAmount" 
-                                       step="1" 
-                                       @keydown="if($event.key==='-'||$event.key==='e'||$event.key==='+') $event.preventDefault()"
+                                       x-currency="amount" 
+                                       class="form-control format-currency" 
                                        required 
-                                       placeholder="Nominal (cth: 5000000)">
+                                       placeholder="Nominal (cth: 5.000.000)">
                             </div>
                             <template x-if="selectedInvoice">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">

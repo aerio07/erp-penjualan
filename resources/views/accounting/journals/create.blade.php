@@ -68,10 +68,10 @@
                                     <input type="text" :name="`lines[${idx}][description]`" x-model="row.description" class="form-control" placeholder="Keterangan opsional">
                                 </td>
                                 <td>
-                                    <input type="number" :name="`lines[${idx}][debit]`" x-model.number="row.debit" class="form-control" min="0" step="100">
+                                    <input type="text" inputmode="numeric" :name="`lines[${idx}][debit]`" x-currency="row.debit" class="form-control format-currency" placeholder="0">
                                 </td>
                                 <td>
-                                    <input type="number" :name="`lines[${idx}][credit]`" x-model.number="row.credit" class="form-control" min="0" step="100">
+                                    <input type="text" inputmode="numeric" :name="`lines[${idx}][credit]`" x-currency="row.credit" class="form-control format-currency" placeholder="0">
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 2">

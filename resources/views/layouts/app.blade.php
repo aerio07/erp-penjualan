@@ -696,7 +696,7 @@
                 </button>
                 <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     @if($isAdmin || $isPurchasing)
-                    <a href="{{ route('purchase.demands.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.demands.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kebutuhan Pengadaan</a>
+                    <a href="{{ route('purchase.demands.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.demands.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
                     <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
                     @endif
                     @if($isAdmin || $isGudang)
@@ -1041,6 +1041,123 @@
             });
         });
     });
+    </script>
+
+    <!-- Global Currency & Number Input Formatting Engine -->
+    <script>
+    (function() {
+        if (!window.formatRupiah) {
+            window.formatRupiah = function(val) {
+                if (val === undefined || val === null || val === '') return '';
+                let digits = String(val).replace(/\D/g, '');
+                if (!digits) return '';
+                return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            };
+        }
+        if (!window.unformatRupiah) {
+            window.unformatRupiah = function(val) {
+                if (val === undefined || val === null || val === '') return 0;
+                let clean = String(val).replace(/\./g, '').trim();
+                return parseInt(clean, 10) || 0;
+            };
+        }
+        if (!window.applyMaskWithCursor) {
+            window.applyMaskWithCursor = function(input) {
+                let cursor = input.selectionStart;
+                let oldVal = input.value;
+                let oldLen = oldVal.length;
+                let newVal = window.formatRupiah(oldVal);
+                input.value = newVal;
+                let newLen = newVal.length;
+                let newPos = cursor + (newLen - oldLen);
+                if (newPos >= 0 && newPos <= newLen) {
+                    input.setSelectionRange(newPos, newPos);
+                }
+            };
+        }
+
+        const currencySelector = [
+            'input[name="purchase_price"]',
+            'input[name="sell_price"]',
+            'input[name="price_online"]',
+            'input[name="price_offline"]',
+            'input[name="credit_limit"]',
+            'input[name="discount_amount"]',
+            'input[name="amount"]',
+            'input[name="sale_price"]',
+            'input[name="acquisition_cost"]',
+            'input[name="salvage_value"]',
+            'input[name="unit_cost"]',
+            '.format-currency',
+            '.format-number',
+            '[data-type="currency"]',
+            '[data-format="currency"]'
+        ].join(',');
+
+        function initMask(input) {
+            if (!input || input.dataset.maskInitialized) return;
+            // Skip if handled by Alpine x-currency
+            if (input.hasAttribute('x-currency')) return;
+
+            input.dataset.maskInitialized = 'true';
+            if (input.type === 'number') {
+                input.type = 'text';
+            }
+            input.inputMode = 'numeric';
+            input.classList.add('format-currency');
+
+            if (input.value) {
+                input.value = window.formatRupiah(input.value);
+            }
+
+            input.addEventListener('input', function() {
+                window.applyMaskWithCursor(this);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll(currencySelector).forEach(initMask);
+
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === 1) {
+                            if (node.matches && node.matches(currencySelector)) {
+                                initMask(node);
+                            }
+                            if (node.querySelectorAll) {
+                                node.querySelectorAll(currencySelector).forEach(initMask);
+                            }
+                        }
+                    });
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+
+        // Unmask on form submit (Capture Phase) so backend receives clean integer
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (!form || !form.querySelectorAll) return;
+
+            const inputs = form.querySelectorAll('.format-currency, [data-type="currency"], ' + currencySelector);
+            inputs.forEach(function(input) {
+                if (input.value) {
+                    input.dataset.maskedValue = input.value;
+                    input.value = input.value.replace(/\./g, '');
+                }
+            });
+
+            setTimeout(function() {
+                inputs.forEach(function(input) {
+                    if (input.dataset.maskedValue) {
+                        input.value = input.dataset.maskedValue;
+                        delete input.dataset.maskedValue;
+                    }
+                });
+            }, 100);
+        }, true);
+    })();
     </script>
     @stack('scripts')
 </body>

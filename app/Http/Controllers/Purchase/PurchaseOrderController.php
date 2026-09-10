@@ -27,7 +27,7 @@ class PurchaseOrderController extends Controller
 
     public function index(Request $request): View
     {
-        $query = PurchaseOrder::with(['supplier', 'user']);
+        $query = PurchaseOrder::with(['supplier', 'user', 'items']);
 
         $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes', 'ship_to']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -61,7 +61,7 @@ class PurchaseOrderController extends Controller
             'supplier_id'           => 'required|exists:suppliers,id',
             'warehouse_id'          => 'nullable|exists:warehouses,id',
             'order_date'            => 'required|date',
-            'expected_date'         => 'nullable|date|after_or_equal:order_date',
+            'expected_date'         => 'required|date|after_or_equal:order_date',
             'tax_rate'              => 'required|numeric|min:0|max:100',
             'discount_amount'       => 'nullable|numeric|min:0',
             'notes'                 => 'nullable|string',
@@ -73,6 +73,9 @@ class PurchaseOrderController extends Controller
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
             'demand_ids'            => 'nullable|array',
             'demand_ids.*'          => 'exists:procurement_demands,id',
+        ], [
+            'expected_date.required' => 'Tanggal expected delivery wajib diisi.',
+            'expected_date.after_or_equal' => 'Tanggal expected delivery harus sama dengan atau setelah tanggal PO.',
         ]);
 
         // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
@@ -174,7 +177,7 @@ class PurchaseOrderController extends Controller
             'supplier_id'    => 'required|exists:suppliers,id',
             'warehouse_id'   => 'nullable|exists:warehouses,id',
             'order_date'     => 'required|date',
-            'expected_date'  => 'nullable|date|after_or_equal:order_date',
+            'expected_date'  => 'required|date|after_or_equal:order_date',
             'tax_rate'       => 'required|numeric|min:0|max:100',
             'discount_amount'=> 'nullable|numeric|min:0',
             'notes'          => 'nullable|string',
@@ -184,6 +187,9 @@ class PurchaseOrderController extends Controller
             'items.*.qty_ordered'  => 'required|integer|min:1',
             'items.*.unit_price'   => 'required|numeric|min:0',
             'items.*.discount_percent' => 'nullable|numeric|min:0|max:100',
+        ], [
+            'expected_date.required' => 'Tanggal expected delivery wajib diisi.',
+            'expected_date.after_or_equal' => 'Tanggal expected delivery harus sama dengan atau setelah tanggal PO.',
         ]);
 
         // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header

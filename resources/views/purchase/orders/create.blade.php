@@ -39,8 +39,9 @@
                             @error('order_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Expected Delivery</label>
-                            <input type="date" name="expected_date" value="{{ old('expected_date') }}" class="form-control">
+                            <label class="form-label">Expected Delivery <span style="color:var(--danger);">*</span></label>
+                            <input type="date" name="expected_date" value="{{ old('expected_date') }}" class="form-control {{ $errors->has('expected_date') ? 'is-invalid' : '' }}" required>
+                            @error('expected_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="form-group">
                             <label class="form-label">Tarif PPN (%)</label>
@@ -82,16 +83,21 @@
                             <span style="color:var(--text-secondary);">Subtotal Item</span>
                             <span style="font-weight:600;" x-text="'Rp ' + formatNum(subtotal)"></span>
                         </div>
+                        <template x-if="totalItemDiscount > 0">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--danger);">
+                                <span>Total Diskon Item</span>
+                                <span style="font-weight:600;" x-text="'- Rp ' + formatNum(totalItemDiscount)"></span>
+                            </div>
+                        </template>
                         <div>
                             <label class="form-label">Diskon Header (Rp)</label>
-                            <input type="number" 
+                            <input type="text" 
+                                   inputmode="numeric"
                                    name="discount_amount" 
-                                   x-model.number="discountHeader" 
-                                   :max="subtotal"
+                                   x-currency="discountHeader" 
                                    :class="{'is-invalid': discountHeader > subtotal}"
-                                   class="form-control" 
-                                   min="0" 
-                                   step="1000">
+                                   class="form-control format-currency" 
+                                   placeholder="0">
                             <template x-if="discountHeader > subtotal">
                                 <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
@@ -154,10 +160,11 @@
                                     <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" min="1" required>
                                 </td>
                                 <td>
-                                    <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" @input="recalc()" class="form-control" min="0" step="100">
+                                    <input type="text" inputmode="numeric" :name="`items[${idx}][unit_price]`" x-currency="row.price" @input="recalc()" class="form-control format-currency" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" @input="recalc()" class="form-control" min="0" max="100" step="0.1">
+                                    <div style="font-size:11px; color:var(--danger); margin-top:3px; font-weight:500;" x-show="row.discount > 0" x-text="'-Rp ' + formatNum((row.qty || 0) * (row.price || 0) * ((row.discount || 0) / 100))"></div>
                                 </td>
                                 <td style="text-align:right; font-weight:600;">
                                     <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
@@ -239,6 +246,7 @@ function poForm() {
             return base - (base * (row.discount / 100));
         },
 
+        get totalItemDiscount() { return this.rows.reduce((s, r) => s + ((r.qty || 0) * (r.price || 0) * ((r.discount || 0) / 100)), 0); },
         get subtotal() { return this.rows.reduce((s, r) => s + this.rowSubtotal(r), 0); },
         get taxableAmount() { return Math.max(0, this.subtotal - this.discountHeader); },
         get taxAmount() { return this.taxableAmount * (this.taxRate / 100); },

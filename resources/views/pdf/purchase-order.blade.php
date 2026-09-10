@@ -95,7 +95,17 @@
                 <td>{{ $item->product->unit ?? '-' }}</td>
                 <td class="text-right">{{ number_format($item->qty_ordered ?? 0) }}</td>
                 <td class="text-right">Rp {{ number_format($item->unit_price ?? 0, 0, ',', '.') }}</td>
-                <td class="text-right">{{ ($item->discount_percent ?? 0) > 0 ? $item->discount_percent.'%' : '-' }}</td>
+                <td class="text-right">
+                    @if(($item->discount_percent ?? 0) > 0)
+                        @php
+                            $lineDiscRp = (($item->qty_ordered ?? 0) * ($item->unit_price ?? 0)) * (($item->discount_percent ?? 0) / 100);
+                        @endphp
+                        {{ $item->discount_percent }}%
+                        <br><small style="color:#ef4444;">-Rp {{ number_format($lineDiscRp, 0, ',', '.') }}</small>
+                    @else
+                        -
+                    @endif
+                </td>
                 <td class="text-right">Rp {{ number_format($item->subtotal ?? 0, 0, ',', '.') }}</td>
             </tr>
             @endforeach
@@ -105,7 +115,15 @@
     <div style="display:flex; justify-content:flex-end;">
         <div style="width:280px;">
             <div class="total-section">
+                @php
+                    $pdfItemDiscount = $order->items->sum(function($item) {
+                        return (($item->qty_ordered ?? 0) * ($item->unit_price ?? 0)) * (($item->discount_percent ?? 0) / 100);
+                    });
+                @endphp
                 <div class="total-row"><span>Subtotal:</span><span>Rp {{ number_format($order->items->sum('subtotal'), 0, ',', '.') }}</span></div>
+                @if($pdfItemDiscount > 0)
+                <div class="total-row" style="color:#ef4444;"><span>Diskon Item:</span><span>- Rp {{ number_format($pdfItemDiscount, 0, ',', '.') }}</span></div>
+                @endif
                 @if(($order->discount_amount ?? 0) > 0)
                 <div class="total-row" style="color:#ef4444;"><span>Diskon Header:</span><span>- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span></div>
                 @endif

@@ -53,6 +53,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDays(5)->toDateString(),
             'tax_rate' => 11,
             'discount_amount' => 1500000,
             'items' => [
@@ -69,6 +70,26 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $this->assertEquals(0, PurchaseOrder::count());
     }
 
+    public function test_expected_date_is_required_when_creating_po(): void
+    {
+        $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
+            'supplier_id' => $this->supplier->id,
+            'order_date' => now()->toDateString(),
+            'expected_date' => null,
+            'tax_rate' => 11,
+            'items' => [
+                [
+                    'product_id' => $this->product->id,
+                    'qty_ordered' => 10,
+                    'unit_price' => 100000,
+                ],
+            ],
+        ]);
+
+        $response->assertSessionHasErrors('expected_date');
+        $this->assertEquals(0, PurchaseOrder::count());
+    }
+
     public function test_can_create_po_with_normal_discount(): void
     {
         // 10 pcs @ Rp 100.000 = Rp 1.000.000 subtotal
@@ -77,6 +98,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDays(5)->toDateString(),
             'tax_rate' => 11,
             'discount_amount' => 200000,
             'items' => [
@@ -106,6 +128,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDays(5)->toDateString(),
             'tax_rate' => 11,
             'discount_amount' => 1000000,
             'items' => [
@@ -135,6 +158,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
             'user_id' => $this->purchasing->id,
             'status' => 'draft',
             'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDays(5)->toDateString(),
             'tax_rate' => 11,
             'discount_amount' => 50000,
             'tax_amount' => 104500,
@@ -144,6 +168,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $response = $this->actingAs($this->purchasing)->put(route('purchase.orders.update', $po), [
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
+            'expected_date' => now()->addDays(5)->toDateString(),
             'tax_rate' => 11,
             'discount_amount' => 2000000, // melebihi subtotal 1.000.000
             'items' => [

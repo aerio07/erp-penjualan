@@ -119,14 +119,13 @@
                         </div>
                         <div>
                             <label class="form-label">Diskon Header (Rp)</label>
-                            <input type="number" 
+                            <input type="text" 
+                                   inputmode="numeric"
                                    name="discount_amount" 
-                                   x-model.number="discountHeader" 
-                                   :max="subtotal"
+                                   x-currency="discountHeader" 
                                    :class="{'is-invalid': discountHeader > subtotal}"
-                                   class="form-control" 
-                                   min="0" 
-                                   step="1000">
+                                   class="form-control format-currency" 
+                                   placeholder="0">
                             <template x-if="discountHeader > subtotal">
                                 <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
@@ -189,7 +188,7 @@
                                     <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" min="1" required>
                                 </td>
                                 <td>
-                                    <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" @input="recalc()" class="form-control" min="0" step="100">
+                                    <input type="text" inputmode="numeric" :name="`items[${idx}][unit_price]`" x-currency="row.price" @input="recalc()" class="form-control format-currency" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" @input="recalc()" class="form-control" min="0" max="100" step="0.1">

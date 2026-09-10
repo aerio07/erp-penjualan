@@ -85,14 +85,34 @@
             <div class="card-header"><h3>Total</h3></div>
             <div class="card-body">
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
+                    @php
+                        $itemDiscountSum = $order->items->sum(function($item) {
+                            return ($item->qty_ordered * $item->unit_price) * (($item->discount_percent ?? 0) / 100);
+                        });
+                        $grossSubtotal = $order->items->sum(function($item) {
+                            return $item->qty_ordered * $item->unit_price;
+                        });
+                    @endphp
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">Subtotal</span>
-                        <span>Rp {{ number_format($order->items->sum('subtotal'), 0, ',', '.') }}</span>
+                        <span style="color:var(--text-secondary);">Subtotal Kotor</span>
+                        <span>Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</span>
                     </div>
+                    @if($itemDiscountSum > 0)
+                    <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                        <span>Diskon Item</span>
+                        <span>- Rp {{ number_format($itemDiscountSum, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
                     @if($order->discount_amount > 0)
                     <div style="display:flex; justify-content:space-between; color:var(--danger);">
                         <span>Diskon Header</span>
                         <span>- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    @if($itemDiscountSum > 0 && $order->discount_amount > 0)
+                    <div style="display:flex; justify-content:space-between; font-weight:600; color:var(--danger); font-size:13px; background:#fef2f2; padding:4px 8px; border-radius:6px;">
+                        <span>Total Seluruh Diskon</span>
+                        <span>- Rp {{ number_format($itemDiscountSum + $order->discount_amount, 0, ',', '.') }}</span>
                     </div>
                     @endif
                     <div style="display:flex; justify-content:space-between;">
@@ -167,7 +187,19 @@
                             </span>
                         </td>
                         <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                        <td style="text-align:center;">{{ $item->discount_percent > 0 ? $item->discount_percent.'%' : '-' }}</td>
+                        <td style="text-align:center;">
+                            @if($item->discount_percent > 0)
+                                @php
+                                    $itemDiscRp = ($item->qty_ordered * $item->unit_price) * ($item->discount_percent / 100);
+                                @endphp
+                                <span style="font-weight:600;">{{ $item->discount_percent }}%</span>
+                                <div style="font-size:11px; color:var(--danger); margin-top:2px;">
+                                    -Rp {{ number_format($itemDiscRp, 0, ',', '.') }}
+                                </div>
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
