@@ -221,4 +221,25 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $approval->refresh();
         $this->assertEquals('rejected', $approval->status);
     }
+
+    public function test_cannot_cancel_confirmed_po(): void
+    {
+        $po = PurchaseOrder::create([
+            'po_number' => 'PO-TEST-CONFIRMED',
+            'supplier_id' => $this->supplier->id,
+            'user_id' => $this->purchasing->id,
+            'status' => 'confirmed',
+            'order_date' => now()->toDateString(),
+            'tax_rate' => 11,
+            'discount_amount' => 0,
+            'tax_amount' => 110000,
+            'total_amount' => 1110000,
+        ]);
+
+        $response = $this->actingAs($this->purchasing)->patch(route('purchase.orders.cancel', $po));
+        $response->assertStatus(403);
+
+        $po->refresh();
+        $this->assertEquals('confirmed', $po->status);
+    }
 }

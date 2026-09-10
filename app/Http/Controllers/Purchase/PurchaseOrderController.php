@@ -286,7 +286,7 @@ class PurchaseOrderController extends Controller
     public function cancel(PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $order = $purchaseOrder;
-        abort_if(!in_array($order->status, ['draft', 'waiting_approval', 'confirmed']), 403);
+        abort_if(!in_array($order->status, ['draft', 'waiting_approval']), 403, 'Purchase Order yang sudah dikonfirmasi tidak dapat dibatalkan.');
 
         // Batalkan approval request yang masih pending jika ada
         $order->approvalRequests()->where('status', 'pending')->update([

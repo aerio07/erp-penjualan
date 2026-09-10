@@ -19,7 +19,7 @@
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Konfirmasi PO</button>
             </form>
             @endif
-            @if(in_array($order->status, ['draft','waiting_approval','confirmed']))
+            @if(in_array($order->status, ['draft', 'waiting_approval']))
             <form method="POST" action="{{ route('purchase.orders.cancel', $order) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-danger" onclick="return confirm('Batalkan PO ini?')"><i class="fa-solid fa-ban"></i> Batalkan</button>
