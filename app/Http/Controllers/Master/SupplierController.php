@@ -20,7 +20,7 @@ class SupplierController extends Controller
 
         $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address', 'npwp', 'ktp_number', 'bank_name', 'bank_account_number', 'bank_account_holder']);
         $query = $this->applyFilter($query, $request, 'is_active');
-        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'payment_term', 'created_at'], 'name', 'asc');
+        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'payment_term', 'created_at'], 'created_at', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $suppliers = $query->paginate($perPage)->withQueryString();

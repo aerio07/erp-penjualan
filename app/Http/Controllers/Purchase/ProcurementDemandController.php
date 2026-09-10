@@ -40,7 +40,7 @@ class ProcurementDemandController extends Controller
 
         $query = $this->applySearch($query, $request, ['demand_number', 'product.name', 'product.sku', 'salesOrder.so_number', 'salesOrder.customer.name']);
 
-        $demands = $query->orderBy('required_date', 'asc')->paginate(25)->withQueryString();
+        $demands = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
 
         // Konsolidasi Kebutuhan per Produk untuk Tim Purchasing
         $activeDemands = ProcurementDemand::with(['product', 'salesOrder.customer'])
@@ -68,7 +68,17 @@ class ProcurementDemandController extends Controller
                 'orders_count'         => $items->pluck('sales_order_id')->unique()->count(),
                 'demands_list'         => $items,
             ];
-        })->values();
+        });
+
+        if ($request->filled('q')) {
+            $keyword = strtolower(trim($request->q));
+            $consolidatedProducts = $consolidatedProducts->filter(function ($cp) use ($keyword) {
+                return str_contains(strtolower($cp['product']->name ?? ''), $keyword) ||
+                       str_contains(strtolower($cp['product']->sku ?? ''), $keyword);
+            });
+        }
+        
+        $consolidatedProducts = $consolidatedProducts->values();
 
         // Kartu Metrik Dashboard Pengadaan
         $totalBackorderItems = $activeDemands->pluck('product_id')->unique()->count();

@@ -23,7 +23,7 @@ class CustomerController extends Controller
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applyFilter($query, $request, 'tax_type');
         $query = $this->applyFilter($query, $request, 'sales_person_id');
-        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'credit_limit', 'payment_term', 'tax_type', 'created_at'], 'name', 'asc');
+        $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'credit_limit', 'payment_term', 'tax_type', 'created_at'], 'created_at', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $customers = $query->paginate($perPage)->withQueryString();

@@ -19,22 +19,36 @@
         </div>
     </div>
 
-    {{-- Filter Gudang --}}
+    {{-- Filter Gudang & Pencarian --}}
     <div class="card" style="margin-bottom:16px;">
         <div class="card-body" style="padding:16px;">
-            <form method="GET" action="{{ route('inventory.stock-summary') }}" style="display:flex; gap:12px; align-items:flex-end;">
-                <div style="flex:1; max-width:300px;">
+            <form method="GET" action="{{ route('inventory.stock-summary') }}" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+                <div style="flex:1; min-width:220px; max-width:320px;">
+                    <label class="form-label">Cari Produk / SKU</label>
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-secondary); font-size:13px; pointer-events:none;"></i>
+                        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama atau SKU..." class="form-control" style="padding-left:36px; height:38px; font-size:13px; border-radius:6px; margin-bottom:0;">
+                    </div>
+                </div>
+                <div style="flex:1; min-width:200px; max-width:280px;">
                     <label class="form-label">Filter Gudang</label>
-                    <select name="warehouse_id" class="form-control" onchange="this.form.submit()">
+                    <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; border-radius:6px; margin-bottom:0;">
                         <option value="">Semua Gudang (Konsolidasi)</option>
                         @foreach($warehouses as $wh)
                         <option value="{{ $wh->id }}" {{ $warehouseId == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
                         @endforeach
                     </select>
                 </div>
-                @if($warehouseId)
-                <a href="{{ route('inventory.stock-summary') }}" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Reset Filter</a>
-                @endif
+                <div style="display:flex; gap:8px;">
+                    <button type="submit" class="btn btn-primary" style="height:38px; padding:0 16px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-filter"></i> Filter
+                    </button>
+                    @if(request()->filled('warehouse_id') || request()->filled('q'))
+                    <a href="{{ route('inventory.stock-summary') }}" class="btn btn-secondary" style="height:38px; padding:0 14px; font-size:13px; display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </a>
+                    @endif
+                </div>
             </form>
         </div>
     </div>

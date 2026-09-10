@@ -26,7 +26,7 @@
 
     <div class="grid grid-4" style="margin-bottom:24px;">
         @foreach($roleColors as $role => $color)
-        @php $count = $users->where('role', $role)->count(); @endphp
+        @php $count = $roleCounts[$role] ?? 0; @endphp
         <div class="stat-card">
             <div class="icon" style="background:{{ $color['bg'] }}; color:{{ $color['color'] }};">
                 <i class="fa-solid fa-user-shield"></i>
@@ -37,10 +37,13 @@
         @endforeach
     </div>
 
+    {{-- Filter Searching Biasa (Tanpa dropdown) --}}
+    <x-list-filter-bar :action="route('master.users.index')" placeholder="Cari nama, email, role..." />
+
     <div class="card">
         <div class="card-header">
             <h3>Daftar Pengguna</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">{{ $users->count() }} user</span>
+            <span style="font-size:13px; color:var(--text-secondary);">{{ $users->total() }} user</span>
         </div>
         <div class="table-responsive">
             <table class="erp-table">
@@ -109,6 +112,11 @@
                 </tbody>
             </table>
         </div>
+        @if($users->hasPages())
+        <div class="card-footer" style="padding: 12px 20px; border-top: 1px solid var(--border);">
+            {{ $users->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

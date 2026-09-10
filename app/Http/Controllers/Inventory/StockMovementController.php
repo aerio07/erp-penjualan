@@ -22,7 +22,16 @@ class StockMovementController extends Controller
         $warehouseId = $request->query('warehouse_id');
         $warehouses  = Warehouse::where('is_active', true)->orderBy('name')->get();
 
-        $products = Product::where('is_active', true)->orderBy('name')->get()->map(function ($product) use ($warehouseId) {
+        $productsQuery = Product::where('is_active', true);
+        if ($request->filled('q')) {
+            $q = trim($request->q);
+            $productsQuery->where(function($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('sku', 'like', "%{$q}%");
+            });
+        }
+
+        $products = $productsQuery->orderBy('created_at', 'desc')->get()->map(function ($product) use ($warehouseId) {
             $onHand    = $this->stockService->getOnHandStock($product->id, $warehouseId);
             $reserved  = $this->stockService->getReservedStock($product->id, $warehouseId);
             $available = $this->stockService->getAvailableStock($product->id, $warehouseId);

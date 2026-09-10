@@ -9,12 +9,25 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
+use App\Traits\HasListFilters;
+
 class UserController extends Controller
 {
-    public function index(): View
+    use HasListFilters;
+
+    public function index(Request $request): View
     {
-        $users = User::orderBy('name')->get();
-        return view('master.users.index', compact('users'));
+        $roleCounts = User::selectRaw('role, count(*) as count')->groupBy('role')->pluck('count', 'role')->toArray();
+
+        $query = User::query();
+        $query = $this->applySearch($query, $request, ['name', 'email', 'role']);
+        $query = $this->applyFilter($query, $request, 'role');
+        $query = $this->applySort($query, $request, ['name', 'email', 'role', 'created_at'], 'created_at', 'desc');
+
+        $perPage = (int) $request->get('per_page', 20);
+        $users = $query->paginate($perPage)->withQueryString();
+
+        return view('master.users.index', compact('users', 'roleCounts'));
     }
 
     public function create(): View

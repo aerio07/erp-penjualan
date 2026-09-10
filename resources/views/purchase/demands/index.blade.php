@@ -71,6 +71,16 @@
         </div>
     </div>
 
+    {{-- Filter Searching Biasa (Tanpa dropdown) --}}
+    <x-list-filter-bar :action="route('purchase.demands.index')" placeholder="Cari nama produk, SKU, No. SO, customer, demand...">
+        @if(request('status'))
+            <input type="hidden" name="status" value="{{ request('status') }}">
+        @endif
+        @if(request('warehouse_id'))
+            <input type="hidden" name="warehouse_id" value="{{ request('warehouse_id') }}">
+        @endif
+    </x-list-filter-bar>
+
     {{-- TABEL 1: KONSOLIDASI KEBUTUHAN PENGADAAN PER PRODUK (PURCHASING ACTION HUB) --}}
     <div class="card" style="margin-bottom:24px;">
         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
@@ -254,7 +264,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" style="text-align:center; padding:36px; color:var(--text-secondary);">
+                        <td colspan="9" style="text-align:center; padding:36px; color:var(--text-secondary);">
                             <i class="fa-solid fa-list-check" style="font-size:28px; margin-bottom:8px; display:block; opacity:0.4;"></i>
                             Tidak ada data rincian demand yang sesuai filter.
                         </td>
