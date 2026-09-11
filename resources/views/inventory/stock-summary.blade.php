@@ -60,7 +60,7 @@
                         <th style="text-align:right;">Karantina</th>
                         <th style="text-align:right;">Nilai HPP</th>
                         <th style="text-align:center;">Status</th>
-                        <th style="text-align:center;">Aksi</th>
+                        <th class="text-center col-actions">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,13 +106,13 @@
                                 <span class="badge badge-done">Aman</span>
                             @endif
                         </td>
-                        <td style="text-align:center;">
+                        <td class="col-actions text-center">
                             <div style="display:flex; gap:6px; justify-content:center;">
-                                <a href="{{ route('inventory.stock-card') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-secondary btn-sm" title="Kartu Stok">
+                                <a href="{{ route('inventory.stock-card') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-secondary btn-sm btn-icon" title="Kartu Stok">
                                     <i class="fa-solid fa-rectangle-list"></i>
                                 </a>
                                 @if($p->quarantine_stock > 0)
-                                <a href="{{ route('inventory.dispositions.create') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-warning btn-sm" title="Selesaikan Barang Karantina">
+                                <a href="{{ route('inventory.dispositions.create') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-warning btn-sm btn-icon" title="Selesaikan Barang Karantina">
                                     <i class="fa-solid fa-box-archive"></i>
                                 </a>
                                 @endif

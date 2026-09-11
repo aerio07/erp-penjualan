@@ -31,62 +31,51 @@
         </select>
     </x-list-filter-bar>
 
-    <div class="card">
-        <div class="table-responsive">
-            <table class="erp-table">
-                <thead>
-                    <tr>
-                        <x-sortable-header column="opname_number" title="No. Opname" />
-                        <th>Gudang</th>
-                        <x-sortable-header column="opname_date" title="Tgl Opname" :isDefault="true" />
-                        <th>Petugas</th>
-                        <x-sortable-header column="status" title="Status" align="center" />
-                        <th style="text-align:center;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($opnames as $op)
-                    <tr>
-                        <td>
-                            <a href="{{ route('inventory.opname.show', $op) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                                {{ $op->opname_number }}
-                            </a>
-                        </td>
-                        <td>
-                            <span class="badge badge-confirmed">
-                                <i class="fa-solid fa-warehouse"></i> {{ $op->warehouse->name ?? '-' }}
-                            </span>
-                        </td>
-                        <td>{{ $op->opname_date ? $op->opname_date->format('d/m/Y') : '-' }}</td>
-                        <td>{{ $op->user->name ?? '-' }}</td>
-                        <td style="text-align:center;">
-                            <span class="badge badge-{{ $op->status === 'completed' ? 'done' : 'pending' }}">
-                                {{ ucfirst(str_replace('_', ' ', $op->status)) }}
-                            </span>
-                        </td>
-                        <td style="text-align:center;">
-                            <a href="{{ route('inventory.opname.show', $op) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" style="text-align:center; padding:48px; color:var(--text-secondary);">
-                            <i class="fa-solid fa-clipboard-check" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada dokumen Stock Opname yang sesuai filter
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <x-data-table :paginator="$opnames">
+        <x-slot:head>
+            <tr>
+                <x-sortable-header column="opname_number" title="No. Opname" />
+                <th>Gudang</th>
+                <x-sortable-header column="opname_date" title="Tgl Opname" :isDefault="true" />
+                <th>Petugas</th>
+                <x-sortable-header column="status" title="Status" align="center" />
+                <th class="text-center col-actions">Aksi</th>
+            </tr>
+        </x-slot:head>
 
-        @if($opnames->hasPages())
-        <div style="padding:16px 20px; border-top:1px solid var(--border);">
-            {{ $opnames->links() }}
-        </div>
-        @endif
-    </div>
+        @forelse($opnames as $op)
+        <tr>
+            <td>
+                <a href="{{ route('inventory.opname.show', $op) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                    {{ $op->opname_number }}
+                </a>
+            </td>
+            <td>
+                <span class="badge badge-confirmed">
+                    <i class="fa-solid fa-warehouse"></i> {{ $op->warehouse->name ?? '-' }}
+                </span>
+            </td>
+            <td>{{ $op->opname_date ? $op->opname_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $op->user->name ?? '-' }}</td>
+            <td style="text-align:center;">
+                <span class="badge badge-{{ $op->status === 'completed' ? 'done' : 'pending' }}">
+                    {{ ucfirst(str_replace('_', ' ', $op->status)) }}
+                </span>
+            </td>
+            <td class="col-actions text-center">
+                <a href="{{ route('inventory.opname.show', $op) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="6" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                <i class="fa-solid fa-clipboard-check" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
+                Belum ada dokumen Stock Opname yang sesuai filter
+            </td>
+        </tr>
+        @endforelse
+    </x-data-table>
 </div>
 @endsection

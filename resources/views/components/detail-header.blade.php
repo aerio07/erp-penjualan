@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    @if(isset($actions) || isset($action) || (isset($slot) && !empty(trim($slot))) || $backUrl)
+    @if(isset($primaryAction) || isset($actions) || isset($action) || (isset($slot) && !empty(trim($slot))) || $backUrl)
         <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; flex-shrink: 0; margin-left: auto;">
             @if($backUrl)
                 <a href="{{ $backUrl }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 7px 16px; border-radius: 8px; font-size: 13px; text-decoration: none; border: 1px solid #cbd5e1; background: #ffffff; color: #334155; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: all 0.15s ease;" title="Kembali ke halaman sebelumnya">
@@ -44,6 +44,9 @@
                 </a>
             @endif
             {{ $actions ?? $action ?? $slot ?? '' }}
+            @isset($primaryAction)
+                {{ $primaryAction }}
+            @endisset
         </div>
     @endif
 </div>

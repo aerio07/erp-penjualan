@@ -1,15 +1,17 @@
 @props([
     'cancelUrl' => null,
+    'cancelRoute' => null,
     'backUrl' => null,
     'cancelLabel' => null,
+    'showCancel' => false,
     'submitLabel' => 'Simpan',
     'submitIcon' => 'fa-solid fa-floppy-disk',
     'submitAttrs' => '',
 ])
 
 @php
-    $resolvedCancelUrl = $cancelUrl ?? $backUrl;
-    $label = $cancelLabel ?? ($backUrl && !$cancelUrl ? 'Kembali' : 'Batal');
+    $resolvedCancelUrl = $cancelRoute ?? $cancelUrl ?? $backUrl;
+    $label = $cancelLabel ?? ($backUrl && !$cancelUrl && !$cancelRoute ? 'Kembali' : 'Batal');
     $icon = str_contains(strtolower($label), 'kembali') ? 'fa-solid fa-arrow-left' : 'fa-solid fa-xmark';
 @endphp
 
@@ -21,17 +23,19 @@
         </div>
     @endif
 
-    {{-- Tombol Batal / Kembali: Selalu di sebelah KANAN berdampingan dengan tombol Simpan --}}
-    @if($resolvedCancelUrl)
-        <a href="{{ $resolvedCancelUrl }}" class="btn btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs">
-            <i class="{{ $icon }}"></i>
-            <span>{{ $label }}</span>
-        </a>
-    @else
-        <button type="button" onclick="window.history.back()" class="btn btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs">
-            <i class="{{ $icon }}"></i>
-            <span>{{ $label }}</span>
-        </button>
+    {{-- Tombol Batal / Cancel di samping simpan telah dihapus (cukup pertahankan tombol Kembali di header atas) --}}
+    @if($showCancel)
+        @if($resolvedCancelUrl)
+            <a href="{{ $resolvedCancelUrl }}" class="btn btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs">
+                <i class="{{ $icon }}"></i>
+                <span>{{ $label }}</span>
+            </a>
+        @else
+            <button type="button" onclick="window.history.back()" class="btn btn-secondary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shadow-xs">
+                <i class="{{ $icon }}"></i>
+                <span>{{ $label }}</span>
+            </button>
+        @endif
     @endif
 
     {{-- Tombol Simpan / Aksi Utama: SELALU di PALING KANAN --}}

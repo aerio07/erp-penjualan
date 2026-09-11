@@ -134,95 +134,85 @@
         </select>
     </x-list-filter-bar>
 
-    {{-- Asset Table --}}
-    <div class="table-responsive">
-        <table class="erp-table">
-            <thead>
-                <tr>
-                    <th>Kode Aset</th>
-                    <th>Nama Aset</th>
-                    <th>Kategori</th>
-                    <th>Perolehan</th>
-                    <th>Tgl Beli</th>
-                    <th style="text-align:right;">Harga Satuan</th>
-                    <th>No. Seri / Rangka</th>
-                    <th>Lokasi</th>
-                    <th>Status</th>
-                    <th style="text-align:center;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($assets as $asset)
-                <tr>
-                    <td>
-                        <a href="{{ route('accounting.fixed-assets.show', $asset) }}" style="color: #1d4ed8; font-weight: 700; font-family: 'Inter', monospace; font-size: 12px; text-decoration: none;">
-                            {{ $asset->asset_code }}
-                        </a>
-                    </td>
-                    <td>
-                        <div style="font-weight: 700; color: #0e1b35;">{{ $asset->name }}</div>
-                        @if($asset->notes)
-                            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $asset->notes }}</div>
-                        @endif
-                    </td>
-                    <td>
-                        <span class="badge" style="background-color: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;">
-                            {{ $asset->category->name }}
-                        </span>
-                    </td>
-                    <td>
-                        @if($asset->acquisition_type === 'purchase')
-                            <span class="badge" style="background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;">
-                                <i class="fa-solid fa-money-bill-wave" style="font-size: 10px;"></i> Beli Baru
-                            </span>
-                        @else
-                            <span class="badge" style="background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a;">
-                                <i class="fa-solid fa-clock-rotate-left" style="font-size: 10px;"></i> Saldo Awal
-                            </span>
-                        @endif
-                    </td>
-                    <td style="font-size: 13px; color: #475569;">
-                        {{ $asset->purchase_date ? $asset->purchase_date->format('d/m/Y') : '-' }}
-                    </td>
-                    <td style="text-align:right; font-family: 'Inter', monospace; font-weight: 700; color: #0e1b35;">
-                        Rp {{ number_format($asset->purchase_cost, 0, ',', '.') }}
-                    </td>
-                    <td style="font-family: 'Inter', monospace; font-size: 12px; color: #475569;">
-                        {{ $asset->serial_number ?: '-' }}
-                    </td>
-                    <td style="font-size: 13px; color: #475569;">
-                        {{ $asset->location ?: '-' }}
-                    </td>
-                    <td>
-                        <span class="badge {{ $asset->status_badge_class }}">
-                            {{ $asset->status_label }}
-                        </span>
-                    </td>
-                    <td style="text-align:center;">
-                        <a href="{{ route('accounting.fixed-assets.show', $asset) }}" class="btn btn-sm btn-icon btn-secondary" title="Lihat Detail & Jurnal">
-                            <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="10" style="text-align: center; padding: 48px 16px; color: #94a3b8;">
-                        <div style="width: 48px; height: 48px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #94a3b8;">
-                            <i class="fa-solid fa-boxes-stacked" style="font-size: 20px;"></i>
-                        </div>
-                        <div style="font-weight: 700; color: #475569; font-size: 14px;">Belum ada aset tetap atau inventaris yang terdaftar</div>
-                        <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Gunakan tombol "+ Tambah / Beli Aset" untuk mendaftarkan aset baru.</div>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-data-table :paginator="$assets">
+        <x-slot:head>
+            <tr>
+                <th>Kode Aset</th>
+                <th>Nama Aset</th>
+                <th>Kategori</th>
+                <th>Perolehan</th>
+                <th>Tgl Beli</th>
+                <th style="text-align:right;">Harga Satuan</th>
+                <th>No. Seri / Rangka</th>
+                <th>Lokasi</th>
+                <th>Status</th>
+                <th class="text-center col-actions">Aksi</th>
+            </tr>
+        </x-slot:head>
 
-    @if($assets->hasPages())
-    <div style="padding: 16px 0;">
-        {{ $assets->links() }}
-    </div>
-    @endif
+        @forelse($assets as $asset)
+        <tr>
+            <td>
+                <a href="{{ route('accounting.fixed-assets.show', $asset) }}" style="color: #1d4ed8; font-weight: 700; font-family: 'Inter', monospace; font-size: 12px; text-decoration: none;">
+                    {{ $asset->asset_code }}
+                </a>
+            </td>
+            <td>
+                <div style="font-weight: 700; color: #0e1b35;">{{ $asset->name }}</div>
+                @if($asset->notes)
+                    <div class="col-notes" title="{{ $asset->notes }}">{{ $asset->notes }}</div>
+                @endif
+            </td>
+            <td>
+                <span class="badge" style="background-color: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;">
+                    {{ $asset->category->name }}
+                </span>
+            </td>
+            <td>
+                @if($asset->acquisition_type === 'purchase')
+                    <span class="badge" style="background-color: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;">
+                        <i class="fa-solid fa-money-bill-wave" style="font-size: 10px;"></i> Beli Baru
+                    </span>
+                @else
+                    <span class="badge" style="background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a;">
+                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 10px;"></i> Saldo Awal
+                    </span>
+                @endif
+            </td>
+            <td style="font-size: 13px; color: #475569;">
+                {{ $asset->purchase_date ? $asset->purchase_date->format('d/m/Y') : '-' }}
+            </td>
+            <td style="text-align:right; font-family: 'Inter', monospace; font-weight: 700; color: #0e1b35;">
+                Rp {{ number_format($asset->purchase_cost, 0, ',', '.') }}
+            </td>
+            <td style="font-family: 'Inter', monospace; font-size: 12px; color: #475569;">
+                {{ $asset->serial_number ?: '-' }}
+            </td>
+            <td style="font-size: 13px; color: #475569;">
+                {{ $asset->location ?: '-' }}
+            </td>
+            <td>
+                <span class="badge {{ $asset->status_badge_class }}">
+                    {{ $asset->status_label }}
+                </span>
+            </td>
+            <td class="col-actions text-center">
+                <a href="{{ route('accounting.fixed-assets.show', $asset) }}" class="btn btn-sm btn-icon btn-secondary" title="Lihat Detail & Jurnal">
+                    <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+                </a>
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="10" style="text-align: center; padding: 48px 16px; color: #94a3b8;">
+                <div style="width: 48px; height: 48px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #94a3b8;">
+                    <i class="fa-solid fa-boxes-stacked" style="font-size: 20px;"></i>
+                </div>
+                <div style="font-weight: 700; color: #475569; font-size: 14px;">Belum ada aset tetap atau inventaris yang terdaftar</div>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Gunakan tombol "+ Tambah / Beli Aset" untuk mendaftarkan aset baru.</div>
+            </td>
+        </tr>
+        @endforelse
+    </x-data-table>
 </div>
 @endsection

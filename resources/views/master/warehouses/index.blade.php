@@ -13,7 +13,7 @@
     </x-page-header>
 
     <x-list-filter-bar :action="route('master.warehouses.index')" placeholder="Cari Kode, Nama Gudang, Alamat...">
-        <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+        <select name="is_active" class="form-control filter-select">
             <option value="">Semua Status</option>
             <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
             <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>

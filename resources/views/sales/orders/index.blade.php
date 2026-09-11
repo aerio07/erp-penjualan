@@ -15,7 +15,7 @@
     </x-page-header>
 
     <x-list-filter-bar :action="route('sales.orders.index')" placeholder="Cari no. SO, customer, catatan...">
-        <select name="customer_id" class="form-control" onchange="this.form.submit()">
+        <select name="customer_id" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">-- Semua Customer --</option>
             @foreach($customers as $c)
             <option value="{{ $c->id }}" {{ request('customer_id') == $c->id ? 'selected' : '' }}>
@@ -24,7 +24,7 @@
             @endforeach
         </select>
 
-        <select name="status" class="form-control" onchange="this.form.submit()">
+        <select name="status" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">-- Semua Status Order --</option>
             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="waiting_approval" {{ request('status') == 'waiting_approval' ? 'selected' : '' }}>Menunggu Approval</option>
@@ -33,7 +33,7 @@
             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
         </select>
 
-        <select name="fulfillment_status" class="form-control" onchange="this.form.submit()">
+        <select name="fulfillment_status" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">-- Semua Status Pemenuhan --</option>
             <option value="ready_to_ship" {{ request('fulfillment_status') == 'ready_to_ship' ? 'selected' : '' }}>Ready to Ship</option>
             <option value="partially_available" {{ request('fulfillment_status') == 'partially_available' ? 'selected' : '' }}>Partially Available</option>
@@ -42,7 +42,7 @@
             <option value="delivered" {{ request('fulfillment_status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
         </select>
 
-        <select name="channel" class="form-control" onchange="this.form.submit()" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+        <select name="channel" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">-- Semua Channel --</option>
             <option value="offline" {{ request('channel') == 'offline' ? 'selected' : '' }}>Offline</option>
             <option value="online" {{ request('channel') == 'online' ? 'selected' : '' }}>Online</option>
@@ -68,113 +68,102 @@
         </a>
     </div>
 
-    <div class="card">
-        <div class="table-responsive">
-            <table class="erp-table">
-                <thead>
-                    <tr>
-                        <x-sortable-header column="so_number" title="No. SO" />
-                        <th>Customer</th>
-                        <x-sortable-header column="order_date" title="Tgl Order" :isDefault="true" />
-                        <x-sortable-header column="total_amount" title="Total" align="right" />
-                        <x-sortable-header column="status" title="Status Order" align="center" />
-                        <th style="text-align:center;">Status Pemenuhan</th>
-                        <th style="text-align:center;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($orders as $order)
-                    <tr>
-                        <td style="white-space:nowrap;">
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <a href="{{ route('sales.orders.show', $order) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                                    {{ $order->so_number }}
-                                </a>
-                                @if($order->channel === 'online')
-                                    <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:10px; padding:2px 6px;">
-                                        <i class="fa-solid fa-globe" style="font-size:9px;"></i> Online
-                                    </span>
-                                @else
-                                    <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:10px; padding:2px 6px;">
-                                        <i class="fa-solid fa-store" style="font-size:9px;"></i> Offline
-                                    </span>
-                                @endif
-                            </div>
-                        </td>
-                        <td>{{ $order->customer->name ?? '-' }}</td>
-                        <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
-                        <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
-                        <td style="text-align:center;">
-                            <span class="badge badge-{{ $order->status }}">
-                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                            </span>
-                        </td>
-                        <td style="text-align:center;">
-                            @php
-                                $fBadge = match($order->fulfillment_status) {
-                                    'ready_to_ship'       => 'background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;',
-                                    'partially_available' => 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;',
-                                    'backorder'           => 'background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;',
-                                    'partially_delivered' => 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;',
-                                    'delivered'           => 'background:#d1fae5; color:#047857; border:1px solid #a7f3d0;',
-                                    default               => 'background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;'
-                                };
-                                $fLabel = match($order->fulfillment_status) {
-                                    'ready_to_ship'       => 'Ready to Ship',
-                                    'partially_available' => 'Partial Available',
-                                    'backorder'           => 'Backorder (PO)',
-                                    'partially_delivered' => 'Partially Delivered',
-                                    'delivered'           => 'Delivered',
-                                    default               => 'Pending'
-                                };
-                            @endphp
-                            <span style="display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:9999px; {{ $fBadge }}">
-                                {{ $fLabel }}
-                            </span>
-                            @php
-                                $whCount = $order->items->flatMap->reservations->where('status', 'active')->filter(fn($r) => ($r->qty_reserved - $r->qty_delivered) > 0)->pluck('warehouse_id')->unique()->count();
-                            @endphp
-                            @if($whCount > 1)
-                            <div>
-                                <span style="display:inline-block; font-size:10px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:4px; padding:1px 5px; margin-top:3px;">
-                                    <i class="fa-solid fa-boxes-stacked" style="color:var(--primary);"></i> {{ $whCount }} Gudang
-                                </span>
-                            </div>
-                            @endif
-                        </td>
-                        <td style="text-align:center;">
-                            <div style="display:flex; gap:6px; justify-content:center;">
-                                <a href="{{ route('sales.orders.show', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                                @if($order->status === 'draft')
-                                <button data-confirm-delete="del-so-{{ $order->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                                <form id="del-so-{{ $order->id }}" method="POST" action="{{ route('sales.orders.destroy', $order) }}" style="display:none;">
-                                    @csrf @method('DELETE')
-                                </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
-                            <i class="fa-solid fa-store" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada Sales Order yang sesuai filter
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <x-data-table :paginator="$orders">
+        <x-slot:head>
+            <tr>
+                <x-sortable-header column="so_number" title="No. SO" />
+                <th>Customer</th>
+                <x-sortable-header column="order_date" title="Tgl Order" :isDefault="true" />
+                <x-sortable-header column="total_amount" title="Total" align="right" />
+                <x-sortable-header column="status" title="Status Order" align="center" />
+                <th style="text-align:center;">Status Pemenuhan</th>
+                <th class="text-center col-actions">Aksi</th>
+            </tr>
+        </x-slot:head>
 
-        @if($orders->hasPages())
-        <div style="padding:16px 20px; border-top:1px solid var(--border);">
-            {{ $orders->links() }}
-        </div>
-        @endif
-    </div>
+        @forelse($orders as $order)
+        <tr>
+            <td style="white-space:nowrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <a href="{{ route('sales.orders.show', $order) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                        {{ $order->so_number }}
+                    </a>
+                    @if($order->channel === 'online')
+                        <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:10px; padding:2px 6px;">
+                            <i class="fa-solid fa-globe" style="font-size:9px;"></i> Online
+                        </span>
+                    @else
+                        <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:10px; padding:2px 6px;">
+                            <i class="fa-solid fa-store" style="font-size:9px;"></i> Offline
+                        </span>
+                    @endif
+                </div>
+            </td>
+            <td>{{ $order->customer->name ?? '-' }}</td>
+            <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
+            <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+            <td style="text-align:center;">
+                <span class="badge badge-{{ $order->status }}">
+                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                </span>
+            </td>
+            <td style="text-align:center;">
+                @php
+                    $fBadge = match($order->fulfillment_status) {
+                        'ready_to_ship'       => 'background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;',
+                        'partially_available' => 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;',
+                        'backorder'           => 'background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;',
+                        'partially_delivered' => 'background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;',
+                        'delivered'           => 'background:#d1fae5; color:#047857; border:1px solid #a7f3d0;',
+                        default               => 'background:#f1f5f9; color:#475569; border:1px solid #e2e8f0;'
+                    };
+                    $fLabel = match($order->fulfillment_status) {
+                        'ready_to_ship'       => 'Ready to Ship',
+                        'partially_available' => 'Partial Available',
+                        'backorder'           => 'Backorder (PO)',
+                        'partially_delivered' => 'Partially Delivered',
+                        'delivered'           => 'Delivered',
+                        default               => 'Pending'
+                    };
+                @endphp
+                <span style="display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:9999px; {{ $fBadge }}">
+                    {{ $fLabel }}
+                </span>
+                @php
+                    $whCount = $order->items->flatMap->reservations->where('status', 'active')->filter(fn($r) => ($r->qty_reserved - $r->qty_delivered) > 0)->pluck('warehouse_id')->unique()->count();
+                @endphp
+                @if($whCount > 1)
+                <div>
+                    <span style="display:inline-block; font-size:10px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:4px; padding:1px 5px; margin-top:3px;">
+                        <i class="fa-solid fa-boxes-stacked" style="color:var(--primary);"></i> {{ $whCount }} Gudang
+                    </span>
+                </div>
+                @endif
+            </td>
+            <td class="col-actions text-center">
+                <div style="display:flex; gap:6px; justify-content:center;">
+                    <a href="{{ route('sales.orders.show', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                    @if($order->status === 'draft')
+                    <button data-confirm-delete="del-so-{{ $order->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <form id="del-so-{{ $order->id }}" method="POST" action="{{ route('sales.orders.destroy', $order) }}" style="display:none;">
+                        @csrf @method('DELETE')
+                    </form>
+                    @endif
+                </div>
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                <i class="fa-solid fa-store" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
+                Belum ada Sales Order yang sesuai filter
+            </td>
+        </tr>
+        @endforelse
+    </x-data-table>
 </div>
 @endsection

@@ -15,14 +15,14 @@
     </x-page-header>
 
     <x-list-filter-bar :action="route('sales.returns.index')" placeholder="Cari No. Retur, Ref. SJ, Customer, Alasan..." :showDateFilter="true">
-        <select name="customer_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">
+        <select name="customer_id" class="form-control filter-select">
             <option value="">Semua Customer</option>
             @foreach($customers as $cust)
             <option value="{{ $cust->id }}" {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->name }}</option>
             @endforeach
         </select>
 
-        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+        <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
             <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="received" {{ request('status') === 'received' ? 'selected' : '' }}>Diterima Gudang (Received)</option>
@@ -30,60 +30,49 @@
         </select>
     </x-list-filter-bar>
 
-    <div class="card">
-        <div class="table-responsive">
-            <table class="erp-table">
-                <thead>
-                    <tr>
-                        <x-sortable-header column="return_number" title="No. Retur" />
-                        <th>Ref. Surat Jalan</th>
-                        <th>Customer</th>
-                        <x-sortable-header column="return_date" title="Tgl Retur" :isDefault="true" />
-                        <th>Alasan Utama</th>
-                        <x-sortable-header column="status" title="Status" align="center" />
-                        <th style="text-align:center;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($returns as $r)
-                    <tr>
-                        <td>
-                            <a href="{{ route('sales.returns.show', $r) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                                {{ $r->return_number }}
-                            </a>
-                        </td>
-                        <td>{{ $r->delivery->delivery_number ?? '-' }}</td>
-                        <td>{{ $r->customer->name ?? '-' }}</td>
-                        <td>{{ $r->return_date ? $r->return_date->format('d/m/Y') : '-' }}</td>
-                        <td>{{ Str::limit($r->reason ?? '-', 40) }}</td>
-                        <td style="text-align:center;">
-                            <span class="badge badge-{{ $r->status === 'completed' ? 'done' : ($r->status === 'received' ? 'confirmed' : 'pending') }}">
-                                {{ ucfirst($r->status) }}
-                            </span>
-                        </td>
-                        <td style="text-align:center;">
-                            <a href="{{ route('sales.returns.show', $r) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
-                            <i class="fa-solid fa-rotate-left" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                            Belum ada catatan retur penjualan customer yang sesuai filter
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+    <x-data-table :paginator="$returns">
+        <x-slot:head>
+            <tr>
+                <x-sortable-header column="return_number" title="No. Retur" />
+                <th>Ref. Surat Jalan</th>
+                <th>Customer</th>
+                <x-sortable-header column="return_date" title="Tgl Retur" :isDefault="true" />
+                <th>Alasan Utama</th>
+                <x-sortable-header column="status" title="Status" align="center" />
+                <th class="text-center col-actions">Aksi</th>
+            </tr>
+        </x-slot:head>
 
-        @if($returns->hasPages())
-        <div style="padding:16px 20px; border-top:1px solid var(--border);">
-            {{ $returns->links() }}
-        </div>
-        @endif
-    </div>
+        @forelse($returns as $r)
+        <tr>
+            <td>
+                <a href="{{ route('sales.returns.show', $r) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                    {{ $r->return_number }}
+                </a>
+            </td>
+            <td>{{ $r->delivery->delivery_number ?? '-' }}</td>
+            <td>{{ $r->customer->name ?? '-' }}</td>
+            <td>{{ $r->return_date ? $r->return_date->format('d/m/Y') : '-' }}</td>
+            <td class="col-notes" title="{{ $r->reason ?? '-' }}">{{ $r->reason ?? '-' }}</td>
+            <td style="text-align:center;">
+                <span class="badge badge-{{ $r->status === 'completed' ? 'done' : ($r->status === 'received' ? 'confirmed' : 'pending') }}">
+                    {{ ucfirst($r->status) }}
+                </span>
+            </td>
+            <td class="col-actions text-center">
+                <a href="{{ route('sales.returns.show', $r) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                    <i class="fa-solid fa-eye"></i>
+                </a>
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                <i class="fa-solid fa-rotate-left" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
+                Belum ada catatan retur penjualan customer yang sesuai filter
+            </td>
+        </tr>
+        @endforelse
+    </x-data-table>
 </div>
 @endsection

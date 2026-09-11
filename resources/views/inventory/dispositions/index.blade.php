@@ -37,96 +37,82 @@
         </select>
     </x-list-filter-bar>
 
-    <div class="card">
-        <div class="card-header">
-            <h3>Daftar Dokumen Disposisi</h3>
-            <span style="font-size:13px; color:var(--text-secondary);">Total {{ $dispositions->total() }} Dokumen</span>
-        </div>
-        <div class="table-responsive">
-            <table class="erp-table">
-                <thead>
-                    <tr>
-                        <x-sortable-header column="disposition_number" title="No. Disposisi" />
-                        <x-sortable-header column="disposed_at" title="Tgl Disposisi" />
-                        <th>Produk</th>
-                        <th>Gudang</th>
-                        <x-sortable-header column="qty" title="Qty" align="center" />
-                        <x-sortable-header column="resolution_type" title="Jenis Penyelesaian" align="center" />
-                        <th style="text-align:right;">Beban / Nilai HPP</th>
-                        <th style="text-align:right;">Hasil Penjualan</th>
-                        <th>Jurnal Umum</th>
-                        <th>Petugas</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($dispositions as $disp)
-                    @php
-                        $totalCost = $disp->qty * $disp->unit_cost;
-                        $saleAmount = $disp->resolution_type === 'sold_as_reject' ? ($disp->qty * $disp->sale_price) : 0;
-                    @endphp
-                    <tr>
-                        <td style="font-weight:700; color:var(--primary);">
-                            {{ $disp->disposition_number }}
-                        </td>
-                        <td>{{ $disp->disposed_at ? $disp->disposed_at->format('d/m/Y') : '-' }}</td>
-                        <td>
-                            <div style="font-weight:600;">{{ $disp->product->name ?? '-' }}</div>
-                            <div style="font-size:11px; color:var(--text-secondary);">SKU: {{ $disp->product->sku ?? '-' }}</div>
-                        </td>
-                        <td>{{ $disp->warehouse->name ?? '-' }}</td>
-                        <td style="text-align:center; font-weight:700;">
-                            {{ number_format($disp->qty) }} {{ $disp->product->unit ?? 'pcs' }}
-                        </td>
-                        <td style="text-align:center;">
-                            @if($disp->resolution_type === 'write_off')
-                                <span class="badge badge-cancelled" style="font-weight:700;">
-                                    <i class="fa-solid fa-trash-can"></i> WRITE OFF
-                                </span>
-                            @else
-                                <span class="badge badge-done" style="font-weight:700; background:#dcfce7; color:#15803d;">
-                                    <i class="fa-solid fa-hand-holding-dollar"></i> SOLD AS REJECT
-                                </span>
-                            @endif
-                        </td>
-                        <td style="text-align:right; font-weight:600; color:var(--danger);">
-                            Rp {{ number_format($totalCost, 0, ',', '.') }}
-                            <div style="font-size:10.5px; color:var(--text-secondary);">@ Rp {{ number_format($disp->unit_cost, 0, ',', '.') }}</div>
-                        </td>
-                        <td style="text-align:right; font-weight:600; color:var(--success);">
-                            @if($disp->resolution_type === 'sold_as_reject')
-                                Rp {{ number_format($saleAmount, 0, ',', '.') }}
-                                <div style="font-size:10.5px; color:var(--text-secondary);">@ Rp {{ number_format($disp->sale_price, 0, ',', '.') }}</div>
-                            @else
-                                <span style="color:var(--text-secondary);">-</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($disp->journalEntry)
-                                <a href="{{ route('accounting.journals.show', $disp->journalEntry->id) }}" class="badge badge-confirmed" style="text-decoration:none;">
-                                    <i class="fa-solid fa-book"></i> {{ $disp->journalEntry->entry_number }}
-                                </a>
-                            @else
-                                <span class="badge badge-draft">-</span>
-                            @endif
-                        </td>
-                        <td>{{ $disp->user->name ?? '-' }}</td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
-                            <i class="fa-solid fa-box-archive" style="font-size:32px; margin-bottom:12px; opacity:0.3; display:block;"></i>
-                            Belum ada transaksi penyelesaian barang karantina yang sesuai filter.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        @if($dispositions->hasPages())
-        <div style="padding:16px;">
-            {{ $dispositions->links() }}
-        </div>
-        @endif
-    </div>
+    <x-data-table :paginator="$dispositions">
+        <x-slot:head>
+            <tr>
+                <x-sortable-header column="disposition_number" title="No. Disposisi" />
+                <x-sortable-header column="disposed_at" title="Tgl Disposisi" />
+                <th>Produk</th>
+                <th>Gudang</th>
+                <x-sortable-header column="qty" title="Qty" align="center" />
+                <x-sortable-header column="resolution_type" title="Jenis Penyelesaian" align="center" />
+                <th style="text-align:right;">Beban / Nilai HPP</th>
+                <th style="text-align:right;">Hasil Penjualan</th>
+                <th>Jurnal Umum</th>
+                <th>Petugas</th>
+            </tr>
+        </x-slot:head>
+
+        @forelse($dispositions as $disp)
+        @php
+            $totalCost = $disp->qty * $disp->unit_cost;
+            $saleAmount = $disp->resolution_type === 'sold_as_reject' ? ($disp->qty * $disp->sale_price) : 0;
+        @endphp
+        <tr>
+            <td style="font-weight:700; color:var(--primary);">
+                {{ $disp->disposition_number }}
+            </td>
+            <td>{{ $disp->disposed_at ? $disp->disposed_at->format('d/m/Y') : '-' }}</td>
+            <td>
+                <div style="font-weight:600;">{{ $disp->product->name ?? '-' }}</div>
+                <div style="font-size:11px; color:var(--text-secondary);">SKU: {{ $disp->product->sku ?? '-' }}</div>
+            </td>
+            <td>{{ $disp->warehouse->name ?? '-' }}</td>
+            <td style="text-align:center; font-weight:700;">
+                {{ number_format($disp->qty) }} {{ $disp->product->unit ?? 'pcs' }}
+            </td>
+            <td style="text-align:center;">
+                @if($disp->resolution_type === 'write_off')
+                    <span class="badge badge-cancelled" style="font-weight:700;">
+                        <i class="fa-solid fa-trash-can"></i> WRITE OFF
+                    </span>
+                @else
+                    <span class="badge badge-done" style="font-weight:700; background:#dcfce7; color:#15803d;">
+                        <i class="fa-solid fa-hand-holding-dollar"></i> SOLD AS REJECT
+                    </span>
+                @endif
+            </td>
+            <td style="text-align:right; font-weight:600; color:var(--danger);">
+                Rp {{ number_format($totalCost, 0, ',', '.') }}
+                <div style="font-size:10.5px; color:var(--text-secondary);">@ Rp {{ number_format($disp->unit_cost, 0, ',', '.') }}</div>
+            </td>
+            <td style="text-align:right; font-weight:600; color:var(--success);">
+                @if($disp->resolution_type === 'sold_as_reject')
+                    Rp {{ number_format($saleAmount, 0, ',', '.') }}
+                    <div style="font-size:10.5px; color:var(--text-secondary);">@ Rp {{ number_format($disp->sale_price, 0, ',', '.') }}</div>
+                @else
+                    <span style="color:var(--text-secondary);">-</span>
+                @endif
+            </td>
+            <td>
+                @if($disp->journalEntry)
+                    <a href="{{ route('accounting.journals.show', $disp->journalEntry->id) }}" class="badge badge-confirmed" style="text-decoration:none;">
+                        <i class="fa-solid fa-book"></i> {{ $disp->journalEntry->entry_number }}
+                    </a>
+                @else
+                    <span class="badge badge-draft">-</span>
+                @endif
+            </td>
+            <td>{{ $disp->user->name ?? '-' }}</td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                <i class="fa-solid fa-box-archive" style="font-size:32px; margin-bottom:12px; opacity:0.3; display:block;"></i>
+                Belum ada transaksi penyelesaian barang karantina yang sesuai filter.
+            </td>
+        </tr>
+        @endforelse
+    </x-data-table>
 </div>
 @endsection

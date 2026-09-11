@@ -28,7 +28,7 @@
 
     {{-- Standard ERP Filter Bar --}}
     <x-list-filter-bar :action="route('master.chart-of-accounts.index')" placeholder="Cari Kode Akun, Nama Akun, Deskripsi...">
-        <select name="type" class="form-control" style="height: 38px; font-size: 13px; min-width: 170px; border-radius: 6px;">
+        <select name="type" class="form-control filter-select">
             <option value="">Semua Kategori</option>
             <option value="asset" {{ request('type') === 'asset' ? 'selected' : '' }}>Aset (Aktiva)</option>
             <option value="liability" {{ request('type') === 'liability' ? 'selected' : '' }}>Kewajiban (Hutang)</option>
@@ -37,7 +37,7 @@
             <option value="expense" {{ request('type') === 'expense' ? 'selected' : '' }}>Beban (Biaya)</option>
         </select>
 
-        <select name="is_active" class="form-control" style="height: 38px; font-size: 13px; min-width: 140px; border-radius: 6px;">
+        <select name="is_active" class="form-control filter-select">
             <option value="">Semua Status</option>
             <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Aktif</option>
             <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Nonaktif</option>
@@ -128,7 +128,7 @@
                                 {{ $acc->normal_balance }}
                             </span>
                         </td>
-                        <td style="color: var(--text-secondary); font-size: 13px;">
+                        <td class="col-notes" title="{{ $acc->description ?? '' }}" style="color: var(--text-secondary); font-size: 13px;">
                             {{ $acc->description ?: '-' }}
                         </td>
                         <td style="text-align: center;">
@@ -143,7 +143,7 @@
                                 </button>
                             </form>
                         </td>
-                        <td style="text-align: center;">
+                        <td class="col-actions">
                             <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
                                 <a href="{{ route('master.chart-of-accounts.show', $acc) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Mutasi Jurnal">
                                     <i class="fa-solid fa-eye"></i>

@@ -498,7 +498,6 @@
             color: #0e1b35 !important;
         }
 
-        /* Table & Action Buttons */
         .table-responsive {
             overflow-x: auto !important;
             border-radius: 0.625rem !important;
@@ -507,6 +506,7 @@
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
             margin-bottom: 1.25rem !important;
             width: 100% !important;
+            position: relative !important;
         }
         .erp-table {
             width: 100% !important;
@@ -517,8 +517,15 @@
         .erp-table thead {
             background-color: #F8FAFC !important;
             border-bottom: 2px solid #E2E8F0 !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
         }
-        .erp-table th {
+        .erp-table thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+            background-color: #F8FAFC !important;
             padding: 0.75rem 1rem !important;
             font-size: 0.72rem !important;
             font-weight: 700 !important;
@@ -532,8 +539,11 @@
             border-bottom: 1px solid #F1F5F9 !important;
             transition: background-color 0.15s ease !important;
         }
+        .erp-table tbody tr:nth-child(even) {
+            background-color: rgba(248, 250, 252, 0.65) !important;
+        }
         .erp-table tbody tr:hover {
-            background-color: #F8FAFC !important;
+            background-color: #EEF2F6 !important;
         }
         .erp-table td {
             padding: 0.75rem 1rem !important;
@@ -541,6 +551,54 @@
             color: #0e1b35 !important;
             vertical-align: middle !important;
             font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Tabular Nums — Semua Kolom Angka / Nominal / Qty Rata Kanan */
+        .erp-table td.text-right,
+        .erp-table td[style*="text-align: right"],
+        .erp-table td[style*="text-align:right"],
+        .erp-table .nominal,
+        .erp-table .qty {
+            font-variant-numeric: tabular-nums !important;
+            font-feature-settings: "tnum" 1 !important;
+        }
+
+        /* Kolom Catatan / Teks Panjang */
+        .erp-table .col-notes {
+            max-width: 250px !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            cursor: help !important;
+        }
+
+        /* Kolom Aksi */
+        .erp-table .col-actions {
+            padding-right: 1.25rem !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+        }
+        .erp-table .col-actions .btn,
+        .erp-table .col-actions .btn-icon {
+            min-width: 32px !important;
+            margin-left: 2px !important;
+            margin-right: 2px !important;
+        }
+
+        /* Table Footer Pagination */
+        .table-footer {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+            padding: 0.875rem 1.25rem !important;
+            border-top: 1px solid #E2E8F0 !important;
+            background-color: #ffffff !important;
+            border-bottom-left-radius: 0.625rem !important;
+            border-bottom-right-radius: 0.625rem !important;
         }
 
         /* Buttons & Tactile Feedback */
