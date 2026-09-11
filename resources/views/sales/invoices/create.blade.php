@@ -10,7 +10,7 @@
         :back-url="route('sales.invoices.index')"
     />
 
-    <form method="POST" action="{{ route('sales.invoices.store') }}">
+    <form method="POST" action="{{ route('sales.invoices.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -176,9 +176,7 @@
 
         <x-form-actions 
             :back-url="route('sales.invoices.index')" 
-            x-show="selectedDelivery" 
             submit-label="Terbitkan Invoice & Posting Jurnal (HPP + Piutang)" 
-            submit-attrs=":disabled=&quot;!selectedDelivery || totalQty <= 0&quot; :style=&quot;(!selectedDelivery || totalQty <= 0) ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;" 
         />
     </form>
 </div>
@@ -258,15 +256,25 @@ function invForm() {
                 .filter(del => String(del.sales_order_id) === String(this.selectedSoId))
                 .map(del => {
                     const totalDelivered = (del.items || []).reduce((s, it) => s + (Number(it.qty_delivered) || 0), 0);
+                    const totalInvoiced = (del.items || []).reduce((s, it) => s + (Number(it.qty_invoiced) || 0), 0);
                     const totalReturned = (del.items || []).reduce((s, it) => s + (Number(it.qty_returned_completed) || 0), 0);
-                    const totalQty = Math.max(0, totalDelivered - totalReturned);
+                    const remainingToInvoice = Math.max(0, totalDelivered - totalInvoiced - totalReturned);
                     const tgl = del.delivery_date ? String(del.delivery_date).substring(0, 10) : '-';
                     const retInfo = totalReturned > 0 ? ` (Retur: ${totalReturned} unit)` : '';
+
                     return {
-                        ...del,
-                        total_qty: totalQty,
+                        id: del.id,
+                        delivery_number: del.delivery_number,
+                        delivery_date: del.delivery_date,
+                        warehouse_name: del.warehouse ? del.warehouse.name : '-',
+                        remaining_qty: remainingToInvoice,
+                        total_delivered: totalDelivered,
+                        total_invoiced: totalInvoiced,
                         total_returned: totalReturned,
-                        display_label: `${del.delivery_number} · Tgl: ${tgl} · Ditagih: ${totalQty} unit${retInfo}`
+                        condition_status: del.condition_status,
+                        receipt_status: del.receipt_status,
+                        is_eligible: remainingToInvoice > 0,
+                        display_label: `${del.delivery_number} · Tgl: ${tgl} · Sisa: ${remainingToInvoice} unit${retInfo}`
                     };
                 });
         },
@@ -279,13 +287,18 @@ function invForm() {
             }
             this.selectedDelivery = deliveriesData[this.selectedDeliveryId];
 
-            // Bangun data item dari Surat Jalan yang dipilih (kurangi retur jika ada)
+            const soItems = (this.selectedSoData?.items || []).reduce((acc, it) => {
+                acc[it.product_id] = it;
+                return acc;
+            }, {});
+
             this.deliveryItems = (this.selectedDelivery.items || []).map(delItem => {
-                const soItem = delItem.sales_order_item || {};
-                const product = soItem.product || {};
+                const soItem = soItems[delItem.product_id] || {};
                 const qtyDelivered = Number(delItem.qty_delivered) || 0;
+                const qtyPreviouslyInvoiced = Number(delItem.qty_invoiced) || 0;
                 const qtyReturned = Number(delItem.qty_returned_completed) || 0;
-                const qtyInvoiced = Math.max(0, qtyDelivered - qtyReturned);
+                const qtyInvoiced = Math.max(0, qtyDelivered - qtyPreviouslyInvoiced - qtyReturned);
+
                 const unitPrice = Number(soItem.unit_price) || 0;
                 const discountPercent = Number(soItem.discount_percent) || 0;
                 const lineBase = qtyInvoiced * unitPrice;
@@ -293,9 +306,10 @@ function invForm() {
 
                 return {
                     delivery_item_id: delItem.id,
-                    product_name: product.name || 'Item #' + delItem.id,
-                    product_sku: product.sku || '',
-                    product_unit: product.unit || 'pcs',
+                    product_id: delItem.product_id,
+                    product_name: delItem.product ? delItem.product.name : '-',
+                    product_sku: delItem.product ? delItem.product.sku : '-',
+                    product_unit: delItem.product ? delItem.product.unit : 'pcs',
                     qty_ordered: soItem.qty_ordered || 0,
                     qty_delivered: qtyDelivered,
                     qty_returned: qtyReturned,
@@ -305,6 +319,10 @@ function invForm() {
                     line_subtotal: lineBase - lineDisc,
                 };
             }).filter(it => it.qty_invoiced > 0);
+        },
+
+        get isInvoiceInvalid() {
+            return !this.selectedDelivery || this.totalQty <= 0;
         },
 
         get totalQty() {
@@ -375,6 +393,20 @@ function invForm() {
 
         get totalAmount() {
             return this.dpp + this.taxAmount;
+        },
+
+        validateForm(e) {
+            if (!this.selectedDelivery) {
+                alert('Pilih Surat Jalan terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.totalQty <= 0) {
+                alert('Tidak ada item yang dapat difakturkan dari Surat Jalan ini.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         },
 
         formatNum(v) { return new Intl.NumberFormat('id-ID').format(this.roundAmount(v || 0)); }

@@ -10,7 +10,7 @@
         :back-url="route('purchase.goods-receipts.index')"
     />
 
-    <form method="POST" action="{{ route('purchase.goods-receipts.store') }}" @submit="return validateForm($event)">
+    <form method="POST" action="{{ route('purchase.goods-receipts.store') }}" @submit="validateForm($event)">
         @csrf
 
         {{-- Header Info --}}
@@ -284,14 +284,14 @@
         </div>
 
         <x-form-actions
-            x-show="selectedPo"
-            :cancel-url="route('purchase.goods-receipts.index')"
-            submit-icon=""
-            submit-attrs=":disabled=&quot;hasExceededAllocation || totalPhysicalQty &lt;= 0 || hasInvalidRejection&quot;">
-            <x-slot:submitLabel>
-                <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-boxes-packing'"></i>
-                <span x-text="autoGenerateInvoice ? 'Simpan Penerimaan &amp; Terbitkan Faktur Pembelian' : 'Simpan &amp; Update Stok Gudang'"></span>
-            </x-slot:submitLabel>
+            :cancel-url="route('purchase.goods-receipts.index')">
+            <x-slot:submitButton>
+                <button type="submit" 
+                        class="btn btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg text-white shadow-xs">
+                    <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-boxes-packing'"></i>
+                    <span x-text="autoGenerateInvoice ? 'Simpan Penerimaan & Terbitkan Faktur Pembelian' : 'Simpan & Update Stok Gudang'"></span>
+                </button>
+            </x-slot:submitButton>
         </x-form-actions>
     </form>
 </div>
@@ -480,7 +480,16 @@ function grnForm() {
             return this.itemStats.some(stat => stat.hasInvalidReject);
         },
 
+        get isGrnInvalid() {
+            return this.hasExceededAllocation || this.totalPhysicalQty <= 0 || this.hasInvalidRejection;
+        },
+
         validateForm(e) {
+            if (!this.selectedPo) {
+                alert('Pilih Purchase Order (PO) terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
             if (this.hasInvalidRejection) {
                 alert('Ada baris dengan Qty Rusak yang melebihi Qty Datang Fisik. Mohon periksa kembali.');
                 e.preventDefault();

@@ -10,7 +10,7 @@
         :back-url="route('purchase.invoices.index')"
     />
 
-    <form method="POST" action="{{ route('purchase.invoices.store') }}">
+    <form method="POST" action="{{ route('purchase.invoices.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -179,12 +179,10 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedGrn">
-            <a href="{{ route('purchase.invoices.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="!selectedGrn || totalQty <= 0">
-                <i class="fa-solid fa-floppy-disk"></i> Terbitkan Invoice & Posting Jurnal
-            </button>
-        </div>
+        <x-form-actions 
+            :cancel-url="route('purchase.invoices.index')" 
+            submit-label="Terbitkan Invoice & Posting Jurnal" 
+        />
     </form>
 </div>
 @endsection
@@ -380,6 +378,24 @@ function invForm() {
 
         get totalAmount() {
             return this.dpp + this.taxAmount;
+        },
+
+        get isInvoiceInvalid() {
+            return !this.selectedGrn || this.totalQty <= 0;
+        },
+
+        validateForm(e) {
+            if (!this.selectedGrn) {
+                alert('Pilih Surat Penerimaan Barang (LPB) terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.totalQty <= 0) {
+                alert('Tidak ada item yang dapat difakturkan dari LPB ini.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         },
 
         formatNum(v) { return new Intl.NumberFormat('id-ID').format(this.roundAmount(v || 0)); }

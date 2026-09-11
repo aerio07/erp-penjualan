@@ -10,7 +10,7 @@
         :back-url="route('purchase.returns.index')"
     />
 
-    <form method="POST" action="{{ route('purchase.returns.store') }}">
+    <form method="POST" action="{{ route('purchase.returns.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="card" style="margin-bottom:20px;">
@@ -150,12 +150,10 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedGrn">
-            <a href="{{ route('purchase.returns.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="!hasAnyReturnQty || isFullyPaid">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft Retur
-            </button>
-        </div>
+        <x-form-actions 
+            :cancel-url="route('purchase.returns.index')" 
+            submit-label="Simpan Draft Retur" 
+        />
     </form>
 </div>
 @endsection
@@ -342,6 +340,29 @@ function returnForm() {
 
         get hasAnyReturnQty() {
             return this.items.some(it => (Number(it.qty_return) || 0) > 0);
+        },
+
+        get isReturnInvalid() {
+            return !this.selectedGrn || !this.hasAnyReturnQty || this.isFullyPaid;
+        },
+
+        validateForm(e) {
+            if (!this.selectedGrn) {
+                alert('Pilih Surat Penerimaan Barang (LPB) terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.isFullyPaid) {
+                alert('Invoice untuk LPB ini sudah lunas penuh sehingga retur tidak dapat diproses.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.hasAnyReturnQty) {
+                alert('Isi minimal 1 jumlah barang yang ingin diretur.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         }
     }
 }

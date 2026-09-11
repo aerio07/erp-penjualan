@@ -10,7 +10,7 @@
         :back-url="route('sales.payments.index')"
     />
 
-    <form method="POST" action="{{ route('sales.payments.store') }}">
+    <form method="POST" action="{{ route('sales.payments.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -165,7 +165,6 @@
         <x-form-actions 
             :back-url="route('sales.payments.index')" 
             submit-label="Simpan Penerimaan & Posting Jurnal" 
-            submit-attrs=":disabled=&quot;!selectedInvoice || !amount || amount <= 0 || amount > maxAmount&quot; :style=&quot;(!selectedInvoice || !amount || amount <= 0 || amount > maxAmount) ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
         />
     </form>
 </div>
@@ -206,6 +205,29 @@ function paymentForm() {
 
         get maxAmount() {
             return this.selectedInvoice ? (parseFloat(this.selectedInvoice.outstanding_amount) || 0) : 0;
+        },
+
+        get isPaymentInvalid() {
+            return !this.selectedInvoice || !this.amount || this.amount <= 0 || this.amount > this.maxAmount;
+        },
+
+        validateForm(e) {
+            if (!this.selectedInvoice) {
+                alert('Pilih Invoice Penjualan terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.amount || this.amount <= 0) {
+                alert('Ketik nominal yang diterima dari customer.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.amount > this.maxAmount) {
+                alert('Nominal penerimaan melebihi sisa piutang (Maks: Rp ' + this.formatNum(this.maxAmount) + ').');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         },
 
         get simulatedRemaining() {

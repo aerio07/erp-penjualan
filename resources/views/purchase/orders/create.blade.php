@@ -10,7 +10,7 @@
         :back-url="route('purchase.orders.index')"
     />
 
-    <form method="POST" action="{{ route('purchase.orders.store') }}" id="poForm" @submit="if(discountHeader > subtotal){ $event.preventDefault(); alert('Diskon header tidak boleh melebihi subtotal item!'); return false; }">
+    <form method="POST" action="{{ route('purchase.orders.store') }}" id="poForm" @submit="validateForm($event)">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -91,10 +91,10 @@
                                    inputmode="numeric"
                                    name="discount_amount" 
                                    x-currency="discountHeader" 
-                                   :class="{'is-invalid': discountHeader > subtotal}"
+                                   :class="{'is-invalid': isDiscountInvalid}"
                                    class="form-control format-currency" 
                                    placeholder="0">
-                            <template x-if="discountHeader > subtotal">
+                            <template x-if="isDiscountInvalid">
                                 <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
                                 </div>
@@ -186,7 +186,6 @@
         <x-form-actions 
             :back-url="route('purchase.orders.index')" 
             submit-label="Simpan sebagai Draft" 
-            submit-attrs=":disabled=&quot;discountHeader > subtotal&quot; :style=&quot;discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
         />
     </form>
 </div>
@@ -241,6 +240,7 @@ function poForm() {
             return base - (base * (row.discount / 100));
         },
 
+        get isDiscountInvalid() { return this.discountHeader > this.subtotal; },
         get totalItemDiscount() { return this.rows.reduce((s, r) => s + ((r.qty || 0) * (r.price || 0) * ((r.discount || 0) / 100)), 0); },
         get subtotal() { return this.rows.reduce((s, r) => s + this.rowSubtotal(r), 0); },
         get taxableAmount() { return Math.max(0, this.subtotal - this.discountHeader); },
@@ -248,6 +248,13 @@ function poForm() {
         get total() { return this.taxableAmount + this.taxAmount; },
 
         recalc() { /* Alpine handles reactivity */ },
+        validateForm(e) {
+            if (this.isDiscountInvalid) {
+                e.preventDefault();
+                alert('Diskon header tidak boleh melebihi subtotal item!');
+                return false;
+            }
+        },
         formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v)); }
     }
 }

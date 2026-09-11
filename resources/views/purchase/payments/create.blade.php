@@ -10,7 +10,7 @@
         :back-url="route('purchase.payments.index')"
     />
 
-    <form method="POST" action="{{ route('purchase.payments.store') }}">
+    <form method="POST" action="{{ route('purchase.payments.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -84,13 +84,6 @@
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
                         <textarea name="notes" class="form-control" rows="1" placeholder="Catatan pembayaran...">{{ old('notes') }}</textarea>
-                    </div>
-
-                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
-                        <a href="{{ route('purchase.payments.index') }}" class="btn btn-secondary">Batal</a>
-                        <button type="submit" class="btn btn-primary" :disabled="!selectedInvoice || !amount || amount <= 0 || amount > maxAmount">
-                            <i class="fa-solid fa-money-bill-transfer"></i> Simpan Pembayaran & Posting Jurnal
-                        </button>
                     </div>
                 </div>
             </div>
@@ -187,6 +180,12 @@
                 </div>
             </div>
         </div>
+
+        <x-form-actions 
+            :cancel-url="route('purchase.payments.index')" 
+            submit-label="Simpan Pembayaran & Posting Jurnal" 
+            submit-icon="fa-solid fa-money-bill-transfer"
+        />
     </form>
 </div>
 @endsection
@@ -231,6 +230,29 @@ function paymentForm() {
         get simulatedRemaining() {
             const pay = Math.max(0, Number(this.amount) || 0);
             return Math.max(0, this.maxAmount - pay);
+        },
+
+        get isPaymentInvalid() {
+            return !this.selectedInvoice || !this.amount || this.amount <= 0 || this.amount > this.maxAmount;
+        },
+
+        validateForm(e) {
+            if (!this.selectedInvoice) {
+                alert('Pilih Invoice Pembelian terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.amount || this.amount <= 0) {
+                alert('Ketik nominal yang ingin Anda bayarkan.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.amount > this.maxAmount) {
+                alert('Nominal pembayaran melebihi sisa hutang (Maks: Rp ' + this.formatNum(this.maxAmount) + ').');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         },
 
         formatNum(v) {

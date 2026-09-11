@@ -10,7 +10,7 @@
         :back-url="route('accounting.journals.index')"
     />
 
-    <form method="POST" action="{{ route('accounting.journals.store') }}">
+    <form method="POST" action="{{ route('accounting.journals.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="card" style="margin-bottom:20px;">
@@ -95,7 +95,6 @@
         <x-form-actions 
             :back-url="route('accounting.journals.index')" 
             submit-label="Simpan Draft Jurnal" 
-            submit-attrs=":disabled=&quot;!isBalanced&quot; :style=&quot;!isBalanced ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
         />
     </form>
 </div>
@@ -116,6 +115,15 @@ function journalForm() {
         get totalDebit() { return this.rows.reduce((s, r) => s + (parseFloat(r.debit) || 0), 0); },
         get totalCredit() { return this.rows.reduce((s, r) => s + (parseFloat(r.credit) || 0), 0); },
         get isBalanced() { return Math.abs(this.totalDebit - this.totalCredit) < 0.01 && this.totalDebit > 0; },
+
+        validateForm(e) {
+            if (!this.isBalanced) {
+                alert('Jurnal tidak balance atau total debit/credit masih 0. Pastikan total debit sama dengan kredit.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
+        },
 
         formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v)); }
     }

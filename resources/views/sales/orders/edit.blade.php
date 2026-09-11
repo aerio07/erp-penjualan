@@ -33,7 +33,7 @@
         </x-slot:action>
     </x-page-header>
 
-    <form method="POST" action="{{ route('sales.orders.update', $order) }}" @submit="if(discountHeader > subtotal){ $event.preventDefault(); alert('Diskon header tidak boleh melebihi subtotal item!'); return false; }">
+    <form method="POST" action="{{ route('sales.orders.update', $order) }}" @submit="validateForm($event)">
         @csrf
         @method('PUT')
 
@@ -74,21 +74,21 @@
                         </div>
                     </div>
 
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Customer <span style="color:var(--danger);">*</span></label>
-                            <select name="customer_id" class="form-control {{ $errors->has('customer_id') ? 'is-invalid' : '' }}" required>
+                            <select name="customer_id" class="form-control" required>
                                 <option value="">-- Pilih Customer --</option>
                                 @foreach($customers as $c)
-                                <option value="{{ $c->id }}" {{ old('customer_id', $order->customer_id) == $c->id ? 'selected' : '' }}>{{ $c->name }} ({{ $c->code }})</option>
+                                <option value="{{ $c->id }}" {{ old('customer_id', $order->customer_id) == $c->id ? 'selected' : '' }}>
+                                    {{ $c->name }} ({{ $c->code }})
+                                </option>
                                 @endforeach
                             </select>
-                            @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="form-group">
                             <label class="form-label">Tanggal Order <span style="color:var(--danger);">*</span></label>
-                            <input type="date" name="order_date" value="{{ old('order_date', $order->order_date ? $order->order_date->format('Y-m-d') : '') }}" class="form-control {{ $errors->has('order_date') ? 'is-invalid' : '' }}" required>
-                            @error('order_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <input type="date" name="order_date" value="{{ old('order_date', $order->order_date ? $order->order_date->format('Y-m-d') : date('Y-m-d')) }}" class="form-control" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Target Pengiriman</label>
@@ -96,12 +96,12 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Tarif PPN (%)</label>
-                            <input type="number" name="tax_rate" value="{{ old('tax_rate', $order->tax_rate) }}" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">
+                            <input type="number" name="tax_rate" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
-                        <textarea name="notes" class="form-control" rows="2" placeholder="Catatan SO...">{{ old('notes', $order->notes) }}</textarea>
+                        <textarea name="notes" class="form-control" rows="1">{{ old('notes', $order->notes) }}</textarea>
                     </div>
                 </div>
             </div>
@@ -120,10 +120,10 @@
                                    inputmode="numeric"
                                    name="discount_amount" 
                                    x-currency="discountHeader" 
-                                   :class="{'is-invalid': discountHeader > subtotal}"
+                                   :class="{'is-invalid': isDiscountInvalid}"
                                    class="form-control format-currency" 
                                    placeholder="0">
-                            <template x-if="discountHeader > subtotal">
+                            <template x-if="isDiscountInvalid">
                                 <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
                                 </div>
@@ -182,13 +182,13 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" min="1" required>
+                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" class="form-control" min="1" required>
                                 </td>
                                 <td>
-                                    <input type="text" inputmode="numeric" :name="`items[${idx}][unit_price]`" x-currency="row.price" @input="recalc()" class="form-control format-currency" placeholder="0">
+                                    <input type="text" inputmode="numeric" :name="`items[${idx}][unit_price]`" x-currency="row.price" class="form-control format-currency" placeholder="0">
                                 </td>
                                 <td>
-                                    <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" @input="recalc()" class="form-control" min="0" max="100" step="0.1">
+                                    <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" class="form-control" min="0" max="100" step="0.1">
                                 </td>
                                 <td style="text-align:right; font-weight:600;">
                                     <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
@@ -208,7 +208,6 @@
         <x-form-actions 
             :back-url="route('sales.orders.show', $order)" 
             submit-label="Perbarui Sales Order" 
-            submit-attrs=":disabled=&quot;discountHeader > subtotal&quot; :style=&quot;discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
         />
     </form>
 </div>
@@ -257,12 +256,20 @@ function soForm() {
             return base - (base * ((row.discount || 0) / 100));
         },
 
+        get isDiscountInvalid() { return this.discountHeader > this.subtotal; },
         get subtotal() { return this.rows.reduce((s, r) => s + this.rowSubtotal(r), 0); },
         get taxableAmount() { return Math.max(0, this.subtotal - (this.discountHeader || 0)); },
         get taxAmount() { return this.taxableAmount * ((this.taxRate || 0) / 100); },
         get total() { return this.taxableAmount + this.taxAmount; },
 
-        recalc() { /* Alpine handles reactivity */ },
+        validateForm(e) {
+            if (this.isDiscountInvalid) {
+                e.preventDefault();
+                alert('Diskon header tidak boleh melebihi subtotal item!');
+                return false;
+            }
+        },
+
         formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v || 0)); }
     }
 }

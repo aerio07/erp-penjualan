@@ -35,14 +35,14 @@
     @endif
 
     {{-- Tombol Simpan / Aksi Utama: SELALU di PALING KANAN --}}
-    <button type="submit" {!! $submitAttrs !!} class="btn btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-100 transition-all shadow-xs">
-        @if(isset($submitButton))
-            {{ $submitButton }}
-        @else
+    @if(isset($submitButton))
+        {{ $submitButton }}
+    @else
+        <button type="submit" {!! $submitAttrs !!} class="btn btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg text-white shadow-xs">
             @if($submitIcon)
                 <i class="{{ $submitIcon }}"></i>
             @endif
             <span>{!! $submitLabel !!}</span>
-        @endif
-    </button>
+        </button>
+    @endif
 </div>

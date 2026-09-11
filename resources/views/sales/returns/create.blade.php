@@ -10,7 +10,7 @@
         :back-url="route('sales.returns.index')"
     />
 
-    <form method="POST" action="{{ route('sales.returns.store') }}">
+    <form method="POST" action="{{ route('sales.returns.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="card" style="margin-bottom:20px;">
@@ -152,9 +152,7 @@
 
         <x-form-actions 
             :back-url="route('sales.returns.index')" 
-            x-show="selectedDelivery" 
             submit-label="Simpan Draft Retur" 
-            submit-attrs=":disabled=&quot;!hasAnyReturnQty || isFullyPaid&quot; :style=&quot;(!hasAnyReturnQty || isFullyPaid) ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;" 
         />
     </form>
 </div>
@@ -295,6 +293,29 @@ function returnForm() {
 
         get hasAnyReturnQty() {
             return this.items.some(it => (Number(it.qty_return) || 0) > 0);
+        },
+
+        get isReturnInvalid() {
+            return !this.selectedDelivery || !this.hasAnyReturnQty || this.isFullyPaid;
+        },
+
+        validateForm(e) {
+            if (!this.selectedDelivery) {
+                alert('Pilih Surat Jalan terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.isFullyPaid) {
+                alert('Invoice untuk Surat Jalan ini sudah lunas penuh sehingga retur tidak dapat diproses.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.hasAnyReturnQty) {
+                alert('Isi minimal 1 jumlah barang yang ingin diretur.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         }
     }
 }

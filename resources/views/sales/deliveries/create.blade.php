@@ -10,7 +10,7 @@
         :back-url="route('sales.deliveries.index')"
     />
 
-    <form method="POST" action="{{ route('sales.deliveries.store') }}">
+    <form method="POST" action="{{ route('sales.deliveries.store') }}" @submit="validateForm($event)">
         @csrf
 
         <div class="card" style="margin-bottom:20px;">
@@ -225,9 +225,9 @@
             </div>
         </div>
 
-        <x-form-actions :back-url="route('sales.deliveries.index')" x-show="selectedSo">
+        <x-form-actions :back-url="route('sales.deliveries.index')">
             <x-slot:submitButton>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-lg text-white shadow-xs">
                     <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-truck-fast'"></i>
                     <span x-text="autoGenerateInvoice ? 'Cetak Surat Jalan & Terbitkan Invoice' : 'Cetak Surat Jalan & Kirim Barang'"></span>
                 </button>
@@ -415,6 +415,36 @@ function deliveryForm() {
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const dd = String(d.getDate()).padStart(2, '0');
             this.dueDate = `${yyyy}-${mm}-${dd}`;
+        },
+
+        validateForm(e) {
+            if (!this.selectedSo) {
+                alert('Pilih Sales Order (SO) terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.selectedWarehouseId) {
+                alert('Pilih Gudang Asal Pengiriman terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            const totalDeliver = this.items.reduce((s, it) => s + (Number(it.current_delivered) || 0), 0);
+            if (totalDeliver <= 0) {
+                alert('Isi minimal satu kuantitas barang yang dikirim.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.items.some(it => Number(it.current_delivered) > Number(it.qty_remaining))) {
+                alert('Ada jumlah pengiriman yang melebihi sisa pesanan Sales Order.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.items.some(it => Number(it.current_delivered) > Number(it.max_deliverable))) {
+                alert('Ada jumlah pengiriman yang melebihi stok yang tersedia di gudang.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
         }
     }
 }
