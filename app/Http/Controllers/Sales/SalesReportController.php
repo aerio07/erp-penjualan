@@ -194,7 +194,8 @@ class SalesReportController extends Controller
             });
         }
 
-        $products = $query->orderByDesc('total_amount')->paginate(20)->withQueryString();
+        $perPage = $request->integer('per_page', 20);
+        $products = $query->orderByDesc('total_amount')->paginate($perPage)->withQueryString();
 
         $products->getCollection()->transform(function ($p) {
             $totalSales  = (float) $p->total_amount;

@@ -110,40 +110,29 @@
     @endif
 
     {{-- Filter Bar --}}
-    <div class="card" style="margin-bottom: 0;">
-        <form method="GET" action="{{ route('accounting.fixed-assets.index') }}" class="erp-filter-bar" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
-            <div style="flex: 1; min-width: 220px; position: relative;">
-                <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 10px; color: #94a3b8; font-size: 18px;">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode aset, nama barang, no seri, lokasi..." class="form-control search-input">
-            </div>
-            <select name="category_id" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Semua Kategori --</option>
-                @foreach($categories as $c)
-                    <option value="{{ $c->id }}" {{ request('category_id') == $c->id ? 'selected' : '' }}>{{ $c->name }} ({{ $c->code }})</option>
-                @endforeach
-            </select>
-            <select name="acquisition_type" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Sumber Perolehan --</option>
-                <option value="purchase" {{ request('acquisition_type') == 'purchase' ? 'selected' : '' }}>Pembelian Baru</option>
-                <option value="opening_balance" {{ request('acquisition_type') == 'opening_balance' ? 'selected' : '' }}>Saldo Awal</option>
-            </select>
-            <select name="status" class="form-control" onchange="this.form.submit()">
-                <option value="">-- Status Aset --</option>
-                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Pemeliharaan</option>
-                <option value="disposed" {{ request('status') == 'disposed' ? 'selected' : '' }}>Afkir / Dihapus</option>
-                <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Terjual</option>
-            </select>
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-filter"></i> Filter
-            </button>
-            @if(request()->hasAny(['search', 'category_id', 'status', 'acquisition_type']))
-                <a href="{{ route('accounting.fixed-assets.index') }}" class="btn btn-secondary">
-                    Reset
-                </a>
-            @endif
-        </form>
-    </div>
+    <x-list-filter-bar 
+        :action="route('accounting.fixed-assets.index')"
+        placeholder="Cari kode aset, nama barang, no seri, lokasi..."
+    >
+        <select name="category_id" class="form-control filter-select">
+            <option value="">-- Semua Kategori --</option>
+            @foreach($categories as $c)
+                <option value="{{ $c->id }}" {{ request('category_id') == $c->id ? 'selected' : '' }}>{{ $c->name }} ({{ $c->code }})</option>
+            @endforeach
+        </select>
+        <select name="acquisition_type" class="form-control filter-select">
+            <option value="">-- Sumber Perolehan --</option>
+            <option value="purchase" {{ request('acquisition_type') == 'purchase' ? 'selected' : '' }}>Pembelian Baru</option>
+            <option value="opening_balance" {{ request('acquisition_type') == 'opening_balance' ? 'selected' : '' }}>Saldo Awal</option>
+        </select>
+        <select name="status" class="form-control filter-select">
+            <option value="">-- Status Aset --</option>
+            <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
+            <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Pemeliharaan</option>
+            <option value="disposed" {{ request('status') == 'disposed' ? 'selected' : '' }}>Afkir / Dihapus</option>
+            <option value="sold" {{ request('status') == 'sold' ? 'selected' : '' }}>Terjual</option>
+        </select>
+    </x-list-filter-bar>
 
     {{-- Asset Table --}}
     <div class="table-responsive">

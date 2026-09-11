@@ -252,13 +252,7 @@
                             </div>
                         </div>
 
-                        <div class="form-row form-row-3">
-                            <div class="form-group">
-                                <label class="form-label">No. Faktur / Nota Supplier</label>
-                                <input type="text" name="supplier_invoice_number" x-model="supplierInvoiceNumber" class="form-control" placeholder="No. invoice resmi vendor (opsional)">
-                                <small style="color:var(--text-secondary); font-size:11.5px;">Nomor referensi faktur fisik vendor</small>
-                            </div>
-
+                        <div class="form-row form-row-2">
                             <div class="form-group">
                                 <label class="form-label">Tanggal Faktur / Invoice <span style="color:var(--danger);">*</span></label>
                                 <input type="date" name="invoice_date" x-model="invoiceDate" @change="onInvoiceDateChange()" class="form-control" :required="autoGenerateInvoice">
@@ -268,10 +262,17 @@
                             <div class="form-group">
                                 <label class="form-label">Tanggal Jatuh Tempo <span style="color:var(--danger);">*</span></label>
                                 <input type="date" name="due_date" x-model="dueDate" class="form-control" :required="autoGenerateInvoice">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Batas akhir pelunasan tagihan</small>
                             </div>
                         </div>
 
                         <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">No. Faktur / Nota Supplier</label>
+                                <input type="text" name="supplier_invoice_number" x-model="supplierInvoiceNumber" class="form-control" placeholder="No. invoice resmi vendor (opsional)">
+                                <small style="color:var(--text-secondary); font-size:11.5px;">Nomor referensi faktur fisik vendor</small>
+                            </div>
+
                             <div class="form-group">
                                 <label class="form-label">Tarif PPN (%)</label>
                                 <input type="number" name="invoice_tax_rate" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">

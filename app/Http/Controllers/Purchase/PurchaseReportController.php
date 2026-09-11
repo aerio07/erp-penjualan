@@ -190,7 +190,8 @@ class PurchaseReportController extends Controller
             });
         }
 
-        $products = $query->orderByDesc('total_amount')->paginate(20)->withQueryString();
+        $perPage = $request->integer('per_page', 20);
+        $products = $query->orderByDesc('total_amount')->paginate($perPage)->withQueryString();
 
         $products->getCollection()->transform(function ($p) {
             $p->avg_price = $p->total_qty > 0 ? round($p->total_amount / $p->total_qty, 2) : $p->purchase_price;

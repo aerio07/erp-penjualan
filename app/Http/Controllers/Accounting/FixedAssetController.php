@@ -31,8 +31,8 @@ class FixedAssetController extends Controller
         $query = FixedAsset::with(['category.account', 'creator', 'journalEntry']);
 
         // Filter Pencarian
-        if ($request->filled('search')) {
-            $search = trim($request->search);
+        $search = trim($request->input('q', $request->input('search', '')));
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('asset_code', 'like', "%{$search}%")
@@ -63,7 +63,8 @@ class FixedAssetController extends Controller
                 ->get(),
         ];
 
-        $assets = $query->orderBy('id', 'desc')->paginate(15)->withQueryString();
+        $perPage = $request->integer('per_page', 15);
+        $assets = $query->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
 
         return view('accounting.fixed-assets.index', compact('assets', 'categories', 'summary'));
     }

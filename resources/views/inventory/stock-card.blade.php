@@ -19,50 +19,28 @@
     </x-page-header>
 
     {{-- Filter Form --}}
-    <div class="card" style="margin-bottom:20px;">
-        <div class="card-body" style="padding:16px;">
-            <form method="GET" action="{{ route('inventory.stock-card') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-                <div style="flex:1; min-width:200px;">
-                    <label class="form-label">Produk <span style="color:var(--danger);">*</span></label>
-                    <select name="product_id" class="form-control" required>
-                        <option value="">-- Pilih Produk --</option>
-                        @foreach($products as $p)
-                        <option value="{{ $p->id }}" {{ $productId == $p->id ? 'selected' : '' }}>{{ $p->name }} ({{ $p->sku }})</option>
-                        @endforeach
-                    </select>
-                </div>
+    <x-list-filter-bar 
+        :action="route('inventory.stock-card')"
+        :showSearch="false"
+        :showDateFilter="true"
+        dateFromParam="date_from"
+        dateToParam="date_to"
+        :showPerPage="false"
+    >
+        <select name="product_id" class="form-control filter-select" required>
+            <option value="">-- Pilih Produk * --</option>
+            @foreach($products as $p)
+            <option value="{{ $p->id }}" {{ $productId == $p->id ? 'selected' : '' }}>{{ $p->name }} ({{ $p->sku }})</option>
+            @endforeach
+        </select>
 
-                <div style="flex:1; min-width:200px;">
-                    <label class="form-label">Gudang <span style="color:var(--danger);">*</span></label>
-                    <select name="warehouse_id" class="form-control" required>
-                        <option value="">-- Pilih Gudang --</option>
-                        @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}" {{ $warehouseId == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div style="width:150px;">
-                    <label class="form-label">Dari Tgl</label>
-                    <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control">
-                </div>
-
-                <div style="width:150px;">
-                    <label class="form-label">Sampai Tgl</label>
-                    <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control">
-                </div>
-
-                <div style="display: flex; gap: 8px;">
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tampilkan</button>
-                    @if($productId || $warehouseId || $dateFrom || $dateTo)
-                    <a href="{{ route('inventory.stock-card') }}" class="btn btn-secondary" title="Atur Ulang">
-                        <i class="fa-solid fa-rotate-left"></i> Reset
-                    </a>
-                    @endif
-                </div>
-            </form>
-        </div>
-    </div>
+        <select name="warehouse_id" class="form-control filter-select" required>
+            <option value="">-- Pilih Gudang * --</option>
+            @foreach($warehouses as $wh)
+            <option value="{{ $wh->id }}" {{ $warehouseId == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
+            @endforeach
+        </select>
+    </x-list-filter-bar>
 
     @if($productId && $warehouseId)
     <div class="card">

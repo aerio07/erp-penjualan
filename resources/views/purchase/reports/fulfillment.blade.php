@@ -68,7 +68,7 @@
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('purchase.reports.fulfillment')" placeholder="Cari No. PO, Supplier..." :showDateFilter="true" dateFromParam="date_from" dateToParam="date_to">
         <!-- Supplier Dropdown -->
-        <select name="supplier_id" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 170px; margin-bottom: 0;">
+        <select name="supplier_id" class="form-control">
             <option value="">-- Semua Supplier --</option>
             @foreach($suppliers as $s)
             <option value="{{ $s->id }}" {{ request('supplier_id') == $s->id ? 'selected' : '' }}>
@@ -78,7 +78,7 @@
         </select>
 
         <!-- Status PO Dropdown -->
-        <select name="status" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 150px; margin-bottom: 0;">
+        <select name="status" class="form-control">
             <option value="">-- Status PO --</option>
             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -88,7 +88,7 @@
         </select>
 
         <!-- Status Bayar Dropdown -->
-        <select name="payment_status" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 160px; margin-bottom: 0;">
+        <select name="payment_status" class="form-control">
             <option value="">-- Status Bayar --</option>
             <option value="no_invoice" {{ request('payment_status') == 'no_invoice' ? 'selected' : '' }}>Belum Ada Invoice</option>
             <option value="unpaid" {{ request('payment_status') == 'unpaid' ? 'selected' : '' }}>Belum Dibayar</option>
@@ -97,7 +97,7 @@
         </select>
 
         <!-- Status Penagihan Dropdown -->
-        <select name="billing_status" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 180px; margin-bottom: 0;">
+        <select name="billing_status" class="form-control">
             <option value="">-- Status Penagihan --</option>
             <option value="unbilled" {{ request('billing_status') == 'unbilled' ? 'selected' : '' }}>Ada LPB Belum Di-Invoice</option>
             <option value="partial_billed" {{ request('billing_status') == 'partial_billed' ? 'selected' : '' }}>Sebagian LPB Di-Invoice</option>

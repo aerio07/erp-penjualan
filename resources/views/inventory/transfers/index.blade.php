@@ -16,7 +16,7 @@
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('inventory.transfers.index')" placeholder="Cari No. Transfer, Gudang, Catatan..." :showDateFilter="true">
-        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
+        <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit (Dikirim)</option>
@@ -24,14 +24,14 @@
             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled (Batal)</option>
         </select>
 
-        <select name="from_warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="from_warehouse_id" class="form-control filter-select">
             <option value="">Semua Gudang Asal</option>
             @foreach($warehouses as $wh)
             <option value="{{ $wh->id }}" {{ request('from_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
             @endforeach
         </select>
 
-        <select name="to_warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="to_warehouse_id" class="form-control filter-select">
             <option value="">Semua Gudang Tujuan</option>
             @foreach($warehouses as $wh)
             <option value="{{ $wh->id }}" {{ request('to_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>

@@ -93,7 +93,7 @@ class InventoryReportController extends Controller
         $sortedProducts = $products->sortByDesc(fn($p) => $p->total_sales_return_qty + $p->purchase_return_qty)->values();
 
         // Pagination manual untuk collection yang sudah ditransform
-        $perPage = 20;
+        $perPage = $request->integer('per_page', 20);
         $page = (int) $request->input('page', 1);
         $paginatedProducts = new \Illuminate\Pagination\LengthAwarePaginator(
             $sortedProducts->forPage($page, $perPage),

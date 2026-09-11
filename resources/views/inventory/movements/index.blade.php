@@ -10,21 +10,21 @@
     />
 
     <x-list-filter-bar :action="route('inventory.movements.index')" placeholder="Cari SKU, Nama Produk, Catatan..." :showDateFilter="true">
-        <select name="product_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="product_id" class="form-control filter-select">
             <option value="">Semua Produk</option>
             @foreach($products as $p)
             <option value="{{ $p->id }}" {{ request('product_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
             @endforeach
         </select>
 
-        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+        <select name="warehouse_id" class="form-control filter-select">
             <option value="">Semua Gudang</option>
             @foreach($warehouses as $wh)
             <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
             @endforeach
         </select>
 
-        <select name="type" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+        <select name="type" class="form-control filter-select">
             <option value="">Semua Tipe Mutasi</option>
             <option value="in" {{ request('type') === 'in' ? 'selected' : '' }}>Masuk (IN)</option>
             <option value="out" {{ request('type') === 'out' ? 'selected' : '' }}>Keluar (OUT)</option>

@@ -204,6 +204,7 @@
             flex-direction: column !important;
             margin-bottom: 1.25rem !important;
             width: 100% !important;
+            min-width: 0 !important;
             box-sizing: border-box !important;
         }
         .form-label, label {
@@ -216,6 +217,7 @@
             text-transform: uppercase !important;
             color: #0e1b35 !important;
             font-family: 'Public Sans', sans-serif !important;
+            line-height: 1.25 !important;
         }
         .form-control, 
         main input[type="text"], 
@@ -227,6 +229,8 @@
         main textarea {
             display: block !important;
             width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
             height: 38px !important;
             padding: 0.45rem 0.75rem !important;
             border-radius: 0.5rem !important;
@@ -370,16 +374,43 @@
             .form-row-4, .grid-4 {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             }
-            .form-row-3, .grid-3 {
+            .form-row-3 {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            .grid-3 {
+                grid-template-columns: 1fr !important;
             }
             .grid-5 {
                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            .card[style*="grid-column:span 2"],
+            .card[style*="grid-column: span 2"],
+            div[style*="grid-column:span 2"],
+            div[style*="grid-column: span 2"],
+            div[style*="grid-column:span 3"],
+            div[style*="grid-column: span 3"] {
+                grid-column: span 1 !important;
             }
         }
         @media (max-width: 768px) {
             .form-row, .form-row-2, .form-row-3, .form-row-4, .grid-2, .grid-3, .grid-4, .grid-5 {
                 grid-template-columns: 1fr !important;
+            }
+            .card[style*="grid-column:span 2"],
+            .card[style*="grid-column: span 2"],
+            div[style*="grid-column:span 2"],
+            div[style*="grid-column: span 2"],
+            div[style*="grid-column:span 3"],
+            div[style*="grid-column: span 3"] {
+                grid-column: span 1 !important;
+            }
+            .erp-filter-bar select:not([name="per_page"]),
+            .filter-bar select:not([name="per_page"]),
+            .list-filter-form select:not([name="per_page"]),
+            .list-filter-slots select {
+                width: 100% !important;
+                min-width: 0 !important;
+                display: block !important;
             }
         }
 

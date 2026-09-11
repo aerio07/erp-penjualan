@@ -16,21 +16,21 @@
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('inventory.dispositions.index')" placeholder="Cari No. Disposisi, Produk, Catatan..." :showDateFilter="true">
-        <select name="product_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="product_id" class="form-control filter-select">
             <option value="">Semua Produk</option>
             @foreach($products as $p)
             <option value="{{ $p->id }}" {{ request('product_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
             @endforeach
         </select>
 
-        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="warehouse_id" class="form-control filter-select">
             <option value="">Semua Gudang</option>
             @foreach($warehouses as $wh)
             <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
             @endforeach
         </select>
 
-        <select name="resolution_type" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="resolution_type" class="form-control filter-select">
             <option value="">Semua Jenis</option>
             <option value="write_off" {{ request('resolution_type') == 'write_off' ? 'selected' : '' }}>Write Off (Penghapusan)</option>
             <option value="sold_as_reject" {{ request('resolution_type') == 'sold_as_reject' ? 'selected' : '' }}>Sold as Reject (Jual Reject)</option>

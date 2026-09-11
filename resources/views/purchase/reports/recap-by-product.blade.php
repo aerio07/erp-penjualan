@@ -62,38 +62,22 @@
     </div>
 
     {{-- Filter Bar --}}
-    <form method="GET" action="{{ route('purchase.reports.recap-by-product') }}" class="card" style="padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <input type="text" name="q" value="{{ $search }}" placeholder="Cari nama atau SKU produk..." class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 12px; width: 220px; margin-bottom: 0;">
-
-            <select name="category_id" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 170px; margin-bottom: 0;">
-                <option value="">-- Semua Kategori --</option>
-                @foreach($categories as $cat)
-                <option value="{{ $cat->id }}" {{ $categoryId == $cat->id ? 'selected' : '' }}>
+    <x-list-filter-bar 
+        :action="route('purchase.reports.recap-by-product')"
+        placeholder="Cari nama atau SKU produk..."
+        :showDateFilter="true"
+        dateFromParam="date_from"
+        dateToParam="date_to"
+    >
+        <select name="category_id" class="form-control filter-select">
+            <option value="">-- Semua Kategori --</option>
+            @foreach($categories as $cat)
+                <option value="{{ $cat->id }}" {{ (string) request('category_id', $categoryId) === (string) $cat->id ? 'selected' : '' }}>
                     {{ $cat->name }}
                 </option>
-                @endforeach
-            </select>
-
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <input type="date" name="date_from" value="{{ $dateFrom }}" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 140px; margin-bottom: 0;" title="Dari Tanggal">
-                <span style="color: var(--text-secondary); font-size: 12px;">s/d</span>
-                <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control" style="height: 38px; font-size: 13px; border-radius: 6px; padding: 0 10px; width: 140px; margin-bottom: 0;" title="Sampai Tanggal">
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-sm" style="height: 38px; padding: 0 16px;">
-                <i class="fa-solid fa-filter"></i> Filter
-            </button>
-            @if($search || $categoryId || $dateFrom || $dateTo)
-            <a href="{{ route('purchase.reports.recap-by-product') }}" class="btn btn-secondary btn-sm" style="height: 38px; padding: 0 12px;" title="Reset Filter">
-                Reset
-            </a>
-            @endif
-        </div>
-        <div style="font-size: 12px; color: var(--text-secondary);">
-            Total <strong>{{ $products->total() }}</strong> jenis produk terdaftar
-        </div>
-    </form>
+            @endforeach
+        </select>
+    </x-list-filter-bar>
 
     {{-- Tabel Rekap Pembelian Produk --}}
     <div class="card" style="padding: 0; overflow: hidden;">

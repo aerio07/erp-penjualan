@@ -15,14 +15,14 @@
     </x-page-header>
 
     <x-list-filter-bar :action="route('inventory.opname.index')" placeholder="Cari No. Opname, Gudang, Catatan..." :showDateFilter="true">
-        <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
+        <select name="warehouse_id" class="form-control filter-select">
             <option value="">Semua Gudang</option>
             @foreach($warehouses as $wh)
             <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
             @endforeach
         </select>
 
-        <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">
+        <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
             <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
