@@ -5,17 +5,11 @@
 @section('content')
 <div class="animate-in" x-data="{ activeRow: null }">
     {{-- Header Halaman --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-chart-line" style="color: var(--primary); margin-right: 8px;"></i>
-                Laporan Monitoring Fulfillment Sales Order
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Pantau progres siklus lengkap: pesanan (SO) &rarr; pengiriman (Surat Jalan) &rarr; retur penjualan &rarr; penagihan (Invoice) &rarr; pembayaran piutang.
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
+    <x-page-header 
+        title="Laporan Monitoring Fulfillment Sales Order" 
+        subtitle="Pantau progres siklus lengkap: pesanan (SO) &rarr; pengiriman (Surat Jalan) &rarr; retur penjualan &rarr; penagihan (Invoice) &rarr; pembayaran piutang."
+    >
+        <x-slot:actions>
             <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-cart-shopping"></i> Kelola Sales Order
             </a>
@@ -25,8 +19,8 @@
             <a href="{{ route('sales.invoices.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Kelola Invoice
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-4" style="gap: 16px; margin-bottom: 20px;">

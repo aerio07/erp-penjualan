@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="trfForm()">
-    <div class="page-header">
-        <div>
-            <h1>Buat Draft Transfer Gudang</h1>
-            <p>Form pemindahan persediaan antar gudang. Stok gudang asal akan dikurangi setelah pengiriman dikonfirmasi (Ship).</p>
-        </div>
-        <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Buat Draft Transfer Gudang" 
+        subtitle="Form pemindahan persediaan antar gudang. Stok gudang asal akan dikurangi setelah pengiriman dikonfirmasi (Ship)."
+        :back-url="route('inventory.transfers.index')"
+    />
 
     @if($errors->any())
     <div class="alert alert-danger mb-4">
@@ -111,12 +107,10 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft Transfer
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('inventory.transfers.index')" 
+            submit-label="Simpan Draft Transfer" 
+        />
     </form>
 </div>
 @endsection

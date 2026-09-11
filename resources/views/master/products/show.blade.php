@@ -5,57 +5,57 @@
 @section('content')
 <div class="animate-in">
     <!-- Header -->
-    <div class="page-header">
-        <div style="display:flex; align-items:center; gap:16px;">
+    <!-- Header (Template 3) -->
+    <x-detail-header
+        :title="$product->name"
+        :back-url="route('master.products.index')">
+        <x-slot:prefix>
             @if($product->image_url)
                 <a href="{{ $product->image_url }}" target="_blank" title="Klik untuk melihat foto ukuran penuh" style="display:block; flex-shrink:0;">
-                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" style="width:60px; height:60px; border-radius:10px; object-fit:cover; border:2px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.08); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" style="width:52px; height:52px; border-radius:10px; object-fit:cover; border:2px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.08); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 </a>
             @else
-                <div style="width:60px; height:60px; border-radius:10px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:24px; flex-shrink:0; border:2px dashed #cbd5e1;">
+                <div style="width:52px; height:52px; border-radius:10px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:22px; flex-shrink:0; border:2px dashed #cbd5e1;">
                     <i class="fa-solid fa-box"></i>
                 </div>
             @endif
-            <div>
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-                    <h1 style="margin-bottom:0;">{{ $product->name }}</h1>
-                    <span class="badge {{ $product->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:12px; padding:4px 10px;">
-                        {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
-                    </span>
-                </div>
-                <p style="margin-bottom:0;">
-                    Kode SKU: <strong style="color:var(--primary);">{{ $product->sku }}</strong> &nbsp;·&nbsp;
-                    Kategori: 
-                    @if($product->productCategory)
-                        <a href="{{ route('master.categories.show', $product->productCategory) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                            {{ $product->productCategory->name }}
-                        </a>
-                    @else
-                        <span>{{ $product->category ?? 'Umum' }}</span>
-                    @endif
-                    &nbsp;·&nbsp;
-                    Satuan: <span>{{ $product->unit }}</span>
-                </p>
-            </div>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        </x-slot:prefix>
+        <x-slot:badge>
+            <span class="badge {{ $product->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:11px; padding:3px 8px;">
+                {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
+            </span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Kode SKU: <strong style="color:var(--primary);">{{ $product->sku }}</strong> &nbsp;·&nbsp;
+            Kategori: 
+            @if($product->productCategory)
+                <a href="{{ route('master.categories.show', $product->productCategory) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                    {{ $product->productCategory->name }}
+                </a>
+            @else
+                <span>{{ $product->category ?? 'Umum' }}</span>
+            @endif
+            &nbsp;·&nbsp;
+            Satuan: <span>{{ $product->unit }}</span>
+        </x-slot:subtitle>
+        <x-slot:actions>
             <!-- Form Toggle Status Aktif / Nonaktif -->
             <form method="POST" action="{{ route('master.products.toggle-status', $product) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $product->is_active ? 'menonaktifkan' : 'mengaktifkan' }} produk {{ $product->name }}?');">
                 @csrf
                 @method('PATCH')
                 @if($product->is_active)
                     <button type="submit" class="btn btn-secondary" style="color:#b91c1c; border-color:#fca5a5;" title="Klik untuk menonaktifkan produk">
-                        <i class="fa-solid fa-power-off"></i> Nonaktifkan Produk
+                        <i class="fa-solid fa-power-off"></i> Nonaktifkan
                     </button>
                 @else
                     <button type="submit" class="btn btn-primary" style="background:#16a34a; border-color:#16a34a;" title="Klik untuk mengaktifkan produk">
-                        <i class="fa-solid fa-check-circle"></i> Aktifkan Produk
+                        <i class="fa-solid fa-check-circle"></i> Aktifkan
                     </button>
                 @endif
             </form>
 
             <a href="{{ route('master.products.edit', $product) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
 
             <button type="button" data-confirm-delete="delete-product-show" data-name="{{ $product->name }} ({{ $product->sku }})" class="btn btn-danger" title="Hapus Produk">
@@ -65,12 +65,8 @@
                 @csrf
                 @method('DELETE')
             </form>
-
-            <a href="{{ route('master.products.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <!-- Alert jika status nonaktif -->
     @if(!$product->is_active)

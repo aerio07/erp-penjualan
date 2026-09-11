@@ -4,24 +4,30 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <h1 style="margin-bottom:0;">{{ $order->so_number }}</h1>
-                @if($order->channel === 'online')
-                    <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:11px; padding:3px 8px;">
-                        <i class="fa-solid fa-globe" style="font-size:10px;"></i> Online
-                    </span>
-                @else
-                    <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:11px; padding:3px 8px;">
-                        <i class="fa-solid fa-store" style="font-size:10px;"></i> Offline
-                    </span>
-                @endif
-            </div>
-            <p style="margin-top:4px;">Customer: <strong>{{ $order->customer->name ?? '-' }}</strong> · Tgl Order: {{ $order->order_date->format('d/m/Y') }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$order->so_number"
+        :back-url="route('sales.orders.index')"
+    >
+        <x-slot:badge>
+            @if($order->channel === 'online')
+                <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:11px; padding:3px 8px;">
+                    <i class="fa-solid fa-globe" style="font-size:10px;"></i> Online
+                </span>
+            @else
+                <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:11px; padding:3px 8px;">
+                    <i class="fa-solid fa-store" style="font-size:10px;"></i> Offline
+                </span>
+            @endif
+            <span class="badge badge-{{ $order->status }}">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Customer: <strong>{{ $order->customer->name ?? '-' }}</strong> &bull; Tgl Order: {{ $order->order_date->format('d/m/Y') }}
+        </x-slot:subtitle>
+        <x-slot:actions>
             @if($order->status === 'draft')
+            <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-pen-to-square"></i> Ubah SO
+            </a>
             <form method="POST" action="{{ route('sales.orders.confirm', $order) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Konfirmasi SO</button>
@@ -36,9 +42,8 @@
             <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> Export PDF
             </a>
-            <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

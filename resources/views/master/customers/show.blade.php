@@ -4,16 +4,21 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $customer->name }}</h1>
-            <p>Kode: <strong style="color:var(--primary);">{{ $customer->code }}</strong> &nbsp;·&nbsp;
-                <span class="badge {{ $customer->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                    {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-            </p>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <!-- Header (Template 3) -->
+    <x-detail-header
+        :title="$customer->name"
+        :back-url="route('master.customers.index')">
+        <x-slot:badge>
+            <span class="badge {{ $customer->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:11px; padding:3px 8px;">
+                {{ $customer->is_active ? 'Aktif' : 'Nonaktif' }}
+            </span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Kode Customer: <strong style="color:var(--primary);">{{ $customer->code }}</strong> &nbsp;·&nbsp;
+            Tipe: <span class="badge badge-confirmed" style="font-size:10px;">{{ strtoupper($customer->tax_type ?? 'NON-PKP') }}</span> &nbsp;·&nbsp;
+            Payment Term: <strong>{{ $customer->payment_term ?? 'COD' }}</strong>
+        </x-slot:subtitle>
+        <x-slot:actions>
             <a href="{{ route('accounting.reports.ledger-receivable', $customer) }}" class="btn btn-secondary" style="color:var(--primary); border-color:var(--primary);" title="Lihat Buku Pembantu / Kartu Piutang">
                 <i class="fa-solid fa-book"></i> Kartu Piutang
             </a>
@@ -33,7 +38,7 @@
             </form>
 
             <a href="{{ route('master.customers.edit', $customer) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
 
             <button type="button" data-confirm-delete="del-cust-show" data-name="{{ $customer->name }} ({{ $customer->code }})" class="btn btn-danger" title="Hapus Customer">
@@ -43,12 +48,8 @@
                 @csrf
                 @method('DELETE')
             </form>
-
-            <a href="{{ route('master.customers.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:24px;">
         <div class="card" style="grid-column:span 2;">

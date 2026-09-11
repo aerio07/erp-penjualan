@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Jurnal Umum (General Journal)</h1>
-            <p>Pencatatan transaksi akuntansi double-entry (Debit / Kredit)</p>
-        </div>
-        <a href="{{ route('accounting.journals.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat Jurnal Manual
-        </a>
-    </div>
+    <x-page-header title="Jurnal Umum (General Journal)" subtitle="Pencatatan transaksi akuntansi double-entry (Debit / Kredit)">
+        <x-slot:actions>
+            <a href="{{ route('accounting.journals.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat Jurnal Manual
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('accounting.journals.index')" placeholder="Cari No. Entri, Keterangan..." :showDateFilter="true" dateFromParam="date_from" dateToParam="date_to">
         <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">

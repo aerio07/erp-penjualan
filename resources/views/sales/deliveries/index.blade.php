@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Surat Jalan / Pengiriman</h1>
-            <p>Bukti pengiriman fisik barang ke lokasi customer</p>
-        </div>
-        <a href="{{ route('sales.deliveries.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat Surat Jalan
-        </a>
-    </div>
+    <x-page-header
+        title="Surat Jalan / Pengiriman"
+        subtitle="Bukti pengiriman fisik barang ke lokasi customer">
+        <x-slot:actions>
+            <a href="{{ route('sales.deliveries.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat Surat Jalan
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('sales.deliveries.index')" placeholder="Cari Surat Jalan, No. SO, Customer, Penerima..." :showDateFilter="true">
         <select name="status" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
@@ -105,14 +105,14 @@
                         </td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:6px; justify-content:center;">
+                                <a href="{{ route('sales.deliveries.show', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
                                 @if($del->status === 'in_transit')
                                 <a href="{{ route('sales.deliveries.show', $del) }}" class="btn btn-primary btn-sm btn-icon" title="Konfirmasi Penerimaan Barang">
                                     <i class="fa-solid fa-clipboard-check"></i>
                                 </a>
                                 @endif
-                                <a href="{{ route('sales.deliveries.show', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
                                 <a href="{{ route('pdf.delivery', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Cetak Surat Jalan" target="_blank">
                                     <i class="fa-solid fa-file-pdf"></i>
                                 </a>

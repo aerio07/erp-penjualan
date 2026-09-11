@@ -33,33 +33,28 @@
         <span style="color:var(--primary); font-weight:700;">{{ $chartOfAccount->name }}</span>
     </div>
 
-    <div class="page-header">
-        <div>
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-                <span style="font-family:monospace; font-size:18px; font-weight:800; color:{{ $typeMeta['color'] }}; background:{{ $typeMeta['bg'] }}; padding:2px 10px; border-radius:6px; border:1px solid {{ $typeMeta['border'] }};">
-                    {{ $chartOfAccount->code }}
-                </span>
-                <h1 style="margin:0; font-size:24px;">{{ $chartOfAccount->name }}</h1>
-            </div>
-            <p style="margin:0;">
-                <span class="badge {{ $chartOfAccount->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                    <i class="fa-solid {{ $chartOfAccount->is_active ? 'fa-check' : 'fa-xmark' }}" style="font-size:10px; margin-right:3px;"></i>
-                    {{ $chartOfAccount->is_active ? 'Akun Aktif (Dapat Dijurnal)' : 'Nonaktif' }}
-                </span>
-                @if($chartOfAccount->parent)
-                &nbsp;·&nbsp;
-                <span style="font-size:13px; color:var(--text-secondary);">
-                    Sub-akun dari: <a href="{{ route('master.chart-of-accounts.show', $chartOfAccount->parent) }}" style="color:var(--primary); font-weight:600; text-decoration:none;"><i class="fa-solid fa-sitemap" style="font-size:11px; margin-right:3px;"></i>[{{ $chartOfAccount->parent->code }}] {{ $chartOfAccount->parent->name }}</a>
-                </span>
-                @else
-                &nbsp;·&nbsp;
-                <span style="font-size:13px; color:#64748b; font-style:italic;">
-                    <i class="fa-solid fa-folder-tree" style="margin-right:4px;"></i> Akun Induk Tingkat 1 (Header Utama)
-                </span>
-                @endif
-            </p>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <!-- Header (Template 3) -->
+    <x-detail-header
+        :title="$chartOfAccount->name"
+        :back-url="route('master.chart-of-accounts.index')">
+        <x-slot:prefix>
+            <span style="font-family:monospace; font-size:16px; font-weight:800; color:{{ $typeMeta['color'] }}; background:{{ $typeMeta['bg'] }}; padding:2px 8px; border-radius:6px; border:1px solid {{ $typeMeta['border'] }};">
+                {{ $chartOfAccount->code }}
+            </span>
+        </x-slot:prefix>
+        <x-slot:badge>
+            <span class="badge {{ $chartOfAccount->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:11px; padding:3px 8px;">
+                {{ $chartOfAccount->is_active ? 'Aktif' : 'Nonaktif' }}
+            </span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Kategori: <strong>{{ ucfirst($chartOfAccount->type) }}</strong> &nbsp;·&nbsp;
+            Normal Balance: <span class="badge {{ $chartOfAccount->normal_balance === 'debit' ? 'badge-confirmed' : 'badge-pending' }}" style="font-size:10px;">{{ strtoupper($chartOfAccount->normal_balance) }}</span>
+            @if($chartOfAccount->parent)
+            &nbsp;·&nbsp; Sub-akun dari: <a href="{{ route('master.chart-of-accounts.show', $chartOfAccount->parent) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">[{{ $chartOfAccount->parent->code }}] {{ $chartOfAccount->parent->name }}</a>
+            @endif
+        </x-slot:subtitle>
+        <x-slot:actions>
             <form method="POST" action="{{ route('master.chart-of-accounts.toggle-status', $chartOfAccount) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $chartOfAccount->is_active ? 'menonaktifkan' : 'mengaktifkan' }} akun ini?');">
                 @csrf
                 @method('PATCH')
@@ -75,7 +70,7 @@
             </form>
 
             <a href="{{ route('master.chart-of-accounts.edit', $chartOfAccount) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit Akun
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
 
             <button type="button" data-confirm-delete="del-coa-show" data-name="{{ $chartOfAccount->name }} ({{ $chartOfAccount->code }})" class="btn btn-danger" title="Hapus Akun">
@@ -85,12 +80,8 @@
                 @csrf
                 @method('DELETE')
             </form>
-
-            <a href="{{ route('master.chart-of-accounts.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     {{-- Financial Metrics Cards --}}
     <div class="grid grid-4" style="margin-bottom:24px;">

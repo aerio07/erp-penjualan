@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ isset($category) ? 'Edit Kategori Produk' : 'Tambah Kategori Baru' }}</h1>
-            <p>{{ isset($category) ? 'Perbarui informasi data kategori produk' : 'Buat kategori baru untuk pengelompokan master produk' }}</p>
-        </div>
-        <a href="{{ route('master.categories.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        :title="isset($category) ? 'Edit Kategori Produk' : 'Tambah Kategori Baru'" 
+        :subtitle="isset($category) ? 'Perbarui informasi data kategori produk' : 'Buat kategori baru untuk pengelompokan master produk'" 
+        :back-url="route('master.categories.index')" 
+    />
 
     <div class="card w-full">
         <div class="card-header">
@@ -64,12 +60,10 @@
                     </label>
                 </div>
 
-                <div style="display:flex; gap:12px; margin-top:8px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($category) ? 'Perbarui Kategori' : 'Simpan Kategori' }}
-                    </button>
-                    <a href="{{ route('master.categories.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
+                <x-form-actions 
+                    :cancel-url="route('master.categories.index')" 
+                    :submit-label="isset($category) ? 'Perbarui Kategori' : 'Simpan Kategori'" 
+                />
             </form>
         </div>
     </div>

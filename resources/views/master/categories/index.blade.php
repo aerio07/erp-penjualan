@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Kategori Produk</h1>
-            <p>Kelola master kategori produk dan pengelompokan item</p>
-        </div>
-        <a href="{{ route('master.categories.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Tambah Kategori
-        </a>
-    </div>
+    <x-page-header title="Kategori Produk" subtitle="Kelola master kategori produk dan pengelompokan item">
+        <x-slot:actions>
+            <a href="{{ route('master.categories.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Kategori
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('master.categories.index')" placeholder="Cari Kode, Nama Kategori, Deskripsi...">
         <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
@@ -76,13 +74,6 @@
                                 <a href="{{ route('master.categories.edit', $category) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <form method="POST" action="{{ route('master.categories.toggle-status', $category) }}" style="display:inline;">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-icon {{ $category->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $category->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $category->is_active ? 'Nonaktifkan Kategori' : 'Aktifkan Kategori' }}">
-                                        <i class="fa-solid {{ $category->is_active ? 'fa-ban' : 'fa-check' }}"></i>
-                                    </button>
-                                </form>
                                 <button type="button" data-confirm-delete="del-cat-{{ $category->id }}" data-name="{{ $category->name }} ({{ $category->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus Kategori">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>

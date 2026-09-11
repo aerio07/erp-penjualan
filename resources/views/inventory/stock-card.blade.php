@@ -4,12 +4,19 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Kartu Stok</h1>
-            <p>Rincian mutasi masuk/keluar dan saldo berjalan per produk dan gudang</p>
-        </div>
-    </div>
+    <x-page-header title="Kartu Stok" subtitle="Rincian mutasi masuk/keluar dan saldo berjalan per produk dan gudang">
+        <x-slot:actions>
+            <a href="{{ route('inventory.stock-summary') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-boxes-stacked"></i> Ringkasan Stok
+            </a>
+            <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-right-left"></i> Transfer Stok
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Cetak
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filter Form --}}
     <div class="card" style="margin-bottom:20px;">
@@ -45,8 +52,13 @@
                     <input type="date" name="date_to" value="{{ $dateTo }}" class="form-control">
                 </div>
 
-                <div>
+                <div style="display: flex; gap: 8px;">
                     <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Tampilkan</button>
+                    @if($productId || $warehouseId || $dateFrom || $dateTo)
+                    <a href="{{ route('inventory.stock-card') }}" class="btn btn-secondary" title="Atur Ulang">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </a>
+                    @endif
                 </div>
             </form>
         </div>

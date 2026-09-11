@@ -4,21 +4,20 @@
 
 @section('content')
 <div class="animate-in">
-    <!-- Header -->
-    <div class="page-header">
-        <div>
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-                <h1 style="margin-bottom:0;">{{ $category->name }}</h1>
-                <span class="badge {{ $category->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:12px; padding:4px 10px;">
-                    {{ $category->is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-            </div>
-            <p style="margin-bottom:0;">
-                Kode Kategori: <strong style="color:var(--primary);">{{ $category->code }}</strong> &nbsp;·&nbsp;
-                Total Item: <span>{{ $totalProducts }} Produk Terdaftar</span>
-            </p>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <!-- Header (Template 3) -->
+    <x-detail-header
+        :title="$category->name"
+        :back-url="route('master.categories.index')">
+        <x-slot:badge>
+            <span class="badge {{ $category->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:11px; padding:3px 8px;">
+                {{ $category->is_active ? 'Aktif' : 'Nonaktif' }}
+            </span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Kode Kategori: <strong style="color:var(--primary);">{{ $category->code }}</strong> &nbsp;·&nbsp;
+            Total Item: <span>{{ $totalProducts }} Produk Terdaftar</span>
+        </x-slot:subtitle>
+        <x-slot:actions>
             <!-- Toggle Status Form -->
             <form method="POST" action="{{ route('master.categories.toggle-status', $category) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $category->is_active ? 'menonaktifkan' : 'mengaktifkan' }} kategori ini?');">
                 @csrf
@@ -35,7 +34,7 @@
             </form>
 
             <a href="{{ route('master.categories.edit', $category) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
 
             <button type="button" data-confirm-delete="del-cat-show" data-name="{{ $category->name }} ({{ $category->code }})" class="btn btn-danger" title="Hapus Kategori">
@@ -45,12 +44,8 @@
                 @csrf
                 @method('DELETE')
             </form>
-
-            <a href="{{ route('master.categories.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <!-- Stat Cards -->
     <div class="grid grid-3" style="margin-bottom:24px; gap:16px;">

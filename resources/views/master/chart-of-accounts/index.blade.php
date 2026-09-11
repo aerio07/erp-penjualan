@@ -4,20 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header" style="margin-bottom: 24px;">
-        <div>
-            <h1>Chart of Accounts (CoA)</h1>
-            <p>Bagan akun standar akuntansi dan struktur pembukuan keuangan</p>
-        </div>
-        <div style="display: flex; gap: 12px; align-items: center;">
+    <x-page-header title="Chart of Accounts (CoA)" subtitle="Bagan akun standar akuntansi dan struktur pembukuan keuangan">
+        <x-slot:actions>
             <a href="{{ route('accounting.reports.trial-balance') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-scale-balanced"></i> Neraca Saldo
             </a>
             <a href="{{ route('master.chart-of-accounts.create') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Tambah Akun
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     @php
     $typeMeta = [

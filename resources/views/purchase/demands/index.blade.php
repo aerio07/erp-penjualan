@@ -5,20 +5,21 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header">
-        <div>
-            <h1>Pusat Kebutuhan Pengadaan (Procurement Demands)</h1>
-            <p>Pemantauan real-time defisit stok dari Sales Order (Backorder) untuk konsolidasi pembuatan Purchase Order (PO).</p>
-        </div>
-        <div style="display:flex; gap:8px;">
-            <a href="{{ route('purchase.orders.create') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Buat PO Baru
-            </a>
-            <a href="{{ route('inventory.stock-summary') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-boxes-stacked"></i> Ringkasan Stok
-            </a>
-        </div>
-    </div>
+    <x-page-header 
+        title="Pusat Kebutuhan Pengadaan (Procurement Demands)" 
+        subtitle="Pemantauan real-time defisit stok dari Sales Order (Backorder) untuk konsolidasi pembuatan Purchase Order (PO)."
+    >
+        <x-slot:action>
+            <div style="display:flex; gap:8px;">
+                <a href="{{ route('inventory.stock-summary') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-boxes-stacked"></i> Ringkasan Stok
+                </a>
+                <a href="{{ route('purchase.orders.create') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Buat PO Baru
+                </a>
+            </div>
+        </x-slot:action>
+    </x-page-header>
 
     {{-- Metric Cards --}}
     <div class="grid grid-4" style="margin-bottom:20px;">

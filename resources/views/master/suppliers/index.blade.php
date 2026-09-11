@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Supplier</h1>
-            <p>Kelola semua data pemasok barang</p>
-        </div>
-        <a href="{{ route('master.suppliers.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Tambah Supplier
-        </a>
-    </div>
+    <x-page-header title="Supplier" subtitle="Kelola semua data pemasok barang">
+        <x-slot:actions>
+            <a href="{{ route('master.suppliers.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Supplier
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('master.suppliers.index')" placeholder="Cari Kode, Nama Supplier, CP, Telepon...">
         <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
@@ -83,13 +81,6 @@
                                 <a href="{{ route('master.suppliers.edit', $s) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <form method="POST" action="{{ route('master.suppliers.toggle-status', $s) }}" style="display:inline;">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-icon {{ $s->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $s->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $s->is_active ? 'Nonaktifkan Supplier' : 'Aktifkan Supplier' }}">
-                                        <i class="fa-solid {{ $s->is_active ? 'fa-ban' : 'fa-check' }}"></i>
-                                    </button>
-                                </form>
                                 <button type="button" data-confirm-delete="del-sup-{{ $s->id }}" data-name="{{ $s->name }} ({{ $s->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>

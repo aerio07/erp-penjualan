@@ -4,15 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Manajemen User</h1>
-            <p>Kelola akun dan hak akses pengguna sistem</p>
-        </div>
-        <a href="{{ route('master.users.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-user-plus"></i> Tambah User
-        </a>
-    </div>
+    <x-page-header 
+        title="Manajemen User" 
+        subtitle="Kelola akun dan hak akses pengguna sistem"
+    >
+        <x-slot:action>
+            <a href="{{ route('master.users.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-user-plus"></i> Tambah User
+            </a>
+        </x-slot:action>
+    </x-page-header>
 
     @php
     $roleColors = [

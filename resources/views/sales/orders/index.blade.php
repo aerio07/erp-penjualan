@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Daftar Sales Order</h1>
-            <p>Kelola pesanan penjualan customer, alokasi stok, dan pelacakan status pemenuhan pengiriman.</p>
-        </div>
-        <a href="{{ route('sales.orders.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat Sales Order
-        </a>
-    </div>
+    <x-page-header
+        title="Daftar Sales Order"
+        subtitle="Kelola pesanan penjualan customer, alokasi stok, dan pelacakan status pemenuhan pengiriman.">
+        <x-slot:actions>
+            <a href="{{ route('sales.orders.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat Sales Order
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('sales.orders.index')" placeholder="Cari no. SO, customer, catatan...">
         <select name="customer_id" class="form-control" onchange="this.form.submit()">

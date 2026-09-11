@@ -16,15 +16,11 @@
     }
 }">
     {{-- Header Section --}}
-    <div class="page-header">
-        <div>
-            <h1>Tambah / Beli Aset Tetap</h1>
-            <p>Mendaftarkan unit fisik inventaris atau mencatat pembelian tunai aset baru</p>
-        </div>
-        <a href="{{ route('accounting.fixed-assets.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
-        </a>
-    </div>
+    <x-page-header 
+        title="Tambah / Beli Aset Tetap" 
+        subtitle="Mendaftarkan unit fisik inventaris atau mencatat pembelian tunai aset baru"
+        :back-url="route('accounting.fixed-assets.index')"
+    />
 
     @if ($errors->any())
     <div class="alert alert-danger" style="margin-bottom: 16px;">
@@ -225,15 +221,10 @@
         </div>
 
         {{-- Tombol Submit --}}
-        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 8px; margin-bottom: 32px;">
-            <a href="{{ route('accounting.fixed-assets.index') }}" class="btn btn-secondary">
-                Batal
-            </a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-floppy-disk"></i>
-                <span>Simpan & Daftarkan Aset</span>
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('accounting.fixed-assets.index')" 
+            submit-label="Simpan & Daftarkan Aset" 
+        />
     </form>
 </div>
 @endsection

@@ -5,15 +5,13 @@
 @section('content')
 <div class="animate-in">
     {{-- Header Section --}}
-    <div class="page-header">
-        <div>
-            <h1>Aset Tetap & Inventaris</h1>
-            <p>Pencatatan inventaris per unit, pengelompokan kategori aset, dan riwayat jurnal pembelian</p>
-        </div>
-        <a href="{{ route('accounting.fixed-assets.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Tambah / Beli Aset
-        </a>
-    </div>
+    <x-page-header title="Aset Tetap & Inventaris" subtitle="Pencatatan inventaris per unit, pengelompokan kategori aset, dan riwayat jurnal pembelian">
+        <x-slot:actions>
+            <a href="{{ route('accounting.fixed-assets.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah / Beli Aset
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     @if(session('success'))
     <div class="alert alert-success mb-4">

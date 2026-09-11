@@ -4,16 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $invoice->invoice_number }}</h1>
-            <p>Ref PO: <a href="{{ route('purchase.orders.show', $invoice->purchaseOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->purchaseOrder->po_number }}</a>
-                @if($invoice->goodsReceipt)
-                · Ref LPB: <a href="{{ route('purchase.goods-receipts.show', $invoice->goodsReceipt) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->goodsReceipt->receipt_number }}</a>
-                @endif
-                · {{ $invoice->purchaseOrder->supplier->name ?? '-' }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$invoice->invoice_number" 
+        :subtitle="'Ref PO: ' . ($invoice->purchaseOrder->po_number ?? '-') . ($invoice->goodsReceipt ? ' · Ref LPB: ' . $invoice->goodsReceipt->receipt_number : '') . ' · ' . ($invoice->purchaseOrder->supplier->name ?? '-')"
+        :status="$invoice->status"
+        :back-url="route('purchase.invoices.index')"
+    >
+        <x-slot:actions>
             @if($invoice->outstanding_amount > 0)
             <a href="{{ route('purchase.payments.create') }}?invoice_id={{ $invoice->id }}" class="btn btn-success">
                 <i class="fa-solid fa-money-check-dollar"></i> Bayar Tagihan Ini
@@ -22,11 +19,8 @@
             <a href="{{ route('pdf.purchase-invoice', $invoice) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            <a href="{{ route('purchase.invoices.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

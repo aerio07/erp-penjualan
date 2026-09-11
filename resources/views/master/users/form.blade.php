@@ -4,12 +4,11 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div><h1>{{ isset($user) ? 'Edit User: '.$user->name : 'Tambah User Baru' }}</h1></div>
-        <a href="{{ route('master.users.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        :title="isset($user) ? 'Edit User: '.$user->name : 'Tambah User Baru'"
+        subtitle="Formulir data akun dan hak akses pengguna"
+        :back-url="route('master.users.index')"
+    />
 
     <div class="card w-full">
         <div class="card-header"><h3>Informasi User</h3></div>
@@ -76,12 +75,10 @@
                     </div>
                 </div>
 
-                <div style="display:flex; gap:12px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($user) ? 'Perbarui' : 'Simpan' }}
-                    </button>
-                    <a href="{{ route('master.users.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
+                <x-form-actions 
+                    :back-url="route('master.users.index')" 
+                    :submit-label="isset($user) ? 'Perbarui User' : 'Simpan User'" 
+                />
             </form>
         </div>
     </div>

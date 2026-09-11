@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Retur Penjualan Customer</h1>
-            <p>Pengembalian barang dari customer ke gudang</p>
-        </div>
-        <a href="{{ route('sales.returns.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat Retur Penjualan
-        </a>
-    </div>
+    <x-page-header
+        title="Retur Penjualan Customer"
+        subtitle="Pengembalian barang dari customer ke gudang">
+        <x-slot:actions>
+            <a href="{{ route('sales.returns.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat Retur Penjualan
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('sales.returns.index')" placeholder="Cari No. Retur, Ref. SJ, Customer, Alasan..." :showDateFilter="true">
         <select name="customer_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">

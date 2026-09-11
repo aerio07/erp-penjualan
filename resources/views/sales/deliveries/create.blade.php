@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="deliveryForm()">
-    <div class="page-header">
-        <div>
-            <h1>Buat Surat Jalan</h1>
-            <p>Pilih Sales Order yang barangnya akan dikirim dari gudang ke customer</p>
-        </div>
-        <a href="{{ route('sales.deliveries.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Buat Surat Jalan" 
+        subtitle="Pilih Sales Order yang barangnya akan dikirim dari gudang ke customer"
+        :back-url="route('sales.deliveries.index')"
+    />
 
     <form method="POST" action="{{ route('sales.deliveries.store') }}">
         @csrf
@@ -229,13 +225,14 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedSo">
-            <a href="{{ route('sales.deliveries.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-truck-fast'"></i>
-                <span x-text="autoGenerateInvoice ? 'Cetak Surat Jalan & Terbitkan Invoice' : 'Cetak Surat Jalan & Kirim Barang'"></span>
-            </button>
-        </div>
+        <x-form-actions :back-url="route('sales.deliveries.index')" x-show="selectedSo">
+            <x-slot:submitButton>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-truck-fast'"></i>
+                    <span x-text="autoGenerateInvoice ? 'Cetak Surat Jalan & Terbitkan Invoice' : 'Cetak Surat Jalan & Kirim Barang'"></span>
+                </button>
+            </x-slot:submitButton>
+        </x-form-actions>
     </form>
 </div>
 @endsection

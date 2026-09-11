@@ -4,15 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Purchase Order</h1>
-            <p>Kelola semua purchase order ke supplier</p>
-        </div>
-        <a href="{{ route('purchase.orders.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat PO Baru
-        </a>
-    </div>
+    <x-page-header 
+        title="Purchase Order" 
+        subtitle="Kelola semua purchase order ke supplier"
+    >
+        <x-slot:action>
+            <a href="{{ route('purchase.orders.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat PO Baru
+            </a>
+        </x-slot:action>
+    </x-page-header>
 
     {{-- Filters --}}
     <x-list-filter-bar :action="route('purchase.orders.index')" placeholder="Cari No. PO, Supplier, Catatan..." :showDateFilter="true">

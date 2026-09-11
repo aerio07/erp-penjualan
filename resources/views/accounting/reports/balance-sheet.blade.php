@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
-    <div class="page-header">
-        <div>
-            <h1>Neraca Keuangan</h1>
-            <p>Posisi Aset, Kewajiban, dan Modal perusahaan pada titik waktu tertentu</p>
-        </div>
-    </div>
+    <x-page-header title="Neraca Keuangan" subtitle="Posisi Aset, Kewajiban, dan Modal perusahaan pada titik waktu tertentu">
+        <x-slot:actions>
+            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Cetak Laporan
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filter Form --}}
     <div class="card mb-0">

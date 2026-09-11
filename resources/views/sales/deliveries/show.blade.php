@@ -27,25 +27,27 @@
         this.dueDate = `${yyyy}-${mm}-${dd}`;
     }
 }">
-    <div class="page-header">
-        <div>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <h1>{{ $delivery->delivery_number }}</h1>
-                @if($delivery->status === 'delivered')
-                    <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Diterima (Delivered)</span>
-                @elseif($delivery->status === 'in_transit')
-                    <span class="badge badge-warning"><i class="fa-solid fa-truck-fast"></i> Dalam Pengiriman (In Transit)</span>
-                @else
-                    <span class="badge">{{ $delivery->status_label }}</span>
-                @endif
+    <x-detail-header 
+        :title="$delivery->delivery_number"
+        :back-url="route('sales.deliveries.index')"
+    >
+        <x-slot:badge>
+            @if($delivery->status === 'delivered')
+                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Diterima (Delivered)</span>
+            @elseif($delivery->status === 'in_transit')
+                <span class="badge badge-warning"><i class="fa-solid fa-truck-fast"></i> Dalam Pengiriman (In Transit)</span>
+            @else
+                <span class="badge">{{ $delivery->status_label }}</span>
+            @endif
 
-                @if($delivery->is_invoiced)
-                    <span class="badge badge-info"><i class="fa-solid fa-receipt"></i> Invoiced</span>
-                @endif
-            </div>
-            <p>Pengiriman untuk SO: <a href="{{ route('sales.orders.show', $delivery->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $delivery->salesOrder->so_number }}</a></p>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            @if($delivery->is_invoiced)
+                <span class="badge badge-info"><i class="fa-solid fa-receipt"></i> Invoiced</span>
+            @endif
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Pengiriman untuk SO: <a href="{{ route('sales.orders.show', $delivery->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $delivery->salesOrder->so_number }}</a>
+        </x-slot:subtitle>
+        <x-slot:actions>
             @if($delivery->status === 'in_transit')
             <button type="button" @click="showConfirmModal = true" class="btn btn-primary">
                 <i class="fa-solid fa-clipboard-check"></i> Konfirmasi Penerimaan Barang
@@ -59,11 +61,8 @@
             <a href="{{ route('pdf.delivery', $delivery) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> Cetak Surat Jalan PDF
             </a>
-            <a href="{{ route('sales.deliveries.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         {{-- Card Informasi Pengiriman --}}

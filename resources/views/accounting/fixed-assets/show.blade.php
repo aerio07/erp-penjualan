@@ -5,24 +5,17 @@
 @section('content')
 <div class="animate-in">
     {{-- Header Section --}}
-    <div class="page-header">
-        <div>
-            <h1>{{ $fixedAsset->name }}
-                <span style="font-family: 'Inter', monospace; font-size: 12px; padding: 4px 10px; border-radius: 6px; background-color: #eff6ff; color: #1e40af; font-weight: 700; border: 1px solid #bfdbfe; margin-left: 8px; vertical-align: middle;">
-                    {{ $fixedAsset->asset_code }}
-                </span>
-                <span class="badge {{ $fixedAsset->status_badge_class }}" style="vertical-align: middle; margin-left: 4px;">
-                    {{ $fixedAsset->status_label }}
-                </span>
-            </h1>
-            <p>
-                Kategori: <strong>{{ $fixedAsset->category->name }}</strong> &bull; Akun Pembukuan: <span style="font-family: 'Inter', monospace;">{{ $fixedAsset->category->account?->code }} - {{ $fixedAsset->category->account?->name }}</span>
-            </p>
-        </div>
-        <a href="{{ route('accounting.fixed-assets.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-detail-header 
+        :title="$fixedAsset->name"
+        :back-url="route('accounting.fixed-assets.index')"
+        :badge-text="$fixedAsset->status_label"
+        :badge-class="$fixedAsset->status_badge_class"
+    >
+        <x-slot:subtitle>
+            <span style="font-family: 'Inter', monospace; font-size: 12px; padding: 2px 8px; border-radius: 4px; background-color: #eff6ff; color: #1e40af; font-weight: 700; border: 1px solid #bfdbfe; margin-right: 8px;">{{ $fixedAsset->asset_code }}</span>
+            Kategori: <strong>{{ $fixedAsset->category->name }}</strong> &bull; Akun Pembukuan: <span style="font-family: 'Inter', monospace;">{{ $fixedAsset->category->account?->code }} - {{ $fixedAsset->category->account?->name }}</span>
+        </x-slot:subtitle>
+    </x-detail-header>
 
     @if(session('success'))
     <div class="alert alert-success mb-4">

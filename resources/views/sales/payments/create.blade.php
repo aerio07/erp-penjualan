@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="paymentForm()">
-    <div class="page-header">
-        <div>
-            <h1>Catat Penerimaan Piutang (Cicilan / Pelunasan)</h1>
-            <p>Pilih Invoice Penjualan customer dan ketik jumlah nominal rupiah yang diterima.</p>
-        </div>
-        <a href="{{ route('sales.payments.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Catat Penerimaan Piutang (Cicilan / Pelunasan)" 
+        subtitle="Pilih Invoice Penjualan customer dan ketik jumlah nominal rupiah yang diterima."
+        :back-url="route('sales.payments.index')"
+    />
 
     <form method="POST" action="{{ route('sales.payments.store') }}">
         @csrf
@@ -88,13 +84,6 @@
                     <div class="form-group">
                         <label class="form-label">Catatan</label>
                         <textarea name="notes" class="form-control" rows="1" placeholder="Catatan penerimaan...">{{ old('notes') }}</textarea>
-                    </div>
-
-                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
-                        <a href="{{ route('sales.payments.index') }}" class="btn btn-secondary">Batal</a>
-                        <button type="submit" class="btn btn-primary" :disabled="!selectedInvoice || !amount || amount <= 0 || amount > maxAmount">
-                            <i class="fa-solid fa-money-bill-transfer"></i> Simpan Penerimaan & Posting Jurnal
-                        </button>
                     </div>
                 </div>
             </div>
@@ -172,6 +161,12 @@
                 </div>
             </div>
         </div>
+
+        <x-form-actions 
+            :back-url="route('sales.payments.index')" 
+            submit-label="Simpan Penerimaan & Posting Jurnal" 
+            submit-attrs=":disabled=&quot;!selectedInvoice || !amount || amount <= 0 || amount > maxAmount&quot; :style=&quot;(!selectedInvoice || !amount || amount <= 0 || amount > maxAmount) ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
+        />
     </form>
 </div>
 @endsection

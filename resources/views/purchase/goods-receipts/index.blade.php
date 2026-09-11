@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Penerimaan Barang (GRN)</h1>
-            <p>Catat penerimaan barang dari supplier berdasarkan Purchase Order</p>
-        </div>
-        <a href="{{ route('purchase.goods-receipts.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Catat Penerimaan
-        </a>
-    </div>
+    <x-page-header
+        title="Penerimaan Barang (GRN)"
+        subtitle="Catat penerimaan barang dari supplier berdasarkan Purchase Order">
+        <x-slot:actions>
+            <a href="{{ route('purchase.goods-receipts.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Catat Penerimaan
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('purchase.goods-receipts.index')" placeholder="Cari GRN, No. PO, Supplier..." :showDateFilter="true">
         <select name="is_invoiced" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
@@ -90,14 +90,14 @@
                         <td>{{ $receipt->user->name ?? '-' }}</td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:6px; justify-content:center;">
+                                <a href="{{ route('purchase.goods-receipts.show', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
                                 @if(!$receipt->is_invoiced)
                                 <a href="{{ route('purchase.invoices.create', ['po_id' => $receipt->purchase_order_id, 'grn_id' => $receipt->id]) }}" class="btn btn-primary btn-sm btn-icon" title="Lempar ke Invoice / Buat Tagihan">
                                     <i class="fa-solid fa-file-invoice-dollar"></i>
                                 </a>
                                 @endif
-                                <a href="{{ route('purchase.goods-receipts.show', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
                             </div>
                         </td>
                     </tr>

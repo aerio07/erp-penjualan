@@ -6,28 +6,29 @@
 <div class="animate-in">
 
     {{-- Header --}}
-    <div class="page-header">
-        <div>
-            <h1>{{ $order->po_number }}</h1>
-            <p>{{ $order->supplier->name }} · {{ $order->order_date->format('d/m/Y') }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$order->po_number" 
+        :subtitle="$order->supplier->name . ' · ' . $order->order_date->format('d/m/Y')"
+        :status="$order->status"
+        :back-url="route('purchase.orders.index')"
+    >
+        <x-slot:actions>
             @if($order->status === 'draft')
-            <a href="{{ route('purchase.orders.edit', $order) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Edit</a>
             <form method="POST" action="{{ route('purchase.orders.confirm', $order) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Konfirmasi PO</button>
             </form>
+            <a href="{{ route('purchase.orders.edit', $order) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Ubah</a>
             @endif
+            <a href="{{ route('pdf.purchase-order', $order) }}" class="btn btn-secondary" target="_blank"><i class="fa-solid fa-file-pdf"></i> PDF</a>
             @if(in_array($order->status, ['draft', 'waiting_approval']))
             <form method="POST" action="{{ route('purchase.orders.cancel', $order) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-danger" onclick="return confirm('Batalkan PO ini?')"><i class="fa-solid fa-ban"></i> Batalkan</button>
             </form>
             @endif
-            <a href="{{ route('pdf.purchase-order', $order) }}" class="btn btn-secondary" target="_blank"><i class="fa-solid fa-file-pdf"></i> PDF</a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         {{-- Info PO --}}

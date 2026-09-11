@@ -4,14 +4,11 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ isset($warehouse) ? 'Edit Gudang' : 'Tambah Gudang Baru' }}</h1>
-        </div>
-        <a href="{{ route('master.warehouses.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        :title="isset($warehouse) ? 'Edit Gudang' : 'Tambah Gudang Baru'" 
+        subtitle="Lengkapi data lokasi penyimpanan barang di bawah ini" 
+        :back-url="route('master.warehouses.index')" 
+    />
 
     <div class="card w-full">
         <div class="card-header"><h3>Informasi Gudang</h3></div>
@@ -72,12 +69,10 @@
                     </label>
                 </div>
 
-                <div style="display:flex; gap:12px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($warehouse) ? 'Perbarui' : 'Simpan' }}
-                    </button>
-                    <a href="{{ route('master.warehouses.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
+                <x-form-actions 
+                    :cancel-url="route('master.warehouses.index')" 
+                    :submit-label="isset($warehouse) ? 'Perbarui Gudang' : 'Simpan Gudang'" 
+                />
             </form>
         </div>
     </div>

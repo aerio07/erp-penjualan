@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="invForm()">
-    <div class="page-header">
-        <div>
-            <h1>Terbitkan Invoice Penjualan</h1>
-            <p>Pilih <strong>Sales Order</strong> lalu pilih <strong>1 Surat Jalan (SJ)</strong> — seluruh qty yang dikirim di Surat Jalan tersebut akan langsung ditagihkan penuh.</p>
-        </div>
-        <a href="{{ route('sales.invoices.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Terbitkan Invoice Penjualan" 
+        subtitle="Pilih Sales Order lalu pilih 1 Surat Jalan (SJ) — seluruh qty yang dikirim di Surat Jalan tersebut akan langsung ditagihkan penuh."
+        :back-url="route('sales.invoices.index')"
+    />
 
     <form method="POST" action="{{ route('sales.invoices.store') }}">
         @csrf
@@ -178,12 +174,12 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedDelivery">
-            <a href="{{ route('sales.invoices.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="!selectedDelivery || totalQty <= 0">
-                <i class="fa-solid fa-floppy-disk"></i> Terbitkan Invoice & Posting Jurnal (HPP + Piutang)
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('sales.invoices.index')" 
+            x-show="selectedDelivery" 
+            submit-label="Terbitkan Invoice & Posting Jurnal (HPP + Piutang)" 
+            submit-attrs=":disabled=&quot;!selectedDelivery || totalQty <= 0&quot; :style=&quot;(!selectedDelivery || totalQty <= 0) ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;" 
+        />
     </form>
 </div>
 @endsection

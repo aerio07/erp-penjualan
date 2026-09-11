@@ -4,12 +4,11 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div><h1>{{ isset($supplier) ? 'Edit Supplier' : 'Tambah Supplier Baru' }}</h1></div>
-        <a href="{{ route('master.suppliers.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        :title="isset($supplier) ? 'Edit Supplier' : 'Tambah Supplier Baru'" 
+        subtitle="Lengkapi formulir data pemasok barang di bawah ini" 
+        :back-url="route('master.suppliers.index')" 
+    />
 
     <div class="card w-full">
         <div class="card-header"><h3>Informasi Supplier</h3></div>
@@ -309,12 +308,10 @@
                     </label>
                 </div>
 
-                <div style="display:flex; gap:12px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($supplier) ? 'Perbarui' : 'Simpan' }}
-                    </button>
-                    <a href="{{ route('master.suppliers.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
+                <x-form-actions 
+                    :cancel-url="route('master.suppliers.index')" 
+                    :submit-label="isset($supplier) ? 'Perbarui Supplier' : 'Simpan Supplier'" 
+                />
             </form>
         </div>
     </div>

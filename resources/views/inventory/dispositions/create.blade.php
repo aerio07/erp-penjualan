@@ -12,17 +12,11 @@
     get totalCost() { return this.qty * this.unitCost; },
     get totalRevenue() { return this.resolutionType === 'sold_as_reject' ? (this.qty * this.salePrice) : 0; }
 }">
-    <div class="page-header">
-        <div>
-            <h1>Form Penyelesaian Barang Karantina</h1>
-            <p>Pilih produk & gudang untuk menyelesaikan status barang retur rusak/cacat</p>
-        </div>
-        <div>
-            <a href="{{ route('inventory.dispositions.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
-            </a>
-        </div>
-    </div>
+    <x-page-header
+        title="Form Penyelesaian Barang Karantina"
+        subtitle="Pilih produk & gudang untuk menyelesaikan status barang retur rusak/cacat"
+        :back-url="route('inventory.dispositions.index')"
+    />
 
     @if($errors->any())
     <div class="alert alert-danger mb-4">
@@ -244,11 +238,11 @@
                         </table>
                     </div>
 
-                    <div style="margin-top:24px; display:flex; justify-content:flex-end;">
-                        <button type="submit" class="btn btn-primary" style="padding:12px 24px; font-size:15px; font-weight:600;">
-                            <i class="fa-solid fa-check"></i> Simpan Disposisi & Pembukuan
-                        </button>
-                    </div>
+                    <x-form-actions
+                        :cancel-url="route('inventory.dispositions.index')"
+                        submit-label="Simpan Disposisi &amp; Pembukuan"
+                        submit-icon="fa-solid fa-check"
+                    />
                 </div>
             </div>
         </div>

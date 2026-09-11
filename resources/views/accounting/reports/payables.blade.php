@@ -4,12 +4,19 @@
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
-    <div class="page-header">
-        <div>
-            <h1>Umur Hutang (AP Aging)</h1>
-            <p>Detail kewajiban pembayaran ke supplier dikelompokkan berdasarkan umur jatuh tempo (aging)</p>
-        </div>
-    </div>
+    <x-page-header title="Umur Hutang (AP Aging)" subtitle="Detail kewajiban pembayaran ke supplier dikelompokkan berdasarkan umur jatuh tempo (aging)">
+        <x-slot:actions>
+            <a href="{{ route('accounting.reports.payables-by-vendor') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-truck-field"></i> Rekap per Supplier
+            </a>
+            <a href="{{ route('accounting.reports.payables-upcoming') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-calendar-week"></i> Jatuh Tempo
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Cetak
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Stats Cards Summary (5 AP Aging Buckets) --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

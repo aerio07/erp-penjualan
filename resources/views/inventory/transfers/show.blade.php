@@ -4,12 +4,14 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $transfer->transfer_number }}</h1>
-            <p>Pemindahan persediaan barang antar gudang</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$transfer->transfer_number"
+        subtitle="Pemindahan persediaan barang antar gudang"
+        :back-url="route('inventory.transfers.index')"
+        :badge-text="strtoupper(str_replace('_', ' ', $transfer->status))"
+        :badge-class="'badge-' . ($transfer->status === 'completed' ? 'done' : ($transfer->status === 'in_transit' ? 'confirmed' : ($transfer->status === 'cancelled' ? 'cancelled' : 'draft')))"
+    >
+        <x-slot:actions>
             @if($transfer->status === 'draft')
                 <form method="POST" action="{{ route('inventory.transfers.ship', $transfer) }}" style="display:inline;">
                     @csrf @method('PATCH')
@@ -20,7 +22,7 @@
                 <form method="POST" action="{{ route('inventory.transfers.cancel', $transfer) }}" style="display:inline;">
                     @csrf @method('PATCH')
                     <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin membatalkan draft transfer ini?')">
-                        <i class="fa-solid fa-ban"></i> Batalkan Transfer
+                        <i class="fa-solid fa-ban"></i> Batalkan
                     </button>
                 </form>
             @elseif($transfer->status === 'in_transit')
@@ -31,12 +33,8 @@
                     </button>
                 </form>
             @endif
-
-            <a href="{{ route('inventory.transfers.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

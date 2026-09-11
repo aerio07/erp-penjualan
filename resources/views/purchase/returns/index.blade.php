@@ -4,15 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Retur Pembelian</h1>
-            <p>Pengembalian barang rusak atau tidak sesuai ke supplier</p>
-        </div>
-        <a href="{{ route('purchase.returns.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat Retur
-        </a>
-    </div>
+    <x-page-header 
+        title="Retur Pembelian" 
+        subtitle="Pengembalian barang rusak atau tidak sesuai ke supplier"
+    >
+        <x-slot:action>
+            <a href="{{ route('purchase.returns.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat Retur
+            </a>
+        </x-slot:action>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('purchase.returns.index')" placeholder="Cari No. Retur, Ref. GRN, Supplier, Alasan..." :showDateFilter="true">
         <select name="supplier_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">

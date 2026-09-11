@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Stock Opname</h1>
-            <p>Pemeriksaan dan penyesuaian fisik persediaan di gudang</p>
-        </div>
-        <a href="{{ route('inventory.opname.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Mulai Stock Opname
-        </a>
-    </div>
+    <x-page-header
+        title="Stock Opname"
+        subtitle="Pemeriksaan dan penyesuaian fisik persediaan di gudang">
+        <x-slot:actions>
+            <a href="{{ route('inventory.opname.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Mulai Stock Opname
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('inventory.opname.index')" placeholder="Cari No. Opname, Gudang, Catatan..." :showDateFilter="true">
         <select name="warehouse_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">

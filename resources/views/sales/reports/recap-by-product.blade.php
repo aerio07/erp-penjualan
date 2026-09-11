@@ -5,17 +5,11 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-chart-simple" style="color: var(--primary); margin-right: 8px;"></i>
-                Rekap Penjualan per Barang & Profitabilitas
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Analisis omset penjualan, beban pokok penjualan (HPP), dan margin keuntungan kotor (Gross Margin) per item produk dari Invoice Penjualan.
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
+    <x-page-header 
+        title="Rekap Penjualan per Barang & Profitabilitas" 
+        subtitle="Analisis omset penjualan, beban pokok penjualan (HPP), dan margin keuntungan kotor (Gross Margin) per item produk dari Invoice Penjualan."
+    >
+        <x-slot:actions>
             <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-tags"></i> Sales Order
             </a>
@@ -25,8 +19,8 @@
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-4" style="gap: 16px; margin-bottom: 20px;">

@@ -4,15 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Invoice Pembelian</h1>
-            <p>Kelola tagihan dari supplier dan status pelunasan hutang</p>
-        </div>
-        <a href="{{ route('purchase.invoices.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Terbitkan Invoice
-        </a>
-    </div>
+    <x-page-header 
+        title="Invoice Pembelian" 
+        subtitle="Kelola tagihan dari supplier dan status pelunasan hutang"
+    >
+        <x-slot:action>
+            <a href="{{ route('purchase.invoices.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Terbitkan Invoice
+            </a>
+        </x-slot:action>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('purchase.invoices.index')" placeholder="Cari No. Invoice, Ref. PO, Supplier..." :showDateFilter="true">
         <select name="supplier_id" class="form-control" style="height:38px; font-size:13px; min-width:170px; border-radius:6px;">

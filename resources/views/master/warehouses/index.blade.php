@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Gudang</h1>
-            <p>Kelola semua lokasi penyimpanan barang</p>
-        </div>
-        <a href="{{ route('master.warehouses.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Tambah Gudang
-        </a>
-    </div>
+    <x-page-header title="Gudang" subtitle="Kelola semua lokasi penyimpanan barang">
+        <x-slot:actions>
+            <a href="{{ route('master.warehouses.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Gudang
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('master.warehouses.index')" placeholder="Cari Kode, Nama Gudang, Alamat...">
         <select name="is_active" class="form-control" style="height:38px; font-size:13px; min-width:140px; border-radius:6px;">
@@ -63,13 +61,6 @@
                         <a href="{{ route('master.warehouses.edit', $wh) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        <form method="POST" action="{{ route('master.warehouses.toggle-status', $wh) }}" style="display:inline;">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn btn-sm btn-icon {{ $wh->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $wh->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $wh->is_active ? 'Nonaktifkan Gudang' : 'Aktifkan Gudang' }}">
-                                <i class="fa-solid {{ $wh->is_active ? 'fa-ban' : 'fa-check' }}"></i>
-                            </button>
-                        </form>
                         <button type="button" data-confirm-delete="del-wh-{{ $wh->id }}" data-name="{{ $wh->name }} ({{ $wh->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                             <i class="fa-solid fa-trash"></i>
                         </button>

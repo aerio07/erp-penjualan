@@ -4,20 +4,18 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Ringkasan Posisi Stok (5 Dimensi)</h1>
-            <p>Posisi stok komprehensif: On Hand, Booking SO (Reserved), Bebas Jual (Available), Defisit SO (Backorder), dan Incoming PO.</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-page-header
+        title="Ringkasan Posisi Stok (5 Dimensi)"
+        subtitle="Posisi stok komprehensif: On Hand, Booking SO (Reserved), Bebas Jual (Available), Defisit SO (Backorder), dan Incoming PO.">
+        <x-slot:actions>
             <a href="{{ route('purchase.demands.index') }}" class="btn btn-primary">
                 <i class="fa-solid fa-cart-shopping"></i> Kebutuhan Pengadaan
             </a>
             <a href="{{ route('inventory.stock-card') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-rectangle-list"></i> Kartu Stok
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filter Gudang & Pencarian --}}
     <div class="card" style="margin-bottom:16px;">

@@ -4,12 +4,19 @@
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
-    <div class="page-header">
-        <div>
-            <h1>Umur Piutang (AR Aging)</h1>
-            <p>Detail piutang penjualan per customer dikelompokkan berdasarkan umur penagihan (aging)</p>
-        </div>
-    </div>
+    <x-page-header title="Umur Piutang (AR Aging)" subtitle="Detail piutang penjualan per customer dikelompokkan berdasarkan umur penagihan (aging)">
+        <x-slot:actions>
+            <a href="{{ route('accounting.reports.receivables-by-customer') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-users"></i> Rekap per Customer
+            </a>
+            <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-calendar-week"></i> Jatuh Tempo
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Cetak
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Stats Cards Summary (5 Aging Buckets) --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

@@ -4,16 +4,20 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $supplier->name }}</h1>
-            <p>Kode: <strong style="color:var(--primary);">{{ $supplier->code }}</strong> &nbsp;·&nbsp;
-                <span class="badge {{ $supplier->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                    {{ $supplier->is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-            </p>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <!-- Header (Template 3) -->
+    <x-detail-header
+        :title="$supplier->name"
+        :back-url="route('master.suppliers.index')">
+        <x-slot:badge>
+            <span class="badge {{ $supplier->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:11px; padding:3px 8px;">
+                {{ $supplier->is_active ? 'Aktif' : 'Nonaktif' }}
+            </span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Kode Supplier: <strong style="color:var(--primary);">{{ $supplier->code }}</strong> &nbsp;·&nbsp;
+            Payment Term: <strong>{{ $supplier->payment_term ?? 'COD' }}</strong>
+        </x-slot:subtitle>
+        <x-slot:actions>
             <a href="{{ route('accounting.reports.ledger-payable', $supplier) }}" class="btn btn-secondary" style="color:var(--primary); border-color:var(--primary);" title="Lihat Buku Pembantu / Kartu Hutang">
                 <i class="fa-solid fa-book"></i> Kartu Hutang
             </a>
@@ -33,7 +37,7 @@
             </form>
 
             <a href="{{ route('master.suppliers.edit', $supplier) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
 
             <button type="button" data-confirm-delete="del-sup-show" data-name="{{ $supplier->name }} ({{ $supplier->code }})" class="btn btn-danger" title="Hapus Supplier">
@@ -43,12 +47,8 @@
                 @csrf
                 @method('DELETE')
             </form>
-
-            <a href="{{ route('master.suppliers.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:24px;">
         {{-- Info Card --}}

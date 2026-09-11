@@ -6,25 +6,19 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-users" style="color: var(--primary); margin-right: 8px;"></i>
-                Rekap Hutang per Vendor
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Ringkasan total kewajiban hutang usaha yang dikelompokkan per supplier beserta umur jatuh tempo invoice. Klik nama vendor untuk melihat <strong>Kartu Hutang</strong> detail.
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
+    <x-page-header 
+        title="Rekap Hutang per Vendor" 
+        subtitle="Ringkasan total kewajiban hutang usaha yang dikelompokkan per supplier beserta umur jatuh tempo invoice. Klik nama vendor untuk melihat Kartu Hutang detail."
+    >
+        <x-slot:actions>
             <a href="{{ route('accounting.reports.payables') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-clock-rotate-left"></i> Umur Hutang (AP Aging)
             </a>
             <a href="{{ route('purchase.payments.create') }}" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-money-bill-wave"></i> Pembayaran Hutang
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-3" style="gap: 16px; margin-bottom: 20px;">

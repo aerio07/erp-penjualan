@@ -4,25 +4,26 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $opname->opname_number }}</h1>
-            <p>Gudang: <strong>{{ $opname->warehouse->name ?? '-' }}</strong> · Tgl Opname: {{ $opname->opname_date->format('d F Y') }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$opname->opname_number"
+        :back-url="route('inventory.opname.index')"
+        :badge-text="ucfirst($opname->status)"
+        :badge-class="'badge-' . ($opname->status === 'completed' ? 'done' : 'pending')"
+    >
+        <x-slot:subtitle>
+            Gudang: <strong>{{ $opname->warehouse->name ?? '-' }}</strong> &bull; Tgl Opname: {{ $opname->opname_date->format('d F Y') }}
+        </x-slot:subtitle>
+        <x-slot:actions>
             @if($opname->status === 'draft')
             <form method="POST" action="{{ route('inventory.opname.complete', $opname) }}" style="display:inline;">
                 @csrf @method('PATCH')
-                <button type="submit" class="btn btn-primary" onclick="return confirm('Selesaikan opname dan sesuaikan stok otomatis di sistem?')">
+                <button type="submit" class="btn btn-success" onclick="return confirm('Selesaikan opname dan sesuaikan stok otomatis di sistem?')">
                     <i class="fa-solid fa-check"></i> Selesaikan Opname & Penyesuaian Stok
                 </button>
             </form>
             @endif
-            <a href="{{ route('inventory.opname.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

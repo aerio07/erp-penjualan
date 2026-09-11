@@ -4,12 +4,7 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Approval Request</h1>
-            <p>Persetujuan dokumen Purchase Order dan Sales Order yang melebihi batas nominal limit</p>
-        </div>
-    </div>
+    <x-page-header title="Approval Request" subtitle="Persetujuan dokumen Purchase Order dan Sales Order yang melebihi batas nominal limit" />
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('approvals.index')" placeholder="Cari No. Request, Catatan..." :showDateFilter="true">

@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="soForm()">
-    <div class="page-header">
-        <div>
-            <h1>Buat Sales Order</h1>
-            <p>Isi data penawaran / pesanan penjualan baru</p>
-        </div>
-        <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header
+        title="Buat Sales Order"
+        subtitle="Isi data penawaran / pesanan penjualan baru"
+        :back-url="route('sales.orders.index')"
+    />
 
     <form method="POST" action="{{ route('sales.orders.store') }}" @submit="if(discountHeader > subtotal){ $event.preventDefault(); alert('Diskon header tidak boleh melebihi subtotal item!'); return false; }">
         @csrf
@@ -183,12 +179,11 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="discountHeader > subtotal" :style="discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft SO
-            </button>
-        </div>
+        <x-form-actions
+            :cancel-url="route('sales.orders.index')"
+            submit-label="Simpan Draft SO"
+            submit-attrs=":disabled=&quot;discountHeader &gt; subtotal&quot; :style=&quot;discountHeader &gt; subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
+        />
     </form>
 </div>
 @endsection

@@ -21,20 +21,17 @@
 @endphp
 
 <div class="animate-in" x-data="poForm()">
-    <div class="page-header">
-        <div>
-            <h1>Edit Purchase Order: {{ $order->po_number }}</h1>
-            <p>Perbarui rincian Purchase Order yang berstatus Draft</p>
-        </div>
-        <div style="display:flex; gap:8px;">
-            <a href="{{ route('purchase.orders.show', $order) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Detail
-            </a>
+    <x-page-header 
+        :title="'Edit Purchase Order: ' . $order->po_number" 
+        subtitle="Perbarui rincian Purchase Order yang berstatus Draft"
+        :back-url="route('purchase.orders.show', $order)"
+    >
+        <x-slot:action>
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-list"></i> Daftar PO
             </a>
-        </div>
-    </div>
+        </x-slot:action>
+    </x-page-header>
 
     <form method="POST" action="{{ route('purchase.orders.update', $order) }}" id="poForm" @submit="if(discountHeader > subtotal){ $event.preventDefault(); alert('Diskon header tidak boleh melebihi subtotal item!'); return false; }">
         @csrf
@@ -204,12 +201,11 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <a href="{{ route('purchase.orders.show', $order) }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="discountHeader > subtotal" :style="discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''">
-                <i class="fa-solid fa-floppy-disk"></i> Perbarui Purchase Order
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('purchase.orders.show', $order)" 
+            submit-label="Perbarui Purchase Order" 
+            submit-attrs=":disabled=&quot;discountHeader > subtotal&quot; :style=&quot;discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
+        />
     </form>
 </div>
 @endsection

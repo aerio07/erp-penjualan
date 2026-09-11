@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Penerimaan Piutang Customer</h1>
-            <p>Catat penerimaan uang kas / bank dari pelunasan invoice penjualan</p>
-        </div>
-        <a href="{{ route('sales.payments.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Catat Penerimaan
-        </a>
-    </div>
+    <x-page-header
+        title="Penerimaan Piutang Customer"
+        subtitle="Catat penerimaan uang kas / bank dari pelunasan invoice penjualan">
+        <x-slot:actions>
+            <a href="{{ route('sales.payments.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Catat Penerimaan
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('sales.payments.index')" placeholder="Cari Ref / Resi, No. Invoice, Customer..." :showDateFilter="true">
         <select name="method" class="form-control" style="height:38px; font-size:13px; min-width:150px; border-radius:6px;">

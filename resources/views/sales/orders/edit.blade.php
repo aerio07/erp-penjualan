@@ -21,20 +21,17 @@
 @endphp
 
 <div class="animate-in" x-data="soForm()">
-    <div class="page-header">
-        <div>
-            <h1>Edit Sales Order: {{ $order->so_number }}</h1>
-            <p>Perbarui rincian Sales Order yang berstatus Draft</p>
-        </div>
-        <div style="display:flex; gap:8px;">
-            <a href="{{ route('sales.orders.show', $order) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Detail
-            </a>
+    <x-page-header 
+        :title="'Edit Sales Order: ' . $order->so_number" 
+        subtitle="Perbarui rincian Sales Order yang berstatus Draft"
+        :back-url="route('sales.orders.show', $order)"
+    >
+        <x-slot:action>
             <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-list"></i> Daftar SO
             </a>
-        </div>
-    </div>
+        </x-slot:action>
+    </x-page-header>
 
     <form method="POST" action="{{ route('sales.orders.update', $order) }}" @submit="if(discountHeader > subtotal){ $event.preventDefault(); alert('Diskon header tidak boleh melebihi subtotal item!'); return false; }">
         @csrf
@@ -208,12 +205,11 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <a href="{{ route('sales.orders.show', $order) }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="discountHeader > subtotal" :style="discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''">
-                <i class="fa-solid fa-floppy-disk"></i> Perbarui Sales Order
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('sales.orders.show', $order)" 
+            submit-label="Perbarui Sales Order" 
+            submit-attrs=":disabled=&quot;discountHeader > subtotal&quot; :style=&quot;discountHeader > subtotal ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
+        />
     </form>
 </div>
 @endsection

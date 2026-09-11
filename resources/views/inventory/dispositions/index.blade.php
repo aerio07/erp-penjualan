@@ -4,17 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Disposisi Stok Karantina</h1>
-            <p>Riwayat penyelesaian barang rusak (stok karantina) melalui Write Off atau Jual Sebagai Reject</p>
-        </div>
-        <div>
+    <x-page-header
+        title="Disposisi Stok Karantina"
+        subtitle="Riwayat penyelesaian barang rusak (stok karantina) melalui Write Off atau Jual Sebagai Reject">
+        <x-slot:actions>
             <a href="{{ route('inventory.dispositions.create') }}" class="btn btn-primary">
                 <i class="fa-solid fa-plus"></i> Disposisi Baru
             </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('inventory.dispositions.index')" placeholder="Cari No. Disposisi, Produk, Catatan..." :showDateFilter="true">

@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $return->return_number }}</h1>
-            <p>Supplier: <strong>{{ $return->supplier->name ?? '-' }}</strong> · Ref GRN: {{ $return->goodsReceipt->receipt_number ?? '-' }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$return->return_number" 
+        :subtitle="'Supplier: ' . ($return->supplier->name ?? '-') . ' · Ref GRN: ' . ($return->goodsReceipt->receipt_number ?? '-')"
+        :status="$return->status === 'completed' ? 'done' : 'pending'"
+        :back-url="route('purchase.returns.index')"
+    >
+        <x-slot:actions>
             @if($return->status === 'draft')
             <form method="POST" action="{{ route('purchase.returns.complete', $return) }}" style="display:inline;">
                 @csrf @method('PATCH')
@@ -18,11 +19,8 @@
                 </button>
             </form>
             @endif
-            <a href="{{ route('purchase.returns.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

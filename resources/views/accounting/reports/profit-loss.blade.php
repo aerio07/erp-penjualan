@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
-    <div class="page-header">
-        <div>
-            <h1>Laporan Laba Rugi</h1>
-            <p>Ringkasan kinerja pendapatan, HPP, beban operasional, dan laba bersih perusahaan</p>
-        </div>
-    </div>
+    <x-page-header title="Laporan Laba Rugi" subtitle="Ringkasan kinerja pendapatan, HPP, beban operasional, dan laba bersih perusahaan">
+        <x-slot:actions>
+            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Cetak Laporan
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filter Periode --}}
     <div class="card mb-0">

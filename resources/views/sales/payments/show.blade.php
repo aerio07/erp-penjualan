@@ -4,15 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Detail Penerimaan Piutang</h1>
-            <p>Invoice Ref: <a href="{{ route('sales.invoices.show', $payment->salesInvoice) }}" style="color:var(--primary); font-weight:600;">{{ $payment->salesInvoice->invoice_number }}</a></p>
-        </div>
-        <a href="{{ route('sales.payments.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-detail-header 
+        title="Detail Penerimaan Piutang"
+        :back-url="route('sales.payments.index')"
+        badge-text="Telah Diposting"
+        badge-class="badge-done"
+    >
+        <x-slot:subtitle>
+            Invoice Ref: <a href="{{ route('sales.invoices.show', $payment->salesInvoice) }}" style="color:var(--primary); font-weight:600;">{{ $payment->salesInvoice->invoice_number }}</a>
+        </x-slot:subtitle>
+    </x-detail-header>
 
     <div class="card w-full">
         <div class="card-header">

@@ -4,12 +4,16 @@
 
 @section('content')
 <div class="animate-in flex flex-col gap-6">
-    <div class="page-header">
-        <div>
-            <h1>Valuasi Persediaan</h1>
-            <p>Perhitungan nilai persediaan barang berdasarkan Biaya Rata-Rata (Average Cost)</p>
-        </div>
-    </div>
+    <x-page-header title="Valuasi Persediaan" subtitle="Perhitungan nilai persediaan barang berdasarkan Biaya Rata-Rata (Average Cost)">
+        <x-slot:actions>
+            <a href="{{ route('inventory.stock-summary') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-boxes-stacked"></i> Ringkasan Stok
+            </a>
+            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-print"></i> Cetak Laporan
+            </button>
+        </x-slot:actions>
+    </x-page-header>
 
     <div class="w-full sm:max-w-xs">
         <div class="stat-card border-l-4 border-purple-600">

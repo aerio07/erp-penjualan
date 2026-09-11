@@ -4,12 +4,14 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $journal->entry_number }}</h1>
-            <p>Tanggal: {{ $journal->entry_date->format('d F Y') }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$journal->entry_number"
+        :back-url="route('accounting.journals.index')"
+        :badge-text="ucfirst($journal->status)"
+        :badge-class="'badge-' . ($journal->status === 'posted' ? 'posted' : 'draft')"
+        :subtitle="'Tanggal: ' . $journal->entry_date->format('d F Y')"
+    >
+        <x-slot:actions>
             @if($journal->status === 'draft')
             <form method="POST" action="{{ route('accounting.journals.post', $journal) }}" style="display:inline;">
                 @csrf @method('PATCH')
@@ -18,11 +20,8 @@
                 </button>
             </form>
             @endif
-            <a href="{{ route('accounting.journals.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header">

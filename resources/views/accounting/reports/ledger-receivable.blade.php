@@ -6,28 +6,20 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-book" style="color: var(--primary); margin-right: 8px;"></i>
-                Kartu Piutang: {{ $customer->name }}
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Buku Pembantu Piutang Usaha (Subsidiary Ledger) · Kode Customer: <strong style="color: var(--primary);">{{ $customer->code }}</strong>
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
-            <a href="{{ route('accounting.reports.receivables-by-customer') }}" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-arrow-left"></i> Rekap Customer
-            </a>
+    <x-page-header 
+        :title="'Kartu Piutang: ' . $customer->name" 
+        :subtitle="'Buku Pembantu Piutang Usaha (Subsidiary Ledger) &bull; Kode Customer: ' . $customer->code"
+        :back-url="route('accounting.reports.receivables-by-customer')"
+    >
+        <x-slot:actions>
             <a href="{{ route('master.customers.show', $customer) }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-user-tag"></i> Detail Customer
             </a>
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-4" style="gap: 16px; margin-bottom: 20px;">

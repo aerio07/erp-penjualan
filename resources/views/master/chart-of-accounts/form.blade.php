@@ -34,15 +34,11 @@
         }
     }
 }">
-    <div class="page-header">
-        <div>
-            <h1>{{ isset($chartOfAccount) ? 'Edit Akun: ' . $chartOfAccount->name : 'Tambah Akun CoA Baru' }}</h1>
-            <p>Konfigurasikan kode akun, hierarki induk, tipe kategori, dan saldo normal pembukuan</p>
-        </div>
-        <a href="{{ route('master.chart-of-accounts.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar CoA
-        </a>
-    </div>
+    <x-page-header 
+        :title="isset($chartOfAccount) ? 'Edit Akun: ' . $chartOfAccount->name : 'Tambah Akun CoA Baru'" 
+        subtitle="Konfigurasikan kode akun, hierarki induk, tipe kategori, dan saldo normal pembukuan" 
+        :back-url="route('master.chart-of-accounts.index')" 
+    />
 
     <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start;">
         {{-- Form Column --}}
@@ -156,12 +152,10 @@
                         </label>
                     </div>
 
-                    <div style="display:flex; gap:12px; margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
-                        <button type="submit" class="btn btn-primary" style="padding:10px 24px; font-weight:600;">
-                            <i class="fa-solid fa-floppy-disk"></i> {{ isset($chartOfAccount) ? 'Perbarui Akun' : 'Simpan Akun CoA' }}
-                        </button>
-                        <a href="{{ route('master.chart-of-accounts.index') }}" class="btn btn-secondary" style="padding:10px 20px;">Batal</a>
-                    </div>
+                    <x-form-actions 
+                        :cancel-url="route('master.chart-of-accounts.index')" 
+                        :submit-label="isset($chartOfAccount) ? 'Perbarui Akun' : 'Simpan Akun CoA'" 
+                    />
                 </form>
             </div>
         </div>

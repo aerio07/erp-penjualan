@@ -5,17 +5,8 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-rotate-left" style="color: var(--primary); margin-right: 8px;"></i>
-                Rekap Retur per Barang & Analisis Retur Rate
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Pemantauan komprehensif retur pembelian (ke supplier) dan retur penjualan (kondisi baik vs rusak), serta indikator early warning <strong>Retur Rate (%)</strong> terhadap volume barang terjual.
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
+    <x-page-header title="Rekap Retur per Barang & Analisis Retur Rate" subtitle="Pemantauan komprehensif retur pembelian (ke supplier) dan retur penjualan (kondisi baik vs rusak), serta indikator early warning Retur Rate (%) terhadap volume barang terjual.">
+        <x-slot:actions>
             <a href="{{ route('purchase.returns.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-truck-ramp-box"></i> Retur Pembelian
             </a>
@@ -25,8 +16,8 @@
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-4" style="gap: 16px; margin-bottom: 20px;">

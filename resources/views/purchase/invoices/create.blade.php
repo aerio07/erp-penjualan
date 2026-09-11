@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="invForm()">
-    <div class="page-header">
-        <div>
-            <h1>Terbitkan Invoice Pembelian</h1>
-            <p>Pilih <strong>Purchase Order</strong> lalu pilih <strong>1 Laporan Penerimaan Barang (LPB)</strong> — seluruh qty diterima di LPB tersebut akan langsung ditagihkan penuh.</p>
-        </div>
-        <a href="{{ route('purchase.invoices.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Terbitkan Invoice Pembelian" 
+        subtitle="Pilih Purchase Order lalu pilih 1 Laporan Penerimaan Barang (LPB) — seluruh qty diterima di LPB tersebut akan langsung ditagihkan penuh."
+        :back-url="route('purchase.invoices.index')"
+    />
 
     <form method="POST" action="{{ route('purchase.invoices.store') }}">
         @csrf

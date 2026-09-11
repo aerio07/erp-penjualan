@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Produk</h1>
-            <p>Kelola semua master data produk</p>
-        </div>
-        <a href="{{ route('master.products.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Tambah Produk
-        </a>
-    </div>
+    <x-page-header title="Produk" subtitle="Kelola semua master data produk">
+        <x-slot:actions>
+            <a href="{{ route('master.products.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Produk
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('master.products.index')" placeholder="Cari SKU, Nama Produk, Kategori...">
         <select name="category_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
@@ -118,13 +116,6 @@
                                 <a href="{{ route('master.products.edit', $product) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <form method="POST" action="{{ route('master.products.toggle-status', $product) }}" style="display:inline;">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-icon {{ $product->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $product->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $product->is_active ? 'Nonaktifkan Produk' : 'Aktifkan Produk' }}">
-                                        <i class="fa-solid {{ $product->is_active ? 'fa-ban' : 'fa-check' }}"></i>
-                                    </button>
-                                </form>
                                 <button type="button" data-confirm-delete="delete-product-{{ $product->id }}" data-name="{{ $product->name }} ({{ $product->sku }})" class="btn btn-danger btn-sm btn-icon" title="Hapus Produk">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>

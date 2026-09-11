@@ -4,15 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Customer</h1>
-            <p>Kelola semua data pelanggan</p>
-        </div>
-        <a href="{{ route('master.customers.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Tambah Customer
-        </a>
-    </div>
+    <x-page-header title="Customer" subtitle="Kelola semua data pelanggan">
+        <x-slot:actions>
+            <a href="{{ route('master.customers.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Tambah Customer
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     <x-list-filter-bar :action="route('master.customers.index')" placeholder="Cari Kode, Nama Customer, CP, Telepon...">
         <select name="sales_person_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
@@ -120,13 +118,6 @@
                                 <a href="{{ route('master.customers.edit', $c) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
-                                <form method="POST" action="{{ route('master.customers.toggle-status', $c) }}" style="display:inline;">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-icon {{ $c->is_active ? 'btn-secondary' : 'btn-primary' }}" style="{{ $c->is_active ? 'color:#dc2626;' : 'background:#16a34a; border-color:#16a34a;' }}" title="{{ $c->is_active ? 'Nonaktifkan Customer' : 'Aktifkan Customer' }}">
-                                        <i class="fa-solid {{ $c->is_active ? 'fa-ban' : 'fa-check' }}"></i>
-                                    </button>
-                                </form>
                                 <button type="button" data-confirm-delete="del-cust-{{ $c->id }}" data-name="{{ $c->name }} ({{ $c->code }})" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>

@@ -6,28 +6,20 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-book" style="color: var(--primary); margin-right: 8px;"></i>
-                Kartu Hutang: {{ $supplier->name }}
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Buku Pembantu Hutang Usaha (Subsidiary Ledger) · Kode Supplier: <strong style="color: var(--primary);">{{ $supplier->code }}</strong>
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
-            <a href="{{ route('accounting.reports.payables-by-vendor') }}" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-arrow-left"></i> Rekap Vendor
-            </a>
+    <x-page-header 
+        :title="'Kartu Hutang: ' . $supplier->name" 
+        :subtitle="'Buku Pembantu Hutang Usaha (Subsidiary Ledger) &bull; Kode Supplier: ' . $supplier->code"
+        :back-url="route('accounting.reports.payables-by-vendor')"
+    >
+        <x-slot:actions>
             <a href="{{ route('master.suppliers.show', $supplier) }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-building"></i> Detail Supplier
             </a>
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-4" style="gap: 16px; margin-bottom: 20px;">

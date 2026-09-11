@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="journalForm()">
-    <div class="page-header">
-        <div>
-            <h1>Buat Jurnal Umum</h1>
-            <p>Input transaksi penyesuaian/manual double-entry akuntansi</p>
-        </div>
-        <a href="{{ route('accounting.journals.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Buat Jurnal Umum" 
+        subtitle="Input transaksi penyesuaian/manual double-entry akuntansi"
+        :back-url="route('accounting.journals.index')"
+    />
 
     <form method="POST" action="{{ route('accounting.journals.store') }}">
         @csrf
@@ -96,12 +92,11 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <a href="{{ route('accounting.journals.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="!isBalanced">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft Jurnal
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('accounting.journals.index')" 
+            submit-label="Simpan Draft Jurnal" 
+            submit-attrs=":disabled=&quot;!isBalanced&quot; :style=&quot;!isBalanced ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;"
+        />
     </form>
 </div>
 @endsection

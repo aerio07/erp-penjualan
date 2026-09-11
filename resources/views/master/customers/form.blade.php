@@ -4,12 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="{ taxType: '{{ old('tax_type', $customer->tax_type ?? 'non_pkp') }}' }">
-    <div class="page-header">
-        <div><h1>{{ isset($customer) ? 'Edit Customer' : 'Tambah Customer Baru' }}</h1></div>
-        <a href="{{ route('master.customers.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        :title="isset($customer) ? 'Edit Customer' : 'Tambah Customer Baru'" 
+        subtitle="Lengkapi formulir data pelanggan di bawah ini" 
+        :back-url="route('master.customers.index')" 
+    />
 
     <div class="card w-full">
         <div class="card-header"><h3>Informasi Customer</h3></div>
@@ -220,12 +219,10 @@
                     </label>
                 </div>
 
-                <div style="display:flex; gap:12px;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> {{ isset($customer) ? 'Perbarui' : 'Simpan' }}
-                    </button>
-                    <a href="{{ route('master.customers.index') }}" class="btn btn-secondary">Batal</a>
-                </div>
+                <x-form-actions 
+                    :cancel-url="route('master.customers.index')" 
+                    :submit-label="isset($customer) ? 'Perbarui Customer' : 'Simpan Customer'" 
+                />
             </form>
         </div>
     </div>

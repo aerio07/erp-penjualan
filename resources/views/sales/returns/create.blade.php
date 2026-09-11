@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="returnForm()">
-    <div class="page-header">
-        <div>
-            <h1>Buat Retur Penjualan</h1>
-            <p>Pilih bukti pengiriman (Surat Jalan) yang barangnya dikembalikan oleh customer</p>
-        </div>
-        <a href="{{ route('sales.returns.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Buat Retur Penjualan" 
+        subtitle="Pilih bukti pengiriman (Surat Jalan) yang barangnya dikembalikan oleh customer"
+        :back-url="route('sales.returns.index')"
+    />
 
     <form method="POST" action="{{ route('sales.returns.store') }}">
         @csrf
@@ -154,12 +150,12 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedDelivery">
-            <a href="{{ route('sales.returns.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="!hasAnyReturnQty || isFullyPaid">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft Retur
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('sales.returns.index')" 
+            x-show="selectedDelivery" 
+            submit-label="Simpan Draft Retur" 
+            submit-attrs=":disabled=&quot;!hasAnyReturnQty || isFullyPaid&quot; :style=&quot;(!hasAnyReturnQty || isFullyPaid) ? 'opacity:0.6; cursor:not-allowed;' : ''&quot;" 
+        />
     </form>
 </div>
 @endsection

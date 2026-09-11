@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="paymentForm()">
-    <div class="page-header">
-        <div>
-            <h1>Catat Pembayaran Hutang (Cicilan / Pelunasan)</h1>
-            <p>Pilih Invoice Pembelian dan ketik jumlah nominal rupiah yang dibayarkan.</p>
-        </div>
-        <a href="{{ route('purchase.payments.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Catat Pembayaran Hutang" 
+        subtitle="Pilih Invoice Pembelian dan ketik jumlah nominal rupiah yang dibayarkan."
+        :back-url="route('purchase.payments.index')"
+    />
 
     <form method="POST" action="{{ route('purchase.payments.store') }}">
         @csrf

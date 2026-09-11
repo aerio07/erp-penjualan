@@ -4,12 +4,10 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Log Audit Mutasi Stok</h1>
-            <p>Jejak histori mutasi barang di seluruh gudang</p>
-        </div>
-    </div>
+    <x-page-header
+        title="Log Audit Mutasi Stok"
+        subtitle="Jejak histori mutasi barang di seluruh gudang"
+    />
 
     <x-list-filter-bar :action="route('inventory.movements.index')" placeholder="Cari SKU, Nama Produk, Catatan..." :showDateFilter="true">
         <select name="product_id" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">

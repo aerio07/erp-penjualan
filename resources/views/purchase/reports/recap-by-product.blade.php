@@ -5,17 +5,11 @@
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
-    <div class="page-header" style="margin-bottom: 20px;">
-        <div>
-            <h1 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">
-                <i class="fa-solid fa-boxes-packing" style="color: var(--primary); margin-right: 8px;"></i>
-                Rekap Pembelian per Barang
-            </h1>
-            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">
-                Analisis riwayat pengadaan produk dari tagihan Invoice Pembelian. Pantau volume belanja, total pengeluaran, dan tren harga beli rata-rata.
-            </p>
-        </div>
-        <div style="display: flex; gap: 8px;">
+    <x-page-header 
+        title="Rekap Pembelian per Barang" 
+        subtitle="Analisis riwayat pengadaan produk dari tagihan Invoice Pembelian. Pantau volume belanja, total pengeluaran, dan tren harga beli rata-rata."
+    >
+        <x-slot:actions>
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-cart-shopping"></i> Purchase Order
             </a>
@@ -25,8 +19,8 @@
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-3" style="gap: 16px; margin-bottom: 20px;">

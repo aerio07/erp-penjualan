@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="grnForm()">
-    <div class="page-header">
-        <div>
-            <h1>Catat Penerimaan Barang</h1>
-            <p>Input total barang fisik yang datang dari supplier dan jumlah yang rusak. Qty kondisi baik yang masuk stok akan dihitung otomatis.</p>
-        </div>
-        <a href="{{ route('purchase.goods-receipts.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Catat Penerimaan Barang (GRN)" 
+        subtitle="Input total barang fisik yang datang dari supplier dan jumlah yang rusak. Qty kondisi baik yang masuk stok akan dihitung otomatis."
+        :back-url="route('purchase.goods-receipts.index')"
+    />
 
     <form method="POST" action="{{ route('purchase.goods-receipts.store') }}" @submit="return validateForm($event)">
         @csrf
@@ -287,13 +283,16 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;" x-show="selectedPo">
-            <a href="{{ route('purchase.goods-receipts.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary" :disabled="hasExceededAllocation || totalPhysicalQty <= 0 || hasInvalidRejection">
+        <x-form-actions
+            x-show="selectedPo"
+            :cancel-url="route('purchase.goods-receipts.index')"
+            submit-icon=""
+            submit-attrs=":disabled=&quot;hasExceededAllocation || totalPhysicalQty &lt;= 0 || hasInvalidRejection&quot;">
+            <x-slot:submitLabel>
                 <i class="fa-solid" :class="autoGenerateInvoice ? 'fa-file-invoice-dollar' : 'fa-boxes-packing'"></i>
-                <span x-text="autoGenerateInvoice ? 'Simpan Penerimaan & Terbitkan Faktur Pembelian' : 'Simpan & Update Stok Gudang'"></span>
-            </button>
-        </div>
+                <span x-text="autoGenerateInvoice ? 'Simpan Penerimaan &amp; Terbitkan Faktur Pembelian' : 'Simpan &amp; Update Stok Gudang'"></span>
+            </x-slot:submitLabel>
+        </x-form-actions>
     </form>
 </div>
 @endsection

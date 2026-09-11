@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Mulai Stock Opname</h1>
-            <p>Input fisik persediaan produk per gudang</p>
-        </div>
-        <a href="{{ route('inventory.opname.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Mulai Stock Opname" 
+        subtitle="Input fisik persediaan produk per gudang" 
+        :back-url="route('inventory.opname.index')"
+    />
 
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header"><h3>Pilih Gudang</h3></div>
@@ -126,12 +122,10 @@
             </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:12px;">
-            <a href="{{ route('inventory.opname.index') }}" class="btn btn-secondary">Batal</a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft Opname
-            </button>
-        </div>
+        <x-form-actions 
+            :back-url="route('inventory.opname.index')" 
+            submit-label="Simpan Draft Opname" 
+        />
     </form>
     @endif
 </div>

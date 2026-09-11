@@ -4,15 +4,12 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Detail Pembayaran Hutang</h1>
-            <p>Invoice Ref: <a href="{{ route('purchase.invoices.show', $payment->purchaseInvoice) }}" style="color:var(--primary); font-weight:600;">{{ $payment->purchaseInvoice->invoice_number }}</a></p>
-        </div>
-        <a href="{{ route('purchase.payments.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-detail-header 
+        title="Detail Pembayaran Hutang" 
+        :subtitle="'Invoice Ref: ' . ($payment->purchaseInvoice->invoice_number ?? '-')"
+        status="done"
+        :back-url="route('purchase.payments.index')"
+    />
 
     <div class="card w-full">
         <div class="card-header">

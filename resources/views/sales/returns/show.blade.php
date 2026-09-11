@@ -4,12 +4,16 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $return->return_number }}</h1>
-            <p>Customer: <strong>{{ $return->customer->name ?? '-' }}</strong> · Ref Surat Jalan: {{ $return->delivery->delivery_number ?? '-' }}</p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$return->return_number"
+        :back-url="route('sales.returns.index')"
+        :badge-text="ucfirst($return->status)"
+        :badge-class="'badge-' . ($return->status === 'completed' ? 'done' : ($return->status === 'received' ? 'confirmed' : 'pending'))"
+    >
+        <x-slot:subtitle>
+            Customer: <strong>{{ $return->customer->name ?? '-' }}</strong> &bull; Ref Surat Jalan: {{ $return->delivery->delivery_number ?? '-' }}
+        </x-slot:subtitle>
+        <x-slot:actions>
             @if($return->status === 'draft')
             <form method="POST" action="{{ route('sales.returns.receive', $return) }}" style="display:inline;">
                 @csrf @method('PATCH')
@@ -25,11 +29,8 @@
                 </button>
             </form>
             @endif
-            <a href="{{ route('sales.returns.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

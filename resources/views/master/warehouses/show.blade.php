@@ -4,16 +4,19 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $warehouse->name }}</h1>
-            <p>Kode: <strong style="color:var(--primary);">{{ $warehouse->code }}</strong> &nbsp;·&nbsp;
-                <span class="badge {{ $warehouse->is_active ? 'badge-done' : 'badge-cancelled' }}">
-                    {{ $warehouse->is_active ? 'Aktif' : 'Nonaktif' }}
-                </span>
-            </p>
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+    <!-- Header (Template 3) -->
+    <x-detail-header
+        :title="$warehouse->name"
+        :back-url="route('master.warehouses.index')">
+        <x-slot:badge>
+            <span class="badge {{ $warehouse->is_active ? 'badge-done' : 'badge-cancelled' }}" style="font-size:11px; padding:3px 8px;">
+                {{ $warehouse->is_active ? 'Aktif' : 'Nonaktif' }}
+            </span>
+        </x-slot:badge>
+        <x-slot:subtitle>
+            Kode Gudang: <strong style="color:var(--primary);">{{ $warehouse->code }}</strong>
+        </x-slot:subtitle>
+        <x-slot:actions>
             <form method="POST" action="{{ route('master.warehouses.toggle-status', $warehouse) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin {{ $warehouse->is_active ? 'menonaktifkan' : 'mengaktifkan' }} gudang ini?');">
                 @csrf
                 @method('PATCH')
@@ -29,7 +32,7 @@
             </form>
 
             <a href="{{ route('master.warehouses.edit', $warehouse) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
 
             <button type="button" data-confirm-delete="del-wh-show" data-name="{{ $warehouse->name }} ({{ $warehouse->code }})" class="btn btn-danger" title="Hapus Gudang">
@@ -39,12 +42,8 @@
                 @csrf
                 @method('DELETE')
             </form>
-
-            <a href="{{ route('master.warehouses.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     @if($warehouse->address)
     <div class="card" style="margin-bottom:20px;">

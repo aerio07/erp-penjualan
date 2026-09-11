@@ -4,15 +4,11 @@
 
 @section('content')
 <div class="animate-in" x-data="returnForm()">
-    <div class="page-header">
-        <div>
-            <h1>Buat Retur Pembelian</h1>
-            <p>Pilih bukti Penerimaan Barang (GRN) yang barangnya akan dikembalikan ke supplier</p>
-        </div>
-        <a href="{{ route('purchase.returns.index') }}" class="btn btn-secondary">
-            <i class="fa-solid fa-arrow-left"></i> Kembali
-        </a>
-    </div>
+    <x-page-header 
+        title="Buat Retur Pembelian" 
+        subtitle="Pilih bukti Penerimaan Barang (GRN) yang barangnya akan dikembalikan ke supplier"
+        :back-url="route('purchase.returns.index')"
+    />
 
     <form method="POST" action="{{ route('purchase.returns.store') }}">
         @csrf

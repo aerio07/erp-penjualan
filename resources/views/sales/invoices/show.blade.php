@@ -4,18 +4,20 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $invoice->invoice_number }}</h1>
-            <p>
-                Ref SO: <a href="{{ route('sales.orders.show', $invoice->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->salesOrder->so_number }}</a>
-                @if($invoice->delivery)
-                    · Ref Surat Jalan: <a href="{{ route('sales.deliveries.show', $invoice->delivery) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->delivery->delivery_number }}</a>
-                @endif
-                · Customer: <strong>{{ $invoice->salesOrder->customer->name ?? '-' }}</strong>
-            </p>
-        </div>
-        <div style="display:flex; gap:8px;">
+    <x-detail-header 
+        :title="$invoice->invoice_number"
+        :back-url="route('sales.invoices.index')"
+        :badge-text="ucfirst($invoice->status)"
+        :badge-class="'badge-' . $invoice->status"
+    >
+        <x-slot:subtitle>
+            Ref SO: <a href="{{ route('sales.orders.show', $invoice->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->salesOrder->so_number }}</a>
+            @if($invoice->delivery)
+                &bull; Ref Surat Jalan: <a href="{{ route('sales.deliveries.show', $invoice->delivery) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->delivery->delivery_number }}</a>
+            @endif
+            &bull; Customer: <strong>{{ $invoice->salesOrder->customer->name ?? '-' }}</strong>
+        </x-slot:subtitle>
+        <x-slot:actions>
             @if($invoice->outstanding_amount > 0)
             <a href="{{ route('sales.payments.create') }}?invoice_id={{ $invoice->id }}" class="btn btn-success">
                 <i class="fa-solid fa-hand-holding-dollar"></i> Terima Pembayaran Piutang
@@ -24,11 +26,8 @@
             <a href="{{ route('pdf.sales-invoice', $invoice) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF Invoice
             </a>
-            <a href="{{ route('sales.invoices.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">

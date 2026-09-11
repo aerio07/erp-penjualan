@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>Transfer Antar Gudang</h1>
-            <p>Pindahkan stok produk antar lokasi gudang perusahaan</p>
-        </div>
-        <a href="{{ route('inventory.transfers.create') }}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> Buat Transfer Baru
-        </a>
-    </div>
+    <x-page-header
+        title="Transfer Antar Gudang"
+        subtitle="Pindahkan stok produk antar lokasi gudang perusahaan">
+        <x-slot:actions>
+            <a href="{{ route('inventory.transfers.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Buat Transfer Baru
+            </a>
+        </x-slot:actions>
+    </x-page-header>
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('inventory.transfers.index')" placeholder="Cari No. Transfer, Gudang, Catatan..." :showDateFilter="true">

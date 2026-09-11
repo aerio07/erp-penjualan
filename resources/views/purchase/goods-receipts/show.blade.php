@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <div class="page-header">
-        <div>
-            <h1>{{ $goodsReceipt->receipt_number }}</h1>
-            <p>Penerimaan untuk PO: <a href="{{ route('purchase.orders.show', $goodsReceipt->purchaseOrder) }}" style="color:var(--primary); font-weight:600;">{{ $goodsReceipt->purchaseOrder->po_number }}</a></p>
-        </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <x-detail-header 
+        :title="$goodsReceipt->receipt_number" 
+        :subtitle="'Penerimaan untuk PO: ' . ($goodsReceipt->purchaseOrder->po_number ?? '-')"
+        status="done"
+        :back-url="route('purchase.goods-receipts.index')"
+    >
+        <x-slot:actions>
             @if(!$goodsReceipt->is_invoiced)
             <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Lempar ke Invoice / Buat Tagihan
@@ -21,12 +22,8 @@
                 <i class="fa-solid fa-rotate-left"></i> Buat Retur Pembelian
             </a>
             @endif
-
-            <a href="{{ route('purchase.goods-receipts.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar
-            </a>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">
