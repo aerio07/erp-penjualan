@@ -141,16 +141,29 @@
             }
         }
 
-        /* Ensure sidebar links and buttons always have consistent text colors */
+        /* Ensure sidebar links and buttons always have high-contrast text colors */
         aside nav a, aside nav button {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.86) !important;
             text-decoration: none;
+            transition: all 0.15s ease !important;
         }
         aside nav a:hover, aside nav button:hover {
             color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.08) !important;
         }
         aside nav a.font-bold, aside nav a.bg-\[\#1b2e52\] {
             color: #ffffff !important;
+            background-color: #1b2e52 !important;
+            box-shadow: inset 3px 0 0 0 #38bdf8 !important;
+        }
+        .sidebar-section-title {
+            color: #cbd5e1 !important; /* Slate-300: High contrast on navy background */
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.08em !important;
+            text-transform: uppercase !important;
+            padding: 16px 16px 6px 16px !important;
+            display: block !important;
         }
 
         main, main.pt-\[56px\] {
@@ -986,7 +999,7 @@
             </a>
 
             <!-- SECTION 1: CORE OPERATIONS -->
-            <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Core Operations</div>
+            <div class="sidebar-section-title">Core Operations</div>
 
             <!-- Master Data Group -->
             @php $isMasterRoute = request()->is('master/*'); @endphp
@@ -1121,7 +1134,7 @@
 
             <!-- SECTION 2: FINANCE & ACCOUNTING (Hanya Admin & Finance) -->
             @if($isAdmin || $isFinance)
-            <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Finance</div>
+            <div class="sidebar-section-title">Finance & Akuntansi</div>
 
             @php 
                 $isAccountingRoute = request()->is('accounting/*');
@@ -1217,7 +1230,7 @@
             @php
                 $pendingApprovalCount = \App\Models\ApprovalRequest::where('status', 'pending')->count();
             @endphp
-            <div class="mt-3 mb-1 px-4 text-[10px] uppercase tracking-widest text-white/40 font-bold">Otorisasi</div>
+            <div class="sidebar-section-title">Otorisasi</div>
             <a href="{{ route('approvals.index') }}" 
                class="flex items-center justify-between px-4 py-2 rounded {{ request()->routeIs('approvals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
                 <div class="flex items-center">
