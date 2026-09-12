@@ -29,16 +29,13 @@
     <style>
         [x-cloak] { display: none !important; }
 
-        /* Critical Layout CSS: Instant rendering for Sidebar & Navbar */
-        aside, aside.fixed, #erp-sidebar {
+        /* Critical Layout CSS: Responsive Off-Canvas Drawer & Collapsible Sidebar */
+        aside, #erp-sidebar {
             position: fixed !important;
-            left: 0 !important;
             top: 0 !important;
             bottom: 0 !important;
             height: 100vh !important;
             width: 240px !important;
-            min-width: 240px !important;
-            max-width: 240px !important;
             background-color: #03193c !important;
             border-right: 1px solid #1b2e52 !important;
             z-index: 50 !important;
@@ -46,12 +43,102 @@
             flex-direction: column !important;
             overflow-y: auto !important;
             box-sizing: border-box !important;
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
 
-        .erp-main-wrapper, .pl-\[240px\] {
-            padding-left: 240px !important;
-            box-sizing: border-box !important;
-            min-height: 100vh !important;
+        .erp-backdrop {
+            position: fixed !important;
+            inset: 0 !important;
+            background-color: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(2px) !important;
+            -webkit-backdrop-filter: blur(2px) !important;
+            z-index: 45 !important;
+            transition: opacity 0.25s ease !important;
+        }
+
+        /* Mobile & Tablet (< 1024px): Off-Canvas Drawer */
+        @media (max-width: 1023.98px) {
+            aside, #erp-sidebar {
+                left: 0 !important;
+                transform: translateX(-100%) !important;
+                box-shadow: none !important;
+            }
+            body.mobile-sidebar-open aside,
+            body.mobile-sidebar-open #erp-sidebar {
+                transform: translateX(0) !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+            }
+            .erp-main-wrapper, .pl-\[240px\] {
+                padding-left: 0 !important;
+                min-height: 100vh !important;
+                box-sizing: border-box !important;
+                transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            header, header.fixed, #erp-header {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 56px !important;
+                min-height: 56px !important;
+                background-color: #ffffff !important;
+                border-bottom: 1px solid #E2E8F0 !important;
+                z-index: 40 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding-left: 0.875rem !important;
+                padding-right: 0.875rem !important;
+                box-sizing: border-box !important;
+                transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+        }
+
+        /* Desktop (>= 1024px): Docked Sidebar & Collapsible */
+        @media (min-width: 1024px) {
+            aside, #erp-sidebar {
+                left: 0 !important;
+                transform: translateX(0) !important;
+            }
+            body.desktop-sidebar-collapsed aside,
+            body.desktop-sidebar-collapsed #erp-sidebar {
+                transform: translateX(-100%) !important;
+            }
+
+            .erp-main-wrapper, .pl-\[240px\] {
+                padding-left: 240px !important;
+                min-height: 100vh !important;
+                box-sizing: border-box !important;
+                transition: padding-left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            body.desktop-sidebar-collapsed .erp-main-wrapper,
+            body.desktop-sidebar-collapsed .pl-\[240px\] {
+                padding-left: 0 !important;
+            }
+
+            header, header.fixed, #erp-header {
+                position: fixed !important;
+                top: 0 !important;
+                left: 240px !important;
+                right: 0 !important;
+                height: 56px !important;
+                min-height: 56px !important;
+                background-color: #ffffff !important;
+                border-bottom: 1px solid #E2E8F0 !important;
+                z-index: 40 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+                box-sizing: border-box !important;
+                transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            body.desktop-sidebar-collapsed header,
+            body.desktop-sidebar-collapsed header.fixed,
+            body.desktop-sidebar-collapsed #erp-header {
+                left: 0 !important;
+            }
         }
 
         /* Ensure sidebar links and buttons always have consistent text colors */
@@ -64,24 +151,6 @@
         }
         aside nav a.font-bold, aside nav a.bg-\[\#1b2e52\] {
             color: #ffffff !important;
-        }
-
-        header, header.fixed, #erp-header {
-            position: fixed !important;
-            top: 0 !important;
-            left: 240px !important;
-            right: 0 !important;
-            height: 56px !important;
-            min-height: 56px !important;
-            background-color: #ffffff !important;
-            border-bottom: 1px solid #E2E8F0 !important;
-            z-index: 40 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
-            box-sizing: border-box !important;
         }
 
         main, main.pt-\[56px\] {
@@ -849,12 +918,51 @@
     </style>
     @stack('styles')
 </head>
-<body class="bg-[#F5F6F8] font-body-base text-[#0e1b35] min-h-screen">
+<body 
+    x-data="{ 
+        mobileSidebarOpen: false, 
+        desktopSidebarOpen: localStorage.getItem('fs_sidebar_collapsed') !== 'true',
+        toggleSidebar() {
+            if (window.innerWidth < 1024) {
+                this.mobileSidebarOpen = !this.mobileSidebarOpen;
+            } else {
+                this.desktopSidebarOpen = !this.desktopSidebarOpen;
+                localStorage.setItem('fs_sidebar_collapsed', !this.desktopSidebarOpen);
+            }
+        },
+        closeMobile() {
+            this.mobileSidebarOpen = false;
+        }
+    }"
+    :class="{ 
+        'mobile-sidebar-open': mobileSidebarOpen, 
+        'desktop-sidebar-collapsed': !desktopSidebarOpen 
+    }"
+    @keydown.escape.window="closeMobile()"
+    class="bg-[#F5F6F8] font-body-base text-[#0e1b35] min-h-screen"
+>
 
     <!-- ========================================================= -->
-    <!-- SIDEBAR NAVIGATION (240px Fixed Navy #03193c) -->
+    <!-- MOBILE & TABLET BACKDROP OVERLAY -->
     <!-- ========================================================= -->
-    <aside class="fixed left-0 top-0 h-full w-[240px] bg-[#03193c] z-50 flex flex-col overflow-y-auto border-r border-[#1b2e52]">
+    <div 
+        x-show="mobileSidebarOpen" 
+        x-cloak 
+        x-transition:enter="transition-opacity ease-linear duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition-opacity ease-linear duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @click="closeMobile()" 
+        class="erp-backdrop lg:hidden"
+        aria-hidden="true"
+    ></div>
+
+    <!-- ========================================================= -->
+    <!-- SIDEBAR NAVIGATION (240px Navy #03193c) -->
+    <!-- ========================================================= -->
+    <aside id="erp-sidebar" class="fixed left-0 top-0 h-full w-[240px] bg-[#03193c] z-50 flex flex-col overflow-y-auto border-r border-[#1b2e52]">
         <!-- Brand Header -->
         <a href="{{ route('dashboard') }}" class="flex items-center justify-center px-6 h-[68px] border-b border-[#1b2e52] mb-4 hover:opacity-90 transition-opacity">
             <img src="{{ asset('assets/FlashSuitePro - white.png') }}" alt="FlashSuite Pro" class="h-[21px] w-auto max-w-[172px] object-contain">
@@ -1134,30 +1242,46 @@
     </aside>
 
     <!-- ========================================================= -->
-    <!-- TOP HEADER BAR (Fixed 56px #FFFFFF) -->
+    <!-- TOP HEADER BAR & MAIN CONTENT WRAPPER -->
     <!-- ========================================================= -->
-    <div class="pl-[240px]">
-        <header class="fixed top-0 left-[240px] right-0 h-[56px] bg-white border-b border-[#E2E8F0] z-40 flex items-center justify-between px-6">
-            <!-- Breadcrumbs -->
-            <div class="flex items-center gap-2 text-[#6B7280] text-sm font-sans whitespace-nowrap min-w-0">
-                <span class="material-symbols-outlined text-base shrink-0">home</span>
-                <span class="material-symbols-outlined text-xs shrink-0">chevron_right</span>
-                <span class="shrink-0 font-medium">FlashSuite Pro</span>
-                <span class="material-symbols-outlined text-xs shrink-0">chevron_right</span>
-                <span class="text-[#03193c] font-bold truncate">@yield('page-title', 'Overview')</span>
+    <div class="erp-main-wrapper pl-[240px]">
+        <header id="erp-header" class="fixed top-0 left-[240px] right-0 h-[56px] bg-white border-b border-[#E2E8F0] z-40 flex items-center justify-between px-3 sm:px-6">
+            <!-- Left Options: Hamburger Toggle & Breadcrumbs -->
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <!-- Hamburger Toggle Button (Mobile/Tablet & Desktop) -->
+                <button 
+                    type="button" 
+                    @click="toggleSidebar()" 
+                    class="p-2 -ml-1 text-[#44474e] hover:text-[#03193c] hover:bg-[#F5F6F8] rounded-lg transition-colors flex items-center justify-center shrink-0 cursor-pointer focus:outline-none"
+                    title="Toggle Sidebar Menu"
+                    aria-label="Toggle Sidebar Menu"
+                >
+                    <span class="material-symbols-outlined text-[22px]">menu</span>
+                </button>
+
+                <!-- Breadcrumbs -->
+                <div class="flex items-center gap-1.5 sm:gap-2 text-[#6B7280] text-xs sm:text-sm font-sans whitespace-nowrap min-w-0 overflow-hidden">
+                    <a href="{{ route('dashboard') }}" class="flex items-center text-[#6B7280] hover:text-[#03193c] transition-colors shrink-0" title="Dashboard">
+                        <span class="material-symbols-outlined text-base">home</span>
+                    </a>
+                    <span class="material-symbols-outlined text-xs shrink-0 opacity-40">chevron_right</span>
+                    <span class="shrink-0 font-medium hidden md:inline">FlashSuite Pro</span>
+                    <span class="material-symbols-outlined text-xs shrink-0 opacity-40 hidden md:inline">chevron_right</span>
+                    <span class="text-[#03193c] font-bold truncate">@yield('page-title', 'Overview')</span>
+                </div>
             </div>
 
             <!-- Right Options -->
-            <div class="flex items-center gap-6">
-                <button class="relative text-[#44474e] hover:text-[#03193c] transition-colors">
+            <div class="flex items-center gap-3 sm:gap-6">
+                <button class="relative text-[#44474e] hover:text-[#03193c] transition-colors p-1" title="Notifikasi">
                     <span class="material-symbols-outlined">notifications</span>
-                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
+                    <span class="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
                 </button>
-                <div class="h-8 w-px bg-[#E2E8F0]"></div>
+                <div class="h-6 sm:h-8 w-px bg-[#E2E8F0]"></div>
                 
                 <!-- Profile Dropdown -->
                 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-                    <button type="button" @click="open = !open" class="flex items-center gap-3 cursor-pointer">
+                    <button type="button" @click="open = !open" class="flex items-center gap-2 sm:gap-3 cursor-pointer">
                         <div class="text-right hidden sm:block">
                             <div class="text-sm font-bold text-[#0e1b35]">{{ auth()->user()->name }}</div>
                             <div class="text-[10px] text-[#44474e] uppercase tracking-tighter">{{ auth()->user()->role }}</div>
@@ -1175,7 +1299,7 @@
                         <hr class="border-[#E2E8F0] my-1">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-[#ba1a1a] hover:bg-red-50 flex items-center gap-2">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-[#ba1a1a] hover:bg-red-50 flex items-center gap-2 cursor-pointer">
                                 <span class="material-symbols-outlined text-base">logout</span> Logout
                             </button>
                         </form>
@@ -1184,9 +1308,9 @@
             </div>
         </header>
 
-        <!-- Main Content Area with Standard 24px Padding -->
+        <!-- Main Content Area with Standard Padding -->
         <main class="relative pt-[56px] min-h-screen bg-[#F5F6F8]">
-            <div class="p-6 max-w-7xl mx-auto">
+            <div class="p-4 sm:p-6 max-w-7xl mx-auto">
                 @if(session('success'))
                     <div class="bg-[#DCFCE3] border border-[#166534]/20 text-[#166534] px-4 py-3 rounded-lg mb-4 flex items-center gap-2 text-sm font-medium">
                         <span class="material-symbols-outlined text-base">check_circle</span> {{ session('success') }}
