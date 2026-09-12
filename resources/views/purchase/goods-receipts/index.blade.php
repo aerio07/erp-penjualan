@@ -1,15 +1,15 @@
 @extends('layouts.app')
 @section('title', 'Penerimaan Barang')
-@section('page-title', 'Penerimaan Barang (GRN)')
+@section('page-title', 'Penerimaan Barang')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Penerimaan Barang (GRN)"
+        title="Penerimaan Barang"
         subtitle="Catat penerimaan barang dari supplier berdasarkan Purchase Order">
         <x-slot:actions>
             <a href="{{ route('purchase.goods-receipts.create') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Catat Penerimaan
+                <i class="fa-solid fa-plus"></i> Buat PB
             </a>
         </x-slot:actions>
     </x-page-header>
