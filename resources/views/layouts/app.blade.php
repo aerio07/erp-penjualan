@@ -868,24 +868,28 @@
             padding: 24px !important;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
             border: 1px solid #E2E8F0 !important;
-            width: 440px !important;
-            max-width: 90vw !important;
+            width: 480px !important;
+            max-width: 92vw !important;
+            box-sizing: border-box !important;
         }
         .swal2-popup.erp-swal-modal .swal2-title {
             font-family: 'Public Sans', sans-serif !important;
-            font-size: 1.25rem !important;
+            font-size: 1.2rem !important;
             font-weight: 700 !important;
             color: #0e1b35 !important;
             padding: 0 !important;
-            margin-bottom: 6px !important;
+            margin-bottom: 8px !important;
+            line-height: 1.35 !important;
         }
         .swal2-popup.erp-swal-modal .swal2-html-container {
             font-family: 'Inter', sans-serif !important;
             font-size: 0.875rem !important;
             color: #475569 !important;
-            margin: 0 !important;
+            margin: 0 0 8px 0 !important;
             padding: 0 !important;
             line-height: 1.5 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         .swal2-popup.erp-swal-modal .swal2-icon {
             margin: 4px auto 16px !important;
@@ -898,7 +902,7 @@
             justify-content: center !important;
         }
         .swal2-popup.erp-swal-modal .swal2-confirm {
-            background-color: #dc2626 !important;
+            background-color: #dc2626;
             color: #ffffff !important;
             border-radius: 8px !important;
             font-size: 0.875rem !important;
@@ -910,9 +914,18 @@
             align-items: center !important;
             gap: 6px !important;
             cursor: pointer !important;
+            transition: background-color 0.15s ease !important;
         }
         .swal2-popup.erp-swal-modal .swal2-confirm:hover {
             background-color: #b91c1c !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-confirm.btn-success,
+        .swal2-popup.erp-swal-modal .swal2-confirm.swal2-confirm-success {
+            background-color: #16a34a !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-confirm.btn-success:hover,
+        .swal2-popup.erp-swal-modal .swal2-confirm.swal2-confirm-success:hover {
+            background-color: #15803d !important;
         }
         .swal2-popup.erp-swal-modal .swal2-cancel {
             background-color: #f1f5f9 !important;
@@ -923,10 +936,77 @@
             font-weight: 600 !important;
             padding: 10px 20px !important;
             cursor: pointer !important;
+            transition: background-color 0.15s ease !important;
         }
         .swal2-popup.erp-swal-modal .swal2-cancel:hover {
             background-color: #e2e8f0 !important;
             color: #0f172a !important;
+        }
+
+        /* SweetAlert2 Input, Label & Textarea Fixes (Prevents Margin Overlap & Horizontal Overflow) */
+        .swal2-popup .swal2-input-label,
+        .swal2-popup.erp-swal-modal .swal2-input-label {
+            display: block !important;
+            text-align: left !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.8125rem !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+            text-transform: none !important;
+            letter-spacing: normal !important;
+            margin: 12px 0 6px 0 !important;
+            width: 100% !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+        .swal2-popup .swal2-textarea,
+        .swal2-popup.erp-swal-modal .swal2-textarea,
+        .swal2-popup textarea.swal2-textarea {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            min-height: 100px !important;
+            height: auto !important;
+            padding: 10px 14px !important;
+            font-size: 0.875rem !important;
+            font-family: 'Inter', sans-serif !important;
+            color: #0e1b35 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 8px !important;
+            line-height: 1.5 !important;
+            resize: vertical !important;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+        }
+        .swal2-popup .swal2-textarea:focus,
+        .swal2-popup.erp-swal-modal .swal2-textarea:focus,
+        .swal2-popup textarea.swal2-textarea:focus {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+            outline: none !important;
+            background-color: #ffffff !important;
+        }
+        .swal2-popup .swal2-validation-message,
+        .swal2-popup.erp-swal-modal .swal2-validation-message {
+            margin: 8px 0 0 0 !important;
+            padding: 8px 12px !important;
+            background: #fef2f2 !important;
+            color: #991b1b !important;
+            font-size: 0.8125rem !important;
+            font-weight: 500 !important;
+            border-radius: 6px !important;
+            border: 1px solid #fecaca !important;
+            text-align: left !important;
+            align-items: center !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .swal2-popup .swal2-validation-message[style*="display: none"],
+        .swal2-popup:not(.swal2-has-validation-message) .swal2-validation-message {
+            display: none !important;
         }
     </style>
     @stack('styles')

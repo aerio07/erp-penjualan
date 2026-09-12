@@ -159,12 +159,16 @@ function approveApproval(id, docNum, amount) {
         icon: 'question',
         iconColor: '#16a34a',
         showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-check"></i> Ya, Setujui',
-        confirmButtonColor: '#16a34a',
+        confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px;"></i> Ya, Setujui',
         cancelButtonText: 'Batal',
-        cancelButtonColor: '#64748b',
         reverseButtons: true,
         focusConfirm: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
             document.getElementById('approve-form-' + id).submit();
@@ -174,23 +178,30 @@ function approveApproval(id, docNum, amount) {
 
 function rejectApproval(id, docNum) {
     Swal.fire({
-        title: 'Tolak Approval ' + docNum,
+        title: 'Tolak Approval Dokumen',
+        html: `<div style="font-size:13.5px; color:#64748b; margin-top:2px; margin-bottom:4px;">Dokumen: <strong style="color:#0e1b35;">${docNum}</strong></div>`,
         input: 'textarea',
         inputLabel: 'Alasan Penolakan',
-        inputPlaceholder: 'Masukkan alasan penolakan...',
+        inputPlaceholder: 'Tuliskan alasan penolakan dokumen...',
         inputAttributes: { 'aria-label': 'Alasan Penolakan' },
         showCancelButton: true,
-        confirmButtonText: 'Ya, Tolak Dokumen',
-        confirmButtonColor: '#ef4444',
+        confirmButtonText: '<i class="fa-solid fa-xmark" style="margin-right:6px;"></i> Ya, Tolak Dokumen',
         cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false,
         inputValidator: (value) => {
-            if (!value) {
-                return 'Alasan penolakan wajib diisi!'
+            if (!value || !value.trim()) {
+                return 'Alasan penolakan wajib diisi!';
             }
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            document.getElementById('rejection-reason-' + id).value = result.value;
+            document.getElementById('rejection-reason-' + id).value = result.value.trim();
             document.getElementById('reject-form-' + id).submit();
         }
     });
