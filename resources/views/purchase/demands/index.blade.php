@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Kebutuhan Pengadaan (Procurement Demand Hub)')
-@section('page-title', 'Kebutuhan Pengadaan Barang')
+@section('title', 'Purhcase Request')
+@section('page-title', 'Purchase Request')
 
 @section('content')
 <div class="animate-in">
     {{-- Header --}}
     <x-page-header 
-        title="Pusat Kebutuhan Pengadaan (Procurement Demands)" 
+        title="Purchase Request" 
         subtitle="Pemantauan real-time defisit stok dari Sales Order (Backorder) untuk konsolidasi pembuatan Purchase Order (PO)."
     >
         <x-slot:action>
