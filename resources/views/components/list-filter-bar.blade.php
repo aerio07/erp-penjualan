@@ -16,7 +16,7 @@
         'warehouse_id', 'from_warehouse_id', 'to_warehouse_id', 'product_id', 'type', 
         'method', 'qc_status', 'condition_status', 'resolution_type', 'approvable_type', 
         'category', 'category_id', 'is_active', 'sales_person_id', 'tax_type', 'is_invoiced',
-        'payment_status', 'billing_status', 'acquisition_type',
+        'payment_status', 'billing_status', 'acquisition_type', 'days', 'period_months',
         $dateFromParam, $dateToParam
     ]);
 @endphp
@@ -172,7 +172,7 @@
     border-radius: 6px !important;
     background-color: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
-    padding: 0 10px !important;
+    padding: 0 28px 0 10px !important;
     margin-bottom: 0 !important;
     box-sizing: border-box !important;
     flex: 1 1 140px !important;

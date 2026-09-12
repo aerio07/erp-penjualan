@@ -26,37 +26,19 @@
 </div>
 
 <div class="content-body" style="display: flex; flex-direction: column; gap: 20px;">
-    {{-- Filter Bar --}}
-    <div class="card" style="padding: 16px 20px; margin: 0;">
-        <form method="GET" action="{{ route('accounting.reports.receivables-upcoming') }}" style="display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 220px;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block;">
-                    Cari No. Invoice / Customer
-                </label>
-                <input type="text" name="q" value="{{ $search }}" placeholder="Ketik nomor invoice atau nama pelanggan..." class="form-control">
-            </div>
-
-            <div style="width: 200px;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block;">
-                    Rentang Jatuh Tempo
-                </label>
-                <select name="days" class="form-control" onchange="this.form.submit()">
-                    <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 Hari ke Depan (1 Minggu)</option>
-                    <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 Hari ke Depan (2 Minggu)</option>
-                    <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 Hari ke Depan (1 Bulan)</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="height: 38px;">
-                <i class="fa-solid fa-filter"></i> Filter
-            </button>
-            @if($search || $days != 7)
-            <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="btn btn-secondary" style="height: 38px;">
-                Reset
-            </a>
-            @endif
-        </form>
-    </div>
+    {{-- Filter Bar Standar --}}
+    <x-list-filter-bar 
+        :action="route('accounting.reports.receivables-upcoming')" 
+        placeholder="Ketik nomor invoice atau nama pelanggan..."
+        :showDateFilter="false"
+        :showPerPage="false"
+    >
+        <select name="days" class="form-control" style="flex: 0 1 240px; min-width: 220px; cursor: pointer;">
+            <option value="7" {{ $days == 7 ? 'selected' : '' }}>7 Hari ke Depan (1 Minggu)</option>
+            <option value="14" {{ $days == 14 ? 'selected' : '' }}>14 Hari ke Depan (2 Minggu)</option>
+            <option value="30" {{ $days == 30 ? 'selected' : '' }}>30 Hari ke Depan (1 Bulan)</option>
+        </select>
+    </x-list-filter-bar>
 
     {{-- Executive Summary KPI Cards --}}
     <div class="grid grid-3" style="gap: 16px;">

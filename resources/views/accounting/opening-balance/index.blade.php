@@ -3,67 +3,7 @@
 @section('page-title', 'Saldo Awal Neraca')
 
 @section('content')
-<div class="animate-in flex flex-col gap-6" x-data="{
-    cutOffDate: '{{ $cutOffDate }}',
-    notes: '{{ $notes }}',
-    searchQuery: '',
-    selectedCategory: 'all',
-    totalDebit: 0,
-    totalCredit: 0,
-    get diff() {
-        return Math.abs(this.totalDebit - this.totalCredit);
-    },
-    get isBalanced() {
-        return this.diff < 0.01 && (this.totalDebit > 0 || this.totalCredit > 0);
-    },
-    formatRupiah(num) {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
-    },
-    calculateTotals() {
-        let debits = 0;
-        let credits = 0;
-        document.querySelectorAll('.input-debit').forEach(input => {
-            debits += parseFloat(input.value) || 0;
-        });
-        document.querySelectorAll('.input-credit').forEach(input => {
-            credits += parseFloat(input.value) || 0;
-        });
-        this.totalDebit = Math.round(debits * 100) / 100;
-        this.totalCredit = Math.round(credits * 100) / 100;
-    },
-    autoBalanceToModal() {
-        let modalCreditInput = document.querySelector('.input-modal-credit');
-        let modalDebitInput = document.querySelector('.input-modal-debit');
-        if (!modalCreditInput || !modalDebitInput) return;
-
-        modalCreditInput.value = 0;
-        modalDebitInput.value = 0;
-        this.calculateTotals();
-
-        if (this.totalDebit > this.totalCredit) {
-            let needed = this.totalDebit - this.totalCredit;
-            modalCreditInput.value = needed;
-            modalDebitInput.value = 0;
-        } else if (this.totalCredit > this.totalDebit) {
-            let needed = this.totalCredit - this.totalDebit;
-            modalDebitInput.value = needed;
-            modalCreditInput.value = 0;
-        }
-        this.calculateTotals();
-
-        let modalRow = document.getElementById('account-row-3-1100');
-        if (modalRow) {
-            modalRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            modalRow.classList.add('bg-emerald-50', 'ring-2', 'ring-emerald-400');
-            setTimeout(() => {
-                modalRow.classList.remove('bg-emerald-50', 'ring-2', 'ring-emerald-400');
-            }, 2500);
-        }
-    },
-    init() {
-        this.calculateTotals();
-    }
-}">
+<div class="animate-in flex flex-col gap-6" x-data="openingBalanceForm()">
     {{-- Header Page --}}
     <div class="page-header flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -109,7 +49,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('accounting.opening-balance.store') }}" @submit="if(!isBalanced) { alert('Saldo awal harus seimbang (Debit = Kredit) sebelum dapat disimpan!'); $event.preventDefault(); }">
+    <form method="POST" action="{{ route('accounting.opening-balance.store') }}" @submit="validateForm($event)">
         @csrf
 
         {{-- ======================================================== --}}
@@ -186,10 +126,7 @@
                     </button>
 
                     {{-- Simpan & Posting Button (Standard Primary Style) --}}
-                    <button type="submit"
-                            :disabled="!isBalanced"
-                            class="btn btn-primary"
-                            :class="!isBalanced ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan & Posting Saldo Awal</span>
                     </button>
@@ -413,10 +350,7 @@
                         <span>Auto-Balance ke Modal</span>
                     </button>
 
-                    <button type="submit"
-                            :disabled="!isBalanced"
-                            class="btn btn-primary"
-                            :class="!isBalanced ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fa-solid fa-floppy-disk"></i>
                         <span>Simpan & Posting Saldo Awal</span>
                     </button>
@@ -427,3 +361,91 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function openingBalanceForm() {
+    return {
+        cutOffDate: '{{ $cutOffDate }}',
+        notes: @json($notes ?? ''),
+        searchQuery: '',
+        selectedCategory: 'all',
+        totalDebit: 0,
+        totalCredit: 0,
+
+        get diff() {
+            return Math.abs(this.totalDebit - this.totalCredit);
+        },
+
+        get isBalanced() {
+            return this.diff < 0.01 && (this.totalDebit > 0 || this.totalCredit > 0);
+        },
+
+        formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num || 0);
+        },
+
+        calculateTotals() {
+            let debits = 0;
+            let credits = 0;
+            document.querySelectorAll('.input-debit').forEach(input => {
+                debits += parseFloat(input.value) || 0;
+            });
+            document.querySelectorAll('.input-credit').forEach(input => {
+                credits += parseFloat(input.value) || 0;
+            });
+            this.totalDebit = Math.round(debits * 100) / 100;
+            this.totalCredit = Math.round(credits * 100) / 100;
+        },
+
+        autoBalanceToModal() {
+            let modalCreditInput = document.querySelector('.input-modal-credit');
+            let modalDebitInput = document.querySelector('.input-modal-debit');
+            if (!modalCreditInput || !modalDebitInput) return;
+
+            modalCreditInput.value = 0;
+            modalDebitInput.value = 0;
+            this.calculateTotals();
+
+            if (this.totalDebit > this.totalCredit) {
+                let needed = this.totalDebit - this.totalCredit;
+                modalCreditInput.value = needed;
+                modalDebitInput.value = 0;
+            } else if (this.totalCredit > this.totalDebit) {
+                let needed = this.totalCredit - this.totalDebit;
+                modalDebitInput.value = needed;
+                modalCreditInput.value = 0;
+            }
+            this.calculateTotals();
+
+            let modalRow = document.getElementById('account-row-3-1100');
+            if (modalRow) {
+                modalRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                modalRow.classList.add('bg-emerald-50', 'ring-2', 'ring-emerald-400');
+                setTimeout(() => {
+                    modalRow.classList.remove('bg-emerald-50', 'ring-2', 'ring-emerald-400');
+                }, 2500);
+            }
+        },
+
+        validateForm(e) {
+            if (this.totalDebit <= 0 && this.totalCredit <= 0) {
+                alert('Saldo awal belum diisi atau total debit dan kredit masih 0. Masukkan saldo debit atau kredit pada akun terkait.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.isBalanced) {
+                alert('Saldo awal tidak balance atau total debit dan kredit belum sama. Selisih: ' + this.formatRupiah(this.diff) + '. Pastikan total debit sama dengan kredit.');
+                e.preventDefault();
+                return false;
+            }
+            return true;
+        },
+
+        init() {
+            this.calculateTotals();
+        }
+    };
+}
+</script>
+@endpush

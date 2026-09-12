@@ -29,18 +29,20 @@
     {{-- Filter Bar --}}
     <div class="card" style="padding: 16px 20px; margin: 0;">
         <form method="GET" action="{{ route('accounting.reports.gross-profit') }}" style="display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap;">
-            <div style="width: 220px;">
+            <div style="flex: 0 1 260px; min-width: 240px;">
                 <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block;">
                     Rentang Waktu Analisis
                 </label>
-                <select name="period_months" class="form-control" onchange="this.form.submit()">
-                    <option value="6" {{ $periodMonths == 6 ? 'selected' : '' }}>6 Bulan Terakhir</option>
-                    <option value="12" {{ $periodMonths == 12 ? 'selected' : '' }}>12 Bulan Terakhir (1 Tahun)</option>
-                    <option value="24" {{ $periodMonths == 24 ? 'selected' : '' }}>24 Bulan Terakhir (2 Tahun)</option>
-                </select>
+                <div style="position: relative;">
+                    <select name="period_months" class="form-control" style="padding-right: 36px !important; height: 40px; cursor: pointer; width: 100%;">
+                        <option value="6" {{ $periodMonths == 6 ? 'selected' : '' }}>6 Bulan Terakhir</option>
+                        <option value="12" {{ $periodMonths == 12 ? 'selected' : '' }}>12 Bulan Terakhir (1 Tahun)</option>
+                        <option value="24" {{ $periodMonths == 24 ? 'selected' : '' }}>24 Bulan Terakhir (2 Tahun)</option>
+                    </select>
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="height: 38px;">
+            <button type="submit" class="btn btn-primary" style="height: 40px; padding: 0 18px;">
                 <i class="fa-solid fa-filter"></i> Perbarui Grafik
             </button>
         </form>
