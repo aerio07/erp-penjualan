@@ -48,6 +48,8 @@ class ProductController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->sanitizeNumericInputs($request);
+
         $existingProduct = $request->filled('sku') ? Product::where('sku', trim($request->sku))->first() : null;
         $customSkuMessage = $existingProduct 
             ? "Kode SKU \"{$request->sku}\" sudah digunakan oleh produk \"{$existingProduct->name}\". Setiap produk wajib memiliki kode SKU yang unik."
@@ -194,6 +196,8 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product): RedirectResponse
     {
+        $this->sanitizeNumericInputs($request);
+
         $existingProduct = $request->filled('sku') 
             ? Product::where('sku', trim($request->sku))->where('id', '!=', $product->id)->first() 
             : null;
@@ -320,6 +324,59 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', "Gagal menghapus produk: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Sanitasi format input mata uang dan desimal (titik ribuan & koma desimal Indonesia)
+     * sebelum masuk ke validasi Laravel dan penyimpanan database.
+     */
+    private function sanitizeNumericInputs(Request $request): void
+    {
+        $sanitizeCurrency = function ($val) {
+            if ($val === null || $val === '') return null;
+            if (is_numeric($val)) return (float)$val;
+            $cleaned = str_replace('.', '', (string)$val);
+            $cleaned = str_replace(',', '.', $cleaned);
+            return is_numeric($cleaned) ? (float)$cleaned : 0;
+        };
+
+        $sanitizeInteger = function ($val) {
+            if ($val === null || $val === '') return 0;
+            if (is_numeric($val)) return (int)$val;
+            $cleaned = str_replace(['.', ','], '', (string)$val);
+            return is_numeric($cleaned) ? (int)$cleaned : 0;
+        };
+
+        $mergeData = [];
+        if ($request->has('purchase_price')) {
+            $mergeData['purchase_price'] = $sanitizeCurrency($request->purchase_price) ?? 0;
+        }
+        if ($request->has('sell_price')) {
+            $mergeData['sell_price'] = $sanitizeCurrency($request->sell_price) ?? 0;
+        }
+        if ($request->has('price_online')) {
+            $mergeData['price_online'] = $request->filled('price_online') ? $sanitizeCurrency($request->price_online) : null;
+        }
+        if ($request->has('price_offline')) {
+            $mergeData['price_offline'] = $request->filled('price_offline') ? $sanitizeCurrency($request->price_offline) : null;
+        }
+        if ($request->has('min_stock')) {
+            $mergeData['min_stock'] = $sanitizeInteger($request->min_stock);
+        }
+        if ($request->has('length_cm')) {
+            $mergeData['length_cm'] = $request->filled('length_cm') ? $sanitizeCurrency($request->length_cm) : null;
+        }
+        if ($request->has('width_cm')) {
+            $mergeData['width_cm'] = $request->filled('width_cm') ? $sanitizeCurrency($request->width_cm) : null;
+        }
+        if ($request->has('height_cm')) {
+            $mergeData['height_cm'] = $request->filled('height_cm') ? $sanitizeCurrency($request->height_cm) : null;
+        }
+        if ($request->has('weight_kg')) {
+            $mergeData['weight_kg'] = $request->filled('weight_kg') ? $sanitizeCurrency($request->weight_kg) : null;
+        }
+
+        $request->merge($mergeData);
     }
 }
 

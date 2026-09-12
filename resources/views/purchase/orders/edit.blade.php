@@ -172,7 +172,7 @@
                                     <select :name="`items[${idx}][product_id]`" class="form-control" x-model="row.product_id" @change="onProductChange(idx)" required>
                                         <option value="">-- Pilih Produk --</option>
                                         @foreach($products as $p)
-                                        <option value="{{ $p->id }}" data-price="{{ $p->purchase_price }}">{{ $p->name }} ({{ $p->sku }})</option>
+                                        <option value="{{ $p->id }}" data-price="{{ round($p->purchase_price) }}">{{ $p->name }} ({{ $p->sku }})</option>
                                         @endforeach
                                     </select>
                                 </td>
@@ -236,7 +236,7 @@ function poForm() {
         onProductChange(idx) {
             const id = this.rows[idx].product_id;
             if (id && products[id]) {
-                this.rows[idx].price = parseFloat(products[id].purchase_price) || 0;
+                this.rows[idx].price = Math.round(parseFloat(products[id].purchase_price)) || 0;
             }
         },
 

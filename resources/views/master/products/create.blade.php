@@ -75,16 +75,16 @@
                 <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">Harga Beli / HPP (Rp)</label>
-                        <input type="number" name="purchase_price" value="{{ old('purchase_price', $product->purchase_price ?? 0) }}" class="form-control" min="0" step="100">
+                        <input type="text" inputmode="numeric" name="purchase_price" value="{{ old('purchase_price', isset($product) && $product->purchase_price !== null ? round($product->purchase_price) : 0) }}" class="form-control format-currency" placeholder="0">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Harga Jual Umum / Default (Rp) <span style="color:var(--danger);">*</span></label>
-                        <input type="number" name="sell_price" value="{{ old('sell_price', $product->sell_price ?? 0) }}" class="form-control" min="0" step="100" required>
+                        <input type="text" inputmode="numeric" name="sell_price" value="{{ old('sell_price', isset($product) && $product->sell_price !== null ? round($product->sell_price) : 0) }}" class="form-control format-currency" placeholder="0" required>
                         <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Harga fallback jika harga online/offline tidak diisi.</span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Min Stok (Restock Alert)</label>
-                        <input type="number" name="min_stock" value="{{ old('min_stock', $product->min_stock ?? 0) }}" class="form-control" min="0">
+                        <input type="text" inputmode="numeric" name="min_stock" value="{{ old('min_stock', isset($product) && $product->min_stock !== null ? round($product->min_stock) : 0) }}" class="form-control format-integer" placeholder="0">
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@
                             <span>Harga Online (Rp)</span>
                             <span class="badge" style="background:#dbeafe; color:#1e40af; font-size:10px; font-weight:600;">Opsional</span>
                         </label>
-                        <input type="number" name="price_online" value="{{ old('price_online', $product->price_online ?? '') }}" class="form-control" min="0" step="100" placeholder="Kosongkan jika sama dengan harga umum">
+                        <input type="text" inputmode="numeric" name="price_online" value="{{ old('price_online', isset($product) && $product->price_online !== null ? round($product->price_online) : '') }}" class="form-control format-currency" placeholder="Kosongkan jika sama dengan harga umum">
                         <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Otomatis dipakai saat Sales Order memilih channel <strong>Online</strong>.</span>
                     </div>
                     <div class="form-group" style="margin-bottom:0;">
@@ -105,7 +105,7 @@
                             <span>Harga Offline (Rp)</span>
                             <span class="badge" style="background:#dcfce7; color:#15803d; font-size:10px; font-weight:600;">Opsional</span>
                         </label>
-                        <input type="number" name="price_offline" value="{{ old('price_offline', $product->price_offline ?? '') }}" class="form-control" min="0" step="100" placeholder="Kosongkan jika sama dengan harga umum">
+                        <input type="text" inputmode="numeric" name="price_offline" value="{{ old('price_offline', isset($product) && $product->price_offline !== null ? round($product->price_offline) : '') }}" class="form-control format-currency" placeholder="Kosongkan jika sama dengan harga umum">
                         <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Otomatis dipakai saat Sales Order memilih channel <strong>Offline</strong>.</span>
                     </div>
                 </div>
@@ -119,19 +119,19 @@
                     <div class="form-row form-row-4">
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label">Panjang (cm)</label>
-                            <input type="number" name="length_cm" value="{{ old('length_cm', $product->length_cm ?? '') }}" class="form-control" min="0" step="0.1" placeholder="Contoh: 30">
+                            <input type="text" inputmode="decimal" name="length_cm" value="{{ old('length_cm', isset($product) && $product->length_cm !== null ? str_replace('.', ',', (float)$product->length_cm) : '') }}" class="form-control format-decimal" placeholder="Contoh: 30">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label">Lebar (cm)</label>
-                            <input type="number" name="width_cm" value="{{ old('width_cm', $product->width_cm ?? '') }}" class="form-control" min="0" step="0.1" placeholder="Contoh: 20">
+                            <input type="text" inputmode="decimal" name="width_cm" value="{{ old('width_cm', isset($product) && $product->width_cm !== null ? str_replace('.', ',', (float)$product->width_cm) : '') }}" class="form-control format-decimal" placeholder="Contoh: 20">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label">Tinggi (cm)</label>
-                            <input type="number" name="height_cm" value="{{ old('height_cm', $product->height_cm ?? '') }}" class="form-control" min="0" step="0.1" placeholder="Contoh: 5">
+                            <input type="text" inputmode="decimal" name="height_cm" value="{{ old('height_cm', isset($product) && $product->height_cm !== null ? str_replace('.', ',', (float)$product->height_cm) : '') }}" class="form-control format-decimal" placeholder="Contoh: 5">
                         </div>
                         <div class="form-group" style="margin-bottom:0;">
                             <label class="form-label">Berat (kg)</label>
-                            <input type="number" name="weight_kg" value="{{ old('weight_kg', $product->weight_kg ?? '') }}" class="form-control" min="0" step="0.01" placeholder="Contoh: 1.25">
+                            <input type="text" inputmode="decimal" name="weight_kg" value="{{ old('weight_kg', isset($product) && $product->weight_kg !== null ? str_replace('.', ',', (float)$product->weight_kg) : '') }}" class="form-control format-decimal" placeholder="Contoh: 1.25">
                         </div>
                     </div>
                 </div>

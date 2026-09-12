@@ -89,8 +89,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Credit Limit (Rp) <span style="color:var(--danger);">*</span></label>
-                        <input type="number" name="credit_limit" value="{{ old('credit_limit', $customer->credit_limit ?? 0) }}"
-                            class="form-control {{ $errors->has('credit_limit') ? 'is-invalid' : '' }}" required min="0" step="100000" placeholder="0 = tanpa limit">
+                        <input type="text" inputmode="numeric" name="credit_limit" value="{{ old('credit_limit', isset($customer) && $customer->credit_limit !== null ? round($customer->credit_limit) : 0) }}"
+                            class="form-control format-currency {{ $errors->has('credit_limit') ? 'is-invalid' : '' }}" required placeholder="0 = tanpa limit">
                         <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Plafon piutang maksimal.</span>
                         @error('credit_limit')
                         <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">

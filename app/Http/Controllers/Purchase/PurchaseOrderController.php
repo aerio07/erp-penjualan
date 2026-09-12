@@ -57,6 +57,8 @@ class PurchaseOrderController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->sanitizeOrderInputs($request);
+
         $request->validate([
             'supplier_id'           => 'required|exists:suppliers,id',
             'warehouse_id'          => 'nullable|exists:warehouses,id',
@@ -169,6 +171,8 @@ class PurchaseOrderController extends Controller
 
     public function update(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
+        $this->sanitizeOrderInputs($request);
+
         $order = $purchaseOrder;
         abort_if($order->status !== 'draft', 403);
 
@@ -320,5 +324,27 @@ class PurchaseOrderController extends Controller
     private function generateNumber(): string
     {
         return $this->generateDocumentNumber(PurchaseOrder::class, 'po_number', 'PO');
+    }
+
+    private function sanitizeOrderInputs(Request $request): void
+    {
+        $mergeData = [];
+        if ($request->has('discount_amount')) {
+            $cleaned = str_replace(['.', ','], ['', '.'], (string)$request->discount_amount);
+            $mergeData['discount_amount'] = is_numeric($cleaned) ? (float)$cleaned : 0;
+        }
+        if ($request->has('items') && is_array($request->items)) {
+            $items = $request->items;
+            foreach ($items as $k => $item) {
+                if (isset($item['unit_price'])) {
+                    $cleaned = str_replace(['.', ','], ['', '.'], (string)$item['unit_price']);
+                    $items[$k]['unit_price'] = is_numeric($cleaned) ? (float)$cleaned : 0;
+                }
+            }
+            $mergeData['items'] = $items;
+        }
+        if (!empty($mergeData)) {
+            $request->merge($mergeData);
+        }
     }
 }
