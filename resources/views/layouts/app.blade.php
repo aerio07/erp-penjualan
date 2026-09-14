@@ -1118,7 +1118,7 @@
 
             <!-- Purchase Group -->
             @if($isAdmin || $isPurchasing || $isGudang || $isFinance)
-            @php $isPurchaseRoute = request()->is('purchase/*'); @endphp
+            @php $isPurchaseRoute = request()->is('purchase/*') && !request()->routeIs('purchase.payments.*'); @endphp
             <div x-data="{ open: {{ $isPurchaseRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1140,9 +1140,6 @@
                     @endif
                     @if($isAdmin || $isPurchasing)
                     <a href="{{ route('purchase.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Pembelian</a>
-                    @endif
-                    @if($isAdmin || $isFinance)
-                    <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
                     @endif
                     @if($isAdmin || $isPurchasing || $isFinance)
                     {{-- Monitoring PO dinonaktifkan sementara --}}
@@ -1180,7 +1177,7 @@
 
             <!-- Sales Group -->
             @if($isAdmin || $isSales || $isGudang || $isFinance)
-            @php $isSalesRoute = request()->is('sales/*'); @endphp
+            @php $isSalesRoute = request()->is('sales/*') && !request()->routeIs('sales.payments.*'); @endphp
             <div x-data="{ open: {{ $isSalesRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1202,9 +1199,6 @@
                     @if($isAdmin || $isSales)
                     <a href="{{ route('sales.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Penjualan</a>
                     @endif
-                    @if($isAdmin || $isFinance)
-                    <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Piutang</a>
-                    @endif
                     @if($isAdmin || $isSales || $isFinance)
                     {{-- Monitoring SO dinonaktifkan sementara --}}
                     {{-- <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring SO</a> --}}
@@ -1219,9 +1213,9 @@
             <div class="sidebar-section-title">Finance & Akuntansi</div>
 
             @php 
-                $isAccountingRoute = request()->is('accounting/*');
+                $isAccountingRoute = request()->is('accounting/*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*');
                 $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance') || request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
-                $isHutangPiutang = request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
+                $isHutangPiutang = request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
                 $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.cash-forecast') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
             @endphp
             <div x-data="{ 
@@ -1267,6 +1261,8 @@
                             <span class="material-symbols-outlined text-sm" style="{{ $isHutangPiutang ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subHutangPiutang ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                         </button>
                         <div x-show="subHutangPiutang" @if(!$isHutangPiutang) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Piutang</a>
+                            <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
                             <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Piutang Jatuh Tempo</a>
                             <a href="{{ route('accounting.reports.receivables-by-customer') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-by-customer') || request()->routeIs('accounting.reports.ledger-receivable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Piutang per Customer</a>
                             <a href="{{ route('accounting.reports.receivables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Umur Piutang (AR Aging)</a>

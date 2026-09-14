@@ -1,15 +1,15 @@
 @extends('layouts.app')
-@section('title', 'Penerimaan Piutang')
-@section('page-title', 'Penerimaan Piutang Customer')
+@section('title', 'Pembayaran Piutang')
+@section('page-title', 'Pembayaran Piutang Customer')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Penerimaan Piutang Customer"
-        subtitle="Catat penerimaan uang kas / bank dari pelunasan invoice penjualan">
+        title="Pembayaran Piutang Customer"
+        subtitle="Catat pembayaran kas / bank untuk pelunasan invoice penjualan customer">
         <x-slot:actions>
             <a href="{{ route('sales.payments.create') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Catat Penerimaan
+                <i class="fa-solid fa-plus"></i> Catat Pembayaran
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -32,7 +32,7 @@
                 <x-sortable-header column="payment_date" title="Tgl Bayar" :isDefault="true" />
                 <x-sortable-header column="method" title="Metode" />
                 <th>No. Ref / Resi</th>
-                <x-sortable-header column="amount" title="Jumlah Diterima" align="right" />
+                <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />
                 <th>Dicatat Oleh</th>
                 <th class="text-center col-actions">Aksi</th>
             </tr>
@@ -67,7 +67,7 @@
         <tr>
             <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-hand-holding-dollar" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
-                Belum ada riwayat penerimaan piutang yang sesuai filter
+                Belum ada riwayat pembayaran piutang yang sesuai filter
             </td>
         </tr>
         @endforelse

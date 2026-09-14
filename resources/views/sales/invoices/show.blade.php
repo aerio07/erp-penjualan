@@ -242,7 +242,7 @@
                     @forelse($invoice->payments as $payment)
                     <tr>
                         <td style="font-weight:600; color:var(--primary);">
-                            <a href="{{ route('sales.payments.show', $payment) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Penerimaan">
+                            <a href="{{ route('sales.payments.show', $payment) }}" style="color:var(--primary); text-decoration:none;" title="Lihat Detail Pembayaran">
                                 {{ $payment->reference_number ?: ('REC-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT)) }}
                             </a>
                         </td>
@@ -303,7 +303,7 @@
     @elseif($invoice->outstanding_amount > 0)
     <x-document-action-card>
         <a href="{{ route('sales.payments.create') }}?invoice_id={{ $invoice->id }}" class="btn btn-success">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Terima Pembayaran Piutang
+            <i class="fa-solid fa-hand-holding-dollar"></i> Pembayaran Piutang
         </a>
     </x-document-action-card>
     @endif

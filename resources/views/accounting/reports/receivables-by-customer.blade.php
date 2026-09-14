@@ -15,7 +15,7 @@
                 <i class="fa-solid fa-clock-rotate-left"></i> Umur Piutang (AR Aging)
             </a>
             <a href="{{ route('sales.payments.create') }}" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-hand-holding-dollar"></i> Penerimaan Piutang
+                <i class="fa-solid fa-hand-holding-dollar"></i> Pembayaran Piutang
             </a>
         </x-slot:actions>
     </x-page-header>

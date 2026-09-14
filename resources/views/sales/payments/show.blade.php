@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Detail Penerimaan Piutang')
-@section('page-title', 'Detail Penerimaan Piutang')
+@section('title', 'Detail Pembayaran Piutang')
+@section('page-title', 'Detail Pembayaran Piutang')
 
 @section('content')
 <div class="animate-in">
     <x-detail-header 
-        title="Detail Penerimaan Piutang"
+        title="Detail Pembayaran Piutang"
         :back-url="route('sales.payments.index')"
         badge-text="Telah Diposting"
         badge-class="badge-done"
@@ -17,7 +17,7 @@
 
     <div class="card w-full">
         <div class="card-header">
-            <h3>Bukti Penerimaan Pembayaran</h3>
+            <h3>Bukti Pembayaran Piutang</h3>
             <span class="badge badge-done">Telah Diposting</span>
         </div>
         <div class="card-body">

@@ -1,12 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Catat Penerimaan Piutang Customer')
-@section('page-title', 'Catat Penerimaan Piutang Customer')
+@section('title', 'Catat Pembayaran Piutang Customer')
+@section('page-title', 'Catat Pembayaran Piutang Customer')
 
 @section('content')
 <div class="animate-in" x-data="paymentForm()">
     <x-page-header 
-        title="Catat Penerimaan Piutang (Cicilan / Pelunasan)" 
-        subtitle="Pilih Invoice Penjualan customer dan ketik jumlah nominal rupiah yang diterima."
+        title="Catat Pembayaran Piutang (Cicilan / Pelunasan)" 
+        subtitle="Pilih Invoice Penjualan customer dan ketik jumlah nominal rupiah yang dibayarkan."
         :back-url="route('sales.payments.index')"
     />
 
@@ -15,7 +15,7 @@
 
         <div class="grid grid-3" style="margin-bottom:20px;">
             <div class="card" style="grid-column:span 2;">
-                <div class="card-header"><h3>Form Penerimaan Uang</h3></div>
+                <div class="card-header"><h3>Form Pembayaran Piutang</h3></div>
                 <div class="card-body">
                     <div class="form-group">
                         <label class="form-label">Invoice Penjualan <span style="color:var(--danger);">*</span></label>
@@ -164,7 +164,7 @@
 
         <x-form-actions 
             :back-url="route('sales.payments.index')" 
-            submit-label="Simpan Penerimaan & Posting Jurnal" 
+            submit-label="Simpan Pembayaran & Posting Jurnal" 
         />
     </form>
 </div>
