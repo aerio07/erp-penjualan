@@ -73,7 +73,7 @@
 
                                 {{-- Form Tolak --}}
                                 <button type="button" class="btn btn-danger btn-sm" onclick="rejectApproval({{ $app->id }}, '{{ $docNum }}')">
-                                    <i class="fa-solid fa-xmark"></i> Tolak
+                                    <i class="fa-solid fa-ban"></i> Tolak
                                 </button>
 
                                 <form id="reject-form-{{ $app->id }}" method="POST" action="{{ route('approvals.reject', $app) }}" style="display:none;">
@@ -178,30 +178,28 @@ function approveApproval(id, docNum, amount) {
 
 function rejectApproval(id, docNum) {
     Swal.fire({
-        title: 'Tolak Approval Dokumen',
-        html: `<div style="font-size:13.5px; color:#64748b; margin-top:2px; margin-bottom:4px;">Dokumen: <strong style="color:#0e1b35;">${docNum}</strong></div>`,
+        title: 'Konfirmasi Penolakan',
+        html: `Yakin ingin menolak transaksi <strong>${docNum}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Dokumen akan dibatalkan (Cancelled).</span>`,
+        icon: 'warning',
+        iconColor: '#dc2626',
         input: 'textarea',
-        inputLabel: 'Alasan Penolakan',
-        inputPlaceholder: 'Tuliskan alasan penolakan dokumen...',
+        inputLabel: 'Alasan Penolakan (Opsional)',
+        inputPlaceholder: 'Tuliskan alasan penolakan dokumen (opsional)...',
         inputAttributes: { 'aria-label': 'Alasan Penolakan' },
         showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-xmark" style="margin-right:6px;"></i> Ya, Tolak Dokumen',
+        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Tolak Dokumen',
         cancelButtonText: 'Batal',
         reverseButtons: true,
+        focusCancel: true,
         customClass: {
             popup: 'erp-swal-modal',
             confirmButton: 'btn btn-danger',
             cancelButton: 'btn btn-secondary'
         },
-        buttonsStyling: false,
-        inputValidator: (value) => {
-            if (!value || !value.trim()) {
-                return 'Alasan penolakan wajib diisi!';
-            }
-        }
+        buttonsStyling: false
     }).then((result) => {
         if (result.isConfirmed) {
-            document.getElementById('rejection-reason-' + id).value = result.value.trim();
+            document.getElementById('rejection-reason-' + id).value = (result.value || '').trim();
             document.getElementById('reject-form-' + id).submit();
         }
     });

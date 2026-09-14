@@ -49,7 +49,7 @@ class ApprovalService
     /**
      * Tolak approval request.
      */
-    public function reject(ApprovalRequest $approval, string $reason): ApprovalRequest
+    public function reject(ApprovalRequest $approval, ?string $reason = null): ApprovalRequest
     {
         $approval->update([
             'status'           => 'rejected',

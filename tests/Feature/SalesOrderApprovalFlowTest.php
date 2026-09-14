@@ -149,7 +149,7 @@ class SalesOrderApprovalFlowTest extends TestCase
         $this->assertTrue($so->canCreateDelivery());
     }
 
-    public function test_rejecting_sales_order_reverts_it_to_draft(): void
+    public function test_rejecting_sales_order_cancels_it_and_rejection_reason_is_optional(): void
     {
         $so = SalesOrder::create([
             'so_number'       => 'SO-REJECT-001',
@@ -172,18 +172,18 @@ class SalesOrderApprovalFlowTest extends TestCase
             'status'          => 'pending',
         ]);
 
+        // Rejection without note is valid (optional)
         $response = $this->actingAs($this->admin)->patch(route('approvals.reject', $approval), [
-            'rejection_reason' => 'Harga diskon tidak wajar',
+            'rejection_reason' => null,
         ]);
 
         $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('draft', $so->status);
-        $this->assertEquals('pending', $so->fulfillment_status);
+        $this->assertEquals('cancelled', $so->status);
 
         $approval->refresh();
         $this->assertEquals('rejected', $approval->status);
-        $this->assertEquals('Harga diskon tidak wajar', $approval->rejection_reason);
+        $this->assertNull($approval->rejection_reason);
     }
 }

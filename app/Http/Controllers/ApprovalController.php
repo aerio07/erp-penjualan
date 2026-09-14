@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalRequest;
+use App\Models\PurchaseOrder;
 use App\Models\SalesOrder;
 use App\Services\ApprovalService;
 use App\Services\StockService;
@@ -62,20 +63,25 @@ class ApprovalController extends Controller
 
     public function reject(Request $request, ApprovalRequest $approval): RedirectResponse
     {
-        $request->validate(['rejection_reason' => 'required|string|min:3']);
+        $request->validate(['rejection_reason' => 'nullable|string']);
 
         $this->approvalService->reject($approval, $request->rejection_reason);
 
-        // Kembalikan dokumen ke draft
+        // Ubah status dokumen terkait menjadi cancelled
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            $updateData = ['status' => 'draft'];
+            $approvable->update(['status' => 'cancelled']);
+
             if ($approvable instanceof SalesOrder) {
-                $updateData['fulfillment_status'] = 'pending';
+                $this->stockService->releaseReservationsForSalesOrder($approvable);
+            } elseif ($approvable instanceof PurchaseOrder) {
+                $approvable->procurementDemands()->update([
+                    'purchase_order_id' => null,
+                    'status'            => 'pending',
+                ]);
             }
-            $approvable->update($updateData);
         }
 
-        return back()->with('success', "Approval #{$approval->request_number} berhasil ditolak.");
+        return back()->with('success', "Approval #{$approval->request_number} berhasil ditolak dan dokumen dibatalkan.");
     }
 }
