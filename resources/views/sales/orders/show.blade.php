@@ -6,41 +6,18 @@
 <div class="animate-in">
     <x-detail-header 
         :title="$order->so_number"
+        :subtitle="($order->customer->name ?? '-') . ' · ' . $order->order_date->format('d/m/Y') . ' · Channel: ' . ucfirst($order->channel ?? 'offline')"
+        :status="$order->status"
         :back-url="route('sales.orders.index')"
     >
-        <x-slot:badge>
-            @if($order->channel === 'online')
-                <span class="badge" style="background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; font-size:11px; padding:3px 8px;">
-                    <i class="fa-solid fa-globe" style="font-size:10px;"></i> Online
-                </span>
-            @else
-                <span class="badge" style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; font-size:11px; padding:3px 8px;">
-                    <i class="fa-solid fa-store" style="font-size:10px;"></i> Offline
-                </span>
-            @endif
-            <span class="badge badge-{{ $order->status }}">{{ ucfirst(str_replace('_', ' ', $order->status)) }}</span>
-        </x-slot:badge>
-        <x-slot:subtitle>
-            Customer: <strong>{{ $order->customer->name ?? '-' }}</strong> &bull; Tgl Order: {{ $order->order_date->format('d/m/Y') }}
-        </x-slot:subtitle>
         <x-slot:actions>
             @if($order->status === 'draft')
             <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen-to-square"></i> Ubah SO
+                <i class="fa-solid fa-pen"></i> Ubah
             </a>
-            <form method="POST" action="{{ route('sales.orders.confirm', $order) }}" style="display:inline;">
-                @csrf @method('PATCH')
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Konfirmasi SO</button>
-            </form>
-            @endif
-            @if(in_array($order->status, ['draft','waiting_approval','confirmed']))
-            <form method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:inline;">
-                @csrf @method('PATCH')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Batalkan SO ini? Alokasi stok akan dilepaskan.')"><i class="fa-solid fa-ban"></i> Batalkan</button>
-            </form>
             @endif
             <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary" target="_blank">
-                <i class="fa-solid fa-file-pdf"></i> Export PDF
+                <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
         </x-slot:actions>
     </x-detail-header>
@@ -59,7 +36,7 @@
                             <i class="fa-solid fa-store" style="font-size:10px;"></i> Offline
                         </span>
                     @endif
-                    <span class="badge badge-{{ $order->status }}">Order: {{ ucfirst(str_replace('_',' ',$order->status)) }}</span>
+                    <x-status-badge :status="$order->status" />
                     @php
                         $fBadge = match($order->fulfillment_status) {
                             'ready_to_ship'       => 'background:#dcfce7; color:#15803d; border:1px solid #bbf7d0;',
@@ -275,126 +252,103 @@
         </div>
     </div>
 
-    {{-- Deliveries & Invoices Lists --}}
-    <div class="grid grid-2">
-        {{-- Surat Jalan (Deliveries) --}}
-        <div class="card">
-            <div class="card-header">
-                <h3>Surat Jalan Terkait</h3>
-                @if($order->canCreateDelivery())
-                <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary btn-sm">
-                    <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan
-                </a>
-                @elseif($order->status === 'confirmed' && $order->fulfillment_status === 'backorder')
-                <span class="badge" style="background:#fee2e2; color:#b91c1c; font-size:11px;">
-                    <i class="fa-solid fa-clock"></i> Menunggu Pengadaan PO
-                </span>
-                @endif
-            </div>
-            <div class="card-body" style="padding:0;">
-                @if($order->status === 'confirmed' && $order->fulfillment_status === 'backorder')
-                <div style="padding:12px 16px; background:#fffbeb; border-bottom:1px solid #fef3c7; color:#92400e; font-size:12.5px; display:flex; align-items:center; gap:8px;">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <span>Stok fisik belum tersedia. Kebutuhan pengadaan telah dicatat di <strong>Kebutuhan Pengadaan (Procurement Demand Hub)</strong> untuk diproses oleh Tim Purchasing.</span>
-                </div>
-                @endif
-                <table class="erp-table">
-                    <thead>
-                        <tr>
-                            <th>No. Surat Jalan</th>
-                            <th>Tanggal</th>
-                            <th>Gudang</th>
-                            <th style="text-align:center;">Status Invoice</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($order->deliveries as $del)
-                        <tr>
-                            <td>
-                                <a href="{{ route('sales.deliveries.show', $del) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                                    {{ $del->delivery_number }}
-                                </a>
-                            </td>
-                            <td>{{ $del->delivery_date->format('d/m/Y') }}</td>
-                            <td>{{ $del->warehouse->name ?? '-' }}</td>
-                            <td style="text-align:center;">
-                                @if($del->is_invoiced)
-                                    <span class="badge badge-done"><i class="fa-solid fa-check"></i> Sudah Di-Invoice</span>
-                                @else
-                                    <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Belum Di-Invoice</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" style="text-align:center; padding:20px; color:var(--text-secondary);">
-                                Belum ada Surat Jalan (pengiriman).
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        {{-- Invoices Terkait --}}
-        <div class="card">
-            <div class="card-header">
-                <h3>Invoice Penjualan Terkait</h3>
-                @php
-                    $hasUnbilledDel = $order->deliveries->where('is_invoiced', false)->count() > 0;
-                @endphp
-                @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']) && $hasUnbilledDel)
-                <a href="{{ route('sales.invoices.create', ['so_id' => $order->id]) }}" class="btn btn-primary btn-sm">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice
-                </a>
-                @endif
-            </div>
-            <div class="card-body" style="padding:0;">
-                <table class="erp-table">
-                    <thead>
-                        <tr>
-                            <th>No. Invoice</th>
-                            <th>Ref. Surat Jalan</th>
-                            <th>Total Tagihan</th>
-                            <th style="text-align:center;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($order->invoices as $inv)
-                        <tr>
-                            <td>
-                                <a href="{{ route('sales.invoices.show', $inv) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
-                                    {{ $inv->invoice_number }}
-                                </a>
-                            </td>
-                            <td>
-                                @if($inv->delivery)
-                                <a href="{{ route('sales.deliveries.show', $inv->delivery) }}" style="color:var(--primary); text-decoration:none; font-weight:500;">
-                                    {{ $inv->delivery->delivery_number }}
-                                </a>
-                                @else
-                                <span style="color:var(--text-secondary);">-</span>
-                                @endif
-                            </td>
-                            <td style="font-weight:600;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
-                            <td style="text-align:center;">
-                                <span class="badge badge-{{ $inv->status }}">
-                                    {{ ucfirst($inv->status) }}
-                                </span>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" style="text-align:center; padding:20px; color:var(--text-secondary);">
-                                Belum ada Invoice Penjualan.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+
+    {{-- Bottom Workflow Actions --}}
+    @if($order->status === 'draft')
+    <x-document-action-card>
+        <form id="form-cancel-so" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-danger"
+            data-confirm-swal="form-cancel-so"
+            data-swal-title="Batalkan Sales Order"
+            data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status SO akan diubah menjadi Cancelled.</span>"
+            data-swal-icon="warning"
+            data-swal-btn-text="Ya, Batalkan SO"
+            data-swal-btn-icon="fa-solid fa-ban"
+            data-swal-btn-class="btn btn-danger"
+        >
+            <i class="fa-solid fa-ban"></i> Batalkan SO
+        </button>
+
+        <form id="form-confirm-so" method="POST" action="{{ route('sales.orders.confirm', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-primary"
+            data-confirm-swal="form-confirm-so"
+            data-swal-title="Konfirmasi Sales Order"
+            data-swal-html="Konfirmasi Sales Order <strong>{{ $order->so_number }}</strong> sekarang?<br><span style='font-size:12.5px; color:#64748b;'>Sales Order akan dikirim untuk persetujuan (approval) sebelum dapat diproses.</span>"
+            data-swal-icon="question"
+            data-swal-icon-color="#2563eb"
+            data-swal-btn-text="Ya, Konfirmasi SO"
+            data-swal-btn-icon="fa-solid fa-check"
+            data-swal-btn-class="btn btn-primary"
+        >
+            <i class="fa-solid fa-check"></i> Konfirmasi SO Sekarang
+        </button>
+    </x-document-action-card>
+    @elseif($order->status === 'waiting_approval')
+    <x-document-action-card>
+        <form id="form-cancel-so-approval" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-danger"
+            data-confirm-swal="form-cancel-so-approval"
+            data-swal-title="Batalkan Sales Order"
+            data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Permintaan persetujuan yang sedang berjalan akan dibatalkan.</span>"
+            data-swal-icon="warning"
+            data-swal-btn-text="Ya, Batalkan SO"
+            data-swal-btn-icon="fa-solid fa-ban"
+            data-swal-btn-class="btn btn-danger"
+        >
+            <i class="fa-solid fa-ban"></i> Batalkan SO
+        </button>
+    </x-document-action-card>
+    @elseif($order->status === 'confirmed')
+    <x-document-action-card>
+        @if($order->deliveries->where('status', '!=', 'cancelled')->count() === 0)
+        <form id="form-cancel-so-confirmed" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-danger"
+            data-confirm-swal="form-cancel-so-confirmed"
+            data-swal-title="Batalkan Sales Order"
+            data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status SO akan diubah menjadi Cancelled dan seluruh alokasi reservasi stok akan dilepaskan kembali ke gudang.</span>"
+            data-swal-icon="warning"
+            data-swal-btn-text="Ya, Batalkan SO"
+            data-swal-btn-icon="fa-solid fa-ban"
+            data-swal-btn-class="btn btn-danger"
+        >
+            <i class="fa-solid fa-ban"></i> Batalkan SO
+        </button>
+        @endif
+
+        @if($order->canCreateDelivery())
+        <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
+            <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan
+        </a>
+        @endif
+    </x-document-action-card>
+    @elseif($order->status === 'partially_delivered')
+    @php
+        $canCreateDel = $order->canCreateDelivery();
+        $hasUninvoicedDel = $order->deliveries->where('is_invoiced', false)->where('status', 'delivered')->count() > 0;
+    @endphp
+    @if($canCreateDel || $hasUninvoicedDel)
+    <x-document-action-card>
+        @if($canCreateDel)
+        <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
+            <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan (Sisa)
+        </a>
+        @endif
+        @if($hasUninvoicedDel)
+        <a href="{{ route('sales.invoices.create', ['so_id' => $order->id]) }}" class="btn btn-success">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice
+        </a>
+        @endif
+    </x-document-action-card>
+    @endif
+    @endif
 </div>
 @endsection

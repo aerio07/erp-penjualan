@@ -102,4 +102,14 @@ class SalesInvoice extends Model
 
         return min($deliveryItem->qty_available_for_return, $batasNilai);
     }
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function isPosted(): bool
+    {
+        return in_array($this->status, ['unpaid', 'partial', 'paid']);
+    }
 }

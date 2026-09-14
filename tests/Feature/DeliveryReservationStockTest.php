@@ -106,8 +106,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 70 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $soA));
-        $soA->refresh();
+        $this->confirmAndApproveSalesOrder($soA);
         $this->assertEquals('ready_to_ship', $soA->fulfillment_status);
 
         // 3. Create and Confirm SO B (30 pcs)
@@ -126,8 +125,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 30 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $soB));
-        $soB->refresh();
+        $this->confirmAndApproveSalesOrder($soB);
         $this->assertEquals('ready_to_ship', $soB->fulfillment_status);
 
         // Check 4 Stock Dimensions:
@@ -151,8 +149,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 50 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $soC));
-        $soC->refresh();
+        $this->confirmAndApproveSalesOrder($soC);
         $this->assertEquals('backorder', $soC->fulfillment_status);
 
         // 5. Attempt Delivery for SO C (50 pcs) -> MUST BE REJECTED!
@@ -230,7 +227,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 70 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
+        $this->confirmAndApproveSalesOrder($so);
 
         // Step 1: Send partial delivery 30 pcs
         $this->actingAs($this->admin)->post(route('sales.deliveries.store'), [
@@ -305,7 +302,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 50 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so1));
+        $this->confirmAndApproveSalesOrder($so1);
 
         // SO 2 needs 50 pcs, gets 0 reservation (backorder)
         $so2 = SalesOrder::create([
@@ -323,7 +320,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 50 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so2));
+        $this->confirmAndApproveSalesOrder($so2);
 
         // Cancel SO 1
         $this->actingAs($this->admin)->patch(route('sales.orders.cancel', $so1));
@@ -383,7 +380,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 50 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
+        $this->confirmAndApproveSalesOrder($so);
 
         // Delivery 1: Deliver full 50 pcs
         $this->actingAs($this->admin)->post(route('sales.deliveries.store'), [
@@ -436,8 +433,7 @@ class DeliveryReservationStockTest extends TestCase
             'unit_price' => 150000,
             'subtotal' => 25 * 150000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
-        $so->refresh();
+        $this->confirmAndApproveSalesOrder($so);
         $this->assertEquals('backorder', $so->fulfillment_status);
 
         // 2. Delivery attempt fails when still in backorder

@@ -82,9 +82,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'subtotal' => 750000,
         ]);
 
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
-
-        $so->refresh();
+        $this->confirmAndApproveSalesOrder($so);
         $this->assertEquals('confirmed', $so->status);
         $this->assertEquals('backorder', $so->fulfillment_status);
         $this->assertFalse($so->canCreateDelivery());
@@ -132,9 +130,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'subtotal' => 750000,
         ]);
 
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
-
-        $so->refresh();
+        $this->confirmAndApproveSalesOrder($so);
         $this->assertEquals('confirmed', $so->status);
         $this->assertEquals('partially_available', $so->fulfillment_status);
         $this->assertTrue($so->canCreateDelivery());
@@ -175,8 +171,8 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
-        $this->assertEquals('backorder', $so->refresh()->fulfillment_status);
+        $this->confirmAndApproveSalesOrder($so);
+        $this->assertEquals('backorder', $so->fulfillment_status);
 
         // 2. Purchasing issues PO for 10 pcs to Supplier
         $po = PurchaseOrder::create([
@@ -255,8 +251,8 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
-        $this->assertEquals('ready_to_ship', $so->refresh()->fulfillment_status);
+        $this->confirmAndApproveSalesOrder($so);
+        $this->assertEquals('ready_to_ship', $so->fulfillment_status);
 
         // 2. Create Delivery for all 10 pcs
         $this->actingAs($this->admin)->post(route('sales.deliveries.store'), [
@@ -315,8 +311,8 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so1));
-        $this->assertEquals('ready_to_ship', $so1->refresh()->fulfillment_status);
+        $this->confirmAndApproveSalesOrder($so1);
+        $this->assertEquals('ready_to_ship', $so1->fulfillment_status);
 
         // SO-2 comes in, stock is now fully reserved (Available = 0) -> Backorder
         $so2 = SalesOrder::create([
@@ -334,8 +330,8 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so2));
-        $this->assertEquals('backorder', $so2->refresh()->fulfillment_status);
+        $this->confirmAndApproveSalesOrder($so2);
+        $this->assertEquals('backorder', $so2->fulfillment_status);
 
         // 2. Customer 1 cancels SO-1
         $this->actingAs($this->admin)->patch(route('sales.orders.cancel', $so1));
@@ -365,7 +361,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
+        $this->confirmAndApproveSalesOrder($so);
 
         $demand = ProcurementDemand::where('sales_order_id', $so->id)->first();
         $this->assertEquals(10, $demand->qty_demanded);
@@ -469,7 +465,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
+        $this->confirmAndApproveSalesOrder($so);
 
         // Demand is 7 pcs, 3 pcs reserved
         $demand = ProcurementDemand::where('sales_order_id', $so->id)->first();
@@ -574,8 +570,8 @@ class OrderFulfillmentAndDemandTest extends TestCase
             'unit_price' => 75000,
             'subtotal' => 750000,
         ]);
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
-        $this->assertEquals('backorder', $so->refresh()->fulfillment_status);
+        $this->confirmAndApproveSalesOrder($so);
+        $this->assertEquals('backorder', $so->fulfillment_status);
 
         // 2. Initial 10 pcs in Warehouse 2
         StockMovement::create([
@@ -646,7 +642,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
         ]);
 
         // Konfirmasi SO -> buat demand 15 pcs
-        $this->actingAs($this->admin)->patch(route('sales.orders.confirm', $so));
+        $this->confirmAndApproveSalesOrder($so);
 
         $demand = ProcurementDemand::where('sales_order_id', $so->id)->firstOrFail();
         $this->assertEquals(15, $demand->qty_demanded);

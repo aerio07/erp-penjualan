@@ -149,7 +149,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('role:admin,finance')->prefix('sales')->name('sales.')->group(function () {
         Route::patch('invoices/{invoice}/tax-invoice', [SalesInvoiceController::class, 'updateTaxInvoice'])->name('invoices.tax-invoice.update');
-        Route::resource('invoices', SalesInvoiceController::class)->only(['index', 'create', 'store', 'show']);
+        Route::post('invoices/{invoice}/post', [SalesInvoiceController::class, 'post'])->name('invoices.post');
+        Route::resource('invoices', SalesInvoiceController::class);
         Route::resource('payments', SalesPaymentController::class)->only(['index', 'create', 'store', 'show']);
     });
 

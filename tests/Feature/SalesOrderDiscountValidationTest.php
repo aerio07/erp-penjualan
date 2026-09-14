@@ -84,7 +84,7 @@ class SalesOrderDiscountValidationTest extends TestCase
 
         $so = SalesOrder::where('customer_id', $this->customer->id)->first();
         $this->assertNotNull($so);
-        $response->assertRedirect(route('sales.orders.show', $so));
+        $response->assertRedirect(route('sales.orders.index'));
 
         $this->assertEquals(300000, $so->discount_amount);
         $this->assertEquals(132000, $so->tax_amount);
@@ -113,7 +113,7 @@ class SalesOrderDiscountValidationTest extends TestCase
 
         $so = SalesOrder::where('customer_id', $this->customer->id)->first();
         $this->assertNotNull($so);
-        $response->assertRedirect(route('sales.orders.show', $so));
+        $response->assertRedirect(route('sales.orders.index'));
 
         $this->assertEquals(1500000, $so->discount_amount);
         $this->assertEquals(0, $so->tax_amount);

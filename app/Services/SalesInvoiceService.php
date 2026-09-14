@@ -24,7 +24,7 @@ class SalesInvoiceService
      * @return SalesInvoice
      * @throws InvalidArgumentException
      */
-    public function createFromDelivery(Delivery $delivery, array $data = []): SalesInvoice
+    public function createFromDelivery(Delivery $delivery, array $data = [], bool $asDraft = true): SalesInvoice
     {
         if ($delivery->is_invoiced) {
             throw new InvalidArgumentException("Surat Jalan #{$delivery->delivery_number} sudah pernah digunakan untuk invoice lain.");
@@ -49,6 +49,10 @@ class SalesInvoiceService
 
         $taxRate = isset($data['tax_rate']) ? (float) $data['tax_rate'] : (float) ($so->tax_rate ?? 0);
         $invoiceDate = $data['invoice_date'] ?? now()->toDateString();
+
+        // Pastikan periode akuntansi tidak ditutup
+        app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked($invoiceDate);
+
         $termDays = $so->customer?->payment_term_days ?? 30;
         $dueDate = $data['due_date'] ?? \Carbon\Carbon::parse($invoiceDate)->addDays($termDays)->toDateString();
         $notes = $data['notes'] ?? ("Auto-generated from Surat Jalan #" . $delivery->delivery_number);
@@ -161,7 +165,7 @@ class SalesInvoiceService
             'total_amount'   => $totalAmount,
             'invoice_date'   => $invoiceDate,
             'due_date'       => $dueDate,
-            'status'         => 'unpaid',
+            'status'         => $asDraft ? 'draft' : 'unpaid',
             'notes'          => $notes,
         ]);
 
@@ -207,6 +211,35 @@ class SalesInvoiceService
         foreach ($delivery->items as $delItem) {
             $delItem->update(['invoiced_qty' => $delItem->qty_delivered]);
         }
+
+        if (!$asDraft) {
+            $entry = $this->journalService->createFromSalesInvoice($invoice, $cogs);
+            $this->journalService->postEntry($entry);
+        }
+
+        return $invoice;
+    }
+
+    /**
+     * Post a draft SalesInvoice and generate its journal entry.
+     *
+     * @param SalesInvoice $invoice
+     * @return SalesInvoice
+     * @throws InvalidArgumentException
+     */
+    public function postInvoice(SalesInvoice $invoice): SalesInvoice
+    {
+        if ($invoice->status !== 'draft') {
+            throw new InvalidArgumentException("Hanya invoice berstatus Draft yang dapat diposting.");
+        }
+
+        app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked($invoice->invoice_date);
+
+        $invoice->loadMissing(['items.product', 'salesOrder.customer']);
+
+        $cogs = (float) $invoice->items->sum('cogs_amount');
+
+        $invoice->update(['status' => 'unpaid']);
 
         $entry = $this->journalService->createFromSalesInvoice($invoice, $cogs);
         $this->journalService->postEntry($entry);

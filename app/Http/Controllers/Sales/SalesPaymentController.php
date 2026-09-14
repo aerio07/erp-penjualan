@@ -39,7 +39,7 @@ class SalesPaymentController extends Controller
     {
         $selectedInvoiceId = $request->query('invoice_id');
         $unpaidInvoices = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereIn('status', ['unpaid', 'partial'])
             ->orderByDesc('id')
             ->get()
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
@@ -61,6 +61,10 @@ class SalesPaymentController extends Controller
 
         return DB::transaction(function () use ($request) {
             $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->sales_invoice_id);
+
+            if ($invoice->status === 'draft') {
+                return back()->with('error', 'Invoice masih berstatus Draft dan belum diposting. Pembayaran piutang tidak dapat dicatat.')->withInput();
+            }
 
             if ($request->amount > $invoice->outstanding_amount + 0.01) {
                 return back()->with('error', "Jumlah penerimaan (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();

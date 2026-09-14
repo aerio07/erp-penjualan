@@ -106,7 +106,7 @@ class CustomerController extends Controller
         $totalSales       = $customer->salesOrders()->sum('total_amount');
         $outstandingDebt  = \App\Models\SalesInvoice::with(['payments', 'items'])
             ->whereHas('salesOrder', fn($q) => $q->where('customer_id', $customer->id))
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->get()
             ->sum->outstanding_amount;
 

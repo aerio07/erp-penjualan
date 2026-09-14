@@ -24,6 +24,7 @@
 
         <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft (Belum Diposting)</option>
             <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Belum Dibayar (Unpaid)</option>
             <option value="partial" {{ request('status') === 'partial' ? 'selected' : '' }}>Dibayar Sebagian (Partial)</option>
             <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Lunas (Paid)</option>
@@ -74,7 +75,7 @@
             </td>
             <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>
             <td>
-                <span style="{{ $inv->status !== 'paid' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
+                <span style="{{ $inv->status !== 'paid' && $inv->status !== 'draft' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
                     {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}
                 </span>
             </td>
@@ -86,33 +87,35 @@
                     </div>
                 @endif
             </td>
-            <td style="text-align:right; font-weight:600; color:{{ $inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)' }};">
-                Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
+            <td style="text-align:right; font-weight:600; color:{{ $inv->status === 'draft' ? 'var(--text-secondary)' : ($inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)') }};">
+                @if($inv->status === 'draft')
+                    <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">(Draft)</span>
+                @else
+                    Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
+                @endif
             </td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $inv->status }}">
-                    {{ ucfirst($inv->status) }}
-                </span>
+                <x-status-badge :status="$inv->status" />
             </td>
             <td class="col-actions text-center">
-                <div style="display:flex; gap:6px; justify-content:center;">
-                    <a href="{{ route('sales.invoices.show', $inv) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                        <i class="fa-solid fa-eye"></i>
-                    </a>
-                    @if($inv->outstanding_amount > 0)
-                    <a href="{{ route('sales.payments.create') }}?invoice_id={{ $inv->id }}" class="btn btn-success btn-sm btn-icon" title="Terima Pembayaran">
-                        <i class="fa-solid fa-hand-holding-dollar"></i>
-                    </a>
+                <x-table-actions 
+                    :show-url="route('sales.invoices.show', $inv)"
+                    :edit-url="$inv->status === 'draft' ? route('sales.invoices.edit', $inv) : null"
+                    :pdf-url="route('pdf.sales-invoice', $inv)"
+                    :delete-url="$inv->status === 'draft' ? route('sales.invoices.destroy', $inv) : null"
+                    delete-confirm="Yakin ingin menghapus draft invoice ini? Dokumen Surat Jalan terkait akan otomatis dilepaskan."
+                >
+                    @if($inv->status !== 'draft' && $inv->outstanding_amount > 0)
+                        <a href="{{ route('sales.payments.create') }}?invoice_id={{ $inv->id }}" class="btn btn-success btn-sm btn-icon" title="Terima Pembayaran">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                        </a>
                     @endif
-                    <a href="{{ route('pdf.sales-invoice', $inv) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
-                        <i class="fa-solid fa-file-pdf"></i>
-                    </a>
-                </div>
+                </x-table-actions>
             </td>
         </tr>
         @empty
         <tr>
-            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-file-invoice-dollar" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada invoice penjualan yang sesuai filter
             </td>

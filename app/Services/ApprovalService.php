@@ -68,7 +68,7 @@ class ApprovalService
     {
         return match ($docType) {
             'purchase_order' => true,
-            'sales_order'    => $amount >= self::SO_APPROVAL_THRESHOLD,
+            'sales_order'    => true,
             default          => false,
         };
     }

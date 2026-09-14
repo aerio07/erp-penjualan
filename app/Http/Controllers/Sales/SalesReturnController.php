@@ -107,6 +107,13 @@ class SalesReturnController extends Controller
         ])->findOrFail($request->delivery_id);
 
         $invoice = $delivery->salesInvoice ?? SalesInvoice::with(['items', 'payments'])->where('delivery_id', $delivery->id)->first();
+
+        // Tolak retur jika invoice Surat Jalan masih berstatus Draft
+        if ($invoice && $invoice->status === 'draft') {
+            $msg = "Surat Jalan terkait masih memiliki Invoice Penjualan berstatus Draft ({$invoice->invoice_number}). Silakan hapus draft invoice atau posting invoice terlebih dahulu sebelum mengajukan retur.";
+            return back()->with('error', $msg)->withErrors(['items' => $msg])->withInput();
+        }
+
         $sisaBelumBayar = $invoice ? round((float) $invoice->effective_total_amount - (float) $invoice->total_paid, 2) : null;
 
         // Jika invoice sudah lunas penuh (outstanding <= 0.01), tolak retur otomatis untuk mencegah overpayment
@@ -286,6 +293,7 @@ class SalesReturnController extends Controller
         }
 
         SalesInvoice::with(['items', 'payments'])
+            ->where('status', '!=', 'draft')
             ->whereHas('items', fn($query) => $query->whereIn('delivery_item_id', $deliveryItemIds))
             ->get()
             ->each(function (SalesInvoice $invoice) {

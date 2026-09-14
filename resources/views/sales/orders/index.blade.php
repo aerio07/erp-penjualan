@@ -103,9 +103,7 @@
             <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
             <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $order->status }}">
-                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                </span>
+                <x-status-badge :status="$order->status" />
             </td>
             <td style="text-align:center;">
                 @php
@@ -144,6 +142,14 @@
                 <div style="display:flex; gap:6px; justify-content:center;">
                     <a href="{{ route('sales.orders.show', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
+                    </a>
+                    @if($order->status === 'draft')
+                    <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                    @endif
+                    <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
+                        <i class="fa-solid fa-file-pdf"></i>
                     </a>
                     @if($order->status === 'draft')
                     <button data-confirm-delete="del-so-{{ $order->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">

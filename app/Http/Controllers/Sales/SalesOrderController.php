@@ -129,8 +129,8 @@ class SalesOrderController extends Controller
             return $salesOrder;
         });
 
-        return redirect()->route('sales.orders.show', $so)
-            ->with('success', 'Sales Order berhasil dibuat.');
+        return redirect()->route('sales.orders.index')
+            ->with('success', 'Sales Order #' . $so->so_number . ' berhasil dibuat.');
     }
 
     public function show(SalesOrder $salesOrder): View
@@ -260,10 +260,10 @@ class SalesOrderController extends Controller
                 SalesOrder::class,
                 $order->id,
                 $order->total_amount,
-                "SO #{$order->so_number} membutuhkan approval direksi."
+                "SO #{$order->so_number} membutuhkan approval sebelum dapat diproses."
             );
 
-            return back()->with('info', 'Sales Order butuh approval karena nilai transaksi melebihi Rp 50.000.000.');
+            return back()->with('info', "Sales Order #{$order->so_number} telah dikirim untuk approval.");
         }
 
         $order->update(['status' => 'confirmed']);
@@ -284,6 +284,10 @@ class SalesOrderController extends Controller
     {
         $order = $salesOrder;
         abort_if(!in_array($order->status, ['draft', 'waiting_approval', 'confirmed']), 403);
+
+        if ($order->deliveries()->where('status', '!=', 'cancelled')->exists()) {
+            return back()->with('error', 'Sales Order tidak dapat dibatalkan karena sudah memiliki Surat Jalan pengiriman.');
+        }
 
         // Batalkan approval request yang masih pending jika ada
         $order->approvalRequests()->where('status', 'pending')->update([

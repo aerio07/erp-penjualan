@@ -221,7 +221,7 @@ class ReportController extends Controller
 
         // Est. Penerimaan dari Piutang (jatuh tempo s/d akhir periode - visibilitas penuh s/d $fcEnd)
         $fcReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '<=', $fcEnd->toDateString())
             ->get()
             ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
@@ -416,7 +416,7 @@ class ReportController extends Controller
         $prevSaldoAwal = $this->getForecastSaldoAwal($prevStart, $cashAccountIds, $prevIsCurrent);
 
         $prevReceivables = SalesInvoice::with(['payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '<=', $prevEnd->toDateString())
             ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
@@ -448,7 +448,7 @@ class ReportController extends Controller
     public function receivables(Request $request): View
     {
         $openInvoices = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->get()
             ->map(function ($inv) {
                 // DATEDIFF(today, due_date)
@@ -815,8 +815,9 @@ class ReportController extends Controller
         $dateFrom = $request->input('date_from');
         $dateTo   = $request->input('date_to');
 
-        // 1. Tagihan Invoices Penjualan
+        // 1. Tagihan Invoices Penjualan (hanya yang sudah diposting)
         $invoices = SalesInvoice::with('salesOrder')
+            ->where('status', '!=', 'draft')
             ->whereHas('salesOrder', fn($q) => $q->where('customer_id', $customer->id))
             ->get()
             ->map(function ($inv) {
@@ -997,7 +998,7 @@ class ReportController extends Controller
             : true;
 
         $query = Customer::with(['salesInvoices' => function ($q) {
-            $q->where('sales_invoices.status', '!=', 'paid')->with('payments');
+            $q->whereNotIn('sales_invoices.status', ['paid', 'draft'])->with('payments');
         }]);
 
         if ($search) {
@@ -1054,7 +1055,7 @@ class ReportController extends Controller
         $targetDate = $today->copy()->addDays($days);
 
         $query = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $targetDate);
 

@@ -101,6 +101,8 @@ class InvoiceReturnConsistencyTest extends TestCase
         ]);
 
         $invoice = SalesInvoice::with('items')->firstOrFail();
+        $this->actingAs($this->admin)->post(route('sales.invoices.post', $invoice));
+        $invoice->refresh();
         $deliveryItem = DeliveryItem::firstOrFail();
         $return = SalesReturn::create([
             'return_number' => 'SRET-POST-001',

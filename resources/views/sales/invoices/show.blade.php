@@ -6,25 +6,19 @@
 <div class="animate-in">
     <x-detail-header 
         :title="$invoice->invoice_number"
+        :subtitle="'Ref SO: ' . ($invoice->salesOrder->so_number ?? '-') . ($invoice->delivery ? ' · Ref Surat Jalan: ' . $invoice->delivery->delivery_number : '') . ' · ' . ($invoice->salesOrder->customer->name ?? '-')"
+        :status="$invoice->status"
         :back-url="route('sales.invoices.index')"
-        :badge-text="ucfirst($invoice->status)"
-        :badge-class="'badge-' . $invoice->status"
     >
-        <x-slot:subtitle>
-            Ref SO: <a href="{{ route('sales.orders.show', $invoice->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->salesOrder->so_number }}</a>
-            @if($invoice->delivery)
-                &bull; Ref Surat Jalan: <a href="{{ route('sales.deliveries.show', $invoice->delivery) }}" style="color:var(--primary); font-weight:600;">{{ $invoice->delivery->delivery_number }}</a>
-            @endif
-            &bull; Customer: <strong>{{ $invoice->salesOrder->customer->name ?? '-' }}</strong>
-        </x-slot:subtitle>
         <x-slot:actions>
-            @if($invoice->outstanding_amount > 0)
-            <a href="{{ route('sales.payments.create') }}?invoice_id={{ $invoice->id }}" class="btn btn-success">
-                <i class="fa-solid fa-hand-holding-dollar"></i> Terima Pembayaran Piutang
-            </a>
+            @if($invoice->status === 'draft')
+                <a href="{{ route('sales.invoices.edit', $invoice) }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-pen"></i> Ubah
+                </a>
             @endif
+
             <a href="{{ route('pdf.sales-invoice', $invoice) }}" class="btn btn-secondary" target="_blank">
-                <i class="fa-solid fa-file-pdf"></i> PDF Invoice
+                <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
         </x-slot:actions>
     </x-detail-header>
@@ -33,7 +27,7 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header">
                 <h3>Informasi Invoice</h3>
-                <span class="badge badge-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span>
+                <x-status-badge :status="$invoice->status" />
             </div>
             <div class="card-body">
                 <div class="form-row form-row-2">
@@ -270,5 +264,48 @@
             </table>
         </div>
     </div>
+
+    {{-- Bottom Workflow Actions --}}
+    @if($invoice->status === 'draft')
+    <x-document-action-card>
+        <form id="form-delete-draft-invoice" action="{{ route('sales.invoices.destroy', $invoice) }}" method="POST" style="display:none;">
+            @csrf
+            @method('DELETE')
+        </form>
+        <button type="button" class="btn btn-danger"
+            data-confirm-swal="form-delete-draft-invoice"
+            data-swal-title="Hapus Draft Invoice"
+            data-swal-html="Yakin ingin menghapus draft invoice <strong>{{ $invoice->invoice_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Dokumen Surat Jalan terkait akan otomatis dilepaskan untuk dapat diproses kembali.</span>"
+            data-swal-icon="warning"
+            data-swal-btn-text="Ya, Hapus Draft"
+            data-swal-btn-icon="fa-solid fa-trash"
+            data-swal-btn-class="btn btn-danger"
+        >
+            <i class="fa-solid fa-trash"></i> Hapus Draft
+        </button>
+
+        <form id="form-post-draft-invoice" action="{{ route('sales.invoices.post', $invoice) }}" method="POST" style="display:none;">
+            @csrf
+        </form>
+        <button type="button" class="btn btn-primary"
+            data-confirm-swal="form-post-draft-invoice"
+            data-swal-title="Posting Jurnal Invoice"
+            data-swal-html="Posting jurnal untuk invoice <strong>{{ $invoice->invoice_number }}</strong> sekarang?<br><span style='font-size:12.5px; color:#64748b;'>Status invoice akan berubah menjadi Unpaid dan Jurnal Akuntansi otomatis diterbitkan ke buku besar.</span>"
+            data-swal-icon="question"
+            data-swal-icon-color="#2563eb"
+            data-swal-btn-text="Ya, Posting Jurnal"
+            data-swal-btn-icon="fa-solid fa-check"
+            data-swal-btn-class="btn btn-primary"
+        >
+            <i class="fa-solid fa-check"></i> Posting Jurnal Sekarang
+        </button>
+    </x-document-action-card>
+    @elseif($invoice->outstanding_amount > 0)
+    <x-document-action-card>
+        <a href="{{ route('sales.payments.create') }}?invoice_id={{ $invoice->id }}" class="btn btn-success">
+            <i class="fa-solid fa-hand-holding-dollar"></i> Terima Pembayaran Piutang
+        </a>
+    </x-document-action-card>
+    @endif
 </div>
 @endsection

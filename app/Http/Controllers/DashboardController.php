@@ -47,7 +47,7 @@ class DashboardController extends Controller
         $dueThreshold = $today->copy()->addDays(7);
 
         $allUpcomingReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
             ->orderBy('due_date')
@@ -111,7 +111,7 @@ class DashboardController extends Controller
     private function getTotalPiutang(): float
     {
         return (float) SalesInvoice::with(['payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->get()
             ->sum->outstanding_amount;
     }
@@ -165,6 +165,7 @@ class DashboardController extends Controller
         $startDate = now()->subDays(29)->startOfDay();
 
         $sales = SalesInvoice::selectRaw('DATE(invoice_date) as date, SUM(total_amount) as total')
+            ->whereNotIn('status', ['draft'])
             ->where('invoice_date', '>=', $startDate->toDateString())
             ->groupBy('date')
             ->orderBy('date')
@@ -193,6 +194,7 @@ class DashboardController extends Controller
         $top = DB::table('sales_invoice_items')
             ->join('sales_invoices', 'sales_invoices.id', '=', 'sales_invoice_items.sales_invoice_id')
             ->join('products', 'products.id', '=', 'sales_invoice_items.product_id')
+            ->whereNotIn('sales_invoices.status', ['draft'])
             ->where('sales_invoices.invoice_date', '>=', $startDate->toDateString())
             ->select('products.name', DB::raw('SUM(sales_invoice_items.qty_invoiced) as total_qty'))
             ->groupBy('products.id', 'products.name')
@@ -222,7 +224,7 @@ class DashboardController extends Controller
         $dueThreshold = $today->copy()->addDays(7);
 
         $dueReceivablesCount = SalesInvoice::with(['payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
             ->get()

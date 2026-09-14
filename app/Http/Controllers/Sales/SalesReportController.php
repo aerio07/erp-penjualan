@@ -134,7 +134,10 @@ class SalesReportController extends Controller
 
         // Akumulasi invoice dan payments untuk filter saat ini (menggunakan effective_total_amount)
         $filteredSoIds = (clone $kpiQuery)->pluck('id');
-        $filteredInvoices = SalesInvoice::with('items')->whereIn('sales_order_id', $filteredSoIds)->get();
+        $filteredInvoices = SalesInvoice::with('items')
+            ->whereNotIn('status', ['draft'])
+            ->whereIn('sales_order_id', $filteredSoIds)
+            ->get();
         $totalInvoicedAmount = (float) $filteredInvoices->sum('effective_total_amount');
         $totalPaidAmount = (float) SalesPayment::whereHas('salesInvoice', fn($q) => $q->whereIn('sales_order_id', $filteredSoIds))->sum('amount');
         $totalOutstandingAmount = max(0, round($totalInvoicedAmount - $totalPaidAmount, 2));
@@ -167,20 +170,32 @@ class SalesReportController extends Controller
         $query = Product::with(['productCategory', 'category'])
             ->where('is_active', true)
             ->withSum(['salesInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
-                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+                $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                    $si->whereNotIn('status', ['draft']);
+                    if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                    if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+                });
             }], 'qty_invoiced')
             ->withSum(['salesInvoiceItems as total_amount' => function ($q) use ($dateFrom, $dateTo) {
-                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+                $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                    $si->whereNotIn('status', ['draft']);
+                    if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                    if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+                });
             }], 'subtotal')
             ->withSum(['salesInvoiceItems as total_cogs' => function ($q) use ($dateFrom, $dateTo) {
-                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+                $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                    $si->whereNotIn('status', ['draft']);
+                    if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                    if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+                });
             }], 'cogs_amount')
             ->withCount(['salesInvoiceItems as transaction_count' => function ($q) use ($dateFrom, $dateTo) {
-                if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-                if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+                $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                    $si->whereNotIn('status', ['draft']);
+                    if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                    if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+                });
             }]);
 
         if ($categoryId) {
@@ -218,18 +233,27 @@ class SalesReportController extends Controller
         }
 
         $totalItemsSold = (float) $summaryQuery->withSum(['salesInvoiceItems as total_qty' => function ($q) use ($dateFrom, $dateTo) {
-            if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-            if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                $si->whereNotIn('status', ['draft']);
+                if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+            });
         }], 'qty_invoiced')->get()->sum('total_qty');
 
         $totalRevenue = (float) $summaryQuery->withSum(['salesInvoiceItems as total_amt' => function ($q) use ($dateFrom, $dateTo) {
-            if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-            if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                $si->whereNotIn('status', ['draft']);
+                if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+            });
         }], 'subtotal')->get()->sum('total_amt');
 
         $totalCogsAll = (float) $summaryQuery->withSum(['salesInvoiceItems as total_cogs' => function ($q) use ($dateFrom, $dateTo) {
-            if ($dateFrom) $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '>=', $dateFrom));
-            if ($dateTo)   $q->whereHas('salesInvoice', fn($si) => $si->where('invoice_date', '<=', $dateTo));
+            $q->whereHas('salesInvoice', function ($si) use ($dateFrom, $dateTo) {
+                $si->whereNotIn('status', ['draft']);
+                if ($dateFrom) $si->where('invoice_date', '>=', $dateFrom);
+                if ($dateTo)   $si->where('invoice_date', '<=', $dateTo);
+            });
         }], 'cogs_amount')->get()->sum('total_cogs');
 
         $totalGrossProfit = $totalRevenue - $totalCogsAll;

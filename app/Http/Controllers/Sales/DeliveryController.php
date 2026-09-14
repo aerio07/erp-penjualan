@@ -232,7 +232,7 @@ class DeliveryController extends Controller
                     'due_date'     => $calcDueDate,
                     'tax_rate'     => $request->filled('invoice_tax_rate') ? (float) $request->invoice_tax_rate : (float) ($so->tax_rate ?? 0),
                     'notes'        => $request->notes ?? ("Auto-generated dari Surat Jalan #{$deliveryNumber}"),
-                ]);
+                ], asDraft: false);
 
                 return redirect()->route('sales.deliveries.index')
                     ->with('success', "Surat Jalan #{$delivery->delivery_number} berhasil dibuat (status Diterima) dan Invoice Penjualan #{$invoice->invoice_number} berhasil diterbitkan secara otomatis.");
@@ -284,7 +284,7 @@ class DeliveryController extends Controller
                     'due_date'     => $dueDate,
                     'tax_rate'     => (float) ($delivery->salesOrder?->tax_rate ?? 0),
                     'notes'        => "Diterbitkan saat konfirmasi penerimaan Surat Jalan #{$delivery->delivery_number}",
-                ]);
+                ], asDraft: false);
                 $invoiceMessage = " dan Invoice Penjualan #{$invoice->invoice_number} langsung diterbitkan.";
             }
 

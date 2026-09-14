@@ -175,8 +175,8 @@
         </div>
 
         <x-form-actions 
-            :back-url="route('sales.invoices.index')" 
-            submit-label="Terbitkan Invoice & Posting Jurnal (HPP + Piutang)" 
+            :cancel-url="route('sales.invoices.index')" 
+            submit-label="Simpan sebagai Draft Invoice" 
         />
     </form>
 </div>

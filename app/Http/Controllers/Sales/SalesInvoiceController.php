@@ -152,7 +152,7 @@ class SalesInvoiceController extends Controller
                 ]);
 
                 return redirect()->route('sales.invoices.index')
-                    ->with('success', "Invoice Penjualan #{$invoice->invoice_number} berhasil diterbitkan dari Surat Jalan #{$delivery->delivery_number} dan Jurnal Akuntansi otomatis diposting.");
+                    ->with('success', "Invoice Penjualan #{$invoice->invoice_number} berhasil disimpan sebagai Draft.");
             });
         } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {
             return back()->with('error', $e->getMessage())->withInput();
@@ -164,6 +164,137 @@ class SalesInvoiceController extends Controller
         $invoice->load(['salesOrder.customer', 'delivery.warehouse', 'items.product', 'items.deliveryItem.delivery', 'payments']);
 
         return view('sales.invoices.show', compact('invoice'));
+    }
+
+    public function edit(SalesInvoice $invoice): View|RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('sales.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
+        }
+
+        $invoice->load(['salesOrder.customer', 'delivery.warehouse', 'items.product', 'items.deliveryItem']);
+
+        return view('sales.invoices.edit', compact('invoice'));
+    }
+
+    public function update(Request $request, SalesInvoice $invoice): RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('sales.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
+        }
+
+        $request->validate([
+            'tax_invoice_number' => 'nullable|string|max:50',
+            'invoice_date'       => 'required|date',
+            'due_date'           => 'required|date|after_or_equal:invoice_date',
+            'tax_rate'           => 'required|numeric|min:0|max:100',
+            'notes'              => 'nullable|string',
+        ]);
+
+        try {
+            return DB::transaction(function () use ($request, $invoice) {
+                $taxRate = (float) $request->tax_rate;
+                $dpp = (float) $invoice->amount;
+
+                $isIntegerRupiah = (round($invoice->total_amount) == $invoice->total_amount);
+                $dec = $isIntegerRupiah ? 0 : 2;
+                $taxAmount = round($dpp * ($taxRate / 100), $dec);
+                $totalAmount = round($dpp + $taxAmount, $dec);
+
+                $invoice->update([
+                    'tax_invoice_number' => $request->filled('tax_invoice_number') ? trim($request->tax_invoice_number) : null,
+                    'invoice_date'       => $request->invoice_date,
+                    'due_date'           => $request->due_date,
+                    'tax_rate'           => $taxRate,
+                    'tax_amount'         => $taxAmount,
+                    'total_amount'       => $totalAmount,
+                    'notes'              => $request->notes,
+                ]);
+
+                // Update tax pada item jika tax_rate berubah
+                $items = $invoice->items;
+                $allocatedTax = 0;
+                $itemCount = $items->count();
+                foreach ($items as $idx => $item) {
+                    $isLast = ($idx === $itemCount - 1);
+                    $itemTax = $isLast ? max(0, round($taxAmount - $allocatedTax, $dec)) : round($item->subtotal * ($taxRate / 100), $dec);
+                    $allocatedTax += $itemTax;
+                    $item->update(['tax_amount' => $itemTax]);
+                }
+
+                return redirect()->route('sales.invoices.show', $invoice)
+                    ->with('success', "Draft Invoice Penjualan #{$invoice->invoice_number} berhasil diperbarui.");
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui draft invoice: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function destroy(SalesInvoice $invoice): RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('sales.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat dihapus.');
+        }
+
+        try {
+            return DB::transaction(function () use ($invoice) {
+                $invoiceNumber = $invoice->invoice_number;
+
+                // Lepaskan kaitan Surat Jalan (Delivery)
+                if ($invoice->delivery_id) {
+                    $del = Delivery::find($invoice->delivery_id);
+                    if ($del) {
+                        $del->update([
+                            'is_invoiced'      => false,
+                            'sales_invoice_id' => null,
+                        ]);
+                        foreach ($del->items as $delItem) {
+                            $delItem->update(['invoiced_qty' => 0]);
+                        }
+                    }
+                }
+                Delivery::where('sales_invoice_id', $invoice->id)->update([
+                    'is_invoiced'      => false,
+                    'sales_invoice_id' => null,
+                ]);
+
+                // Hapus items lalu invoice
+                $invoice->items()->delete();
+                $invoice->delete();
+
+                return redirect()->route('sales.invoices.index')
+                    ->with('success', "Draft Invoice Penjualan #{$invoiceNumber} berhasil dihapus dan Surat Jalan terkait telah dilepaskan.");
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus draft invoice: ' . $e->getMessage());
+        }
+    }
+
+    public function post(SalesInvoice $invoice): RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('sales.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat diposting.');
+        }
+
+        try {
+            return DB::transaction(function () use ($invoice) {
+                $invoice = SalesInvoice::lockForUpdate()->findOrFail($invoice->id);
+                if ($invoice->status !== 'draft') {
+                    throw new \InvalidArgumentException('Invoice ini sudah pernah diposting.');
+                }
+
+                $this->salesInvoiceService->postInvoice($invoice);
+
+                return redirect()->route('sales.invoices.show', $invoice)
+                    ->with('success', "Invoice Penjualan #{$invoice->invoice_number} berhasil diposting dan Jurnal Akuntansi otomatis diterbitkan.");
+            });
+        } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function updateTaxInvoice(Request $request, SalesInvoice $invoice): RedirectResponse
