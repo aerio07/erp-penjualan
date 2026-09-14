@@ -25,6 +25,7 @@
 
         <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft (Belum Diposting)</option>
             <option value="unpaid" {{ request('status') === 'unpaid' ? 'selected' : '' }}>Belum Dibayar (Unpaid)</option>
             <option value="partial" {{ request('status') === 'partial' ? 'selected' : '' }}>Dibayar Sebagian (Partial)</option>
             <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Lunas (Paid)</option>
@@ -75,7 +76,7 @@
             </td>
             <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>
             <td>
-                <span style="{{ $inv->status !== 'paid' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
+                <span style="{{ $inv->status !== 'paid' && $inv->status !== 'draft' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
                     {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}
                 </span>
             </td>
@@ -87,28 +88,30 @@
                     </div>
                 @endif
             </td>
-            <td style="text-align:right; font-weight:600; color:{{ $inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)' }};">
-                Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
+            <td style="text-align:right; font-weight:600; color:{{ $inv->status === 'draft' ? 'var(--text-secondary)' : ($inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)') }};">
+                @if($inv->status === 'draft')
+                    <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">(Draft)</span>
+                @else
+                    Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
+                @endif
             </td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $inv->status }}">
-                    {{ ucfirst($inv->status) }}
-                </span>
+                <x-status-badge :status="$inv->status" />
             </td>
             <td class="col-actions text-center">
-                <div style="display:flex; gap:6px; justify-content:center;">
-                    <a href="{{ route('purchase.invoices.show', $inv) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                        <i class="fa-solid fa-eye"></i>
-                    </a>
-                    @if($inv->outstanding_amount > 0)
-                    <a href="{{ route('purchase.payments.create') }}?invoice_id={{ $inv->id }}" class="btn btn-success btn-sm btn-icon" title="Bayar Hutang">
-                        <i class="fa-solid fa-money-check-dollar"></i>
-                    </a>
+                <x-table-actions 
+                    :show-url="route('purchase.invoices.show', $inv)"
+                    :edit-url="$inv->status === 'draft' ? route('purchase.invoices.edit', $inv) : null"
+                    :pdf-url="route('pdf.purchase-invoice', $inv)"
+                    :delete-url="$inv->status === 'draft' ? route('purchase.invoices.destroy', $inv) : null"
+                    delete-confirm="Yakin ingin menghapus draft invoice ini? LPB terkait akan otomatis dilepaskan."
+                >
+                    @if($inv->status !== 'draft' && $inv->outstanding_amount > 0)
+                        <a href="{{ route('purchase.payments.create') }}?invoice_id={{ $inv->id }}" class="btn btn-success btn-sm btn-icon" title="Bayar Hutang">
+                            <i class="fa-solid fa-money-check-dollar"></i>
+                        </a>
                     @endif
-                    <a href="{{ route('pdf.purchase-invoice', $inv) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
-                        <i class="fa-solid fa-file-pdf"></i>
-                    </a>
-                </div>
+                </x-table-actions>
             </td>
         </tr>
         @empty

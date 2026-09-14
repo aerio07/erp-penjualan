@@ -360,6 +360,8 @@ class PurchaseInvoiceOneLpbTest extends TestCase
         ]);
 
         $invoice = PurchaseInvoice::with('items')->latest()->firstOrFail();
+        $this->actingAs($this->admin)->post(route('purchase.invoices.post', $invoice));
+        $invoice->refresh();
         $this->assertEquals(600, $invoice->total_amount);
         $this->assertEquals(600, $invoice->outstanding_amount);
 

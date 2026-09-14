@@ -134,9 +134,9 @@ class PurchaseReportController extends Controller
 
         // Akumulasi invoice dan payments untuk filter saat ini (menggunakan effective_total_amount)
         $filteredPoIds = (clone $kpiQuery)->pluck('id');
-        $filteredInvoices = PurchaseInvoice::with('items')->whereIn('purchase_order_id', $filteredPoIds)->get();
+        $filteredInvoices = PurchaseInvoice::with('items')->where('status', '!=', 'draft')->whereIn('purchase_order_id', $filteredPoIds)->get();
         $totalInvoicedAmount = (float) $filteredInvoices->sum('effective_total_amount');
-        $totalPaidAmount = (float) PurchasePayment::whereHas('purchaseInvoice', fn($q) => $q->whereIn('purchase_order_id', $filteredPoIds))->sum('amount');
+        $totalPaidAmount = (float) PurchasePayment::whereHas('purchaseInvoice', fn($q) => $q->where('status', '!=', 'draft')->whereIn('purchase_order_id', $filteredPoIds))->sum('amount');
         $totalOutstandingAmount = max(0, round($totalInvoicedAmount - $totalPaidAmount, 2));
 
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();

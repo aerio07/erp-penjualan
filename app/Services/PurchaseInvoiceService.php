@@ -23,7 +23,7 @@ class PurchaseInvoiceService
      * @return PurchaseInvoice
      * @throws InvalidArgumentException
      */
-    public function createFromGoodsReceipt(GoodsReceipt $grn, array $data = []): PurchaseInvoice
+    public function createFromGoodsReceipt(GoodsReceipt $grn, array $data = [], bool $asDraft = true): PurchaseInvoice
     {
         if ($grn->is_invoiced) {
             throw new InvalidArgumentException("LPB #{$grn->receipt_number} sudah pernah digunakan untuk invoice lain.");
@@ -44,6 +44,10 @@ class PurchaseInvoiceService
 
         $taxRate = isset($data['tax_rate']) ? (float) $data['tax_rate'] : (float) ($po->tax_rate ?? 0);
         $invoiceDate = $data['invoice_date'] ?? ($grn->received_date ? $grn->received_date->toDateString() : now()->toDateString());
+        
+        // Pastikan periode akuntansi tidak ditutup
+        app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked($invoiceDate);
+
         $termDays = $po->supplier?->payment_term_days ?? 30;
         $dueDate = $data['due_date'] ?? \Carbon\Carbon::parse($invoiceDate)->addDays($termDays)->toDateString();
         $notes = $data['notes'] ?? ("Auto-generated dari LPB #" . $grn->receipt_number);
@@ -153,7 +157,7 @@ class PurchaseInvoiceService
             'total_amount'            => $totalAmount,
             'invoice_date'            => $invoiceDate,
             'due_date'                => $dueDate,
-            'status'                  => 'unpaid',
+            'status'                  => $asDraft ? 'draft' : 'unpaid',
             'notes'                   => $notes,
         ]);
 
@@ -195,6 +199,29 @@ class PurchaseInvoiceService
             'is_invoiced'         => true,
             'purchase_invoice_id' => $invoice->id,
         ]);
+
+        if (!$asDraft) {
+            $entry = $this->journalService->createFromPurchaseInvoice($invoice);
+            $this->journalService->postEntry($entry);
+        }
+
+        return $invoice;
+    }
+
+    /**
+     * Post a draft PurchaseInvoice and generate its journal entry.
+     *
+     * @param PurchaseInvoice $invoice
+     * @return PurchaseInvoice
+     * @throws InvalidArgumentException
+     */
+    public function postInvoice(PurchaseInvoice $invoice): PurchaseInvoice
+    {
+        if ($invoice->status !== 'draft') {
+            throw new InvalidArgumentException("Hanya invoice berstatus Draft yang dapat diposting.");
+        }
+
+        $invoice->update(['status' => 'unpaid']);
 
         $entry = $this->journalService->createFromPurchaseInvoice($invoice);
         $this->journalService->postEntry($entry);

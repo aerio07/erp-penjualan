@@ -277,7 +277,7 @@ class ReportController extends Controller
 
         // Est. Pengeluaran dari Hutang (jatuh tempo s/d akhir periode - visibilitas penuh s/d $fcEnd)
         $fcPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '<=', $fcEnd->toDateString())
             ->get()
             ->filter(fn($inv) => $inv->outstanding_amount > 0.01);
@@ -421,7 +421,7 @@ class ReportController extends Controller
             ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
         $prevPayables = PurchaseInvoice::with(['payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '<=', $prevEnd->toDateString())
             ->get()->filter(fn($inv) => $inv->outstanding_amount > 0.01);
 
@@ -493,7 +493,7 @@ class ReportController extends Controller
     public function payables(Request $request): View
     {
         $openInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->get()
             ->map(function ($inv) {
                 $dueDate = Carbon::parse($inv->due_date);
@@ -693,6 +693,7 @@ class ReportController extends Controller
 
         // 1. Tagihan Invoices Pembelian
         $invoices = PurchaseInvoice::with('purchaseOrder')
+            ->where('status', '!=', 'draft')
             ->whereHas('purchaseOrder', fn($q) => $q->where('supplier_id', $supplier->id))
             ->get()
             ->map(function ($inv) {
@@ -939,7 +940,7 @@ class ReportController extends Controller
             : true;
 
         $query = Supplier::with(['purchaseInvoices' => function ($q) {
-            $q->where('purchase_invoices.status', '!=', 'paid')->with('payments');
+            $q->whereNotIn('purchase_invoices.status', ['paid', 'draft'])->with('payments');
         }]);
 
         if ($search) {
@@ -1095,7 +1096,7 @@ class ReportController extends Controller
         $targetDate = $today->copy()->addDays($days);
 
         $query = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $targetDate);
 

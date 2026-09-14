@@ -134,6 +134,13 @@ class PurchaseReturnController extends Controller
         ])->findOrFail($request->goods_receipt_id);
 
         $invoice = $grn->purchaseInvoice ?? PurchaseInvoice::with(['items', 'payments'])->where('goods_receipt_id', $grn->id)->first();
+
+        // Tolak retur jika invoice LPB masih berstatus Draft
+        if ($invoice && $invoice->status === 'draft') {
+            $msg = "LPB terkait masih memiliki Invoice Pembelian berstatus Draft ({$invoice->invoice_number}). Silakan hapus draft invoice atau posting invoice terlebih dahulu sebelum mengajukan retur.";
+            return back()->with('error', $msg)->withErrors(['items' => $msg])->withInput();
+        }
+
         $sisaBelumBayar = $invoice ? round((float) $invoice->effective_total_amount - (float) $invoice->total_paid, 2) : null;
 
         // Jika invoice sudah lunas penuh (outstanding <= 0.01), tolak retur otomatis untuk mencegah overpayment
@@ -338,6 +345,7 @@ class PurchaseReturnController extends Controller
         }
 
         PurchaseInvoice::with(['items', 'payments'])
+            ->where('status', '!=', 'draft')
             ->whereHas('items', fn($query) => $query->whereIn('goods_receipt_item_id', $grnItemIds))
             ->get()
             ->each(function (PurchaseInvoice $invoice) {

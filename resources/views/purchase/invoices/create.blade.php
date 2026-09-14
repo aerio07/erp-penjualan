@@ -183,7 +183,7 @@
 
         <x-form-actions 
             :cancel-url="route('purchase.invoices.index')" 
-            submit-label="Terbitkan Invoice & Posting Jurnal" 
+            submit-label="Simpan sebagai Draft Invoice" 
         />
     </form>
 </div>

@@ -29,8 +29,8 @@
         'adjustment' => 
             'bg-purple-100 text-purple-800 border border-purple-200',
 
-        // Neutral / Non-PKP
-        'non_pkp' => 
+        // Neutral / Non-PKP / Draft
+        'draft', 'non_pkp' => 
             'bg-status-neutral-bg text-status-neutral-text border border-border-medium',
 
         // Fallback Default Neutral (Gray)

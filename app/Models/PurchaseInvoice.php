@@ -26,6 +26,16 @@ class PurchaseInvoice extends Model
         'total_amount' => 'decimal:2',
     ];
 
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function isPosted(): bool
+    {
+        return in_array($this->status, ['unpaid', 'partial', 'paid']);
+    }
+
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class);

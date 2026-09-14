@@ -168,6 +168,8 @@ class InvoiceReturnConsistencyTest extends TestCase
         ]);
 
         $invoice = PurchaseInvoice::with('items')->firstOrFail();
+        $this->actingAs($this->admin)->post(route('purchase.invoices.post', $invoice));
+        $invoice->refresh();
         $grnItem = GoodsReceiptItem::firstOrFail();
         $return = PurchaseReturn::create([
             'return_number' => 'PRET-POST-001',

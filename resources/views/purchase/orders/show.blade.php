@@ -14,19 +14,9 @@
     >
         <x-slot:actions>
             @if($order->status === 'draft')
-            <form method="POST" action="{{ route('purchase.orders.confirm', $order) }}" style="display:inline;">
-                @csrf @method('PATCH')
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Konfirmasi PO</button>
-            </form>
             <a href="{{ route('purchase.orders.edit', $order) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Ubah</a>
             @endif
             <a href="{{ route('pdf.purchase-order', $order) }}" class="btn btn-secondary" target="_blank"><i class="fa-solid fa-file-pdf"></i> PDF</a>
-            @if(in_array($order->status, ['draft', 'waiting_approval']))
-            <form method="POST" action="{{ route('purchase.orders.cancel', $order) }}" style="display:inline;">
-                @csrf @method('PATCH')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Batalkan PO ini?')"><i class="fa-solid fa-ban"></i> Batalkan</button>
-            </form>
-            @endif
         </x-slot:actions>
     </x-detail-header>
 
@@ -245,6 +235,59 @@
             </table>
         </div>
     </div>
+    @endif
+
+    {{-- Bottom Workflow Actions --}}
+    @if($order->status === 'draft')
+    <x-document-action-card>
+        <form id="form-cancel-po" method="POST" action="{{ route('purchase.orders.cancel', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-danger"
+            data-confirm-swal="form-cancel-po"
+            data-swal-title="Batalkan Purchase Order"
+            data-swal-html="Yakin ingin membatalkan Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status PO akan diubah menjadi Cancelled.</span>"
+            data-swal-icon="warning"
+            data-swal-btn-text="Ya, Batalkan PO"
+            data-swal-btn-icon="fa-solid fa-ban"
+            data-swal-btn-class="btn btn-danger"
+        >
+            <i class="fa-solid fa-ban"></i> Batalkan PO
+        </button>
+
+        <form id="form-confirm-po" method="POST" action="{{ route('purchase.orders.confirm', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-primary"
+            data-confirm-swal="form-confirm-po"
+            data-swal-title="Konfirmasi Purchase Order"
+            data-swal-html="Konfirmasi Purchase Order <strong>{{ $order->po_number }}</strong> sekarang?<br><span style='font-size:12.5px; color:#64748b;'>Status akan berubah menjadi Confirmed dan siap diteruskan ke supplier.</span>"
+            data-swal-icon="question"
+            data-swal-icon-color="#2563eb"
+            data-swal-btn-text="Ya, Konfirmasi PO"
+            data-swal-btn-icon="fa-solid fa-check"
+            data-swal-btn-class="btn btn-primary"
+        >
+            <i class="fa-solid fa-check"></i> Konfirmasi PO Sekarang
+        </button>
+    </x-document-action-card>
+    @elseif($order->status === 'waiting_approval')
+    <x-document-action-card>
+        <form id="form-cancel-po-approval" method="POST" action="{{ route('purchase.orders.cancel', $order) }}" style="display:none;">
+            @csrf @method('PATCH')
+        </form>
+        <button type="button" class="btn btn-danger"
+            data-confirm-swal="form-cancel-po-approval"
+            data-swal-title="Batalkan Purchase Order"
+            data-swal-html="Yakin ingin membatalkan Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Permintaan persetujuan yang sedang berjalan akan dibatalkan.</span>"
+            data-swal-icon="warning"
+            data-swal-btn-text="Ya, Batalkan PO"
+            data-swal-btn-icon="fa-solid fa-ban"
+            data-swal-btn-class="btn btn-danger"
+        >
+            <i class="fa-solid fa-ban"></i> Batalkan PO
+        </button>
+    </x-document-action-card>
     @endif
 
 </div>

@@ -99,7 +99,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('role:admin,finance')->prefix('purchase')->name('purchase.')->group(function () {
-        Route::resource('invoices', PurchaseInvoiceController::class)->only(['index', 'create', 'store', 'show']);
+        Route::post('invoices/{invoice}/post', [PurchaseInvoiceController::class, 'post'])->name('invoices.post');
+        Route::resource('invoices', PurchaseInvoiceController::class);
         Route::resource('payments', PurchasePaymentController::class)->only(['index', 'create', 'store', 'show']);
     });
 

@@ -1479,7 +1479,51 @@
                     reverseButtons: true,
                     focusCancel: true,
                     customClass: {
-                        popup: 'erp-swal-modal'
+                        popup: 'erp-swal-modal',
+                        confirmButton: 'btn btn-danger',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false
+                }).then((r) => { 
+                    if (r.isConfirmed) {
+                        form.submit(); 
+                    }
+                });
+            });
+        });
+
+        // Global SweetAlert handler for workflow actions (e.g. Batalkan, Konfirmasi, Posting)
+        document.querySelectorAll('[data-confirm-swal]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const formId = this.dataset.confirmSwal;
+                const form = document.getElementById(formId);
+                if (!form) return;
+
+                const title = this.dataset.swalTitle || 'Konfirmasi Tindakan';
+                const messageHtml = this.dataset.swalHtml || this.dataset.swalText || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+                const icon = this.dataset.swalIcon || 'warning';
+                const iconColor = this.dataset.swalIconColor || (icon === 'warning' ? '#dc2626' : (icon === 'question' ? '#2563eb' : '#16a34a'));
+                const confirmBtnText = this.dataset.swalBtnText || 'Ya, Lanjutkan';
+                const confirmBtnIcon = this.dataset.swalBtnIcon ? `<i class="${this.dataset.swalBtnIcon}" style="margin-right:6px;"></i> ` : '';
+                const confirmBtnClass = this.dataset.swalBtnClass || 'btn btn-danger';
+                const cancelBtnText = this.dataset.swalCancelText || 'Batal';
+
+                Swal.fire({
+                    title: title,
+                    html: messageHtml,
+                    icon: icon,
+                    iconColor: iconColor,
+                    showCancelButton: true,
+                    confirmButtonText: confirmBtnIcon + confirmBtnText,
+                    cancelButtonText: cancelBtnText,
+                    reverseButtons: true,
+                    focusConfirm: icon === 'question',
+                    focusCancel: icon === 'warning',
+                    customClass: {
+                        popup: 'erp-swal-modal',
+                        confirmButton: confirmBtnClass,
+                        cancelButton: 'btn btn-secondary'
                     },
                     buttonsStyling: false
                 }).then((r) => { 

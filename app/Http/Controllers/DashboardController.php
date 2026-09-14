@@ -64,7 +64,7 @@ class DashboardController extends Controller
         $totalUpcomingReceivables = (float) $allUpcomingReceivables->sum('outstanding_amount');
 
         $allUpcomingPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
             ->orderBy('due_date')
@@ -119,7 +119,7 @@ class DashboardController extends Controller
     private function getTotalHutang(): float
     {
         return (float) PurchaseInvoice::with(['payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->get()
             ->sum->outstanding_amount;
     }
@@ -230,7 +230,7 @@ class DashboardController extends Controller
             ->count();
 
         $duePayablesCount = PurchaseInvoice::with(['payments', 'items'])
-            ->where('status', '!=', 'paid')
+            ->whereNotIn('status', ['paid', 'draft'])
             ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
             ->get()

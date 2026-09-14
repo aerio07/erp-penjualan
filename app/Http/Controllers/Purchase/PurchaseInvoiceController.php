@@ -143,10 +143,10 @@ class PurchaseInvoiceController extends Controller
                     'due_date'                => $request->due_date,
                     'tax_rate'                => $request->tax_rate,
                     'notes'                   => $request->notes,
-                ]);
+                ], asDraft: true);
 
                 return redirect()->route('purchase.invoices.index')
-                    ->with('success', 'Invoice Pembelian berhasil diterbitkan dari LPB ' . $grn->receipt_number . ' dan Jurnal Akuntansi otomatis diposting.');
+                    ->with('success', 'Invoice Pembelian #' . $invoice->invoice_number . ' berhasil disimpan sebagai Draft.');
             });
         } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {
             return back()->with('error', $e->getMessage())->withInput();
@@ -158,6 +158,131 @@ class PurchaseInvoiceController extends Controller
         $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
 
         return view('purchase.invoices.show', compact('invoice'));
+    }
+
+    public function edit(PurchaseInvoice $invoice): View|RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('purchase.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
+        }
+
+        $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem']);
+
+        return view('purchase.invoices.edit', compact('invoice'));
+    }
+
+    public function update(Request $request, PurchaseInvoice $invoice): RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('purchase.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
+        }
+
+        $request->validate([
+            'supplier_invoice_number' => 'nullable|string|max:100',
+            'invoice_date'            => 'required|date',
+            'due_date'                => 'required|date|after_or_equal:invoice_date',
+            'tax_rate'                => 'required|numeric|min:0|max:100',
+            'notes'                   => 'nullable|string',
+        ]);
+
+        try {
+            return DB::transaction(function () use ($request, $invoice) {
+                $taxRate = (float) $request->tax_rate;
+                $dpp = (float) $invoice->amount;
+
+                $isIntegerRupiah = (round($invoice->total_amount) == $invoice->total_amount);
+                $dec = $isIntegerRupiah ? 0 : 2;
+                $taxAmount = round($dpp * ($taxRate / 100), $dec);
+                $totalAmount = round($dpp + $taxAmount, $dec);
+
+                $invoice->update([
+                    'supplier_invoice_number' => $request->supplier_invoice_number,
+                    'invoice_date'            => $request->invoice_date,
+                    'due_date'                => $request->due_date,
+                    'tax_rate'                => $taxRate,
+                    'tax_amount'              => $taxAmount,
+                    'total_amount'            => $totalAmount,
+                    'notes'                   => $request->notes,
+                ]);
+
+                // Update tax pada item jika tax_rate berubah
+                $items = $invoice->items;
+                $allocatedTax = 0;
+                $itemCount = $items->count();
+                foreach ($items as $idx => $item) {
+                    $isLast = ($idx === $itemCount - 1);
+                    $itemTax = $isLast ? max(0, round($taxAmount - $allocatedTax, $dec)) : round($item->subtotal * ($taxRate / 100), $dec);
+                    $allocatedTax += $itemTax;
+                    $item->update(['tax_amount' => $itemTax]);
+                }
+
+                return redirect()->route('purchase.invoices.show', $invoice)
+                    ->with('success', "Draft Invoice Pembelian #{$invoice->invoice_number} berhasil diperbarui.");
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui draft invoice: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function destroy(PurchaseInvoice $invoice): RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('purchase.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat dihapus.');
+        }
+
+        try {
+            return DB::transaction(function () use ($invoice) {
+                $invoiceNumber = $invoice->invoice_number;
+
+                // Lepaskan kaitan LPB (Goods Receipt)
+                if ($invoice->goods_receipt_id) {
+                    GoodsReceipt::where('id', $invoice->goods_receipt_id)->update([
+                        'is_invoiced'         => false,
+                        'purchase_invoice_id' => null,
+                    ]);
+                }
+                GoodsReceipt::where('purchase_invoice_id', $invoice->id)->update([
+                    'is_invoiced'         => false,
+                    'purchase_invoice_id' => null,
+                ]);
+
+                // Hapus items lalu invoice
+                $invoice->items()->delete();
+                $invoice->delete();
+
+                return redirect()->route('purchase.invoices.index')
+                    ->with('success', "Draft Invoice Pembelian #{$invoiceNumber} berhasil dihapus dan LPB terkait telah dilepaskan.");
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus draft invoice: ' . $e->getMessage());
+        }
+    }
+
+    public function post(PurchaseInvoice $invoice): RedirectResponse
+    {
+        if ($invoice->status !== 'draft') {
+            return redirect()->route('purchase.invoices.show', $invoice)
+                ->with('error', 'Hanya invoice berstatus Draft yang dapat diposting.');
+        }
+
+        try {
+            return DB::transaction(function () use ($invoice) {
+                $invoice = PurchaseInvoice::lockForUpdate()->findOrFail($invoice->id);
+                if ($invoice->status !== 'draft') {
+                    throw new \InvalidArgumentException('Invoice ini sudah pernah diposting.');
+                }
+
+                $this->purchaseInvoiceService->postInvoice($invoice);
+
+                return redirect()->route('purchase.invoices.show', $invoice)
+                    ->with('success', "Invoice Pembelian #{$invoice->invoice_number} berhasil diposting dan Jurnal Akuntansi otomatis diterbitkan.");
+            });
+        } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function exportPdf(PurchaseInvoice $invoice)
