@@ -23,14 +23,15 @@
         placeholder="Cari nama atau SKU produk..."
         :showPerPage="false"
     >
-        <select name="warehouse_id" class="form-control filter-select">
-            <option value="">Semua Gudang (Konsolidasi)</option>
-            @foreach($warehouses as $wh)
-            <option value="{{ $wh->id }}" {{ (string) request('warehouse_id', $warehouseId) === (string) $wh->id ? 'selected' : '' }}>
-                {{ $wh->name }} ({{ $wh->code }})
-            </option>
-            @endforeach
-        </select>
+        <div style="min-width: 260px;">
+            <x-searchable-select 
+                name="warehouse_id" 
+                :options="$warehouses" 
+                :value="request('warehouse_id', $warehouseId)" 
+                placeholder="-- Semua Gudang (Konsolidasi) --" 
+                search-placeholder="Cari nama gudang..." 
+            />
+        </div>
     </x-list-filter-bar>
 
     <div class="card">

@@ -115,7 +115,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin,gudang')->prefix('inventory')->name('inventory.')->group(function () {
         Route::get('stock-card', [StockMovementController::class, 'stockCard'])->name('stock-card');
         Route::get('movements', [StockMovementController::class, 'index'])->name('movements.index');
-        Route::resource('transfers', WarehouseTransferController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('transfers', WarehouseTransferController::class)->except(['destroy']);
         Route::patch('transfers/{transfer}/ship', [WarehouseTransferController::class, 'ship'])->name('transfers.ship');
         Route::patch('transfers/{transfer}/receive', [WarehouseTransferController::class, 'receive'])->name('transfers.receive');
         Route::patch('transfers/{transfer}/cancel', [WarehouseTransferController::class, 'cancel'])->name('transfers.cancel');

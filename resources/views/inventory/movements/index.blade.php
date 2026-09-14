@@ -10,19 +10,25 @@
     />
 
     <x-list-filter-bar :action="route('inventory.movements.index')" placeholder="Cari SKU, Nama Produk, Catatan..." :showDateFilter="true">
-        <select name="product_id" class="form-control filter-select">
-            <option value="">Semua Produk</option>
-            @foreach($products as $p)
-            <option value="{{ $p->id }}" {{ request('product_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
-            @endforeach
-        </select>
+        <div style="min-width: 220px;">
+            <x-searchable-select 
+                name="product_id" 
+                :options="$products" 
+                :value="request('product_id')" 
+                placeholder="-- Semua Produk --" 
+                search-placeholder="Cari nama atau SKU produk..." 
+            />
+        </div>
 
-        <select name="warehouse_id" class="form-control filter-select">
-            <option value="">Semua Gudang</option>
-            @foreach($warehouses as $wh)
-            <option value="{{ $wh->id }}" {{ request('warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
-            @endforeach
-        </select>
+        <div style="min-width: 180px;">
+            <x-searchable-select 
+                name="warehouse_id" 
+                :options="$warehouses" 
+                :value="request('warehouse_id')" 
+                placeholder="-- Semua Gudang --" 
+                search-placeholder="Cari nama gudang..." 
+            />
+        </div>
 
         <select name="type" class="form-control filter-select">
             <option value="">Semua Tipe Mutasi</option>

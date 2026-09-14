@@ -6,7 +6,7 @@
 <div class="animate-in" x-data="trfForm()">
     <x-page-header 
         title="Buat Draft Transfer Gudang" 
-        subtitle="Form pemindahan persediaan antar gudang. Stok gudang asal akan dikurangi setelah pengiriman dikonfirmasi (Ship)."
+        subtitle="Form pemindahan persediaan antar gudang. Stok gudang asal akan dikurangi setelah pengiriman/posting transfer."
         :back-url="route('inventory.transfers.index')"
     />
 
@@ -24,7 +24,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('inventory.transfers.store') }}">
+    <form method="POST" action="{{ route('inventory.transfers.store') }}" @submit="return validateForm($event)">
         @csrf
 
         <div class="card" style="margin-bottom:20px;">
@@ -65,7 +65,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Catatan</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Catatan pengiriman transfer...">{{ old('notes') }}</textarea>
+                    <textarea name="notes" class="form-control" rows="2" placeholder="Catatan atau alasan transfer stok...">{{ old('notes') }}</textarea>
                 </div>
             </div>
         </div>
@@ -73,7 +73,10 @@
         {{-- Items --}}
         <div class="card" style="margin-bottom:20px; overflow: visible;">
             <div class="card-header">
-                <h3>Daftar Barang Ditransfer</h3>
+                <div>
+                    <h3 style="margin-bottom: 2px;">Daftar Barang Ditransfer</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Pilih item dan tentukan jumlah yang akan dipindahkan.</p>
+                </div>
                 <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
                     <i class="fa-solid fa-plus"></i> Tambah Item
                 </button>
@@ -82,9 +85,10 @@
                 <table class="erp-table">
                     <thead>
                         <tr>
-                            <th style="min-width: 260px;">Produk</th>
-                            <th style="width:180px;">Jumlah Transfer (Qty)</th>
-                            <th style="width:50px;"></th>
+                            <th style="min-width: 320px;">Produk (Kode & Nama)</th>
+                            <th style="width: 170px; text-align: right;">Stok Tersedia</th>
+                            <th style="width: 180px;">Jumlah Transfer (Qty)</th>
+                            <th style="width: 50px;"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -96,56 +100,106 @@
                                     <div 
                                         @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
                                         class="form-control"
-                                        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 38px; background: #fff;"
+                                        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 42px; background: #fff;"
                                         @click.outside="openProd = false"
                                     >
-                                        <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
-                                              :style="!row.product_id ? 'color: #94a3b8;' : 'color: #0f172a; font-weight: 500;'"
-                                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px;"
-                                        ></span>
+                                        <template x-if="products[row.product_id]">
+                                            <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                <span class="badge" style="background: #eff6ff; color: #1d4ed8; font-weight: 700; font-size: 11px;" x-text="products[row.product_id].sku"></span>
+                                                <span style="font-weight: 600; color: var(--text-primary);" x-text="products[row.product_id].name"></span>
+                                            </div>
+                                        </template>
+                                        <template x-if="!products[row.product_id]">
+                                            <span style="color: #94a3b8;"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i> Cari & Pilih Produk...</span>
+                                        </template>
                                         <i class="fa-solid fa-chevron-down text-slate-400" style="font-size: 11px;"></i>
                                     </div>
 
                                     <div 
                                         x-show="openProd" 
                                         x-transition
-                                        style="position: absolute; top: 100%; left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                                        style="position: absolute; top: 100%; left: 0; width: 100%; min-width: 360px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 280px; display: flex; flex-direction: column; overflow: hidden;"
                                         x-cloak
                                     >
-                                        <div style="padding: 6px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
+                                        <div style="padding: 8px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
                                             <div style="position: relative; display: flex; align-items: center;">
-                                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; color: #64748b; font-size: 12px; pointer-events: none;"></i>
+                                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; color: #64748b; font-size: 12px; pointer-events: none;"></i>
                                                 <input 
                                                     type="text" 
                                                     x-ref="prodSearchInput"
                                                     x-model="prodSearch" 
-                                                    placeholder="Cari nama atau SKU produk..." 
+                                                    placeholder="Ketik Kode Item atau Nama Produk..." 
                                                     class="form-control" 
-                                                    style="width: 100%; padding-left: 28px; font-size: 12px; height: 32px; border-radius: 6px;"
+                                                    style="width: 100%; padding-left: 30px; font-size: 12.5px; height: 34px; border-radius: 6px;"
                                                     @click.stop
                                                 >
                                             </div>
                                         </div>
-                                        <div style="overflow-y: auto; max-height: 200px;">
-                                            <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
+                                        <div style="overflow-y: auto; max-height: 220px;">
+                                            <template x-for="p in getFilteredProducts(prodSearch)" :key="p.id">
                                                 <div 
                                                     @click="row.product_id = p.id; openProd = false; prodSearch = '';"
                                                     :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
-                                                    style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
+                                                    style="padding: 9px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;"
                                                     onmouseover="this.style.backgroundColor='#f1f5f9'"
                                                     onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
                                                 >
-                                                    <span x-text="p.name + ' (' + p.sku + ')'"></span>
+                                                    <div style="overflow: hidden; text-overflow: ellipsis; padding-right: 8px;">
+                                                        <div style="font-weight: 600; color: #0f172a;" x-text="p.name"></div>
+                                                        <div style="font-size: 11px; color: #64748b;">
+                                                            Kode: <span class="font-mono text-blue-600" x-text="p.sku"></span>
+                                                        </div>
+                                                    </div>
+                                                    <div style="text-align: right; white-space: nowrap;">
+                                                        <span class="badge" :style="getAvailableStock(p.id) > 0 ? 'background:#dcfce7; color:#15803d;' : 'background:#fee2e2; color:#b91c1c;'">
+                                                            Stok: <strong x-text="getAvailableStock(p.id)"></strong> <span x-text="p.unit || 'pcs'"></span>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </template>
+                                            <div x-show="getFilteredProducts(prodSearch).length === 0" style="padding: 16px; text-align: center; color: #94a3b8; font-size: 12.5px;">
+                                                Tidak ada produk yang cocok
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <input type="number" :name="`items[${idx}][qty]`" x-model.number="row.qty" class="form-control" min="1" required>
+                                <td style="text-align: right; vertical-align: middle;">
+                                    <template x-if="row.product_id">
+                                        <div>
+                                            <span 
+                                                class="badge" 
+                                                :style="getAvailableStock(row.product_id) > 0 ? 'background:#ecfdf5; color:#047857; font-size:13px; font-weight:700;' : 'background:#fef2f2; color:#b91c1c; font-size:13px; font-weight:700;'"
+                                            >
+                                                <span x-text="getAvailableStock(row.product_id)"></span> <span style="font-size: 11px; font-weight: 500;" x-text="products[row.product_id]?.unit || 'pcs'"></span>
+                                            </span>
+                                            <div x-show="!fromWhId" style="font-size: 10px; color: #94a3b8; margin-top: 2px;">(Pilih gudang asal)</div>
+                                        </div>
+                                    </template>
+                                    <template x-if="!row.product_id">
+                                        <span style="color: #94a3b8;">-</span>
+                                    </template>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
+                                    <div style="position: relative;">
+                                        <input 
+                                            type="number" 
+                                            :name="`items[${idx}][qty]`" 
+                                            x-model.number="row.qty" 
+                                            class="form-control" 
+                                            min="1" 
+                                            :max="fromWhId && row.product_id ? getAvailableStock(row.product_id) : null"
+                                            required
+                                            :style="fromWhId && row.product_id && row.qty > getAvailableStock(row.product_id) ? 'border-color: #ef4444; background: #fff5f5;' : ''"
+                                        >
+                                        <template x-if="fromWhId && row.product_id && row.qty > getAvailableStock(row.product_id)">
+                                            <div style="font-size: 11px; color: #dc2626; margin-top: 3px; font-weight: 500;">
+                                                <i class="fa-solid fa-triangle-exclamation"></i> Melebihi stok tersedia!
+                                            </div>
+                                        </template>
+                                    </div>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1" title="Hapus Baris">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </td>
@@ -167,15 +221,72 @@
 @push('scripts')
 <script>
 const products = @json($products->keyBy('id'));
+const stockMatrix = @json($stockMatrix ?? []);
+const oldItems = @json(old('items', [['product_id' => '', 'qty' => 1]]));
 
 function trfForm() {
     return {
         fromWhId: '{{ old('from_warehouse_id', '') }}',
         toWhId: '{{ old('to_warehouse_id', '') }}',
-        rows: [{ product_id: '', qty: 1 }],
+        rows: oldItems.length ? oldItems.map(i => ({ product_id: i.product_id || '', qty: i.qty ? Number(i.qty) : 1 })) : [{ product_id: '', qty: 1 }],
 
-        addRow() { this.rows.push({ product_id: '', qty: 1 }); },
-        removeRow(idx) { this.rows.splice(idx, 1); }
+        addRow() { 
+            this.rows.push({ product_id: '', qty: 1 }); 
+        },
+        removeRow(idx) { 
+            if (this.rows.length > 1) {
+                this.rows.splice(idx, 1); 
+            }
+        },
+        getAvailableStock(productId) {
+            if (!productId || !this.fromWhId) return 0;
+            if (stockMatrix[productId] && stockMatrix[productId][this.fromWhId] !== undefined) {
+                return Number(stockMatrix[productId][this.fromWhId]);
+            }
+            return 0;
+        },
+        getFilteredProducts(search) {
+            const query = (search || '').toLowerCase().trim();
+            const list = Object.values(products);
+            if (!query) return list;
+            return list.filter(p => {
+                return (p.name && p.name.toLowerCase().includes(query)) || 
+                       (p.sku && p.sku.toLowerCase().includes(query));
+            });
+        },
+        validateForm(e) {
+            if (!this.fromWhId) {
+                alert('Silakan pilih Gudang Asal terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (!this.toWhId) {
+                alert('Silakan pilih Gudang Tujuan terlebih dahulu.');
+                e.preventDefault();
+                return false;
+            }
+            if (this.fromWhId === this.toWhId) {
+                alert('Gudang Asal dan Gudang Tujuan tidak boleh sama.');
+                e.preventDefault();
+                return false;
+            }
+            const validRows = this.rows.filter(r => r.product_id && r.qty > 0);
+            if (validRows.length === 0) {
+                alert('Minimal 1 produk harus dipilih dengan jumlah transfer minimal 1.');
+                e.preventDefault();
+                return false;
+            }
+            for (let r of validRows) {
+                const avail = this.getAvailableStock(r.product_id);
+                if (r.qty > avail) {
+                    const p = products[r.product_id];
+                    alert(`Jumlah transfer produk "${p ? p.name : ''}" (${r.qty}) melebihi stok tersedia (${avail}) di gudang asal.`);
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
 </script>

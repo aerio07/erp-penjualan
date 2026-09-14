@@ -63,8 +63,8 @@ class StockMovementController extends Controller
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
         $movements = collect();
-        if ($productId && $warehouseId) {
-            $movements = $this->stockService->getStockCard($productId, $warehouseId, $dateFrom, $dateTo);
+        if ($productId) {
+            $movements = $this->stockService->getStockCard((int) $productId, $warehouseId ? (int) $warehouseId : null, $dateFrom, $dateTo);
         }
 
         return view('inventory.stock-card', compact('products', 'warehouses', 'productId', 'warehouseId', 'dateFrom', 'dateTo', 'movements'));

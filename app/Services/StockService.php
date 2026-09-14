@@ -478,14 +478,16 @@ class StockService
     /**
      * Ambil kartu stok (detail per movement).
      */
-    public function getStockCard(int $productId, int $warehouseId, ?string $dateFrom = null, ?string $dateTo = null)
+    public function getStockCard(int $productId, ?int $warehouseId = null, ?string $dateFrom = null, ?string $dateTo = null)
     {
-        $query = StockMovement::with(['user'])
+        $query = StockMovement::with(['user', 'warehouse'])
             ->where('product_id', $productId)
-            ->where('warehouse_id', $warehouseId)
             ->orderBy('movement_date')
             ->orderBy('id');
 
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
         if ($dateFrom) {
             $query->whereDate('movement_date', '>=', $dateFrom);
         }

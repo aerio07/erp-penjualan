@@ -19,24 +19,30 @@
         <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-            <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit (Dikirim)</option>
+            <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit (Dikirim / Posted)</option>
             <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed (Selesai)</option>
             <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled (Batal)</option>
         </select>
 
-        <select name="from_warehouse_id" class="form-control filter-select">
-            <option value="">Semua Gudang Asal</option>
-            @foreach($warehouses as $wh)
-            <option value="{{ $wh->id }}" {{ request('from_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
-            @endforeach
-        </select>
+        <div style="min-width: 200px;">
+            <x-searchable-select 
+                name="from_warehouse_id" 
+                :options="$warehouses" 
+                :value="request('from_warehouse_id')" 
+                placeholder="-- Semua Gudang Asal --" 
+                search-placeholder="Cari gudang asal..." 
+            />
+        </div>
 
-        <select name="to_warehouse_id" class="form-control filter-select">
-            <option value="">Semua Gudang Tujuan</option>
-            @foreach($warehouses as $wh)
-            <option value="{{ $wh->id }}" {{ request('to_warehouse_id') == $wh->id ? 'selected' : '' }}>{{ $wh->name }}</option>
-            @endforeach
-        </select>
+        <div style="min-width: 200px;">
+            <x-searchable-select 
+                name="to_warehouse_id" 
+                :options="$warehouses" 
+                :value="request('to_warehouse_id')" 
+                placeholder="-- Semua Gudang Tujuan --" 
+                search-placeholder="Cari gudang tujuan..." 
+            />
+        </div>
     </x-list-filter-bar>
 
     <x-data-table :paginator="$transfers">
@@ -94,10 +100,25 @@
                     <span class="badge badge-cancelled"><i class="fa-solid fa-circle-xmark"></i> Cancelled</span>
                 @endif
             </td>
-            <td class="col-actions text-center">
-                <a href="{{ route('inventory.transfers.show', $trf) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
+            <td class="col-actions text-center" style="white-space:nowrap;">
+                <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
+                    <a href="{{ route('inventory.transfers.show', $trf) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+
+                    @if($trf->status === 'draft')
+                        <a href="{{ route('inventory.transfers.edit', $trf) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit Draft" style="color:var(--primary);">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+
+                        <form method="POST" action="{{ route('inventory.transfers.ship', $trf) }}" style="display:inline;">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Post / Kirim Transfer" onclick="return confirm('Posting / Kirim transfer #{{ $trf->transfer_number }} sekarang? Stok gudang asal akan dikurangi.')">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    @endif
+                </div>
             </td>
         </tr>
         @empty
