@@ -13,9 +13,10 @@
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-cart-shopping"></i> Purchase Order
             </a>
-            <a href="{{ route('purchase.reports.fulfillment') }}" class="btn btn-secondary btn-sm">
+            {{-- Monitoring PO dinonaktifkan sementara --}}
+            {{-- <a href="{{ route('purchase.reports.fulfillment') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-chart-pie"></i> Monitoring PO
-            </a>
+            </a> --}}
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>

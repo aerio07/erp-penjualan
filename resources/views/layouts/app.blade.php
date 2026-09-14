@@ -1145,7 +1145,8 @@
                     <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
                     @endif
                     @if($isAdmin || $isPurchasing || $isFinance)
-                    <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring PO</a>
+                    {{-- Monitoring PO dinonaktifkan sementara --}}
+                    {{-- <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring PO</a> --}}
                     <a href="{{ route('purchase.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Beli per Barang</a>
                     @endif
                 </div>
@@ -1205,7 +1206,8 @@
                     <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Piutang</a>
                     @endif
                     @if($isAdmin || $isSales || $isFinance)
-                    <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring SO</a>
+                    {{-- Monitoring SO dinonaktifkan sementara --}}
+                    {{-- <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring SO</a> --}}
                     <a href="{{ route('sales.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Jual per Barang</a>
                     @endif
                 </div>

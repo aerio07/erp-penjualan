@@ -13,9 +13,10 @@
             <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-tags"></i> Sales Order
             </a>
-            <a href="{{ route('sales.reports.fulfillment') }}" class="btn btn-secondary btn-sm">
+            {{-- Monitoring SO dinonaktifkan sementara --}}
+            {{-- <a href="{{ route('sales.reports.fulfillment') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-chart-pie"></i> Monitoring SO
-            </a>
+            </a> --}}
             <button onclick="window.print()" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-print"></i> Cetak
             </button>
