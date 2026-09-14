@@ -19,15 +19,15 @@
                 <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">Purchase Order (PO) <span style="color:var(--danger);">*</span></label>
-                        <select name="purchase_order_id" class="form-control" x-model="selectedPoId" @change="onPoChange()" required>
-                            <option value="">-- Pilih Purchase Order --</option>
-                            @foreach($purchaseOrders as $po)
-                            <option value="{{ $po->id }}">
-                                {{ $po->po_number }} — {{ $po->supplier->name ?? '-' }} ({{ $po->order_date ? $po->order_date->format('d/m/Y') : '-' }})
-                            </option>
-                            @endforeach
-                        </select>
-                        <small style="color:var(--text-secondary); font-size:11.5px;">Pilih PO untuk memfilter bukti penerimaan / invoice</small>
+                        <x-searchable-select 
+                            name="purchase_order_id" 
+                            :options="$purchaseOrders->map(fn($po) => ['id' => $po->id, 'name' => $po->po_number . ' — ' . ($po->supplier->name ?? '-') . ' (' . ($po->order_date ? $po->order_date->format('d/m/Y') : '-') . ')'])" 
+                            placeholder="-- Pilih Purchase Order --" 
+                            search-placeholder="Cari nomor PO atau nama supplier..." 
+                            on-select="poId => { selectedPoId = poId; onPoChange(); }" 
+                            required 
+                        />
+                        <small style="color:var(--text-secondary); font-size:11.5px; display:block; margin-top:3px;">Pilih PO untuk memfilter bukti penerimaan / invoice</small>
                     </div>
 
                     <div class="form-group">

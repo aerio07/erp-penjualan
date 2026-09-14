@@ -41,26 +41,28 @@
             <form method="GET" action="{{ route('inventory.dispositions.create') }}" style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
                 <div style="flex:1; min-width:240px;">
                     <label class="form-label">Produk <span style="color:var(--danger);">*</span></label>
-                    <select name="product_id" class="form-control" onchange="this.form.submit()" required>
-                        <option value="">-- Pilih Produk --</option>
-                        @foreach($products as $p)
-                        <option value="{{ $p->id }}" {{ $productId == $p->id ? 'selected' : '' }}>
-                            {{ $p->name }} ({{ $p->sku }})
-                        </option>
-                        @endforeach
-                    </select>
+                    <x-searchable-select 
+                        name="product_id" 
+                        :options="$products" 
+                        :value="$productId" 
+                        placeholder="-- Pilih Produk --" 
+                        search-placeholder="Cari nama atau SKU produk..." 
+                        on-select="pId => { if(pId) { $refs.hiddenInput.closest('form').submit(); } }" 
+                        required 
+                    />
                 </div>
 
                 <div style="flex:1; min-width:240px;">
                     <label class="form-label">Gudang <span style="color:var(--danger);">*</span></label>
-                    <select name="warehouse_id" class="form-control" onchange="this.form.submit()" required>
-                        <option value="">-- Pilih Gudang --</option>
-                        @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}" {{ $warehouseId == $wh->id ? 'selected' : '' }}>
-                            {{ $wh->name }} ({{ $wh->code }})
-                        </option>
-                        @endforeach
-                    </select>
+                    <x-searchable-select 
+                        name="warehouse_id" 
+                        :options="$warehouses" 
+                        :value="$warehouseId" 
+                        placeholder="-- Pilih Gudang --" 
+                        search-placeholder="Cari nama atau kode gudang..." 
+                        on-select="whId => { if(whId) { $refs.hiddenInput.closest('form').submit(); } }" 
+                        required 
+                    />
                 </div>
             </form>
         </div>

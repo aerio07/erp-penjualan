@@ -21,14 +21,14 @@
                     <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Sales Order <span style="color:var(--danger);">*</span></label>
-                            <select name="sales_order_id" class="form-control" x-model="selectedSoId" @change="onSoChange()" required>
-                                <option value="">-- Pilih Sales Order --</option>
-                                @foreach($orders as $so)
-                                <option value="{{ $so->id }}">
-                                    {{ $so->so_number }} - {{ $so->customer->name }} (Status: {{ ucfirst(str_replace('_', ' ', $so->status)) }})
-                                </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="sales_order_id" 
+                                :options="$orders->map(fn($so) => ['id' => $so->id, 'name' => $so->so_number . ' - ' . $so->customer->name . ' (Status: ' . ucfirst(str_replace('_', ' ', $so->status)) . ')'])" 
+                                placeholder="-- Pilih Sales Order --" 
+                                search-placeholder="Cari nomor SO atau nama customer..." 
+                                on-select="soId => { selectedSoId = soId; onSoChange(); }" 
+                                required 
+                            />
                         </div>
 
                         <div class="form-group">

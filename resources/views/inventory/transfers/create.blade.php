@@ -33,22 +33,28 @@
                 <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">Gudang Asal <span style="color:var(--danger);">*</span></label>
-                        <select name="from_warehouse_id" class="form-control" x-model="fromWhId" required>
-                            <option value="">-- Pilih Gudang Asal --</option>
-                            @foreach($warehouses as $wh)
-                            <option value="{{ $wh->id }}">{{ $wh->name }} ({{ $wh->code }})</option>
-                            @endforeach
-                        </select>
+                        <x-searchable-select 
+                            name="from_warehouse_id" 
+                            :options="$warehouses" 
+                            :value="old('from_warehouse_id')" 
+                            placeholder="-- Pilih Gudang Asal --" 
+                            search-placeholder="Cari nama atau kode gudang..." 
+                            on-select="whId => { fromWhId = whId; }" 
+                            required 
+                        />
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Gudang Tujuan <span style="color:var(--danger);">*</span></label>
-                        <select name="to_warehouse_id" class="form-control" x-model="toWhId" required>
-                            <option value="">-- Pilih Gudang Tujuan --</option>
-                            @foreach($warehouses as $wh)
-                            <option value="{{ $wh->id }}" :disabled="fromWhId == {{ $wh->id }}">{{ $wh->name }} ({{ $wh->code }})</option>
-                            @endforeach
-                        </select>
+                        <x-searchable-select 
+                            name="to_warehouse_id" 
+                            :options="$warehouses" 
+                            :value="old('to_warehouse_id')" 
+                            placeholder="-- Pilih Gudang Tujuan --" 
+                            search-placeholder="Cari nama atau kode gudang..." 
+                            on-select="whId => { toWhId = whId; }" 
+                            required 
+                        />
                     </div>
 
                     <div class="form-group">
@@ -65,18 +71,18 @@
         </div>
 
         {{-- Items --}}
-        <div class="card" style="margin-bottom:20px;">
+        <div class="card" style="margin-bottom:20px; overflow: visible;">
             <div class="card-header">
                 <h3>Daftar Barang Ditransfer</h3>
                 <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
                     <i class="fa-solid fa-plus"></i> Tambah Item
                 </button>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow: visible;">
                 <table class="erp-table">
                     <thead>
                         <tr>
-                            <th>Produk</th>
+                            <th style="min-width: 260px;">Produk</th>
                             <th style="width:180px;">Jumlah Transfer (Qty)</th>
                             <th style="width:50px;"></th>
                         </tr>
@@ -84,13 +90,56 @@
                     <tbody>
                         <template x-for="(row, idx) in rows" :key="idx">
                             <tr>
-                                <td>
-                                    <select :name="`items[${idx}][product_id]`" class="form-control" x-model="row.product_id" required>
-                                        <option value="">-- Pilih Produk --</option>
-                                        @foreach($products as $p)
-                                        <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->sku }})</option>
-                                        @endforeach
-                                    </select>
+                                <td style="position: relative;" x-data="{ openProd: false, prodSearch: '' }">
+                                    <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
+                                    
+                                    <div 
+                                        @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
+                                        class="form-control"
+                                        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 38px; background: #fff;"
+                                        @click.outside="openProd = false"
+                                    >
+                                        <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
+                                              :style="!row.product_id ? 'color: #94a3b8;' : 'color: #0f172a; font-weight: 500;'"
+                                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px;"
+                                        ></span>
+                                        <i class="fa-solid fa-chevron-down text-slate-400" style="font-size: 11px;"></i>
+                                    </div>
+
+                                    <div 
+                                        x-show="openProd" 
+                                        x-transition
+                                        style="position: absolute; top: 100%; left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                                        x-cloak
+                                    >
+                                        <div style="padding: 6px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
+                                            <div style="position: relative; display: flex; align-items: center;">
+                                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; color: #64748b; font-size: 12px; pointer-events: none;"></i>
+                                                <input 
+                                                    type="text" 
+                                                    x-ref="prodSearchInput"
+                                                    x-model="prodSearch" 
+                                                    placeholder="Cari nama atau SKU produk..." 
+                                                    class="form-control" 
+                                                    style="width: 100%; padding-left: 28px; font-size: 12px; height: 32px; border-radius: 6px;"
+                                                    @click.stop
+                                                >
+                                            </div>
+                                        </div>
+                                        <div style="overflow-y: auto; max-height: 200px;">
+                                            <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
+                                                <div 
+                                                    @click="row.product_id = p.id; openProd = false; prodSearch = '';"
+                                                    :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
+                                                    style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
+                                                    onmouseover="this.style.backgroundColor='#f1f5f9'"
+                                                    onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
+                                                >
+                                                    <span x-text="p.name + ' (' + p.sku + ')'"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>
                                     <input type="number" :name="`items[${idx}][qty]`" x-model.number="row.qty" class="form-control" min="1" required>
@@ -117,6 +166,8 @@
 
 @push('scripts')
 <script>
+const products = @json($products->keyBy('id'));
+
 function trfForm() {
     return {
         fromWhId: '{{ old('from_warehouse_id', '') }}',

@@ -19,14 +19,14 @@
                 <div class="card-body">
                     <div class="form-group">
                         <label class="form-label">Invoice Penjualan <span style="color:var(--danger);">*</span></label>
-                        <select name="sales_invoice_id" class="form-control" x-model="selectedInvoiceId" @change="onInvoiceChange()" required>
-                            <option value="">-- Pilih Invoice Tagihan Customer --</option>
-                            @foreach($unpaidInvoices as $inv)
-                            <option value="{{ $inv->id }}">
-                                {{ $inv->invoice_number }} - {{ $inv->salesOrder->customer->name }} (Sisa Piutang: Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-searchable-select 
+                            name="sales_invoice_id" 
+                            :options="$unpaidInvoices->map(fn($inv) => ['id' => $inv->id, 'name' => $inv->invoice_number . ' - ' . ($inv->salesOrder->customer->name ?? '-') . ' (Sisa: Rp ' . number_format($inv->outstanding_amount, 0, ',', '.') . ')'])" 
+                            placeholder="-- Pilih Invoice Tagihan Customer --" 
+                            search-placeholder="Cari nomor invoice atau nama customer..." 
+                            on-select="invId => { selectedInvoiceId = invId; onInvoiceChange(); }" 
+                            required 
+                        />
                     </div>
 
                     <div class="form-row form-row-4">

@@ -19,14 +19,14 @@
                 <div class="card-body">
                     <div class="form-group">
                         <label class="form-label">Invoice Pembelian <span style="color:var(--danger);">*</span></label>
-                        <select name="purchase_invoice_id" class="form-control" x-model="selectedInvoiceId" @change="onInvoiceChange()" required>
-                            <option value="">-- Pilih Invoice Tagihan --</option>
-                            @foreach($unpaidInvoices as $inv)
-                            <option value="{{ $inv->id }}">
-                                {{ $inv->invoice_number }} - {{ $inv->purchaseOrder->supplier->name }} (Sisa Hutang: Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-searchable-select 
+                            name="purchase_invoice_id" 
+                            :options="$unpaidInvoices->map(fn($inv) => ['id' => $inv->id, 'name' => $inv->invoice_number . ' - ' . ($inv->purchaseOrder->supplier->name ?? '-') . ' (Sisa: Rp ' . number_format($inv->outstanding_amount, 0, ',', '.') . ')'])" 
+                            placeholder="-- Pilih Invoice Tagihan --" 
+                            search-placeholder="Cari nomor invoice atau nama supplier..." 
+                            on-select="invId => { selectedInvoiceId = invId; onInvoiceChange(); }" 
+                            required 
+                        />
                     </div>
 
                     <div class="form-row form-row-4">

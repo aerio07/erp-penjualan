@@ -53,12 +53,14 @@
                     <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Customer <span style="color:var(--danger);">*</span></label>
-                            <select name="customer_id" class="form-control" required>
-                                <option value="">-- Pilih Customer --</option>
-                                @foreach($customers as $c)
-                                <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->code }})</option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="customer_id" 
+                                :options="$customers" 
+                                :value="old('customer_id')" 
+                                placeholder="-- Pilih Customer --" 
+                                search-placeholder="Cari nama atau kode customer..." 
+                                required 
+                            />
                         </div>
                         <div class="form-group">
                             <label class="form-label">Tanggal Order <span style="color:var(--danger);">*</span></label>
@@ -91,13 +93,13 @@
                         <div>
                             <label class="form-label">Diskon Header (Rp)</label>
                             <input type="text" 
-                                   inputmode="numeric"
+                                   inputmode="numeric" 
                                    name="discount_amount" 
                                    x-currency="discountHeader" 
-                                   :class="{'is-invalid': isDiscountInvalid}"
+                                   :class="{'is-invalid': discountHeader > subtotal}"
                                    class="form-control format-currency" 
                                    placeholder="0">
-                            <template x-if="isDiscountInvalid">
+                            <template x-if="discountHeader > subtotal">
                                 <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
                                 </div>
@@ -125,20 +127,20 @@
         </div>
 
         {{-- Item Table --}}
-        <div class="card" style="margin-bottom:20px;">
+        <div class="card" style="margin-bottom:20px; overflow: visible;">
             <div class="card-header">
-                <h3>Item Barang Dijual</h3>
+                <h3>Item Sales Order</h3>
                 <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
                     <i class="fa-solid fa-plus"></i> Tambah Item
                 </button>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive" style="overflow: visible;">
                 <table class="erp-table">
                     <thead>
                         <tr>
-                            <th>Produk</th>
+                            <th style="min-width: 260px;">Produk</th>
                             <th style="width:100px;">Qty</th>
-                            <th style="width:150px;">Harga Jual Satuan</th>
+                            <th style="width:160px;">Harga Jual Satuan</th>
                             <th style="width:100px;">Diskon (%)</th>
                             <th style="width:150px; text-align:right;">Subtotal</th>
                             <th style="width:50px;"></th>
@@ -147,31 +149,75 @@
                     <tbody>
                         <template x-for="(row, idx) in rows" :key="idx">
                             <tr>
-                                <td>
-                                    <select :name="`items[${idx}][product_id]`" class="form-control" x-model="row.product_id" @change="onProductChange(idx)" required>
-                                        <option value="">-- Pilih Produk --</option>
-                                        @foreach($products as $p)
-                                        <option value="{{ $p->id }}" data-price="{{ $p->sell_price }}">{{ $p->name }} ({{ $p->sku }})</option>
-                                        @endforeach
-                                    </select>
+                                <td style="position: relative;" x-data="{ openProd: false, prodSearch: '' }">
+                                    <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
+                                    
+                                    <div 
+                                        @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
+                                        class="form-control"
+                                        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 38px; background: #fff;"
+                                        @click.outside="openProd = false"
+                                    >
+                                        <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
+                                              :style="!row.product_id ? 'color: #94a3b8;' : 'color: #0f172a; font-weight: 500;'"
+                                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px;"
+                                        ></span>
+                                        <i class="fa-solid fa-chevron-down text-slate-400" style="font-size: 11px;"></i>
+                                    </div>
+
+                                    {{-- Dropdown Menu --}}
+                                    <div 
+                                        x-show="openProd" 
+                                        x-transition
+                                        style="position: absolute; top: 100%; left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                                        x-cloak
+                                    >
+                                        <div style="padding: 6px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
+                                            <div style="position: relative; display: flex; align-items: center;">
+                                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; color: #64748b; font-size: 12px; pointer-events: none;"></i>
+                                                <input 
+                                                    type="text" 
+                                                    x-ref="prodSearchInput"
+                                                    x-model="prodSearch" 
+                                                    placeholder="Cari nama atau SKU produk..." 
+                                                    class="form-control" 
+                                                    style="width: 100%; padding-left: 28px; font-size: 12px; height: 32px; border-radius: 6px;"
+                                                    @click.stop
+                                                >
+                                            </div>
+                                        </div>
+                                        <div style="overflow-y: auto; max-height: 200px;">
+                                            <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
+                                                <div 
+                                                    @click="row.product_id = p.id; onProductChange(idx, { target: { value: p.id } }); openProd = false; prodSearch = '';"
+                                                    :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
+                                                    style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
+                                                    onmouseover="this.style.backgroundColor='#f1f5f9'"
+                                                    onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
+                                                >
+                                                    <span x-text="p.name + ' (' + p.sku + ')'"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td>
-                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" class="form-control" min="1" required>
-                                </td>
-                                <td>
-                                    <input type="text" inputmode="numeric" :name="`items[${idx}][unit_price]`" x-currency="row.price" class="form-control format-currency" placeholder="0">
-                                </td>
-                                <td>
-                                    <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" class="form-control" min="0" max="100" step="0.1">
-                                </td>
-                                <td style="text-align:right; font-weight:600;">
-                                    <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </td>
+                                 <td>
+                                     <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" class="form-control" min="1" required>
+                                 </td>
+                                 <td>
+                                     <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" class="form-control" min="0" step="100" placeholder="0" required>
+                                 </td>
+                                 <td>
+                                     <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" class="form-control" min="0" max="100" step="0.1">
+                                 </td>
+                                 <td style="text-align:right; font-weight:600;">
+                                     <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                 </td>
+                                 <td>
+                                     <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
+                                         <i class="fa-solid fa-xmark"></i>
+                                     </button>
+                                 </td>
                             </tr>
                         </template>
                     </tbody>
@@ -214,8 +260,9 @@ function soForm() {
             }
         },
 
-        onProductChange(idx) {
-            const id = this.rows[idx].product_id;
+        onProductChange(idx, event) {
+            const id = (event && event.target) ? event.target.value : this.rows[idx].product_id;
+            this.rows[idx].product_id = id;
             if (id && products[id]) {
                 this.rows[idx].price = this.getEffectivePrice(products[id]);
             }

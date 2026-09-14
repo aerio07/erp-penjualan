@@ -21,14 +21,14 @@
                     <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Purchase Order <span style="color:var(--danger);">*</span></label>
-                            <select name="purchase_order_id" class="form-control" x-model="selectedPoId" @change="onPoChange()" required>
-                                <option value="">-- Pilih PO Confirmed / Partial --</option>
-                                @foreach($confirmedPos as $po)
-                                <option value="{{ $po->id }}">
-                                    {{ $po->po_number }} - {{ $po->supplier->name }} ({{ $po->order_date->format('d/m/Y') }})
-                                </option>
-                                @endforeach
-                            </select>
+                            <x-searchable-select 
+                                name="purchase_order_id" 
+                                :options="$confirmedPos->map(fn($po) => ['id' => $po->id, 'name' => $po->po_number . ' - ' . $po->supplier->name . ' (' . $po->order_date->format('d/m/Y') . ')'])" 
+                                placeholder="-- Pilih PO Confirmed / Partial --" 
+                                search-placeholder="Cari nomor PO atau nama supplier..." 
+                                on-select="poId => { selectedPoId = poId; onPoChange(); }" 
+                                required 
+                            />
                         </div>
 
                         <div class="form-group">

@@ -16,12 +16,15 @@
             <form method="GET" action="{{ route('inventory.opname.create') }}" style="display:flex; gap:12px; align-items:flex-end;">
                 <div style="flex:1; max-width:320px;">
                     <label class="form-label">Gudang yang Di-opname <span style="color:var(--danger);">*</span></label>
-                    <select name="warehouse_id" class="form-control" onchange="this.form.submit()" required>
-                        <option value="">-- Pilih Gudang --</option>
-                        @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}" {{ $selectedWarehouseId == $wh->id ? 'selected' : '' }}>{{ $wh->name }} ({{ $wh->code }})</option>
-                        @endforeach
-                    </select>
+                    <x-searchable-select 
+                        name="warehouse_id" 
+                        :options="$warehouses" 
+                        :value="$selectedWarehouseId" 
+                        placeholder="-- Pilih Gudang --" 
+                        search-placeholder="Cari nama atau kode gudang..." 
+                        on-select="whId => { if(whId) { $refs.hiddenInput.closest('form').submit(); } }" 
+                        required 
+                    />
                 </div>
             </form>
         </div>

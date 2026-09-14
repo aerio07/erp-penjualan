@@ -19,26 +19,28 @@
                 <div class="form-row form-row-3">
                     <div class="form-group">
                         <label class="form-label">Sales Order <span style="color:var(--danger);">*</span></label>
-                        <select name="sales_order_id" class="form-control" x-model="selectedSoId" @change="onSoChange(true)" required>
-                            <option value="">-- Pilih Sales Order --</option>
-                            @foreach($confirmedSos as $so)
-                            <option value="{{ $so->id }}" {{ old('sales_order_id', $selectedSoId) == $so->id ? 'selected' : '' }}>
-                                {{ $so->so_number }} - {{ $so->customer->name }} ({{ $so->order_date->format('d/m/Y') }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-searchable-select 
+                            name="sales_order_id" 
+                            :options="$confirmedSos->map(fn($so) => ['id' => $so->id, 'name' => $so->so_number . ' - ' . $so->customer->name . ' (' . $so->order_date->format('d/m/Y') . ')'])" 
+                            :value="old('sales_order_id', $selectedSoId)" 
+                            placeholder="-- Pilih Sales Order --" 
+                            search-placeholder="Cari nomor SO atau nama customer..." 
+                            on-select="soId => { selectedSoId = soId; onSoChange(true); }" 
+                            required 
+                        />
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Gudang Asal Barang <span style="color:var(--danger);">*</span></label>
-                        <select name="warehouse_id" class="form-control" x-model="selectedWarehouseId" @change="onWarehouseChange()" required>
-                            <option value="">-- Pilih Gudang --</option>
-                            @foreach($warehouses as $wh)
-                            <option value="{{ $wh->id }}" {{ old('warehouse_id') == $wh->id ? 'selected' : '' }}>
-                                {{ $wh->name }} ({{ $wh->code }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <x-searchable-select 
+                            name="warehouse_id" 
+                            :options="$warehouses" 
+                            :value="old('warehouse_id')" 
+                            placeholder="-- Pilih Gudang Asal --" 
+                            search-placeholder="Cari nama atau kode gudang..." 
+                            on-select="whId => { selectedWarehouseId = whId; onWarehouseChange(); }" 
+                            required 
+                        />
                     </div>
 
                     <div class="form-group">
