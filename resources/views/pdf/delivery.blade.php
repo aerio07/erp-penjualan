@@ -5,42 +5,22 @@
 @section('doc-subtitle', 'No. Pengiriman #: ' . $delivery->delivery_number)
 
 @section('content')
-    {{-- PARTIES SECTION (2 Columns) --}}
-    <table class="parties-table">
-        <tr>
-            {{-- Left: Origin Warehouse & Company --}}
-            <td class="party-col">
-                <div class="section-heading">GUDANG PENGIRIM:</div>
-                <div class="party-name">FlashSuite Pro ({{ $delivery->warehouse->name ?? 'Gudang Utama' }})</div>
-                <div class="party-info">
-                    PT FlashSuite Trading Indonesia<br>
-                    @if($delivery->warehouse?->address)
-                        {{ $delivery->warehouse->address }}<br>
-                    @else
-                        Jl. Jendral Sudirman No. 88, Jakarta Selatan<br>
-                    @endif
-                    Telp: (021) 555-0199 · Email: logistics@flashsuite.com
-                </div>
-            </td>
-
-            {{-- Right: Recipient / Customer --}}
-            <td class="party-col">
-                <div class="section-heading">PENERIMA / TUJUAN:</div>
-                <div class="party-name">{{ $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? '-' }}</div>
-                <div class="party-info">
-                    @php
-                        $shipAddress = $delivery->shipping_address ?? $delivery->salesOrder->customer?->address;
-                    @endphp
-                    @if($shipAddress)
-                        {{ $shipAddress }}<br>
-                    @endif
-                    @if($delivery->salesOrder->customer?->phone)
-                        Telp: {{ $delivery->salesOrder->customer->phone }}<br>
-                    @endif
-                </div>
-            </td>
-        </tr>
-    </table>
+    {{-- RECIPIENT / CUSTOMER SECTION --}}
+    <div class="party-box">
+        <div class="section-heading">PENERIMA / TUJUAN PENGIRIMAN:</div>
+        <div class="party-name">{{ $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? '-' }}</div>
+        <div class="party-info">
+            @php
+                $shipAddress = $delivery->shipping_address ?? $delivery->salesOrder->customer?->address;
+            @endphp
+            @if($shipAddress)
+                {{ $shipAddress }}<br>
+            @endif
+            @if($delivery->salesOrder->customer?->phone)
+                Telp: {{ $delivery->salesOrder->customer->phone }}<br>
+            @endif
+        </div>
+    </div>
 
     {{-- DETAILS SECTION (Key - Value Pairs) --}}
     <div class="details-box">

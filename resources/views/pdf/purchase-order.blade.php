@@ -17,36 +17,19 @@
         });
     @endphp
 
-    {{-- PARTIES SECTION (BUYER & SUPPLIER) --}}
-    <table class="parties-table">
-        <tr>
-            {{-- Service Provider / Buyer --}}
-            <td class="party-col" style="padding-right: 15px;">
-                <div class="section-heading">BUYER / PEMBELI</div>
-                <div class="party-name">PT FlashSuite Niaga Indonesia</div>
-                <div class="party-info">
-                    Jl. Industri Raya Niaga No. 88<br>
-                    Jakarta Barat, DKI Jakarta 11730<br>
-                    Phone: (021) 555-0199<br>
-                    Email: purchasing@flashsuite.co.id
-                </div>
-            </td>
-
-            {{-- Bill To / Supplier --}}
-            <td class="party-col" style="padding-left: 15px;">
-                <div class="section-heading">VENDOR / SUPPLIER</div>
-                <div class="party-name">{{ $order->supplier->name ?? '-' }}</div>
-                <div class="party-info">
-                    @if(!empty($order->supplier->contact_person))
-                        Attn: {{ $order->supplier->contact_person }}<br>
-                    @endif
-                    {{ $order->supplier->address ?: 'Alamat tidak tercatat' }}<br>
-                    Phone: {{ $order->supplier->phone ?: '-' }}<br>
-                    Email: {{ $order->supplier->email ?: '-' }}
-                </div>
-            </td>
-        </tr>
-    </table>
+    {{-- VENDOR / SUPPLIER SECTION --}}
+    <div class="party-box">
+        <div class="section-heading">VENDOR / SUPPLIER</div>
+        <div class="party-name">{{ $order->supplier->name ?? '-' }}</div>
+        <div class="party-info">
+            @if(!empty($order->supplier->contact_person))
+                Attn: {{ $order->supplier->contact_person }}<br>
+            @endif
+            {{ $order->supplier->address ?: 'Alamat tidak tercatat' }}<br>
+            Phone: {{ $order->supplier->phone ?: '-' }}<br>
+            Email: {{ $order->supplier->email ?: '-' }}
+        </div>
+    </div>
 
     {{-- ORDER DETAILS SECTION --}}
     <div class="details-box">

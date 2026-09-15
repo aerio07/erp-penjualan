@@ -68,8 +68,11 @@
         }
 
         /* ----------------------------------------------------
-           3. PARTIES SECTION (2 Columns)
+           3. PARTIES / TARGET PARTY SECTION
         ---------------------------------------------------- */
+        .party-box {
+            margin-bottom: 16px;
+        }
         .parties-table {
             margin-bottom: 16px;
         }

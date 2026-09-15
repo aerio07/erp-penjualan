@@ -5,38 +5,22 @@
 @section('doc-subtitle', 'Invoice #: ' . $invoice->invoice_number)
 
 @section('content')
-    {{-- PARTIES SECTION (2 Columns) --}}
-    <table class="parties-table">
-        <tr>
-            {{-- Left: Supplier --}}
-            <td class="party-col">
-                <div class="section-heading">TAGIHAN DARI (SUPPLIER):</div>
-                <div class="party-name">{{ $invoice->purchaseOrder->supplier->name ?? '-' }}</div>
-                <div class="party-info">
-                    @if($invoice->purchaseOrder->supplier?->address)
-                        {{ $invoice->purchaseOrder->supplier->address }}<br>
-                    @endif
-                    @if($invoice->purchaseOrder->supplier?->phone)
-                        Telp: {{ $invoice->purchaseOrder->supplier->phone }}<br>
-                    @endif
-                    @if($invoice->purchaseOrder->supplier?->email)
-                        Email: {{ $invoice->purchaseOrder->supplier->email }}<br>
-                    @endif
-                </div>
-            </td>
-
-            {{-- Right: Company / Buyer --}}
-            <td class="party-col">
-                <div class="section-heading">DITUJUKAN KEPADA:</div>
-                <div class="party-name">FlashSuite Pro</div>
-                <div class="party-info">
-                    PT FlashSuite Trading Indonesia<br>
-                    Jl. Jendral Sudirman No. 88, Jakarta Selatan<br>
-                    Telp: (021) 555-0199 · Email: purchasing@flashsuite.com
-                </div>
-            </td>
-        </tr>
-    </table>
+    {{-- SUPPLIER SECTION --}}
+    <div class="party-box">
+        <div class="section-heading">TAGIHAN DARI (SUPPLIER):</div>
+        <div class="party-name">{{ $invoice->purchaseOrder->supplier->name ?? '-' }}</div>
+        <div class="party-info">
+            @if($invoice->purchaseOrder->supplier?->address)
+                {{ $invoice->purchaseOrder->supplier->address }}<br>
+            @endif
+            @if($invoice->purchaseOrder->supplier?->phone)
+                Telp: {{ $invoice->purchaseOrder->supplier->phone }}<br>
+            @endif
+            @if($invoice->purchaseOrder->supplier?->email)
+                Email: {{ $invoice->purchaseOrder->supplier->email }}<br>
+            @endif
+        </div>
+    </div>
 
     {{-- DETAILS SECTION (Key - Value Pairs) --}}
     <div class="details-box">

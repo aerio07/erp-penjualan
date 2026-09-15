@@ -12,36 +12,19 @@
         });
     @endphp
 
-    {{-- PARTIES SECTION (SERVICE PROVIDER & BILL TO) --}}
-    <table class="parties-table">
-        <tr>
-            {{-- Service Provider / Seller --}}
-            <td class="party-col" style="padding-right: 15px;">
-                <div class="section-heading">SERVICE PROVIDER / SELLER</div>
-                <div class="party-name">PT FlashSuite Niaga Indonesia</div>
-                <div class="party-info">
-                    Jl. Industri Raya Niaga No. 88<br>
-                    Jakarta Barat, DKI Jakarta 11730<br>
-                    Phone: (021) 555-0199<br>
-                    Email: sales@flashsuite.co.id
-                </div>
-            </td>
-
-            {{-- Bill To / Customer --}}
-            <td class="party-col" style="padding-left: 15px;">
-                <div class="section-heading">BILL TO / CUSTOMER</div>
-                <div class="party-name">{{ $order->customer->name ?? '-' }}</div>
-                <div class="party-info">
-                    @if(!empty($order->customer->contact_person))
-                        Attn: {{ $order->customer->contact_person }}<br>
-                    @endif
-                    {{ $order->customer->address ?: 'Alamat tidak tercatat' }}<br>
-                    Phone: {{ $order->customer->phone ?: '-' }}<br>
-                    Email: {{ $order->customer->email ?: '-' }}
-                </div>
-            </td>
-        </tr>
-    </table>
+    {{-- BILL TO / CUSTOMER SECTION --}}
+    <div class="party-box">
+        <div class="section-heading">BILL TO / CUSTOMER</div>
+        <div class="party-name">{{ $order->customer->name ?? '-' }}</div>
+        <div class="party-info">
+            @if(!empty($order->customer->contact_person))
+                Attn: {{ $order->customer->contact_person }}<br>
+            @endif
+            {{ $order->customer->address ?: 'Alamat tidak tercatat' }}<br>
+            Phone: {{ $order->customer->phone ?: '-' }}<br>
+            Email: {{ $order->customer->email ?: '-' }}
+        </div>
+    </div>
 
     {{-- ORDER DETAILS SECTION --}}
     <div class="details-box">

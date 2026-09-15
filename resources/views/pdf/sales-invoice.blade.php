@@ -5,42 +5,26 @@
 @section('doc-subtitle', 'Invoice #: ' . $invoice->invoice_number)
 
 @section('content')
-    {{-- PARTIES SECTION (2 Columns) --}}
-    <table class="parties-table">
-        <tr>
-            {{-- Left: Issuer / Company --}}
-            <td class="party-col">
-                <div class="section-heading">DITERBITKAN OLEH:</div>
-                <div class="party-name">FlashSuite Pro</div>
-                <div class="party-info">
-                    PT FlashSuite Trading Indonesia<br>
-                    Jl. Jendral Sudirman No. 88, Jakarta Selatan<br>
-                    Telp: (021) 555-0199 · Email: billing@flashsuite.com
-                </div>
-            </td>
-
-            {{-- Right: Customer --}}
-            <td class="party-col">
-                <div class="section-heading">TAGIHAN KEPADA (CUSTOMER):</div>
-                <div class="party-name">{{ $invoice->salesOrder->customer->name ?? '-' }}</div>
-                <div class="party-info">
-                    @if($invoice->salesOrder->customer?->address)
-                        {{ $invoice->salesOrder->customer->address }}<br>
-                    @endif
-                    @if($invoice->salesOrder->customer?->phone)
-                        Telp: {{ $invoice->salesOrder->customer->phone }}<br>
-                    @endif
-                    @if($invoice->salesOrder->customer?->isPkp())
-                        Status: <strong>PKP</strong>
-                        @if($invoice->salesOrder->customer->npwp)
-                            · NPWP: {{ $invoice->salesOrder->customer->npwp }}
-                        @endif
-                        <br>
-                    @endif
-                </div>
-            </td>
-        </tr>
-    </table>
+    {{-- CUSTOMER SECTION --}}
+    <div class="party-box">
+        <div class="section-heading">TAGIHAN KEPADA (CUSTOMER):</div>
+        <div class="party-name">{{ $invoice->salesOrder->customer->name ?? '-' }}</div>
+        <div class="party-info">
+            @if($invoice->salesOrder->customer?->address)
+                {{ $invoice->salesOrder->customer->address }}<br>
+            @endif
+            @if($invoice->salesOrder->customer?->phone)
+                Telp: {{ $invoice->salesOrder->customer->phone }}<br>
+            @endif
+            @if($invoice->salesOrder->customer?->isPkp())
+                Status: <strong>PKP</strong>
+                @if($invoice->salesOrder->customer->npwp)
+                    · NPWP: {{ $invoice->salesOrder->customer->npwp }}
+                @endif
+                <br>
+            @endif
+        </div>
+    </div>
 
     {{-- DETAILS SECTION (Key - Value Pairs) --}}
     <div class="details-box">
@@ -174,7 +158,7 @@
             @if($invoice->notes)
                 <p style="margin-bottom: 3px;"><strong>Catatan:</strong> {{ $invoice->notes }}</p>
             @endif
-            <p>1. Pembayaran ditransfer ke rekening resmi: Bank Mandiri No. Rek: 123-00-9876543-2 a/n PT FlashSuite Trading Indonesia.</p>
+            <p>1. Pembayaran ditransfer ke rekening resmi perusahaan.</p>
             <p>2. Mohon cantumkan nomor invoice ({{ $invoice->invoice_number }}) pada berita transfer pembayaran.</p>
             <p>3. Tagihan wajib dilunasi sebelum tanggal jatuh tempo yang tertera.</p>
         </div>
