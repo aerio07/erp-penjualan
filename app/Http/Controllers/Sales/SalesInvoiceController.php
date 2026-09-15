@@ -11,6 +11,7 @@ use App\Models\SalesOrder;
 use App\Services\JournalService;
 use App\Traits\HasListFilters;
 use App\Traits\GeneratesDocumentNumber;
+use App\Traits\ExportsPdfDocument;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ use Illuminate\View\View;
 
 class SalesInvoiceController extends Controller
 {
-    use HasListFilters, GeneratesDocumentNumber;
+    use HasListFilters, GeneratesDocumentNumber, ExportsPdfDocument;
 
     public function __construct(
         private JournalService $journalService,
@@ -315,11 +316,10 @@ class SalesInvoiceController extends Controller
     public function exportPdf(SalesInvoice $invoice)
     {
         $invoice->load(['salesOrder.customer', 'delivery.warehouse', 'items.product', 'items.deliveryItem.delivery', 'payments']);
-        $pdf = Pdf::loadView('pdf.sales-invoice', compact('invoice'));
-
         $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);
+        $filename = str_starts_with($safeNumber, 'SINV-') ? $safeNumber : "SINV-{$safeNumber}";
 
-        return $pdf->download("SINV-{$safeNumber}.pdf");
+        return $this->streamPdf('pdf.sales-invoice', compact('invoice'), $filename);
     }
 
     private function generateNumber(): string

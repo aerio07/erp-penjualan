@@ -1,110 +1,138 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Surat Jalan - {{ $delivery->delivery_number }}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12px; color: #1e293b; line-height: 1.5; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 16px; border-bottom: 2px solid #6366f1; margin-bottom: 20px; }
-        .company-name { font-size: 22px; font-weight: 700; color: #6366f1; }
-        .company-sub  { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .doc-title { text-align: right; }
-        .doc-title h1 { font-size: 20px; font-weight: 700; color: #1e293b; }
-        .doc-title .po-number { font-size: 14px; color: #6366f1; font-weight: 600; }
-        .info-grid { display: flex; gap: 40px; margin-bottom: 20px; }
-        .info-block { flex: 1; }
-        .info-block label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px; }
-        .info-block value { font-size: 12px; font-weight: 600; color: #1e293b; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-        th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-        td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
-        .text-center { text-align: center; }
-        .footer { margin-top: 50px; display: flex; justify-content: space-between; }
-        .sig-block { text-align: center; }
-        .sig-block .sig-line { width: 150px; border-top: 1px solid #1e293b; margin-top: 60px; margin-bottom: 4px; }
-        .sig-block .sig-name { font-size: 11px; font-weight: 600; }
-        .sig-block .sig-role { font-size: 10px; color: #64748b; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div>
-            @if(extension_loaded('gd') && file_exists(public_path('assets/logo-color.png')))
-                <img src="{{ public_path('assets/logo-color.png') }}" style="height: 22px; margin-bottom: 3px; display: block;" alt="FlashSuite Pro">
-            @else
-                <div class="company-name">FlashSuite Pro</div>
-            @endif
-            <div class="company-sub">Sistem ERP Trading Penjualan</div>
-        </div>
-        <div class="doc-title">
-            <h1>SURAT JALAN</h1>
-            <div class="po-number">{{ $delivery->delivery_number }}</div>
-            <div style="font-size:11px; color:#64748b; margin-top:4px;">Tanggal: {{ $delivery->delivery_date->format('d/m/Y') }}</div>
-        </div>
-    </div>
+@extends('layouts.pdf')
 
-    <div class="info-grid">
-        <div class="info-block">
-            <label>Penerima / Tujuan Pengiriman</label>
-            <value>{{ $delivery->recipient_name ?? $delivery->salesOrder->customer->name }}</value><br>
-            <span style="color:#64748b; font-size:11px;">
-                {{ $delivery->shipping_address ?? $delivery->salesOrder->customer->address }}
-            </span>
-        </div>
-        <div class="info-block">
-            <label>Ref. Sales Order</label>
-            <value>{{ $delivery->salesOrder->so_number }}</value><br><br>
-            <label>Gudang Pengirim</label>
-            <value>{{ $delivery->warehouse->name }}</value>
-        </div>
-    </div>
+@section('title', 'Surat Jalan - ' . $delivery->delivery_number)
+@section('doc-title', 'SURAT JALAN')
+@section('doc-subtitle', 'No. Pengiriman #: ' . $delivery->delivery_number)
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Kode SKU</th>
-                <th>Nama Produk</th>
-                <th class="text-center">Qty Dikirim</th>
-                <th>Kondisi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($delivery->items as $i => $item)
-            <tr>
-                <td>{{ $i+1 }}</td>
-                <td>{{ $item->salesOrderItem->product->sku }}</td>
-                <td>{{ $item->salesOrderItem->product->name }}</td>
-                <td class="text-center" style="font-weight:600;">{{ number_format($item->qty_delivered) }} {{ $item->salesOrderItem->product->unit }}</td>
-                <td>{{ $item->condition }}</td>
-            </tr>
-            @endforeach
-        </tbody>
+@section('content')
+    {{-- PARTIES SECTION (2 Columns) --}}
+    <table class="parties-table">
+        <tr>
+            {{-- Left: Origin Warehouse & Company --}}
+            <td class="party-col">
+                <div class="section-heading">GUDANG PENGIRIM:</div>
+                <div class="party-name">FlashSuite Pro ({{ $delivery->warehouse->name ?? 'Gudang Utama' }})</div>
+                <div class="party-info">
+                    PT FlashSuite Trading Indonesia<br>
+                    @if($delivery->warehouse?->address)
+                        {{ $delivery->warehouse->address }}<br>
+                    @else
+                        Jl. Jendral Sudirman No. 88, Jakarta Selatan<br>
+                    @endif
+                    Telp: (021) 555-0199 · Email: logistics@flashsuite.com
+                </div>
+            </td>
+
+            {{-- Right: Recipient / Customer --}}
+            <td class="party-col">
+                <div class="section-heading">PENERIMA / TUJUAN:</div>
+                <div class="party-name">{{ $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? '-' }}</div>
+                <div class="party-info">
+                    @php
+                        $shipAddress = $delivery->shipping_address ?? $delivery->salesOrder->customer?->address;
+                    @endphp
+                    @if($shipAddress)
+                        {{ $shipAddress }}<br>
+                    @endif
+                    @if($delivery->salesOrder->customer?->phone)
+                        Telp: {{ $delivery->salesOrder->customer->phone }}<br>
+                    @endif
+                </div>
+            </td>
+        </tr>
     </table>
 
-    @if($delivery->notes)
-    <div style="margin-top:12px; padding:10px; background:#f8fafc; border-radius:6px; font-size:11px; color:#64748b;">
-        <strong>Catatan Pengiriman:</strong> {{ $delivery->notes }}
+    {{-- DETAILS SECTION (Key - Value Pairs) --}}
+    <div class="details-box">
+        <table class="details-table">
+            <tr>
+                <td class="detail-label">Tanggal Pengiriman</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $delivery->delivery_date ? $delivery->delivery_date->format('d F Y') : '-' }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Ref. Sales Order</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $delivery->salesOrder->so_number ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Gudang Asal</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $delivery->warehouse->name ?? '-' }}</td>
+            </tr>
+            @if($delivery->tracking_number)
+            <tr>
+                <td class="detail-label">No. Resi / Tracking</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ $delivery->tracking_number }}</td>
+            </tr>
+            @endif
+            <tr>
+                <td class="detail-label">Status Pengiriman</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $delivery->status)) }}</td>
+            </tr>
+        </table>
     </div>
-    @endif
 
-    <div class="footer">
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-name">Penerima</div>
-            <div class="sig-role">Customer</div>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-name">Pengemudi / Ekspedisi</div>
-            <div class="sig-role">Kurir</div>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-name">{{ $delivery->user->name ?? 'Gudang' }}</div>
-            <div class="sig-role">Kepala Gudang</div>
+    {{-- ITEMS TABLE --}}
+    <div class="items-section">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 6%;">#</th>
+                    <th class="text-left" style="width: 20%;">KODE SKU</th>
+                    <th class="text-left" style="width: 44%;">NAMA PRODUK</th>
+                    <th class="text-center" style="width: 15%;">QTY DIKIRIM</th>
+                    <th class="text-left" style="width: 15%;">KONDISI</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($delivery->items as $i => $item)
+                    <tr>
+                        <td class="text-center">{{ $i + 1 }}</td>
+                        <td class="text-left" style="font-family: monospace; font-size: 8pt;">
+                            {{ $item->salesOrderItem->product->sku ?? '-' }}
+                        </td>
+                        <td class="text-left">
+                            <strong>{{ $item->salesOrderItem->product->name ?? '-' }}</strong>
+                        </td>
+                        <td class="text-center" style="font-weight: 700;">
+                            {{ number_format($item->qty_delivered) }} {{ $item->salesOrderItem->product->unit ?? 'pcs' }}
+                        </td>
+                        <td class="text-left">
+                            {{ $item->condition ?? 'Baik / Normal' }}
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center" style="padding: 15px; color: #888888;">Tidak ada item pengiriman.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- TERMS & CONDITIONS / NOTES --}}
+    <div class="terms-section" style="margin-top: 15px;">
+        <div class="section-heading">CATATAN PENGIRIMAN & KETENTUAN:</div>
+        <div class="terms-content">
+            @if($delivery->notes)
+                <p style="margin-bottom: 4px;"><strong>Catatan Khusus:</strong> {{ $delivery->notes }}</p>
+            @endif
+            <p>1. Harap periksa kesesuaian kuantitas dan kondisi fisik barang pada saat serah terima.</p>
+            <p>2. Komplain atau klaim kerusakan barang wajib dilaporkan maksimal 1x24 jam setelah barang diterima.</p>
+            <p>3. Surat Jalan ini merupakan bukti serah terima barang yang sah antara pihak pengirim dan penerima.</p>
         </div>
     </div>
-</body>
-</html>
+@endsection
+
+@section('signatures')
+    @include('pdf.partials.signatures', [
+        'cols' => [
+            ['label' => 'Diterima Oleh:', 'name' => $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? 'Customer', 'role' => 'Penerima / Customer'],
+            ['label' => 'Pengemudi / Kurir:', 'name' => '( ................................ )', 'role' => 'Ekspedisi / Pengantar'],
+            ['label' => 'Petugas Gudang:', 'name' => $delivery->user->name ?? 'Kepala Gudang', 'role' => 'Warehouse Staff'],
+        ]
+    ])
+@endsection

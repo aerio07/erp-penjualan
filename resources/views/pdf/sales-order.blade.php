@@ -1,141 +1,177 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>SO - {{ $order->so_number }}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12px; color: #1e293b; line-height: 1.5; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 16px; border-bottom: 2px solid #6366f1; margin-bottom: 20px; }
-        .company-name { font-size: 22px; font-weight: 700; color: #6366f1; }
-        .company-sub  { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .doc-title { text-align: right; }
-        .doc-title h1 { font-size: 20px; font-weight: 700; color: #1e293b; }
-        .doc-title .po-number { font-size: 14px; color: #6366f1; font-weight: 600; }
-        .info-grid { display: flex; gap: 40px; margin-bottom: 20px; }
-        .info-block { flex: 1; }
-        .info-block label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px; }
-        .info-block value { font-size: 12px; font-weight: 600; color: #1e293b; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-        th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-        td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
-        .text-right { text-align: right; }
-        .total-section { margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .total-grand { font-size: 15px; font-weight: 700; color: #6366f1; border-top: 2px solid #6366f1; padding-top: 8px; margin-top: 4px; }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; background: #dbeafe; color: #1d4ed8; }
-        .footer { margin-top: 40px; display: flex; justify-content: space-between; }
-        .sig-block { text-align: center; }
-        .sig-block .sig-line { width: 150px; border-top: 1px solid #1e293b; margin-top: 50px; margin-bottom: 4px; }
-        .sig-block .sig-name { font-size: 11px; font-weight: 600; }
-        .sig-block .sig-role { font-size: 10px; color: #64748b; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div>
-            @if(extension_loaded('gd') && file_exists(public_path('assets/logo-color.png')))
-                <img src="{{ public_path('assets/logo-color.png') }}" style="height: 22px; margin-bottom: 3px; display: block;" alt="FlashSuite Pro">
-            @else
-                <div class="company-name">FlashSuite Pro</div>
-            @endif
-            <div class="company-sub">Sistem ERP Trading Penjualan</div>
-        </div>
-        <div class="doc-title">
-            <h1>SALES ORDER</h1>
-            <div class="po-number">{{ $order->so_number }}</div>
-            <div style="font-size:11px; color:#64748b; margin-top:4px;">Tanggal: {{ $order->order_date->format('d/m/Y') }}</div>
-        </div>
-    </div>
+@extends('layouts.pdf')
 
-    <div class="info-grid">
-        <div class="info-block">
-            <label>Kepada (Customer)</label>
-            <value>{{ $order->customer->name }}</value><br>
-            <span style="color:#64748b; font-size:11px;">
-                {{ $order->customer->contact_person ?? '-' }}<br>
-                {{ $order->customer->phone ?? '-' }}<br>
-                {{ $order->customer->address ?? '-' }}
-            </span>
-        </div>
-        <div class="info-block">
-            <label>Tanggal Order</label>
-            <value>{{ $order->order_date->format('d F Y') }}</value><br><br>
-            <label>Target Pengiriman</label>
-            <value>{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d F Y') : '-' }}</value>
-        </div>
-        <div class="info-block">
-            <label>Status</label>
-            <div class="badge">{{ strtoupper($order->status) }}</div><br><br>
-            <label>Sales Representative</label>
-            <value>{{ $order->user->name }}</value>
-        </div>
-    </div>
+@section('title', 'Sales Order - ' . $order->so_number)
+@section('doc-title', 'SALES ORDER')
+@section('doc-subtitle', 'Sales Order #: ' . $order->so_number)
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Produk</th>
-                <th>SKU</th>
-                <th>Unit</th>
-                <th class="text-right">Qty</th>
-                <th class="text-right">Harga Satuan</th>
-                <th class="text-right">Diskon</th>
-                <th class="text-right">Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($order->items as $i => $item)
-            <tr>
-                <td>{{ $i+1 }}</td>
-                <td>{{ $item->product->name }}</td>
-                <td>{{ $item->product->sku }}</td>
-                <td>{{ $item->product->unit }}</td>
-                <td class="text-right">{{ number_format($item->qty_ordered) }}</td>
-                <td class="text-right">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                <td class="text-right">{{ $item->discount_percent > 0 ? $item->discount_percent.'%' : '-' }}</td>
-                <td class="text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
-            </tr>
-            @endforeach
-        </tbody>
+@section('content')
+    @php
+        // Gross subtotal
+        $grossSubtotal = $order->items->sum(function($item) {
+            return ($item->qty_ordered ?? 0) * ($item->unit_price ?? 0);
+        });
+    @endphp
+
+    {{-- PARTIES SECTION (SERVICE PROVIDER & BILL TO) --}}
+    <table class="parties-table">
+        <tr>
+            {{-- Service Provider / Seller --}}
+            <td class="party-col" style="padding-right: 15px;">
+                <div class="section-heading">SERVICE PROVIDER / SELLER</div>
+                <div class="party-name">PT FlashSuite Niaga Indonesia</div>
+                <div class="party-info">
+                    Jl. Industri Raya Niaga No. 88<br>
+                    Jakarta Barat, DKI Jakarta 11730<br>
+                    Phone: (021) 555-0199<br>
+                    Email: sales@flashsuite.co.id
+                </div>
+            </td>
+
+            {{-- Bill To / Customer --}}
+            <td class="party-col" style="padding-left: 15px;">
+                <div class="section-heading">BILL TO / CUSTOMER</div>
+                <div class="party-name">{{ $order->customer->name ?? '-' }}</div>
+                <div class="party-info">
+                    @if(!empty($order->customer->contact_person))
+                        Attn: {{ $order->customer->contact_person }}<br>
+                    @endif
+                    {{ $order->customer->address ?: 'Alamat tidak tercatat' }}<br>
+                    Phone: {{ $order->customer->phone ?: '-' }}<br>
+                    Email: {{ $order->customer->email ?: '-' }}
+                </div>
+            </td>
+        </tr>
     </table>
 
-    <div style="display:flex; justify-content:flex-end;">
-        <div style="width:280px;">
-            <div class="total-section">
-                <div class="total-row"><span>Subtotal:</span><span>Rp {{ number_format($order->items->sum('subtotal'), 0, ',', '.') }}</span></div>
-                @if($order->discount_amount > 0)
-                <div class="total-row" style="color:#ef4444;"><span>Diskon Header:</span><span>- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span></div>
+    {{-- ORDER DETAILS SECTION --}}
+    <div class="details-box">
+        <div class="section-heading">ORDER DETAILS</div>
+        <table class="details-table">
+            <tr>
+                <td class="detail-label">Date</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Expected Delivery</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Channel</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ ucfirst($order->channel ?? 'offline') }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Sales Representative</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Status</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $order->status ?? 'Draft')) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    {{-- ITEMS SECTION --}}
+    <div class="items-section">
+        <div class="section-heading">ITEMS ORDERED</div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="text-left" style="width: 44%;">Description</th>
+                    <th class="text-center" style="width: 14%;">Quantity</th>
+                    <th class="text-right" style="width: 21%;">Unit Price</th>
+                    <th class="text-right" style="width: 21%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($order->items as $item)
+                <tr>
+                    <td class="text-left">
+                        <span style="font-weight: 600; color: #111;">{{ $item->product->name ?? '-' }}</span>
+                        @if(!empty($item->product->sku))
+                            <span style="font-size: 7.5pt; color: #777;">({{ $item->product->sku }})</span>
+                        @endif
+                        @if(($item->discount_percent ?? 0) > 0)
+                            <div style="font-size: 7pt; color: #dc2626;">Diskon: {{ $item->discount_percent }}%</div>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        {{ number_format($item->qty_ordered ?? 0) }} {{ $item->product->unit ?? 'Unit' }}
+                    </td>
+                    <td class="text-right">
+                        Rp {{ number_format($item->unit_price ?? 0, 0, ',', '.') }}
+                    </td>
+                    <td class="text-right" style="font-weight: 600;">
+                        Rp {{ number_format($item->subtotal ?? 0, 0, ',', '.') }}
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- TOTALS SECTION (Right Aligned) --}}
+    <table class="totals-table">
+        <tr>
+            <td style="width: 55%; vertical-align: top;">
+                @if($order->notes)
+                    <div class="section-heading">NOTES</div>
+                    <div style="font-size: 8pt; color: #555; line-height: 1.4; padding-right: 20px;">
+                        {{ $order->notes }}
+                    </div>
                 @endif
-                <div class="total-row"><span>PPN ({{ $order->tax_rate }}%):</span><span>Rp {{ number_format($order->tax_amount, 0, ',', '.') }}</span></div>
-                <div class="total-row total-grand"><span>TOTAL:</span><span>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span></div>
-            </div>
-        </div>
-    </div>
+            </td>
+            <td style="width: 45%; vertical-align: top;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td class="tot-label">Subtotal:</td>
+                        <td class="tot-value">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</td>
+                    </tr>
+                    @if(($order->discount_amount ?? 0) > 0)
+                    <tr>
+                        <td class="tot-label tot-discount">Diskon Header:</td>
+                        <td class="tot-value tot-discount">- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td class="tot-label">Tax ({{ $order->tax_rate ?? 0 }}%):</td>
+                        <td class="tot-value">Rp {{ number_format($order->tax_amount ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="total-final">
+                        <td class="tot-label" style="font-size: 10pt; font-weight: 800;">TOTAL:</td>
+                        <td class="tot-value" style="font-size: 10pt; font-weight: 800;">Rp {{ number_format($order->total_amount ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
-    @if($order->notes)
-    <div style="margin-top:16px; padding:10px; background:#f8fafc; border-radius:6px; font-size:11px; color:#64748b;">
-        <strong>Catatan:</strong> {{ $order->notes }}
+    {{-- TERMS & CONDITIONS --}}
+    <div class="terms-section">
+        <div class="section-heading">TERMS & CONDITIONS</div>
+        <div class="terms-content">
+            Barang yang dipesan akan disiapkan dan dikirim sesuai tanggal target pengiriman. Pembayaran resmi ditujukan ke rekening perusahaan yang tertera pada Invoice. Terima kasih atas pesanan Anda.
+        </div>
     </div>
-    @endif
+@endsection
 
-    <div class="footer">
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-name">{{ $order->customer->name }}</div>
-            <div class="sig-role">Customer</div>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-name">{{ $order->user->name }}</div>
-            <div class="sig-role">Sales Representative</div>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-name">Direktur</div>
-            <div class="sig-role">Approval</div>
-        </div>
-    </div>
-</body>
-</html>
+@section('signatures')
+    @php
+        $approver = $order->approvalRequests->where('status', 'approved')->first()?->approver?->name;
+    @endphp
+    @include('pdf.partials.signatures', [
+        'cols' => [
+            ['label' => 'Dibuat Oleh', 'name' => $order->user->name ?? 'Sales Representative', 'role' => 'Sales'],
+            ['label' => 'Disetujui Oleh', 'name' => $approver ?: 'Manajemen / Direktur', 'role' => 'Otorisasi'],
+            ['label' => 'Diterima & Disetujui', 'name' => $order->customer->contact_person ?: ($order->customer->name ?? 'Customer'), 'role' => 'Pelanggan / Customer'],
+        ]
+    ])
+@endsection

@@ -1,127 +1,192 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Invoice - {{ $invoice->invoice_number }}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12px; color: #1e293b; line-height: 1.5; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 16px; border-bottom: 2px solid #6366f1; margin-bottom: 20px; }
-        .company-name { font-size: 22px; font-weight: 700; color: #6366f1; }
-        .company-sub  { font-size: 11px; color: #64748b; margin-top: 2px; }
-        .doc-title { text-align: right; }
-        .doc-title h1 { font-size: 20px; font-weight: 700; color: #1e293b; }
-        .doc-title .po-number { font-size: 14px; color: #6366f1; font-weight: 600; }
-        .info-grid { display: flex; gap: 40px; margin-bottom: 20px; }
-        .info-block { flex: 1; }
-        .info-block label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px; }
-        .info-block value { font-size: 12px; font-weight: 600; color: #1e293b; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-        th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; }
-        td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
-        .text-right { text-align: right; }
-        .total-section { margin-top: 8px; border-top: 1px solid #e2e8f0; padding-top: 12px; }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .total-grand { font-size: 15px; font-weight: 700; color: #6366f1; border-top: 2px solid #6366f1; padding-top: 8px; margin-top: 4px; }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; background: #dbeafe; color: #1d4ed8; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div>
-            @if(extension_loaded('gd') && file_exists(public_path('assets/logo-color.png')))
-                <img src="{{ public_path('assets/logo-color.png') }}" style="height: 22px; margin-bottom: 3px; display: block;" alt="FlashSuite Pro">
-            @else
-                <div class="company-name">FlashSuite Pro</div>
-            @endif
-            <div class="company-sub">Sistem ERP Trading Penjualan</div>
-        </div>
-        <div class="doc-title">
-            <h1>INVOICE PENJUALAN</h1>
-            <div class="po-number">{{ $invoice->invoice_number }}</div>
-            @if($invoice->salesOrder->customer?->isPkp() && $invoice->tax_invoice_number)
-            <div style="font-size:11px; color:#4338ca; font-weight:700; margin-top:2px;">
-                Faktur Pajak: {{ $invoice->tax_invoice_number }}
-            </div>
-            @endif
-            <div style="font-size:11px; color:#64748b; margin-top:4px;">Tanggal: {{ $invoice->invoice_date->format('d/m/Y') }}</div>
-        </div>
-    </div>
+@extends('layouts.pdf')
 
-    <div class="info-grid">
-        <div class="info-block">
-            <label>Tagihan Kepada (Customer)</label>
-            <value>{{ $invoice->salesOrder->customer->name ?? '-' }}</value><br>
-            <span style="color:#64748b; font-size:11px;">
-                Ref SO: {{ $invoice->salesOrder->so_number }}<br>
-                @if($invoice->delivery)
-                Ref Surat Jalan: {{ $invoice->delivery->delivery_number }}<br>
-                @endif
-                @if($invoice->salesOrder->customer?->isPkp())
-                Status: PKP @if($invoice->salesOrder->customer->npwp) · NPWP: {{ $invoice->salesOrder->customer->npwp }} @endif<br>
-                @endif
-                Alamat: {{ $invoice->salesOrder->customer->address ?? '-' }}
-            </span>
-        </div>
-        <div class="info-block">
-            <label>Tgl Invoice</label>
-            <value>{{ $invoice->invoice_date->format('d F Y') }}</value><br><br>
-            <label>Tgl Jatuh Tempo</label>
-            <value>{{ $invoice->due_date->format('d F Y') }}</value>
-        </div>
-        <div class="info-block">
-            <label>Status Pembayaran</label>
-            <div class="badge">{{ strtoupper($invoice->status) }}</div>
-        </div>
-    </div>
+@section('title', 'Invoice Penjualan - ' . $invoice->invoice_number)
+@section('doc-title', 'INVOICE PENJUALAN')
+@section('doc-subtitle', 'Invoice #: ' . $invoice->invoice_number)
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Produk</th>
-                <th class="text-right">Qty Ditagih</th>
-                <th class="text-right">Harga Satuan</th>
-                <th class="text-right">Diskon</th>
-                <th class="text-right">Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                $invoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : $invoice->salesOrder->items;
-            @endphp
-            @foreach($invoiceItems as $i => $item)
-            @php
-                $qty = $item->qty_invoiced ?? $item->qty_ordered ?? 0;
-                $price = $item->unit_price;
-                $discPercent = $item->discount_percent ?? 0;
-                $subtotal = $item->subtotal ?? (($qty * $price) - (($qty * $price) * ($discPercent / 100)));
-            @endphp
-            <tr>
-                <td>{{ $i+1 }}</td>
-                <td>{{ $item->product->name ?? '-' }}</td>
-                <td class="text-right">{{ number_format($qty) }} {{ $item->product->unit ?? 'pcs' }}</td>
-                <td class="text-right">Rp {{ number_format($price, 0, ',', '.') }}</td>
-                <td class="text-right">{{ $discPercent > 0 ? $discPercent . '%' : '-' }}</td>
-                <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
-            </tr>
-            @endforeach
-        </tbody>
+@section('content')
+    {{-- PARTIES SECTION (2 Columns) --}}
+    <table class="parties-table">
+        <tr>
+            {{-- Left: Issuer / Company --}}
+            <td class="party-col">
+                <div class="section-heading">DITERBITKAN OLEH:</div>
+                <div class="party-name">FlashSuite Pro</div>
+                <div class="party-info">
+                    PT FlashSuite Trading Indonesia<br>
+                    Jl. Jendral Sudirman No. 88, Jakarta Selatan<br>
+                    Telp: (021) 555-0199 · Email: billing@flashsuite.com
+                </div>
+            </td>
+
+            {{-- Right: Customer --}}
+            <td class="party-col">
+                <div class="section-heading">TAGIHAN KEPADA (CUSTOMER):</div>
+                <div class="party-name">{{ $invoice->salesOrder->customer->name ?? '-' }}</div>
+                <div class="party-info">
+                    @if($invoice->salesOrder->customer?->address)
+                        {{ $invoice->salesOrder->customer->address }}<br>
+                    @endif
+                    @if($invoice->salesOrder->customer?->phone)
+                        Telp: {{ $invoice->salesOrder->customer->phone }}<br>
+                    @endif
+                    @if($invoice->salesOrder->customer?->isPkp())
+                        Status: <strong>PKP</strong>
+                        @if($invoice->salesOrder->customer->npwp)
+                            · NPWP: {{ $invoice->salesOrder->customer->npwp }}
+                        @endif
+                        <br>
+                    @endif
+                </div>
+            </td>
+        </tr>
     </table>
 
-    <div style="display:flex; justify-content:flex-end;">
-        <div style="width:280px;">
-            <div class="total-section">
-                <div class="total-row"><span>Subtotal (DPP):</span><span>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span></div>
-                <div class="total-row"><span>PPN ({{ $invoice->tax_rate }}%):</span><span>Rp {{ number_format($invoice->tax_amount, 0, ',', '.') }}</span></div>
-                <div class="total-row total-grand"><span>TOTAL TAGIHAN:</span><span>Rp {{ number_format($invoice->effective_total_amount, 0, ',', '.') }}</span></div>
-                @if($invoice->total_reversed_amount > 0)
-                <div class="total-row" style="color:#dc2626; font-weight:600; margin-top:6px;"><span>Pengurang Retur:</span><span>- Rp {{ number_format($invoice->total_reversed_amount, 0, ',', '.') }}</span></div>
-                @endif
-                <div class="total-row" style="color:#059669; font-weight:600; margin-top:6px;"><span>Sudah Dibayar:</span><span>Rp {{ number_format($invoice->total_paid, 0, ',', '.') }}</span></div>
-                <div class="total-row" style="color:#dc2626; font-weight:700;"><span>Sisa Piutang:</span><span>Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }}</span></div>
-            </div>
+    {{-- DETAILS SECTION (Key - Value Pairs) --}}
+    <div class="details-box">
+        <table class="details-table">
+            <tr>
+                <td class="detail-label">Tanggal Invoice</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $invoice->invoice_date ? $invoice->invoice_date->format('d F Y') : '-' }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Jatuh Tempo</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $invoice->due_date ? $invoice->due_date->format('d F Y') : '-' }}</td>
+            </tr>
+            <tr>
+                <td class="detail-label">Ref. Sales Order</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $invoice->salesOrder->so_number ?? '-' }}</td>
+            </tr>
+            @if($invoice->delivery)
+            <tr>
+                <td class="detail-label">Ref. Surat Jalan</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value">{{ $invoice->delivery->delivery_number }}</td>
+            </tr>
+            @endif
+            @if($invoice->salesOrder->customer?->isPkp() && $invoice->tax_invoice_number)
+            <tr>
+                <td class="detail-label">No. Faktur Pajak</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ $invoice->tax_invoice_number }}</td>
+            </tr>
+            @endif
+            <tr>
+                <td class="detail-label">Status Pembayaran</td>
+                <td class="detail-colon">:</td>
+                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $invoice->status)) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    {{-- ITEMS TABLE --}}
+    <div class="items-section">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 5%;">#</th>
+                    <th class="text-left" style="width: 45%;">PRODUK</th>
+                    <th class="text-right" style="width: 12%;">QTY</th>
+                    <th class="text-right" style="width: 14%;">HARGA SATUAN</th>
+                    <th class="text-right" style="width: 10%;">DISKON</th>
+                    <th class="text-right" style="width: 14%;">SUBTOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $invoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : ($invoice->salesOrder->items ?? collect());
+                @endphp
+                @forelse($invoiceItems as $i => $item)
+                    @php
+                        $qty = $item->qty_invoiced ?? $item->qty_ordered ?? 0;
+                        $price = $item->unit_price;
+                        $discPercent = $item->discount_percent ?? 0;
+                        $subtotal = $item->subtotal ?? (($qty * $price) - (($qty * $price) * ($discPercent / 100)));
+                    @endphp
+                    <tr>
+                        <td class="text-center">{{ $i + 1 }}</td>
+                        <td class="text-left">
+                            <strong>{{ $item->product->name ?? '-' }}</strong>
+                            @if(!empty($item->product->sku))
+                                <div style="font-size: 7.5pt; color: #666666;">SKU: {{ $item->product->sku }}</div>
+                            @endif
+                        </td>
+                        <td class="text-right">{{ number_format($qty) }} {{ $item->product->unit ?? 'pcs' }}</td>
+                        <td class="text-right">Rp {{ number_format($price, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ $discPercent > 0 ? $discPercent . '%' : '-' }}</td>
+                        <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 15px; color: #888888;">Tidak ada item rincian.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- TOTALS SECTION (Right Aligned) --}}
+    <div class="totals-table">
+        <table class="totals-summary">
+            <tr>
+                <td class="tot-label">Subtotal (DPP):</td>
+                <td class="tot-value">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
+            </tr>
+            @if($invoice->tax_amount > 0 || $invoice->tax_rate > 0)
+            <tr>
+                <td class="tot-label">PPN ({{ $invoice->tax_rate }}%):</td>
+                <td class="tot-value">Rp {{ number_format($invoice->tax_amount, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            <tr class="total-final">
+                <td class="tot-label">TOTAL TAGIHAN:</td>
+                <td class="tot-value">Rp {{ number_format($invoice->effective_total_amount, 0, ',', '.') }}</td>
+            </tr>
+            @if($invoice->total_reversed_amount > 0)
+            <tr>
+                <td class="tot-label tot-discount">Pengurang Retur:</td>
+                <td class="tot-value tot-discount">- Rp {{ number_format($invoice->total_reversed_amount, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            @if($invoice->total_paid > 0)
+            <tr>
+                <td class="tot-label" style="color: #059669;">Sudah Dibayar:</td>
+                <td class="tot-value" style="color: #059669;">Rp {{ number_format($invoice->total_paid, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            @if($invoice->outstanding_amount != $invoice->effective_total_amount)
+            <tr style="font-weight: 700;">
+                <td class="tot-label" style="color: #dc2626;">Sisa Piutang:</td>
+                <td class="tot-value" style="color: #dc2626;">Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+        </table>
+        <div style="clear: both;"></div>
+    </div>
+
+    {{-- TERMS & CONDITIONS --}}
+    <div class="terms-section">
+        <div class="section-heading">SYARAT & KETENTUAN PEMBAYARAN:</div>
+        <div class="terms-content">
+            @if($invoice->notes)
+                <p style="margin-bottom: 3px;"><strong>Catatan:</strong> {{ $invoice->notes }}</p>
+            @endif
+            <p>1. Pembayaran ditransfer ke rekening resmi: Bank Mandiri No. Rek: 123-00-9876543-2 a/n PT FlashSuite Trading Indonesia.</p>
+            <p>2. Mohon cantumkan nomor invoice ({{ $invoice->invoice_number }}) pada berita transfer pembayaran.</p>
+            <p>3. Tagihan wajib dilunasi sebelum tanggal jatuh tempo yang tertera.</p>
         </div>
     </div>
-</body>
-</html>
+@endsection
+
+@section('signatures')
+    @include('pdf.partials.signatures', [
+        'cols' => [
+            ['label' => 'Dibuat Oleh:', 'name' => auth()->user()?->name ?? 'Bagian Billing', 'role' => 'Billing Staff'],
+            ['label' => 'Mengetahui:', 'name' => 'Manager Keuangan', 'role' => 'Finance & Accounting'],
+            ['label' => 'Diterima Oleh:', 'name' => $invoice->salesOrder->customer->name ?? 'Customer', 'role' => 'Customer / Penerima'],
+        ]
+    ])
+@endsection

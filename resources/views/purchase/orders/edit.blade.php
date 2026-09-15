@@ -242,7 +242,15 @@
                                     <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" style="height:38px;" min="1" required>
                                 </td>
                                 <td style="vertical-align: top !important;">
-                                    <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" @input="recalc()" :class="[row.refPrice > 0 && row.price > row.refPrice ? 'input-price-warning' : '', 'form-control']" style="height:38px;" min="0" step="100" placeholder="0" required>
+                                    <input type="text" 
+                                           inputmode="numeric" 
+                                           :name="`items[${idx}][unit_price]`" 
+                                           x-currency="row.price" 
+                                           @input="recalc()" 
+                                           :class="[row.refPrice > 0 && row.price > row.refPrice ? 'input-price-warning' : '', 'form-control', 'format-currency']" 
+                                           style="height:38px;" 
+                                           placeholder="0" 
+                                           required>
                                     <template x-if="row.refPrice > 0 && row.price > row.refPrice">
                                         <div class="price-badge price-badge--warning">
                                             <i class="fa-solid fa-triangle-exclamation"></i>

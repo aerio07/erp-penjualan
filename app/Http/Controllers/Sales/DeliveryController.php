@@ -19,10 +19,11 @@ use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
 use App\Traits\GeneratesDocumentNumber;
+use App\Traits\ExportsPdfDocument;
 
 class DeliveryController extends Controller
 {
-    use HasListFilters, GeneratesDocumentNumber;
+    use HasListFilters, GeneratesDocumentNumber, ExportsPdfDocument;
 
     public function __construct(
         private StockService $stockService,
@@ -302,11 +303,10 @@ class DeliveryController extends Controller
     public function exportPdf(Delivery $delivery)
     {
         $delivery->load(['salesOrder.customer', 'warehouse', 'user', 'items.salesOrderItem.product']);
-        $pdf = Pdf::loadView('pdf.delivery', compact('delivery'));
-
         $safeNumber = str_replace(['/', '\\'], '-', $delivery->delivery_number);
+        $filename = str_starts_with($safeNumber, 'SJ-') ? $safeNumber : "SJ-{$safeNumber}";
 
-        return $pdf->download("SJ-{$safeNumber}.pdf");
+        return $this->streamPdf('pdf.delivery', compact('delivery'), $filename);
     }
 
     private function generateNumber(): string

@@ -17,10 +17,11 @@ use Illuminate\View\View;
 use App\Models\Supplier;
 use App\Traits\HasListFilters;
 use App\Traits\GeneratesDocumentNumber;
+use App\Traits\ExportsPdfDocument;
 
 class PurchaseInvoiceController extends Controller
 {
-    use HasListFilters, GeneratesDocumentNumber;
+    use HasListFilters, GeneratesDocumentNumber, ExportsPdfDocument;
 
     public function __construct(
         private JournalService $journalService,
@@ -288,11 +289,10 @@ class PurchaseInvoiceController extends Controller
     public function exportPdf(PurchaseInvoice $invoice)
     {
         $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
-        $pdf = Pdf::loadView('pdf.purchase-invoice', compact('invoice'));
-
         $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);
+        $filename = str_starts_with($safeNumber, 'PINV-') ? $safeNumber : "PINV-{$safeNumber}";
 
-        return $pdf->download("INV-{$safeNumber}.pdf");
+        return $this->streamPdf('pdf.purchase-invoice', compact('invoice'), $filename);
     }
 
     private function generateNumber(): string

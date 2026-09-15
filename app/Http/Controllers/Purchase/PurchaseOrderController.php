@@ -18,10 +18,11 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Traits\HasListFilters;
 use App\Traits\GeneratesDocumentNumber;
+use App\Traits\ExportsPdfDocument;
 
 class PurchaseOrderController extends Controller
 {
-    use HasListFilters, GeneratesDocumentNumber;
+    use HasListFilters, GeneratesDocumentNumber, ExportsPdfDocument;
 
     public function __construct(private ApprovalService $approvalService) {}
 
@@ -376,13 +377,12 @@ class PurchaseOrderController extends Controller
     public function exportPdf(PurchaseOrder $purchaseOrder)
     {
         $order = $purchaseOrder;
-        $order->load(['supplier', 'warehouse', 'user', 'items.product']);
-        $pdf = Pdf::loadView('pdf.purchase-order', compact('order'));
+        $order->load(['supplier', 'warehouse', 'user', 'items.product', 'approvalRequests.approver']);
 
         $safeNumber = str_replace(['/', '\\'], '-', $order->po_number);
-        $filename = str_starts_with($safeNumber, 'PO-') ? "{$safeNumber}.pdf" : "PO-{$safeNumber}.pdf";
+        $filename = str_starts_with($safeNumber, 'PO-') ? $safeNumber : "PO-{$safeNumber}";
 
-        return $pdf->download($filename);
+        return $this->streamPdf('pdf.purchase-order', compact('order'), $filename);
     }
 
     private function generateNumber(): string
