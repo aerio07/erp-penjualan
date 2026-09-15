@@ -89,10 +89,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('orders/{purchase_order}/confirm', [PurchaseOrderController::class, 'confirm'])->name('orders.confirm');
         Route::patch('orders/{purchase_order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('orders.cancel');
 
+        Route::middleware('role:admin')->group(function () {
+            Route::patch('orders/{purchase_order}/approve', [PurchaseOrderController::class, 'approve'])->name('orders.approve');
+            Route::patch('orders/{purchase_order}/revise',  [PurchaseOrderController::class, 'revise'])->name('orders.revise');
+            Route::patch('orders/{purchase_order}/reject',  [PurchaseOrderController::class, 'reject'])->name('orders.reject');
+        });
+
         Route::resource('returns', PurchaseReturnController::class)->only(['index', 'create', 'store', 'show']);
         Route::patch('returns/{return}/send', [PurchaseReturnController::class, 'send'])->name('returns.send');
         Route::patch('returns/{return}/complete', [PurchaseReturnController::class, 'complete'])->name('returns.complete');
     });
+
 
     Route::middleware('role:admin,gudang')->prefix('purchase')->name('purchase.')->group(function () {
         Route::resource('goods-receipts', GoodsReceiptController::class)->only(['index', 'create', 'store', 'show']);

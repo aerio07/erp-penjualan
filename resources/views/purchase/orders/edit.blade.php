@@ -9,14 +9,15 @@
         $initialRows = $order->items->map(function($item) {
             return [
                 'product_id' => $item->product_id,
-                'qty' => $item->qty_ordered,
-                'price' => (float)$item->unit_price,
-                'discount' => (float)$item->discount_percent,
+                'qty'        => $item->qty_ordered,
+                'price'      => (float)$item->unit_price,
+                'discount'   => (float)$item->discount_percent,
+                'refPrice'   => (float)($item->product->purchase_price ?? 0),
             ];
         })->values()->toArray();
     }
     if (empty($initialRows)) {
-        $initialRows = [['product_id' => '', 'qty' => 1, 'price' => 0, 'discount' => 0]];
+        $initialRows = [['product_id' => '', 'qty' => 1, 'price' => 0, 'discount' => 0, 'refPrice' => 0]];
     }
 @endphp
 
@@ -33,7 +34,7 @@
         </x-slot:action>
     </x-page-header>
 
-    <form method="POST" action="{{ route('purchase.orders.update', $order) }}" id="poForm" @submit="validateForm($event)">
+    <form method="POST" action="{{ route('purchase.orders.update', $order) }}" id="poForm" @submit="validateForm($event)" @keydown.enter="if ($event.target.tagName !== 'TEXTAREA') $event.preventDefault()">
         @csrf
         @method('PUT')
 
@@ -170,7 +171,7 @@
                     <tbody>
                         <template x-for="(row, idx) in rows" :key="idx">
                             <tr>
-                                <td>
+                                <td style="vertical-align: top !important;">
                                     <div style="position: relative; width: 100%;" x-data="{ openProd: false, prodSearch: '' }" @click.outside="openProd = false" @keydown.escape.window="openProd = false">
                                         <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
                                         
@@ -237,23 +238,33 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" min="1" required>
+                                <td style="vertical-align: top !important;">
+                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" style="height:38px;" min="1" required>
                                 </td>
-                                <td>
-                                    <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" @input="recalc()" class="form-control" min="0" step="100" placeholder="0" required>
+                                <td style="vertical-align: top !important;">
+                                    <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" @input="recalc()" :class="[row.refPrice > 0 && row.price > row.refPrice ? 'input-price-warning' : '', 'form-control']" style="height:38px;" min="0" step="100" placeholder="0" required>
+                                    <template x-if="row.refPrice > 0 && row.price > row.refPrice">
+                                        <div class="price-badge price-badge--warning">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                            Harga melebihi patokan (Rp <span x-text="formatNum(row.refPrice)"></span>)
+                                        </div>
+                                    </template>
                                 </td>
-                                <td>
-                                    <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" @input="recalc()" class="form-control" min="0" max="100" step="0.1">
+                                <td style="vertical-align: top !important;">
+                                    <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" @input="recalc()" class="form-control" style="height:38px;" min="0" max="100" step="0.1">
                                     <div style="font-size:11px; color:var(--danger); margin-top:3px; font-weight:500;" x-show="row.discount > 0" x-text="'-Rp ' + formatNum((row.qty || 0) * (row.price || 0) * ((row.discount || 0) / 100))"></div>
                                 </td>
-                                <td style="text-align:right; font-weight:600;">
-                                    <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                <td style="vertical-align: top !important; text-align:right; font-weight:600;">
+                                    <div style="height: 38px; display: flex; align-items: center; justify-content: flex-end;">
+                                        <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                    </div>
                                 </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
+                                <td style="vertical-align: top !important; text-align:center;">
+                                    <div style="height: 38px; display: flex; align-items: center; justify-content: center;">
+                                        <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -291,14 +302,18 @@ function poForm() {
             }
         },
 
-        addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0 }); },
+        addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }); },
         removeRow(idx) { this.rows.splice(idx, 1); },
 
         onProductChange(idx, event) {
             const id = (event && event.target) ? event.target.value : this.rows[idx].product_id;
             this.rows[idx].product_id = id;
             if (id && products[id]) {
-                this.rows[idx].price = Math.round(parseFloat(products[id].purchase_price)) || 0;
+                const ref = Math.round(parseFloat(products[id].purchase_price)) || 0;
+                this.rows[idx].price    = ref;
+                this.rows[idx].refPrice = ref;
+            } else {
+                this.rows[idx].refPrice = 0;
             }
         },
 
@@ -308,6 +323,7 @@ function poForm() {
         },
 
         get isDiscountInvalid() { return this.discountHeader > this.subtotal; },
+        get hasOverPrice() { return this.rows.some(r => r.refPrice > 0 && r.price > r.refPrice); },
         get totalItemDiscount() { return this.rows.reduce((s, r) => s + ((Number(r.qty) || 0) * (Number(r.price) || 0) * ((Number(r.discount) || 0) / 100)), 0); },
         get subtotal() { return this.rows.reduce((s, r) => s + this.rowSubtotal(r), 0); },
         get taxableAmount() { return Math.max(0, this.subtotal - (this.discountHeader || 0)); },

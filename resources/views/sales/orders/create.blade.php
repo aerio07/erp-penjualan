@@ -249,11 +249,12 @@
                                             @input="hppWarningConfirmed = false"
                                             @keydown.enter.prevent="$event.target.blur()"
                                             class="form-control" 
-                                            :style="row.product_id && isBelowHpp(row) ? 'border-color:#ef4444; background:#fef2f2; color:#b91c1c; height: 38px;' : 'height: 38px;'"
+                                            :class="[row.product_id && isBelowHpp(row) ? 'input-price-danger' : '', 'form-control']"
+                                            style="height: 38px;"
                                             min="0" step="100" placeholder="0" required>
                                      <template x-if="row.product_id && isBelowHpp(row)">
-                                         <div style="font-size:11px; color:#dc2626; margin-top:5px; font-weight:600; line-height:1.3; display:flex; align-items:center; gap:4px; background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; padding:3px 7px;">
-                                             <i class="fa-solid fa-triangle-exclamation" style="flex-shrink:0; color:#ef4444;"></i>
+                                         <div class="price-badge price-badge--danger">
+                                             <i class="fa-solid fa-triangle-exclamation"></i>
                                              <span>
                                                  <template x-if="row.price < getProductHpp(row.product_id)">
                                                      <span>&lt; HPP: Rp <span x-text="formatNum(getProductHpp(row.product_id))"></span></span>

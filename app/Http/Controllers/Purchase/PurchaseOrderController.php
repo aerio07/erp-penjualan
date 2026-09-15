@@ -151,10 +151,11 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $purchaseOrder): View
     {
         $order = $purchaseOrder;
-        $order->load(['supplier', 'warehouse', 'user', 'items.product', 'goodsReceipts', 'invoices']);
+        $order->load(['supplier', 'warehouse', 'user', 'items.product', 'goodsReceipts', 'invoices', 'approvalRequests.approver']);
 
         return view('purchase.orders.show', compact('order'));
     }
+
 
     public function edit(PurchaseOrder $purchaseOrder): View
     {
@@ -286,6 +287,69 @@ class PurchaseOrderController extends Controller
 
         return back()->with('info', 'PO telah dikirim untuk approval.');
     }
+
+    public function approve(PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menyetujui Purchase Order.');
+        abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
+
+        $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->approve($approval);
+        }
+
+        $purchaseOrder->update(['status' => 'confirmed']);
+
+        return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil disetujui (Approved) dan siap diteruskan ke supplier.");
+    }
+
+    public function revise(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat meminta revisi Purchase Order.');
+        abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
+
+        $request->validate([
+            'revision_reason' => 'required|string|min:3',
+        ], [
+            'revision_reason.required' => 'Catatan revisi wajib diisi agar tim purchasing mengetahui apa yang perlu diperbaiki.',
+            'revision_reason.min'      => 'Catatan revisi minimal 3 karakter.',
+        ]);
+
+        $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->revise($approval, $request->revision_reason);
+        }
+
+        $purchaseOrder->update(['status' => 'draft']);
+
+        return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil dikembalikan ke status Draft untuk direvisi.");
+    }
+
+    public function reject(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menolak Purchase Order.');
+        abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
+
+        $request->validate([
+            'rejection_reason' => 'nullable|string',
+        ]);
+
+        $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->reject($approval, $request->rejection_reason);
+        }
+
+        // Kembalikan procurement demands ke pending jika ada
+        $purchaseOrder->procurementDemands()->update([
+            'purchase_order_id' => null,
+            'status'            => 'pending',
+        ]);
+
+        $purchaseOrder->update(['status' => 'cancelled']);
+
+        return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil ditolak (Rejected) dan dibatalkan.");
+    }
+
 
     public function cancel(PurchaseOrder $purchaseOrder): RedirectResponse
     {

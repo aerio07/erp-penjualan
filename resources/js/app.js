@@ -3,6 +3,9 @@ import Alpine from 'alpinejs';
 import { formatRupiah, unformatRupiah, applyMaskWithCursor, setupCurrencyEngine } from './currency';
 
 window.Alpine = Alpine;
+window.formatRupiah = formatRupiah;
+window.unformatRupiah = unformatRupiah;
+window.applyMaskWithCursor = applyMaskWithCursor;
 
 // Alpine Directive: x-currency="property"
 Alpine.directive('currency', (el, { expression }, { evaluateLater, effect }) => {
