@@ -62,6 +62,21 @@ class ApprovalService
     }
 
     /**
+     * Kembalikan approval request untuk revisi.
+     */
+    public function revise(ApprovalRequest $approval, ?string $reason = null): ApprovalRequest
+    {
+        $approval->update([
+            'status'           => 'revised',
+            'approver_id'      => Auth::id(),
+            'rejection_reason' => $reason,
+            'approved_at'      => now(),
+        ]);
+
+        return $approval->fresh();
+    }
+
+    /**
      * Cek apakah amount melewati threshold dan butuh approval.
      */
     public function needsApproval(string $docType, float $amount): bool

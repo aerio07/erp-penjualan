@@ -71,6 +71,17 @@
                                     </button>
                                 </form>
 
+                                {{-- Form Revisi --}}
+                                <button type="button" class="btn btn-warning btn-sm" onclick="reviseApproval({{ $app->id }}, '{{ $docNum }}')" style="color:#78350f; background:#fde68a; border-color:#fcd34d;">
+                                    <i class="fa-solid fa-rotate-left"></i> Revisi
+                                </button>
+
+                                <form id="revise-form-{{ $app->id }}" method="POST" action="{{ route('approvals.revise', $app) }}" style="display:none;">
+                                    @csrf 
+                                    @method('PATCH')
+                                    <input type="hidden" name="revision_reason" id="revision-reason-{{ $app->id }}" value="">
+                                </form>
+
                                 {{-- Form Tolak --}}
                                 <button type="button" class="btn btn-danger btn-sm" onclick="rejectApproval({{ $app->id }}, '{{ $docNum }}')">
                                     <i class="fa-solid fa-ban"></i> Tolak
@@ -172,6 +183,43 @@ function approveApproval(id, docNum, amount) {
     }).then((result) => {
         if (result.isConfirmed) {
             document.getElementById('approve-form-' + id).submit();
+        }
+    });
+}
+
+function reviseApproval(id, docNum) {
+    Swal.fire({
+        title: 'Minta Revisi Dokumen',
+        html: `Dokumen <strong>${docNum}</strong> akan dikembalikan ke status <strong>Draft</strong> untuk direvisi.<br><span style="font-size:12px; color:#64748b;">Pembuat dokumen dapat mengubah dan mengajukannya kembali.</span>`,
+        icon: 'warning',
+        iconColor: '#f59e0b',
+        input: 'textarea',
+        inputLabel: 'Catatan / Alasan Revisi (Wajib)',
+        inputPlaceholder: 'Tuliskan catatan detail revisi yang harus diperbaiki...',
+        inputAttributes: { 'aria-label': 'Catatan Revisi' },
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-rotate-left" style="margin-right:6px;"></i> Kirim Revisi',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        focusConfirm: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-warning',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false,
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'Catatan revisi wajib diisi!';
+            }
+            if (value.trim().length < 3) {
+                return 'Catatan revisi minimal 3 karakter!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('revision-reason-' + id).value = result.value.trim();
+            document.getElementById('revise-form-' + id).submit();
         }
     });
 }

@@ -85,11 +85,20 @@
             this.open = false;
             this.search = '';
             
-            // Sync value to native hidden input and trigger change
+            // Clear any error styling on trigger
+            if (this.$refs.trigger) {
+                this.$refs.trigger.classList.remove('is-invalid');
+                this.$refs.trigger.classList.remove('focused');
+                this.$refs.trigger.style.borderColor = '';
+                this.$refs.trigger.style.backgroundColor = '';
+            }
+
+            // Sync value to native input and trigger change
             this.$nextTick(() => {
                 const hiddenInput = this.$refs.hiddenInput;
                 if (hiddenInput) {
                     hiddenInput.value = opt.value;
+                    hiddenInput.setCustomValidity('');
                     hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
                     hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
                 }
@@ -121,31 +130,38 @@
     @click.outside="open = false"
     @keydown.escape.window="open = false"
 >
-    {{-- Hidden standard input for reliable form submission --}}
+    {{-- Native input for reliable HTML5 constraint validation & tooltip --}}
     <input 
-        type="hidden" 
+        type="text" 
         name="{{ $name }}" 
         id="{{ $inputId }}" 
         x-ref="hiddenInput"
         :value="selected" 
         @if($required) required @endif
+        tabindex="-1"
+        aria-hidden="true"
+        class="searchable-select-native-input"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 38px; opacity: 0; pointer-events: none; z-index: -1;"
+        @focus="$refs.trigger?.classList.add('focused')"
+        @blur="$refs.trigger?.classList.remove('focused')"
     />
 
     {{-- Trigger Button / Field Display --}}
     <div 
         type="button"
+        x-ref="trigger"
         @click="if(!{{ $disabled ? 'true' : 'false' }}) { open = !open; if(open) $nextTick(() => $refs.searchInput.focus()); }"
         class="form-control searchable-select-trigger {{ $error || $errors->has($name) ? 'is-invalid' : '' }}"
         :class="{ 'active': open }"
-        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; background-color: #fff; min-height: 42px; border-radius: 8px;"
+        style="display: flex !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; user-select: none; background-color: #fff; height: 38px !important; min-height: 38px !important; max-height: 38px !important; border-radius: 0.5rem; padding: 0 0.75rem !important; box-sizing: border-box !important;"
     >
         <span 
             x-text="selectedLabel || placeholder" 
-            :style="!selected ? 'color: var(--text-secondary, #94a3b8);' : 'color: var(--text-primary, #0f172a); font-weight: 500;'"
-            style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 8px;"
+            :class="!selected ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+            style="white-space: nowrap !important; word-break: keep-all !important; overflow: hidden !important; text-overflow: ellipsis !important; flex: 1 1 auto; min-width: 0; line-height: 1.2; padding-right: 8px;"
         ></span>
 
-        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+        <div style="display: flex !important; align-items: center !important; gap: 6px; flex-shrink: 0; margin-left: auto;">
             <template x-if="selected && !{{ $required ? 'true' : 'false' }}">
                 <i 
                     class="fa-solid fa-xmark text-slate-400 hover:text-red-500" 
@@ -171,20 +187,20 @@
         x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-1"
-        style="position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 1050; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; max-height: 280px; display: flex; flex-direction: column; overflow: hidden;"
+        style="position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; width: max(100%, 340px); z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; max-height: 280px; display: flex; flex-direction: column; overflow: hidden;"
         x-cloak
     >
         {{-- Search Input with Magnifying Glass Icon --}}
         <div style="padding: 8px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
             <div style="position: relative; display: flex; align-items: center;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; color: #64748b; font-size: 13px; pointer-events: none;"></i>
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 13px; pointer-events: none; z-index: 2;"></i>
                 <input 
                     type="text" 
                     x-ref="searchInput"
                     x-model="search" 
                     placeholder="{{ $searchPlaceholder }}" 
-                    class="form-control"
-                    style="width: 100%; padding-left: 32px; padding-right: 28px; font-size: 13px; height: 36px; border-radius: 6px; border: 1px solid #cbd5e1;"
+                    class="form-control searchable-select-search-input"
+                    style="width: 100% !important; padding-left: 32px !important; padding-right: 28px !important; font-size: 13px !important; height: 36px !important; border-radius: 6px !important; border: 1px solid #cbd5e1 !important;"
                     @keydown.down.prevent="$refs.optionsList.firstElementChild?.focus()"
                     @click.stop
                 />
@@ -192,7 +208,7 @@
                     <button 
                         type="button" 
                         @click="search = ''; $refs.searchInput.focus()"
-                        style="position: absolute; right: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px 4px; font-size: 12px;"
+                        style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px 4px; font-size: 12px; z-index: 2;"
                     >
                         <i class="fa-solid fa-circle-xmark"></i>
                     </button>

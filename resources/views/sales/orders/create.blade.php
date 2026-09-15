@@ -10,7 +10,7 @@
         :back-url="route('sales.orders.index')"
     />
 
-    <form method="POST" action="{{ route('sales.orders.store') }}" @submit="validateForm($event)">
+    <form method="POST" action="{{ route('sales.orders.store') }}" @submit="validateForm($event)" @keydown.enter="if ($event.target.tagName !== 'TEXTAREA') $event.preventDefault()">
         @csrf
 
         <div class="grid grid-3" style="margin-bottom:20px;">
@@ -134,13 +134,20 @@
                     <i class="fa-solid fa-plus"></i> Tambah Item
                 </button>
             </div>
-            <div class="table-responsive" style="overflow: visible;">
-                <table class="erp-table">
+            <style>
+                .item-form-table td {
+                    vertical-align: top !important;
+                    padding-top: 0.65rem !important;
+                    padding-bottom: 0.65rem !important;
+                }
+            </style>
+            <div class="table-responsive" style="overflow: visible; min-height: 180px;">
+                <table class="erp-table item-form-table">
                     <thead>
                         <tr>
                             <th style="min-width: 260px;">Produk</th>
                             <th style="width:100px;">Qty</th>
-                            <th style="width:160px;">Harga Jual Satuan</th>
+                            <th style="min-width:185px;">Harga Jual Satuan</th>
                             <th style="width:100px;">Diskon (%)</th>
                             <th style="width:150px; text-align:right;">Subtotal</th>
                             <th style="width:50px;"></th>
@@ -148,75 +155,137 @@
                     </thead>
                     <tbody>
                         <template x-for="(row, idx) in rows" :key="idx">
-                            <tr>
-                                <td style="position: relative;" x-data="{ openProd: false, prodSearch: '' }">
-                                    <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
-                                    
-                                    <div 
-                                        @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
-                                        class="form-control"
-                                        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 38px; background: #fff;"
-                                        @click.outside="openProd = false"
-                                    >
-                                        <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
-                                              :style="!row.product_id ? 'color: #94a3b8;' : 'color: #0f172a; font-weight: 500;'"
-                                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px;"
-                                        ></span>
-                                        <i class="fa-solid fa-chevron-down text-slate-400" style="font-size: 11px;"></i>
-                                    </div>
-
-                                    {{-- Dropdown Menu --}}
-                                    <div 
-                                        x-show="openProd" 
-                                        x-transition
-                                        style="position: absolute; top: 100%; left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
-                                        x-cloak
-                                    >
-                                        <div style="padding: 6px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
-                                            <div style="position: relative; display: flex; align-items: center;">
-                                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; color: #64748b; font-size: 12px; pointer-events: none;"></i>
-                                                <input 
-                                                    type="text" 
-                                                    x-ref="prodSearchInput"
-                                                    x-model="prodSearch" 
-                                                    placeholder="Cari nama atau SKU produk..." 
-                                                    class="form-control" 
-                                                    style="width: 100%; padding-left: 28px; font-size: 12px; height: 32px; border-radius: 6px;"
-                                                    @click.stop
-                                                >
-                                            </div>
+                            <tr style="vertical-align: top;">
+                                <td style="vertical-align: top !important;">
+                                    <div style="position: relative; width: 100%;" x-data="{ openProd: false, prodSearch: '' }" @click.outside="openProd = false" @keydown.escape.window="openProd = false">
+                                        <input 
+                                            type="text" 
+                                            :name="`items[${idx}][product_id]`" 
+                                            :value="row.product_id" 
+                                            required
+                                            tabindex="-1"
+                                            aria-hidden="true"
+                                            class="searchable-select-native-input"
+                                            style="position: absolute; top: 0; left: 0; width: 100%; height: 38px; opacity: 0; pointer-events: none; z-index: -1;"
+                                            @focus="$event.target.nextElementSibling?.classList.add('focused')"
+                                            @blur="$event.target.nextElementSibling?.classList.remove('focused')"
+                                        >
+                                        
+                                        <div 
+                                            @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
+                                            class="form-control searchable-select-trigger"
+                                            style="display: flex !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; min-height: 38px !important; height: 38px !important; max-height: 38px !important; background: #fff; padding: 0 0.75rem !important; border-radius: 0.5rem; box-sizing: border-box !important;"
+                                        >
+                                            <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
+                                                  :class="!row.product_id ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+                                                  style="white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; padding-right: 6px; flex: 1 1 auto; min-width: 0;"
+                                            ></span>
+                                            <i class="fa-solid fa-chevron-down text-slate-400" :style="openProd ? 'transform: rotate(180deg);' : ''" style="font-size: 11px; transition: transform 0.2s; flex-shrink: 0; margin-left: auto;"></i>
                                         </div>
-                                        <div style="overflow-y: auto; max-height: 200px;">
-                                            <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
-                                                <div 
-                                                    @click="row.product_id = p.id; onProductChange(idx, { target: { value: p.id } }); openProd = false; prodSearch = '';"
-                                                    :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
-                                                    style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
-                                                    onmouseover="this.style.backgroundColor='#f1f5f9'"
-                                                    onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
-                                                >
-                                                    <span x-text="p.name + ' (' + p.sku + ')'"></span>
+
+                                        {{-- Dropdown Menu --}}
+                                        <div 
+                                            x-show="openProd" 
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 translate-y-1"
+                                            x-transition:enter-end="opacity-100 translate-y-0"
+                                            x-transition:leave="transition ease-in duration-100"
+                                            x-transition:leave-start="opacity-100 translate-y-0"
+                                            x-transition:leave-end="opacity-0 translate-y-1"
+                                            style="position: absolute; top: calc(100% + 4px); left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                                            x-cloak
+                                        >
+                                            <div style="padding: 6px 8px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
+                                                <div style="position: relative; display: flex; align-items: center;">
+                                                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 12px; pointer-events: none; z-index: 2;"></i>
+                                                    <input 
+                                                        type="text" 
+                                                        x-ref="prodSearchInput"
+                                                        x-model="prodSearch" 
+                                                        placeholder="Cari nama atau SKU produk..." 
+                                                        class="form-control searchable-select-search-input" 
+                                                        style="width: 100% !important; padding-left: 30px !important; padding-right: 24px !important; font-size: 12px !important; height: 32px !important; border-radius: 6px !important;"
+                                                        @click.stop
+                                                    >
+                                                    <template x-if="prodSearch">
+                                                        <button 
+                                                            type="button" 
+                                                            @click="prodSearch = ''; $refs.prodSearchInput.focus()"
+                                                            style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px 4px; font-size: 11px; z-index: 2;"
+                                                        >
+                                                            <i class="fa-solid fa-circle-xmark"></i>
+                                                        </button>
+                                                    </template>
                                                 </div>
-                                            </template>
+                                            </div>
+                                            <div style="overflow-y: auto; max-height: 200px;">
+                                                <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
+                                                    <div 
+                                                        @click="row.product_id = p.id; onProductChange(idx, { target: { value: p.id } }); openProd = false; prodSearch = '';"
+                                                        :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
+                                                        style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
+                                                        onmouseover="this.style.backgroundColor='#f1f5f9'"
+                                                        onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
+                                                    >
+                                                        <span x-text="p.name + ' (' + p.sku + ')'"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
-                                 <td>
-                                     <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" class="form-control" min="1" required>
+                                 <td style="vertical-align: top !important;">
+                                     <input type="number" 
+                                            :name="`items[${idx}][qty_ordered]`" 
+                                            x-model.number="row.qty" 
+                                            @keydown.enter.prevent="$event.target.blur()"
+                                            class="form-control" 
+                                            min="1" required style="height: 38px;">
                                  </td>
-                                 <td>
-                                     <input type="number" :name="`items[${idx}][unit_price]`" x-model.number="row.price" class="form-control" min="0" step="100" placeholder="0" required>
+                                 <td style="vertical-align: top !important;">
+                                     <input type="number" 
+                                            :name="`items[${idx}][unit_price]`" 
+                                            x-model.number="row.price" 
+                                            @input="hppWarningConfirmed = false"
+                                            @keydown.enter.prevent="$event.target.blur()"
+                                            class="form-control" 
+                                            :style="row.product_id && isBelowHpp(row) ? 'border-color:#ef4444; background:#fef2f2; color:#b91c1c; height: 38px;' : 'height: 38px;'"
+                                            min="0" step="100" placeholder="0" required>
+                                     <template x-if="row.product_id && isBelowHpp(row)">
+                                         <div style="font-size:11px; color:#dc2626; margin-top:5px; font-weight:600; line-height:1.3; display:flex; align-items:center; gap:4px; background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; padding:3px 7px;">
+                                             <i class="fa-solid fa-triangle-exclamation" style="flex-shrink:0; color:#ef4444;"></i>
+                                             <span>
+                                                 <template x-if="row.price < getProductHpp(row.product_id)">
+                                                     <span>&lt; HPP: Rp <span x-text="formatNum(getProductHpp(row.product_id))"></span></span>
+                                                 </template>
+                                                 <template x-if="row.price >= getProductHpp(row.product_id)">
+                                                     <span>Netto &lt; HPP: Rp <span x-text="formatNum(getProductHpp(row.product_id))"></span></span>
+                                                 </template>
+                                             </span>
+                                         </div>
+                                     </template>
                                  </td>
-                                 <td>
-                                     <input type="number" :name="`items[${idx}][discount_percent]`" x-model.number="row.discount" class="form-control" min="0" max="100" step="0.1">
+                                 <td style="vertical-align: top !important;">
+                                     <input type="number" 
+                                            :name="`items[${idx}][discount_percent]`" 
+                                            x-model.number="row.discount" 
+                                            @input="hppWarningConfirmed = false"
+                                            @keydown.enter.prevent="$event.target.blur()"
+                                            class="form-control" 
+                                            min="0" max="100" step="0.1"
+                                            style="height: 38px;">
                                  </td>
-                                 <td style="text-align:right; font-weight:600;">
-                                     <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                 <td style="vertical-align: top !important; text-align:right;">
+                                     <div style="height: 38px; display: flex; align-items: center; justify-content: flex-end; font-weight:600;">
+                                         <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                     </div>
                                  </td>
-                                 <td>
-                                     <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
-                                         <i class="fa-solid fa-xmark"></i>
-                                     </button>
+                                 <td style="vertical-align: top !important; text-align:center;">
+                                     <div style="height: 38px; display: flex; align-items: center; justify-content: center;">
+                                         <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
+                                             <i class="fa-solid fa-xmark"></i>
+                                         </button>
+                                     </div>
                                  </td>
                             </tr>
                         </template>
@@ -243,6 +312,26 @@ function soForm() {
         channel: '{{ old('channel', 'offline') }}',
         taxRate: 11,
         discountHeader: 0,
+        hppWarningConfirmed: false,
+
+        getProductHpp(productId) {
+            if (!productId || !products[productId]) return 0;
+            return parseFloat(products[productId].purchase_price) || 0;
+        },
+
+        isBelowHpp(row) {
+            if (!row.product_id) return false;
+            const hpp = this.getProductHpp(row.product_id);
+            if (hpp <= 0) return false;
+            const price = parseFloat(row.price) || 0;
+            const discount = parseFloat(row.discount) || 0;
+            const effectiveUnitPrice = price * (1 - discount / 100);
+            return price < hpp || effectiveUnitPrice < hpp;
+        },
+
+        hasBelowHppItems() {
+            return this.rows.some(r => r.product_id && this.isBelowHpp(r));
+        },
 
         addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0 }); },
         removeRow(idx) { this.rows.splice(idx, 1); },
@@ -266,12 +355,14 @@ function soForm() {
             if (id && products[id]) {
                 this.rows[idx].price = this.getEffectivePrice(products[id]);
             }
+            this.hppWarningConfirmed = false;
         },
 
         setChannel(newChannel) {
             if (this.channel === newChannel) return;
             this.channel = newChannel;
             this.onChannelChange();
+            this.hppWarningConfirmed = false;
         },
 
         onChannelChange() {
@@ -295,9 +386,84 @@ function soForm() {
         get total() { return this.taxableAmount + this.taxAmount; },
 
         validateForm(e) {
+            // 1. Validasi Target Pengiriman (jika diisi, harus >= order_date)
+            const expDeliveryInput = document.querySelector('input[name="expected_delivery_date"]');
+            const orderDateInput = document.querySelector('input[name="order_date"]');
+            if (expDeliveryInput && expDeliveryInput.value && orderDateInput && orderDateInput.value) {
+                if (expDeliveryInput.value < orderDateInput.value) {
+                    e.preventDefault();
+                    expDeliveryInput.setCustomValidity('Target tanggal pengiriman tidak boleh lebih awal dari tanggal order!');
+                    expDeliveryInput.reportValidity();
+                    return false;
+                } else {
+                    expDeliveryInput.setCustomValidity('');
+                }
+            }
+
+            // 2. Validasi Item Minimal 1
+            if (!this.rows || this.rows.length === 0) {
+                e.preventDefault();
+                return false;
+            }
+
+            // 3. Validasi Diskon Header
             if (this.isDiscountInvalid) {
                 e.preventDefault();
-                alert('Diskon header tidak boleh melebihi subtotal item!');
+                const discInput = document.querySelector('input[name="discount_amount"]');
+                if (discInput) {
+                    discInput.setCustomValidity('Diskon header tidak boleh melebihi subtotal item!');
+                    discInput.reportValidity();
+                }
+                return false;
+            }
+
+            // 4. Peringatan Konfirmasi Harga di Bawah HPP
+            if (this.hasBelowHppItems() && !this.hppWarningConfirmed) {
+                e.preventDefault();
+                const belowItems = this.rows.filter(r => r.product_id && this.isBelowHpp(r))
+                    .map(r => {
+                        const p = products[r.product_id];
+                        const hpp = this.getProductHpp(r.product_id);
+                        const netPrice = (r.price || 0) * (1 - (r.discount || 0) / 100);
+                        return `<li style="margin-bottom:8px; text-align:left;">
+                                    <strong>${p ? p.name : 'Produk'} (${p ? p.sku : '-'})</strong><br>
+                                    <span style="color:#64748b;">Harga Jual:</span> <span style="font-weight:700; color:#dc2626;">Rp ${this.formatNum(r.price)}</span>
+                                    ${r.discount > 0 ? '<span style="color:#64748b;">(Netto: Rp ' + this.formatNum(netPrice) + ')</span>' : ''} 
+                                    <span style="color:#64748b;">| HPP / Modal:</span> <span style="font-weight:700; color:#0284c7;">Rp ${this.formatNum(hpp)}</span>
+                                </li>`;
+                    }).join('');
+
+                Swal.fire({
+                    title: 'Peringatan: Harga di Bawah HPP!',
+                    html: `<div style="font-size:13px; color:#475569; text-align:left; margin-bottom:12px;">
+                            Terdapat produk dengan harga jual lebih rendah dari <strong>Harga Pokok Penjualan (HPP / Modal)</strong>:
+                           </div>
+                           <ul style="font-size:12.5px; text-align:left; margin-bottom:16px; padding-left:20px; max-height:180px; overflow-y:auto; background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:10px 14px 10px 28px;">
+                            ${belowItems}
+                           </ul>
+                           <div style="font-size:13px; color:#b91c1c; text-align:left; font-weight:600;">
+                            Apakah Anda yakin tetap ingin menyimpan Sales Order ini dengan harga di bawah HPP?
+                           </div>`,
+                    icon: 'warning',
+                    iconColor: '#f59e0b',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i> Ya, Tetap Simpan',
+                    cancelButtonText: 'Batal & Periksa Kembali',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'erp-swal-modal',
+                        confirmButton: 'btn btn-warning',
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.hppWarningConfirmed = true;
+                        this.$nextTick(() => {
+                            e.target.submit();
+                        });
+                    }
+                });
                 return false;
             }
         },

@@ -300,6 +300,9 @@
             color: #0e1b35 !important;
             font-family: 'Public Sans', sans-serif !important;
             line-height: 1.25 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
         .form-control, 
         main input[type="text"], 
@@ -336,6 +339,54 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
             outline: none !important;
         }
+        /* Custom Select & Searchable Select Trigger Overrides */
+        .searchable-select-trigger,
+        div.form-control.searchable-select-trigger,
+        div.form-control[style*="display: flex"],
+        div.form-control[style*="display:flex"] {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            padding: 0 0.75rem !important;
+            box-sizing: border-box !important;
+            cursor: pointer !important;
+        }
+        .searchable-select-trigger span,
+        div.form-control.searchable-select-trigger span,
+        div.form-control[style*="display: flex"] span,
+        div.form-control[style*="display:flex"] span {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            word-break: keep-all !important;
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+            line-height: 1.2 !important;
+            padding-right: 8px !important;
+        }
+        .searchable-select-trigger.is-invalid,
+        div.form-control.searchable-select-trigger.is-invalid {
+            border-color: #ef4444 !important;
+            background-color: #fff1f2 !important;
+            background-image: none !important;
+            padding-right: 0.75rem !important;
+        }
+        /* Searchable Select Native Focus & Validation Styling */
+        .searchable-select-wrapper input:focus + .searchable-select-trigger,
+        .searchable-select-trigger.focused {
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        .searchable-select-native-input {
+            padding: 0 !important;
+            margin: 0 !important;
+            border: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
         /* Search Input Icon Overlap Prevention */
         .search-input,
         .search-box input,
@@ -343,8 +394,12 @@
         input.search-input,
         main input.search-input,
         main input[name="q"],
-        main input[type="search"] {
-            padding-left: 2.5rem !important;
+        main input[type="search"],
+        .searchable-select-search-input,
+        input.searchable-select-search-input,
+        .searchable-select-wrapper input[type="text"]:not(.searchable-select-native-input),
+        td[style*="position: relative"] input[type="text"]:not(.searchable-select-native-input) {
+            padding-left: 2.25rem !important;
         }
         main textarea, textarea.form-control {
             height: auto !important;
@@ -590,6 +645,14 @@
             width: 100% !important;
             position: relative !important;
         }
+        .table-responsive[style*="overflow: visible"],
+        .table-responsive[style*="overflow:visible"],
+        .table-responsive.overflow-visible,
+        .table-has-dropdowns {
+            overflow: visible !important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+        }
         .erp-table {
             width: 100% !important;
             border-collapse: collapse !important;
@@ -633,6 +696,12 @@
             color: #0e1b35 !important;
             vertical-align: middle !important;
             font-family: 'Inter', sans-serif !important;
+        }
+
+        /* Tabel Form Input Item (agar seluruh field input sejajar di atas saat ada helper/warning) */
+        .erp-table.item-form-table td,
+        .erp-table.item-form-table th {
+            vertical-align: top !important;
         }
 
         /* Tabular Nums — Semua Kolom Angka / Nominal / Qty Rata Kanan */
@@ -926,6 +995,14 @@
         .swal2-popup.erp-swal-modal .swal2-confirm.btn-success:hover,
         .swal2-popup.erp-swal-modal .swal2-confirm.swal2-confirm-success:hover {
             background-color: #15803d !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-confirm.btn-warning,
+        .swal2-popup.erp-swal-modal .swal2-confirm.swal2-confirm-warning {
+            background-color: #d97706 !important;
+        }
+        .swal2-popup.erp-swal-modal .swal2-confirm.btn-warning:hover,
+        .swal2-popup.erp-swal-modal .swal2-confirm.swal2-confirm-warning:hover {
+            background-color: #b45309 !important;
         }
         .swal2-popup.erp-swal-modal .swal2-cancel {
             background-color: #f1f5f9 !important;

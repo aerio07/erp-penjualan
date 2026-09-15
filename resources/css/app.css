@@ -220,6 +220,9 @@
     color: #0e1b35 !important;
     font-family: 'Public Sans', sans-serif !important;
     line-height: 1.25 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .form-control, input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], select, textarea {
@@ -238,14 +241,48 @@
     font-family: 'Inter', sans-serif !important;
 }
 
+/* Custom Select & Searchable Select Trigger Overrides */
+.searchable-select-trigger,
+div.form-control.searchable-select-trigger,
+div.form-control[style*="display: flex"],
+div.form-control[style*="display:flex"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 0.875rem !important;
+    box-sizing: border-box !important;
+    cursor: pointer !important;
+}
+
+.searchable-select-trigger span,
+div.form-control.searchable-select-trigger span,
+div.form-control[style*="display: flex"] span,
+div.form-control[style*="display:flex"] span {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    word-break: keep-all !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    line-height: 1.2 !important;
+    padding-right: 8px !important;
+}
+
 /* Ensure Search Inputs with icons never overlap */
 .search-input,
 .search-box input,
 .has-search-icon input,
 input.search-input,
 input[name="q"],
-input[type="search"] {
-    padding-left: 2.5rem !important;
+input[type="search"],
+.searchable-select-search-input,
+input.searchable-select-search-input,
+.searchable-select-wrapper input[type="text"],
+td[style*="position: relative"] input[type="text"] {
+    padding-left: 2.25rem !important;
 }
 
 textarea, textarea.form-control {
@@ -545,4 +582,13 @@ select, select.form-control {
     background-color: #ffffff !important;
     border-bottom-left-radius: 0.625rem !important;
     border-bottom-right-radius: 0.625rem !important;
+}
+
+.table-responsive[style*="overflow: visible"],
+.table-responsive[style*="overflow:visible"],
+.table-responsive.overflow-visible,
+.table-has-dropdowns {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
 }

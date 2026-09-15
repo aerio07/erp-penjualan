@@ -21,7 +21,7 @@
                         <label class="form-label">Invoice Penjualan <span style="color:var(--danger);">*</span></label>
                         <x-searchable-select 
                             name="sales_invoice_id" 
-                            :options="$unpaidInvoices->map(fn($inv) => ['id' => $inv->id, 'name' => $inv->invoice_number . ' - ' . ($inv->salesOrder->customer->name ?? '-') . ' (Sisa: Rp ' . number_format($inv->outstanding_amount, 0, ',', '.') . ')'])" 
+                            :options="$unpaidInvoices->map(fn($inv) => ['id' => $inv->id, 'name' => $inv->invoice_number . ' - ' . ($inv->salesOrder->customer->name ?? '-') . ' (Sisa Piutang: Rp ' . number_format($inv->outstanding_amount, 0, ',', '.') . ')'])" 
                             placeholder="-- Pilih Invoice Tagihan Customer --" 
                             search-placeholder="Cari nomor invoice atau nama customer..." 
                             on-select="invId => { selectedInvoiceId = invId; onInvoiceChange(); }" 
@@ -31,7 +31,14 @@
 
                     <div class="form-row form-row-4">
                         <div class="form-group">
-                            <label class="form-label">Nominal Diterima (Rp) <span style="color:var(--danger);">*</span></label>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
+                                <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Diterima (Rp) <span style="color:var(--danger);">*</span></label>
+                                <template x-if="selectedInvoice">
+                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:10px; padding:1px 6px; height:20px; line-height:1;" title="Isi otomatis sisa piutang">
+                                        <i class="fa-solid fa-bolt"></i> Sisa Lunas
+                                    </button>
+                                </template>
+                            </div>
                             <div style="position:relative;">
                                 <input type="text" 
                                        inputmode="numeric"
@@ -39,15 +46,8 @@
                                        x-currency="amount" 
                                        class="form-control format-currency" 
                                        required 
-                                       placeholder="Nominal (cth: 5.000.000)">
+                                       placeholder="cth: 5.000.000">
                             </div>
-                            <template x-if="selectedInvoice">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:11px; padding:2px 6px; width:100%; justify-content:center;" title="Isi otomatis sisa piutang">
-                                        <i class="fa-solid fa-bolt"></i> Isi Sisa Lunas
-                                    </button>
-                                </div>
-                            </template>
                             <template x-if="amount && amount > maxAmount">
                                 <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
                                     <i class="fa-solid fa-circle-exclamation"></i> Melebihi sisa piutang!

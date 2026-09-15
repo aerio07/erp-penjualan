@@ -84,4 +84,34 @@ class ApprovalController extends Controller
 
         return back()->with('success', "Approval #{$approval->request_number} berhasil ditolak dan dokumen dibatalkan.");
     }
+
+    public function revise(Request $request, ApprovalRequest $approval): RedirectResponse
+    {
+        $request->validate(['revision_reason' => 'required|string|min:3'], [
+            'revision_reason.required' => 'Alasan revisi wajib diisi!',
+            'revision_reason.min'      => 'Alasan revisi minimal 3 karakter!',
+        ]);
+
+        $this->approvalService->revise($approval, $request->revision_reason);
+
+        // Ubah status dokumen terkait kembali ke draft untuk direvisi
+        $approvable = $approval->approvable;
+        if ($approvable && method_exists($approvable, 'update')) {
+            $approvable->update([
+                'status'             => 'draft',
+                'fulfillment_status' => 'pending',
+            ]);
+
+            if ($approvable instanceof SalesOrder) {
+                $this->stockService->releaseReservationsForSalesOrder($approvable);
+            } elseif ($approvable instanceof PurchaseOrder) {
+                $approvable->procurementDemands()->update([
+                    'purchase_order_id' => null,
+                    'status'            => 'pending',
+                ]);
+            }
+        }
+
+        return back()->with('success', "Approval #{$approval->request_number} dikembalikan untuk revisi.");
+    }
 }

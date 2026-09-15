@@ -136,7 +136,17 @@ class SalesOrderController extends Controller
     public function show(SalesOrder $salesOrder): View
     {
         $order = $salesOrder;
-        $order->load(['customer', 'user', 'items.product', 'items.reservations.warehouse', 'items.procurementDemands', 'deliveries.warehouse', 'invoices']);
+        $order->load([
+            'customer', 
+            'user', 
+            'items.product', 
+            'items.reservations.warehouse', 
+            'items.procurementDemands', 
+            'deliveries.warehouse', 
+            'invoices',
+            'approvalRequests.approver',
+            'approvalRequests.requester',
+        ]);
 
         return view('sales.orders.show', compact('order'));
     }
@@ -299,6 +309,76 @@ class SalesOrderController extends Controller
         $this->stockService->releaseReservationsForSalesOrder($order);
 
         return back()->with('success', 'Sales Order berhasil dibatalkan dan alokasi stok telah dilepaskan.');
+    }
+
+    public function approve(SalesOrder $salesOrder): RedirectResponse
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menyetujui Sales Order.');
+        abort_if($salesOrder->status !== 'waiting_approval', 403, 'Sales Order tidak dalam status menunggu persetujuan.');
+
+        $approval = $salesOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->approve($approval);
+        }
+
+        $salesOrder->update(['status' => 'confirmed']);
+        $this->stockService->allocateStockForSalesOrder($salesOrder);
+
+        $salesOrder->refresh();
+        $statusLabel = match ($salesOrder->fulfillment_status) {
+            'ready_to_ship'       => 'Stok lengkap dan SIAP DIKIRIM.',
+            'partially_available' => 'Stok tersedia SEBAGIAN (Partial Delivery siap).',
+            'backorder'           => 'Stok tidak mencukupi (Kebutuhan Pengadaan otomatis dicatat untuk Purchasing).',
+            default               => '',
+        };
+
+        return back()->with('success', "Sales Order #{$salesOrder->so_number} berhasil disetujui (Approved). {$statusLabel}");
+    }
+
+    public function revise(Request $request, SalesOrder $salesOrder): RedirectResponse
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat meminta revisi Sales Order.');
+        abort_if($salesOrder->status !== 'waiting_approval', 403, 'Sales Order tidak dalam status menunggu persetujuan.');
+
+        $request->validate([
+            'revision_reason' => 'required|string|min:3',
+        ], [
+            'revision_reason.required' => 'Catatan revisi wajib diisi agar tim sales mengetahui apa yang perlu diperbaiki.',
+            'revision_reason.min'      => 'Catatan revisi minimal 3 karakter.',
+        ]);
+
+        $approval = $salesOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->revise($approval, $request->revision_reason);
+        }
+
+        $salesOrder->update([
+            'status'             => 'draft',
+            'fulfillment_status' => 'pending',
+        ]);
+        $this->stockService->releaseReservationsForSalesOrder($salesOrder);
+
+        return back()->with('success', "Sales Order #{$salesOrder->so_number} berhasil dikembalikan ke status Draft untuk direvisi.");
+    }
+
+    public function reject(Request $request, SalesOrder $salesOrder): RedirectResponse
+    {
+        abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menolak Sales Order.');
+        abort_if($salesOrder->status !== 'waiting_approval', 403, 'Sales Order tidak dalam status menunggu persetujuan.');
+
+        $request->validate([
+            'rejection_reason' => 'nullable|string',
+        ]);
+
+        $approval = $salesOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->reject($approval, $request->rejection_reason);
+        }
+
+        $salesOrder->update(['status' => 'cancelled']);
+        $this->stockService->releaseReservationsForSalesOrder($salesOrder);
+
+        return back()->with('success', "Sales Order #{$salesOrder->so_number} berhasil ditolak (Rejected) dan dibatalkan.");
     }
 
     public function exportPdf(SalesOrder $salesOrder)

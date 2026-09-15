@@ -155,7 +155,7 @@
                     <i class="fa-solid fa-plus"></i> Tambah Item
                 </button>
             </div>
-            <div class="table-responsive" style="overflow: visible;">
+            <div class="table-responsive" style="overflow: visible; min-height: 180px;">
                 <table class="erp-table">
                     <thead>
                         <tr>
@@ -170,55 +170,70 @@
                     <tbody>
                         <template x-for="(row, idx) in rows" :key="idx">
                             <tr>
-                                <td style="position: relative;" x-data="{ openProd: false, prodSearch: '' }">
-                                    <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
-                                    
-                                    <div 
-                                        @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
-                                        class="form-control"
-                                        style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; min-height: 38px; background: #fff;"
-                                        @click.outside="openProd = false"
-                                    >
-                                        <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
-                                              :style="!row.product_id ? 'color: #94a3b8;' : 'color: #0f172a; font-weight: 500;'"
-                                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px;"
-                                        ></span>
-                                        <i class="fa-solid fa-chevron-down text-slate-400" style="font-size: 11px;"></i>
-                                    </div>
-
-                                    {{-- Dropdown Menu --}}
-                                    <div 
-                                        x-show="openProd" 
-                                        x-transition
-                                        style="position: absolute; top: 100%; left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
-                                        x-cloak
-                                    >
-                                        <div style="padding: 6px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
-                                            <div style="position: relative; display: flex; align-items: center;">
-                                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; color: #64748b; font-size: 12px; pointer-events: none;"></i>
-                                                <input 
-                                                    type="text" 
-                                                    x-ref="prodSearchInput"
-                                                    x-model="prodSearch" 
-                                                    placeholder="Cari nama atau SKU produk..." 
-                                                    class="form-control" 
-                                                    style="width: 100%; padding-left: 28px; font-size: 12px; height: 32px; border-radius: 6px;"
-                                                    @click.stop
-                                                >
-                                            </div>
+                                <td>
+                                    <div style="position: relative; width: 100%;" x-data="{ openProd: false, prodSearch: '' }" @click.outside="openProd = false" @keydown.escape.window="openProd = false">
+                                        <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
+                                        
+                                        <div 
+                                            @click="openProd = !openProd; if(openProd) $nextTick(() => $refs.prodSearchInput.focus())"
+                                            class="form-control searchable-select-trigger"
+                                            style="display: flex !important; flex-wrap: nowrap !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; min-height: 38px !important; height: 38px !important; max-height: 38px !important; background: #fff; padding: 0 0.75rem !important; border-radius: 0.5rem; box-sizing: border-box !important;"
+                                        >
+                                            <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-- Pilih Produk --'"
+                                                  :class="!row.product_id ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+                                                  style="white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; padding-right: 6px; flex: 1 1 auto; min-width: 0;"
+                                            ></span>
+                                            <i class="fa-solid fa-chevron-down text-slate-400" :style="openProd ? 'transform: rotate(180deg);' : ''" style="font-size: 11px; transition: transform 0.2s; flex-shrink: 0; margin-left: auto;"></i>
                                         </div>
-                                        <div style="overflow-y: auto; max-height: 200px;">
-                                            <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
-                                                <div 
-                                                    @click="row.product_id = p.id; onProductChange(idx, { target: { value: p.id } }); openProd = false; prodSearch = '';"
-                                                    :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
-                                                    style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
-                                                    onmouseover="this.style.backgroundColor='#f1f5f9'"
-                                                    onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
-                                                >
-                                                    <span x-text="p.name + ' (' + p.sku + ')'"></span>
+
+                                        {{-- Dropdown Menu --}}
+                                        <div 
+                                            x-show="openProd" 
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 translate-y-1"
+                                            x-transition:enter-end="opacity-100 translate-y-0"
+                                            x-transition:leave="transition ease-in duration-100"
+                                            x-transition:leave-start="opacity-100 translate-y-0"
+                                            x-transition:leave-end="opacity-0 translate-y-1"
+                                            style="position: absolute; top: calc(100% + 4px); left: 0; min-width: 320px; z-index: 1060; background: #fff; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                                            x-cloak
+                                        >
+                                            <div style="padding: 6px 8px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; position: relative;">
+                                                <div style="position: relative; display: flex; align-items: center;">
+                                                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 12px; pointer-events: none; z-index: 2;"></i>
+                                                    <input 
+                                                        type="text" 
+                                                        x-ref="prodSearchInput"
+                                                        x-model="prodSearch" 
+                                                        placeholder="Cari nama atau SKU produk..." 
+                                                        class="form-control searchable-select-search-input" 
+                                                        style="width: 100% !important; padding-left: 30px !important; padding-right: 24px !important; font-size: 12px !important; height: 32px !important; border-radius: 6px !important;"
+                                                        @click.stop
+                                                    >
+                                                    <template x-if="prodSearch">
+                                                        <button 
+                                                            type="button" 
+                                                            @click="prodSearch = ''; $refs.prodSearchInput.focus()"
+                                                            style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px 4px; font-size: 11px; z-index: 2;"
+                                                        >
+                                                            <i class="fa-solid fa-circle-xmark"></i>
+                                                        </button>
+                                                    </template>
                                                 </div>
-                                            </template>
+                                            </div>
+                                            <div style="overflow-y: auto; max-height: 200px;">
+                                                <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
+                                                    <div 
+                                                        @click="row.product_id = p.id; onProductChange(idx, { target: { value: p.id } }); openProd = false; prodSearch = '';"
+                                                        :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
+                                                        style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
+                                                        onmouseover="this.style.backgroundColor='#f1f5f9'"
+                                                        onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
+                                                    >
+                                                        <span x-text="p.name + ' (' + p.sku + ')'"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

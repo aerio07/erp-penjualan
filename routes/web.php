@@ -137,6 +137,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('orders/{sales_order}/confirm', [SalesOrderController::class, 'confirm'])->name('orders.confirm');
         Route::patch('orders/{sales_order}/cancel', [SalesOrderController::class, 'cancel'])->name('orders.cancel');
 
+        Route::middleware('role:admin')->group(function () {
+            Route::patch('orders/{sales_order}/approve', [SalesOrderController::class, 'approve'])->name('orders.approve');
+            Route::patch('orders/{sales_order}/revise', [SalesOrderController::class, 'revise'])->name('orders.revise');
+            Route::patch('orders/{sales_order}/reject', [SalesOrderController::class, 'reject'])->name('orders.reject');
+        });
+
         Route::resource('returns', SalesReturnController::class)->only(['index', 'create', 'store', 'show']);
         Route::patch('returns/{return}/receive', [SalesReturnController::class, 'receive'])->name('returns.receive');
         Route::patch('returns/{return}/complete', [SalesReturnController::class, 'complete'])->name('returns.complete');
@@ -206,6 +212,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin')->prefix('approvals')->name('approvals.')->group(function () {
         Route::get('/', [ApprovalController::class, 'index'])->name('index');
         Route::patch('{approval}/approve', [ApprovalController::class, 'approve'])->name('approve');
+        Route::patch('{approval}/revise', [ApprovalController::class, 'revise'])->name('revise');
         Route::patch('{approval}/reject', [ApprovalController::class, 'reject'])->name('reject');
     });
 

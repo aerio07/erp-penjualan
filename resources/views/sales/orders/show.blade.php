@@ -4,23 +4,154 @@
 
 @section('content')
 <div class="animate-in">
+    @php
+        $latestApproval = $order->approvalRequests->sortByDesc('id')->first();
+        $isAdmin = auth()->user()->isAdmin();
+        $canCreateDel = $order->canCreateDelivery();
+        $hasUninvoicedDel = $order->deliveries->where('is_invoiced', false)->where('status', 'delivered')->count() > 0;
+    @endphp
+
     <x-detail-header 
         :title="$order->so_number"
         :subtitle="($order->customer->name ?? '-') . ' · ' . $order->order_date->format('d/m/Y') . ' · Channel: ' . ucfirst($order->channel ?? 'offline')"
         :status="$order->status"
-        :back-url="route('sales.orders.index')"
     >
         <x-slot:actions>
+            {{-- Workflow Status Action Buttons (Kiri) --}}
+            @if($order->status === 'draft')
+                <button type="button" class="btn btn-danger"
+                    data-confirm-swal="form-cancel-so"
+                    data-swal-title="Batalkan Sales Order"
+                    data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status SO akan diubah menjadi Cancelled.</span>"
+                    data-swal-icon="warning"
+                    data-swal-btn-text="Ya, Batalkan SO"
+                    data-swal-btn-icon="fa-solid fa-ban"
+                    data-swal-btn-class="btn btn-danger"
+                >
+                    <i class="fa-solid fa-ban"></i> Batalkan SO
+                </button>
+
+                <button type="button" class="btn btn-primary"
+                    data-confirm-swal="form-confirm-so"
+                    data-swal-title="Konfirmasi Sales Order"
+                    data-swal-html="Konfirmasi Sales Order <strong>{{ $order->so_number }}</strong> sekarang?<br><span style='font-size:12.5px; color:#64748b;'>Sales Order akan dikirim untuk persetujuan (approval) sebelum dapat diproses.</span>"
+                    data-swal-icon="question"
+                    data-swal-icon-color="#2563eb"
+                    data-swal-btn-text="Ya, Konfirmasi SO"
+                    data-swal-btn-icon="fa-solid fa-check"
+                    data-swal-btn-class="btn btn-primary"
+                >
+                    <i class="fa-solid fa-check"></i> Konfirmasi SO Sekarang
+                </button>
+            @elseif($order->status === 'waiting_approval')
+                @if($isAdmin)
+                <button type="button" class="btn btn-danger" onclick="confirmRejectSO()">
+                    <i class="fa-solid fa-ban"></i> Tolak SO
+                </button>
+
+                <button type="button" class="btn btn-warning" onclick="confirmReviseSO()" style="color:#78350f; background:#fde68a; border-color:#fcd34d;">
+                    <i class="fa-solid fa-rotate-left"></i> Minta Revisi
+                </button>
+
+                <button type="button" class="btn btn-success" onclick="confirmApproveSO()">
+                    <i class="fa-solid fa-check"></i> Setujui SO (Approve)
+                </button>
+                @endif
+            @elseif($order->status === 'confirmed')
+                @if($canCreateDel)
+                <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
+                    <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan
+                </a>
+                @endif
+            @elseif($order->status === 'partially_delivered')
+                @if($canCreateDel)
+                <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
+                    <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan (Sisa)
+                </a>
+                @endif
+                @if($hasUninvoicedDel)
+                <a href="{{ route('sales.invoices.create', ['so_id' => $order->id]) }}" class="btn btn-success">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice
+                </a>
+                @endif
+            @endif
+
+            {{-- Divider --}}
+            @if(
+                $order->status === 'draft' || 
+                ($order->status === 'waiting_approval' && $isAdmin) || 
+                ($order->status === 'confirmed' && $canCreateDel) || 
+                ($order->status === 'partially_delivered' && ($canCreateDel || $hasUninvoicedDel))
+            )
+            <div style="width: 1px; height: 26px; background: #cbd5e1; margin: 0 4px;"></div>
+            @endif
+
+            {{-- Utilities (Kanan): Kembali & PDF (dan Ubah jika draft) --}}
             @if($order->status === 'draft')
             <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary">
                 <i class="fa-solid fa-pen"></i> Ubah
             </a>
             @endif
+
+            <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
+
             <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
         </x-slot:actions>
     </x-detail-header>
+
+    {{-- Banner Status: Perlu Revisi (Draft dengan riwayat Revisi) --}}
+    @if($order->status === 'draft' && $latestApproval && $latestApproval->status === 'revised')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#92400e; font-size:15px;">
+                    Permintaan Revisi dari Approver ({{ $latestApproval->approver->name ?? 'Admin' }})
+                </div>
+                <div style="color:#78350f; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fffbeb; border:1px dashed #fcd34d; border-radius:8px;">
+                    <i class="fa-solid fa-comment-dots" style="margin-right:6px; color:#d97706;"></i>
+                    <strong>Catatan Revisi:</strong> {{ $latestApproval->rejection_reason ?: 'Harap periksa kembali detail pesanan.' }}
+                </div>
+                <div style="color:#b45309; font-size:12.5px; margin-top:8px;">
+                    <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
+                    Silakan klik tombol <strong>"Ubah"</strong> di kanan atas untuk menyesuaikan produk/kuantiti/harga/diskon, lalu klik <strong>"Konfirmasi SO Sekarang"</strong> untuk mengajukan ulang.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Banner Status: Ditolak (Cancelled dengan riwayat Penolakan) --}}
+    @if($order->status === 'cancelled' && $latestApproval && $latestApproval->status === 'rejected')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fffbfb; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#991b1b; font-size:15px;">
+                    Sales Order Ditolak (Rejected) oleh {{ $latestApproval->approver->name ?? 'Admin' }}
+                </div>
+                @if($latestApproval->rejection_reason)
+                <div style="color:#7f1d1d; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fef2f2; border:1px dashed #fca5a5; border-radius:8px;">
+                    <i class="fa-solid fa-comment-slash" style="margin-right:6px; color:#ef4444;"></i>
+                    <strong>Alasan Penolakan:</strong> {{ $latestApproval->rejection_reason }}
+                </div>
+                @endif
+                <div style="color:#991b1b; font-size:12.5px; margin-top:8px;">
+                    <i class="fa-solid fa-ban" style="margin-right:4px;"></i>
+                    Dokumen ini telah dibatalkan secara permanen dan tidak dapat diproses lagi.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">
@@ -254,101 +385,124 @@
 
 
 
-    {{-- Bottom Workflow Actions --}}
+    {{-- Hidden Action Forms for Workflow Submission --}}
     @if($order->status === 'draft')
-    <x-document-action-card>
-        <form id="form-cancel-so" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
-            @csrf @method('PATCH')
-        </form>
-        <button type="button" class="btn btn-danger"
-            data-confirm-swal="form-cancel-so"
-            data-swal-title="Batalkan Sales Order"
-            data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status SO akan diubah menjadi Cancelled.</span>"
-            data-swal-icon="warning"
-            data-swal-btn-text="Ya, Batalkan SO"
-            data-swal-btn-icon="fa-solid fa-ban"
-            data-swal-btn-class="btn btn-danger"
-        >
-            <i class="fa-solid fa-ban"></i> Batalkan SO
-        </button>
-
-        <form id="form-confirm-so" method="POST" action="{{ route('sales.orders.confirm', $order) }}" style="display:none;">
-            @csrf @method('PATCH')
-        </form>
-        <button type="button" class="btn btn-primary"
-            data-confirm-swal="form-confirm-so"
-            data-swal-title="Konfirmasi Sales Order"
-            data-swal-html="Konfirmasi Sales Order <strong>{{ $order->so_number }}</strong> sekarang?<br><span style='font-size:12.5px; color:#64748b;'>Sales Order akan dikirim untuk persetujuan (approval) sebelum dapat diproses.</span>"
-            data-swal-icon="question"
-            data-swal-icon-color="#2563eb"
-            data-swal-btn-text="Ya, Konfirmasi SO"
-            data-swal-btn-icon="fa-solid fa-check"
-            data-swal-btn-class="btn btn-primary"
-        >
-            <i class="fa-solid fa-check"></i> Konfirmasi SO Sekarang
-        </button>
-    </x-document-action-card>
-    @elseif($order->status === 'waiting_approval')
-    <x-document-action-card>
-        <form id="form-cancel-so-approval" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
-            @csrf @method('PATCH')
-        </form>
-        <button type="button" class="btn btn-danger"
-            data-confirm-swal="form-cancel-so-approval"
-            data-swal-title="Batalkan Sales Order"
-            data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Permintaan persetujuan yang sedang berjalan akan dibatalkan.</span>"
-            data-swal-icon="warning"
-            data-swal-btn-text="Ya, Batalkan SO"
-            data-swal-btn-icon="fa-solid fa-ban"
-            data-swal-btn-class="btn btn-danger"
-        >
-            <i class="fa-solid fa-ban"></i> Batalkan SO
-        </button>
-    </x-document-action-card>
-    @elseif($order->status === 'confirmed')
-    <x-document-action-card>
-        @if($order->deliveries->where('status', '!=', 'cancelled')->count() === 0)
-        <form id="form-cancel-so-confirmed" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
-            @csrf @method('PATCH')
-        </form>
-        <button type="button" class="btn btn-danger"
-            data-confirm-swal="form-cancel-so-confirmed"
-            data-swal-title="Batalkan Sales Order"
-            data-swal-html="Yakin ingin membatalkan Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status SO akan diubah menjadi Cancelled dan seluruh alokasi reservasi stok akan dilepaskan kembali ke gudang.</span>"
-            data-swal-icon="warning"
-            data-swal-btn-text="Ya, Batalkan SO"
-            data-swal-btn-icon="fa-solid fa-ban"
-            data-swal-btn-class="btn btn-danger"
-        >
-            <i class="fa-solid fa-ban"></i> Batalkan SO
-        </button>
-        @endif
-
-        @if($order->canCreateDelivery())
-        <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
-            <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan
-        </a>
-        @endif
-    </x-document-action-card>
-    @elseif($order->status === 'partially_delivered')
-    @php
-        $canCreateDel = $order->canCreateDelivery();
-        $hasUninvoicedDel = $order->deliveries->where('is_invoiced', false)->where('status', 'delivered')->count() > 0;
-    @endphp
-    @if($canCreateDel || $hasUninvoicedDel)
-    <x-document-action-card>
-        @if($canCreateDel)
-        <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
-            <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan (Sisa)
-        </a>
-        @endif
-        @if($hasUninvoicedDel)
-        <a href="{{ route('sales.invoices.create', ['so_id' => $order->id]) }}" class="btn btn-success">
-            <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice
-        </a>
-        @endif
-    </x-document-action-card>
+    <form id="form-cancel-so" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
+        @csrf @method('PATCH')
+    </form>
+    <form id="form-confirm-so" method="POST" action="{{ route('sales.orders.confirm', $order) }}" style="display:none;">
+        @csrf @method('PATCH')
+    </form>
     @endif
+
+    @if($isAdmin && $order->status === 'waiting_approval')
+    <form id="form-approve-so" method="POST" action="{{ route('sales.orders.approve', $order) }}" style="display:none;">
+        @csrf 
+        @method('PATCH')
+    </form>
+
+    <form id="form-revise-so" method="POST" action="{{ route('sales.orders.revise', $order) }}" style="display:none;">
+        @csrf 
+        @method('PATCH')
+        <input type="hidden" name="revision_reason" id="so-revision-reason" value="">
+    </form>
+
+    <form id="form-reject-so" method="POST" action="{{ route('sales.orders.reject', $order) }}" style="display:none;">
+        @csrf 
+        @method('PATCH')
+        <input type="hidden" name="rejection_reason" id="so-rejection-reason" value="">
+    </form>
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function confirmApproveSO() {
+    Swal.fire({
+        title: 'Setujui Sales Order',
+        html: `Apakah Anda yakin ingin menyetujui Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status SO akan dikonfirmasi dan sistem akan langsung mengalokasikan stok barang di gudang.</span>`,
+        icon: 'question',
+        iconColor: '#16a34a',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px;"></i> Ya, Setujui SO',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('form-approve-so').submit();
+        }
+    });
+}
+
+function confirmReviseSO() {
+    Swal.fire({
+        title: 'Minta Revisi Sales Order',
+        html: `<div style="font-size:13px; color:#64748b; margin-bottom:8px;">Sales Order <strong>{{ $order->so_number }}</strong> akan dikembalikan ke status <strong>Draft</strong> agar tim sales dapat mengedit data pesanan.</div>`,
+        icon: 'warning',
+        iconColor: '#f59e0b',
+        input: 'textarea',
+        inputLabel: 'Catatan / Alasan Revisi (Wajib)',
+        inputPlaceholder: 'Tuliskan catatan detail bagian mana yang harus diperbaiki (contoh: kurangi diskon jadi 5%, sesuaikan harga produk)...',
+        inputAttributes: { 'aria-label': 'Catatan Revisi' },
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-rotate-left" style="margin-right:6px;"></i> Kirim Permintaan Revisi',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-warning',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false,
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'Catatan revisi wajib diisi agar sales mengetahui apa yang perlu diperbaiki!';
+            }
+            if (value.trim().length < 3) {
+                return 'Catatan revisi minimal 3 karakter!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('so-revision-reason').value = result.value.trim();
+            document.getElementById('form-revise-so').submit();
+        }
+    });
+}
+
+function confirmRejectSO() {
+    Swal.fire({
+        title: 'Tolak Sales Order',
+        html: `Apakah Anda yakin ingin menolak Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status SO akan diubah menjadi <strong>Dibatalkan (Cancelled)</strong> dan seluruh alokasi stok dibatalkan.</span>`,
+        icon: 'error',
+        iconColor: '#dc2626',
+        input: 'textarea',
+        inputLabel: 'Alasan Penolakan (Opsional)',
+        inputPlaceholder: 'Tuliskan alasan penolakan dokumen...',
+        inputAttributes: { 'aria-label': 'Alasan Penolakan' },
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Tolak Dokumen',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('so-rejection-reason').value = (result.value || '').trim();
+            document.getElementById('form-reject-so').submit();
+        }
+    });
+}
+</script>
+@endpush
