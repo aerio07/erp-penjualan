@@ -87,11 +87,21 @@
                 <div class="card-body">
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
-                            <span style="color:var(--text-secondary);">Subtotal Item</span>
-                            <span style="font-weight:600;" x-text="'Rp ' + formatNum(subtotal)"></span>
+                            <span style="color:var(--text-secondary);">Subtotal Bruto</span>
+                            <span style="font-weight:600;" x-text="'Rp ' + formatNum(grossSubtotal)"></span>
+                        </div>
+                        <template x-if="itemDiscountTotal > 0">
+                            <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--danger);">
+                                <span>Diskon Item</span>
+                                <span style="font-weight:600;" x-text="'- Rp ' + formatNum(itemDiscountTotal)"></span>
+                            </div>
+                        </template>
+                        <div style="display:flex; justify-content:space-between; font-size:14px;" :style="itemDiscountTotal > 0 ? 'border-top:1px dashed #e2e8f0; padding-top:6px;' : ''">
+                            <span style="color:var(--text-secondary); font-weight:600;">Subtotal Bersih</span>
+                            <span style="font-weight:700;" x-text="'Rp ' + formatNum(subtotal)"></span>
                         </div>
                         <div>
-                            <label class="form-label">Diskon Header (Rp)</label>
+                            <label class="form-label">Diskon Header / Tambahan (Rp)</label>
                             <input type="text" 
                                    inputmode="numeric" 
                                    name="discount_amount" 
@@ -108,6 +118,12 @@
                                 <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                             @enderror
                         </div>
+                        <template x-if="itemDiscountTotal > 0 || discountHeader > 0">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; background:#fef2f2; border:1px solid #fecaca; padding:6px 10px; border-radius:6px; color:#b91c1c; font-weight:600;">
+                                <span>Total Seluruh Diskon</span>
+                                <span x-text="'- Rp ' + formatNum(itemDiscountTotal + (Number(discountHeader) || 0))"></span>
+                            </div>
+                        </template>
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
                             <span style="color:var(--text-secondary);">Setelah Diskon</span>
                             <span x-text="'Rp ' + formatNum(taxableAmount)"></span>
@@ -116,7 +132,7 @@
                             <span style="color:var(--text-secondary);">PPN (<span x-text="taxRate"></span>%)</span>
                             <span x-text="'Rp ' + formatNum(taxAmount)"></span>
                         </div>
-                        <hr style="border:none; border-top:1px solid var(--border);">
+                        <hr style="border:none; border-top:1px solid var(--border); margin:0;">
                         <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700;">
                             <span>Total</span>
                             <span style="color:var(--primary);" x-text="'Rp ' + formatNum(total)"></span>
@@ -277,8 +293,14 @@
                                             style="height: 38px;">
                                  </td>
                                  <td style="vertical-align: top !important; text-align:right;">
-                                     <div style="height: 38px; display: flex; align-items: center; justify-content: flex-end; font-weight:600;">
-                                         <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                     <div style="min-height: 38px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+                                         <template x-if="row.discount > 0">
+                                             <span style="font-size:11px; color:#94a3b8; text-decoration:line-through;" x-text="'Rp ' + formatNum(row.qty * row.price)"></span>
+                                         </template>
+                                         <span style="font-weight:700; color:#0e1b35;" x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
+                                         <template x-if="row.discount > 0">
+                                             <span style="font-size:10.5px; color:#b91c1c; font-weight:600;" x-text="'Hemat Rp ' + formatNum((row.qty * row.price) * (row.discount / 100))"></span>
+                                         </template>
                                      </div>
                                  </td>
                                  <td style="vertical-align: top !important; text-align:center;">
@@ -376,13 +398,15 @@ function soForm() {
         },
 
         rowSubtotal(row) {
-            const base = row.qty * row.price;
-            return base - (base * (row.discount / 100));
+            const base = (row.qty || 0) * (row.price || 0);
+            return base - (base * ((row.discount || 0) / 100));
         },
 
-        get isDiscountInvalid() { return this.discountHeader > this.subtotal; },
+        get isDiscountInvalid() { return (Number(this.discountHeader) || 0) > this.subtotal; },
+        get grossSubtotal() { return this.rows.reduce((s, r) => s + ((r.qty || 0) * (r.price || 0)), 0); },
+        get itemDiscountTotal() { return this.rows.reduce((s, r) => s + (((r.qty || 0) * (r.price || 0)) * ((r.discount || 0) / 100)), 0); },
         get subtotal() { return this.rows.reduce((s, r) => s + this.rowSubtotal(r), 0); },
-        get taxableAmount() { return Math.max(0, this.subtotal - this.discountHeader); },
+        get taxableAmount() { return Math.max(0, this.subtotal - (Number(this.discountHeader) || 0)); },
         get taxAmount() { return this.taxableAmount * (this.taxRate / 100); },
         get total() { return this.taxableAmount + this.taxAmount; },
 
