@@ -1205,8 +1205,10 @@
                     <span class="material-symbols-outlined text-sm" style="{{ $isPurchaseRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
+                    @if($isAdmin || $isPurchasing || $isGudang || $isSales)
+                    <a href="{{ route('purchase.requests.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.requests.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
+                    @endif
                     @if($isAdmin || $isPurchasing)
-                    <a href="{{ route('purchase.demands.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.demands.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
                     <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
                     @endif
                     @if($isAdmin || $isGudang)

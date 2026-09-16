@@ -18,6 +18,28 @@
             <div class="card" style="grid-column: span 2;">
                 <div class="card-header"><h3>Informasi PO</h3></div>
                 <div class="card-body">
+                    {{-- Tarik dari Purchase Request --}}
+                    <div style="margin-bottom:16px; padding:12px 14px; border-radius:8px; background:rgba(99, 102, 241, 0.05); border:1px dashed rgba(99, 102, 241, 0.3);">
+                        <label class="form-label" style="font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-file-import"></i> Tarik Data dari Purchase Request (PR)
+                        </label>
+                        <select name="purchase_request_id" class="form-control" x-model="selectedPrId" @change="onPrSelect($event.target.value)">
+                            <option value="">-- Buat PO Bebas / Tanpa PR --</option>
+                            @foreach($purchaseRequests as $pr)
+                            <option value="{{ $pr->id }}" {{ (old('purchase_request_id') == $pr->id || (isset($prefilledPrId) && $prefilledPrId == $pr->id)) ? 'selected' : '' }}>
+                                {{ $pr->pr_number }} — Divisi {{ $pr->division ?? 'Umum' }} (Dibutuhkan: {{ $pr->required_date?->format('d/m/Y') }}) · {{ $pr->items->count() }} Item
+                            </option>
+                            @endforeach
+                        </select>
+                        <span style="font-size:11.5px; color:var(--text-secondary); margin-top:4px; display:block;">
+                            Pilih PR yang sudah disetujui (Approved) untuk otomatis menyalin barang, kuantitas kebutuhan, dan tanggal pengiriman.
+                        </span>
+                        <div x-show="selectedPrId && purchaseRequests[selectedPrId]" x-cloak style="margin-top:8px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; color:#1d4ed8; font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-circle-check text-success" style="font-size:14px;"></i>
+                            <span>Memuat produk sesuai Purchase Request <strong x-text="purchaseRequests[selectedPrId]?.pr_number"></strong> (<span x-text="(purchaseRequests[selectedPrId]?.items?.length || 0) + ' item barang'"></span>).</span>
+                        </div>
+                    </div>
+
                     <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Supplier <span style="color:var(--danger);">*</span></label>
@@ -46,28 +68,9 @@
                         </div>
                     </div>
 
-                    <div class="form-row form-row-2" style="margin-top:12px;">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-warehouse text-primary"></i> Lokasi Gudang Tujuan</label>
-                            <x-searchable-select 
-                                name="warehouse_id" 
-                                :options="$warehouses" 
-                                :value="old('warehouse_id')" 
-                                placeholder="-- Pilih Gudang Tujuan --" 
-                                search-placeholder="Cari nama atau kode gudang..." 
-                                on-select="whId => onWarehouseChange(whId)" 
-                            />
-                            <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:block;">Pilih gudang untuk menetapkan alokasi stok dan mengisi alamat pengiriman otomatis.</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-note-sticky text-primary"></i> Catatan Tambahan</label>
-                            <textarea name="notes" class="form-control" rows="2" placeholder="Instruksi khusus, syarat penyerahan barang, atau no. referensi...">{{ old('notes') }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top:6px;">
-                        <label class="form-label"><i class="fa-solid fa-truck-ramp-box text-primary"></i> Ship To (Alamat Tujuan Pengiriman Barang)</label>
-                        <textarea name="ship_to" x-model="shipTo" class="form-control" rows="2" placeholder="Nama penerima, PIC/kontak, nama gudang, dan alamat lengkap tujuan pengiriman..."></textarea>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label class="form-label"><i class="fa-solid fa-note-sticky text-primary"></i> Catatan Tambahan</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="Instruksi khusus, syarat penyerahan barang, atau no. referensi...">{{ old('notes') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -200,15 +203,18 @@
                                                 </div>
                                             </div>
                                             <div style="overflow-y: auto; max-height: 200px;">
-                                                <template x-for="p in Object.values(products).filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
+                                                <template x-for="p in availableProductsForPo.filter(item => !prodSearch || item.name.toLowerCase().includes(prodSearch.toLowerCase()) || item.sku.toLowerCase().includes(prodSearch.toLowerCase()))" :key="p.id">
                                                     <div 
                                                         @click="row.product_id = p.id; onProductChange(idx, { target: { value: p.id } }); openProd = false; prodSearch = '';"
                                                         :class="{ 'bg-blue-50 font-semibold text-blue-700': String(row.product_id) === String(p.id) }"
-                                                        style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc;"
+                                                        style="padding: 8px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;"
                                                         onmouseover="this.style.backgroundColor='#f1f5f9'"
                                                         onmouseout="if(String(row.product_id) !== String(p.id)) this.style.backgroundColor='transparent'"
                                                     >
                                                         <span x-text="p.name + ' (' + p.sku + ')'"></span>
+                                                        <template x-if="selectedPrId && purchaseRequests[selectedPrId]">
+                                                            <span class="badge" style="font-size: 10px; background: #e0e7ff; color: #3730a3;">Item PR</span>
+                                                        </template>
                                                     </div>
                                                 </template>
                                             </div>
@@ -277,14 +283,27 @@
 @push('scripts')
 <script>
 const products = @json($products->keyBy('id'));
-const warehouses = @json($warehouses->keyBy('id'));
+const purchaseRequests = @json($purchaseRequests->keyBy('id'));
 
 function poForm() {
     const prefilledId = '{{ $prefilledProductId ?? "" }}';
     const prefilledQty = {{ $prefilledQty ?? 1 }};
+    const prefilledPr = '{{ $prefilledPrId ?? old('purchase_request_id', '') }}';
     let initialRows = [{ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }];
 
-    if (prefilledId && products[prefilledId]) {
+    if (prefilledPr && purchaseRequests[prefilledPr] && purchaseRequests[prefilledPr].items && purchaseRequests[prefilledPr].items.length > 0) {
+        initialRows = purchaseRequests[prefilledPr].items.map(it => {
+            const prod = products[it.product_id] || (it.product || {});
+            const pp = Math.round(parseFloat(prod.purchase_price || 0));
+            return {
+                product_id: it.product_id,
+                qty: it.qty,
+                price: pp,
+                discount: 0,
+                refPrice: pp
+            };
+        });
+    } else if (prefilledId && products[prefilledId]) {
         const pp = Math.round(parseFloat(products[prefilledId].purchase_price)) || 0;
         initialRows = [{
             product_id: prefilledId,
@@ -299,14 +318,53 @@ function poForm() {
         rows: initialRows,
         taxRate: 11,
         discountHeader: 0,
-        warehouseId: @json(old('warehouse_id', '')),
-        shipTo: @json(old('ship_to', '')),
+        selectedPrId: prefilledPr,
 
-        onWarehouseChange(whId) {
-            this.warehouseId = whId;
-            if (whId && warehouses[whId]) {
-                const wh = warehouses[whId];
-                this.shipTo = wh.name + (wh.address ? ' - ' + wh.address : '');
+        get availableProductsForPo() {
+            if (this.selectedPrId && purchaseRequests[this.selectedPrId] && purchaseRequests[this.selectedPrId].items && purchaseRequests[this.selectedPrId].items.length > 0) {
+                const prProdIds = purchaseRequests[this.selectedPrId].items.map(it => String(it.product_id));
+                return Object.values(products).filter(p => prProdIds.includes(String(p.id)));
+            }
+            return Object.values(products);
+        },
+
+        init() {
+            if (this.selectedPrId) {
+                this.onPrSelect(this.selectedPrId);
+            }
+        },
+
+        onPrSelect(prId) {
+            this.selectedPrId = prId;
+            if (!prId) {
+                this.rows = [{ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }];
+                return;
+            }
+            const pr = purchaseRequests[prId];
+            if (pr && pr.items && pr.items.length > 0) {
+                this.rows = pr.items.map(it => {
+                    const prod = products[it.product_id] || (it.product || {});
+                    const pp = Math.round(parseFloat(prod.purchase_price || 0));
+                    return {
+                        product_id: it.product_id,
+                        qty: it.qty,
+                        price: pp,
+                        discount: 0,
+                        refPrice: pp
+                    };
+                });
+                if (pr.required_date) {
+                    const expInput = document.querySelector('input[name="expected_date"]');
+                    if (expInput) {
+                        expInput.value = (typeof pr.required_date === 'string') ? pr.required_date.substring(0, 10) : '';
+                    }
+                }
+                if (pr.notes) {
+                    const notesArea = document.querySelector('textarea[name="notes"]');
+                    if (notesArea && !notesArea.value) {
+                        notesArea.value = 'Reff PR ' + pr.pr_number + ': ' + pr.notes;
+                    }
+                }
             }
         },
 

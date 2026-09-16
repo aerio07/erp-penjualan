@@ -11,6 +11,7 @@ use App\Http\Controllers\Master\CustomerController;
 use App\Http\Controllers\Master\ChartOfAccountController;
 use App\Http\Controllers\Master\UserController;
 // Purchase
+use App\Http\Controllers\Purchase\PurchaseRequestController;
 use App\Http\Controllers\Purchase\PurchaseOrderController;
 use App\Http\Controllers\Purchase\ProcurementDemandController;
 use App\Http\Controllers\Purchase\GoodsReceiptController;
@@ -83,6 +84,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // =========================================================
     // PURCHASE MODULE
     // =========================================================
+    Route::middleware('role:admin,purchasing,gudang,sales,finance')->prefix('purchase')->name('purchase.')->group(function () {
+        Route::get('requests/{purchase_request}/items-json', [PurchaseRequestController::class, 'apiGetItems'])->name('requests.items-json');
+        Route::patch('requests/{purchase_request}/submit', [PurchaseRequestController::class, 'submit'])->name('requests.submit');
+        Route::patch('requests/{purchase_request}/approve', [PurchaseRequestController::class, 'approve'])->name('requests.approve');
+        Route::patch('requests/{purchase_request}/reject', [PurchaseRequestController::class, 'reject'])->name('requests.reject');
+        Route::resource('requests', PurchaseRequestController::class)->parameters(['requests' => 'purchase_request']);
+    });
+
     Route::middleware('role:admin,purchasing')->prefix('purchase')->name('purchase.')->group(function () {
         Route::get('demands', [ProcurementDemandController::class, 'index'])->name('demands.index');
         Route::resource('orders', PurchaseOrderController::class)->parameters(['orders' => 'purchase_order']);

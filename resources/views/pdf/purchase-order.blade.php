@@ -44,12 +44,13 @@
                 <td class="detail-label">Expected Delivery</td>
                 <td class="detail-colon">:</td>
                 <td class="detail-value">{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
-            </tr>
+            @if($order->purchaseRequest)
             <tr>
-                <td class="detail-label">Ship To</td>
+                <td class="detail-label">Ref. PR</td>
                 <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->ship_to ?: ($order->warehouse ? $order->warehouse->name . ' (' . ($order->warehouse->address ?: '-') . ')' : 'Gudang Perusahaan') }}</td>
+                <td class="detail-value">{{ $order->purchaseRequest->pr_number }} (Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</td>
             </tr>
+            @endif
             <tr>
                 <td class="detail-label">Purchasing Staff</td>
                 <td class="detail-colon">:</td>

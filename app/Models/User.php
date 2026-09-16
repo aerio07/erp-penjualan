@@ -65,6 +65,21 @@ class User extends Authenticatable
     public function isSales(): bool    { return $this->role === 'sales'; }
     public function isFinance(): bool  { return $this->role === 'finance'; }
 
+    /**
+     * Nama Divisi berdasarkan Role akun.
+     */
+    public function getDivisionNameAttribute(): string
+    {
+        return match($this->role) {
+            'admin'      => 'Administrasi & Umum',
+            'purchasing' => 'Purchasing / Pengadaan',
+            'gudang'     => 'Gudang / Inventory',
+            'sales'      => 'Sales & Marketing',
+            'finance'    => 'Finance & Accounting',
+            default      => ucfirst($this->role ?? 'Umum'),
+        };
+    }
+
     // ---- Relationships ----
 
     public function purchaseOrders(): HasMany

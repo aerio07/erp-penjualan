@@ -30,7 +30,7 @@ class PurchaseOrderController extends Controller
     {
         $query = PurchaseOrder::with(['supplier', 'user', 'items']);
 
-        $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes', 'ship_to']);
+        $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyFilter($query, $request, 'supplier_id');
         $query = $this->applyDateRange($query, $request, 'order_date');
@@ -47,13 +47,23 @@ class PurchaseOrderController extends Controller
     {
         $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
         $products   = Product::where('is_active', true)->orderBy('name')->get();
-        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
         $prefilledProductId = $request->get('product_id');
         $prefilledQty       = $request->get('qty');
         $demandIds          = $request->get('demand_ids');
+        $prefilledPrId      = $request->get('purchase_request_id');
 
-        return view('purchase.orders.create', compact('suppliers', 'products', 'warehouses', 'prefilledProductId', 'prefilledQty', 'demandIds'));
+        $purchaseRequests = \App\Models\PurchaseRequest::with(['items.product'])
+            ->where(function($q) use ($prefilledPrId) {
+                $q->where('status', 'approved');
+                if ($prefilledPrId) {
+                    $q->orWhere('id', $prefilledPrId);
+                }
+            })
+            ->orderBy('pr_number', 'desc')
+            ->get();
+
+        return view('purchase.orders.create', compact('suppliers', 'products', 'prefilledProductId', 'prefilledQty', 'demandIds', 'purchaseRequests', 'prefilledPrId'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -62,13 +72,12 @@ class PurchaseOrderController extends Controller
 
         $request->validate([
             'supplier_id'           => 'required|exists:suppliers,id',
-            'warehouse_id'          => 'nullable|exists:warehouses,id',
+            'purchase_request_id'   => 'nullable|exists:purchase_requests,id',
             'order_date'            => 'required|date',
             'expected_date'         => 'required|date|after_or_equal:order_date',
             'tax_rate'              => 'required|numeric|min:0|max:100',
             'discount_amount'       => 'nullable|numeric|min:0',
             'notes'                 => 'nullable|string',
-            'ship_to'               => 'nullable|string',
             'items'                 => 'required|array|min:1',
             'items.*.product_id'    => 'required|exists:products,id',
             'items.*.qty_ordered'   => 'required|integer|min:1',
@@ -104,19 +113,18 @@ class PurchaseOrderController extends Controller
             $totalAmount    = $taxableAmount + $taxAmount;
 
             $po = PurchaseOrder::create([
-                'po_number'       => $this->generateNumber(),
-                'supplier_id'     => $request->supplier_id,
-                'warehouse_id'    => $request->warehouse_id,
-                'user_id'         => Auth::id(),
-                'status'          => 'draft',
-                'order_date'      => $request->order_date,
-                'expected_date'   => $request->expected_date,
-                'discount_amount' => $discountHeader,
-                'tax_rate'        => $request->tax_rate,
-                'tax_amount'      => $taxAmount,
-                'total_amount'    => $totalAmount,
-                'notes'           => $request->notes,
-                'ship_to'         => $request->ship_to,
+                'po_number'           => $this->generateNumber(),
+                'supplier_id'         => $request->supplier_id,
+                'purchase_request_id' => $request->purchase_request_id,
+                'user_id'             => Auth::id(),
+                'status'              => 'draft',
+                'order_date'          => $request->order_date,
+                'expected_date'       => $request->expected_date,
+                'discount_amount'     => $discountHeader,
+                'tax_rate'            => $request->tax_rate,
+                'tax_amount'          => $taxAmount,
+                'total_amount'        => $totalAmount,
+                'notes'               => $request->notes,
             ]);
 
             foreach ($request->items as $item) {
@@ -133,6 +141,21 @@ class PurchaseOrderController extends Controller
                     'discount_amount'   => $discAmount,
                     'subtotal'          => $lineSubtotal - $discAmount,
                 ]);
+            }
+
+            // Update tracking Purchase Request jika PO ini berasal dari PR
+            if (!empty($request->purchase_request_id)) {
+                $pr = \App\Models\PurchaseRequest::with('items')->find($request->purchase_request_id);
+                if ($pr) {
+                    foreach ($request->items as $item) {
+                        $prItem = $pr->items->firstWhere('product_id', $item['product_id']);
+                        if ($prItem) {
+                            $prItem->increment('qty_ordered', $item['qty_ordered']);
+                        }
+                    }
+                    $allFulfilled = $pr->fresh()->items->every(fn($it) => $it->qty_ordered >= $it->qty);
+                    $pr->update(['status' => $allFulfilled ? 'ordered' : 'approved']);
+                }
             }
 
             // Hubungkan Procurement Demands ke PO jika berasal dari Demand Hub
@@ -152,7 +175,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $purchaseOrder): View
     {
         $order = $purchaseOrder;
-        $order->load(['supplier', 'warehouse', 'user', 'items.product', 'goodsReceipts', 'invoices', 'approvalRequests.approver']);
+        $order->load(['supplier', 'purchaseRequest', 'user', 'items.product', 'goodsReceipts', 'invoices', 'approvalRequests.approver']);
 
         return view('purchase.orders.show', compact('order'));
     }
@@ -163,12 +186,11 @@ class PurchaseOrderController extends Controller
         $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft']), 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
 
-        $order->load(['items.product', 'warehouse']);
+        $order->load(['items.product', 'purchaseRequest']);
         $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
         $products   = Product::where('is_active', true)->orderBy('name')->get();
-        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
-        return view('purchase.orders.edit', compact('order', 'suppliers', 'products', 'warehouses'));
+        return view('purchase.orders.edit', compact('order', 'suppliers', 'products'));
     }
 
     public function update(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
@@ -181,13 +203,11 @@ class PurchaseOrderController extends Controller
         // Reuse store validation logic
         $request->validate([
             'supplier_id'    => 'required|exists:suppliers,id',
-            'warehouse_id'   => 'nullable|exists:warehouses,id',
             'order_date'     => 'required|date',
             'expected_date'  => 'required|date|after_or_equal:order_date',
             'tax_rate'       => 'required|numeric|min:0|max:100',
             'discount_amount'=> 'nullable|numeric|min:0',
             'notes'          => 'nullable|string',
-            'ship_to'        => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_id'   => 'required|exists:products,id',
             'items.*.qty_ordered'  => 'required|integer|min:1',
@@ -224,7 +244,6 @@ class PurchaseOrderController extends Controller
 
             $order->update([
                 'supplier_id'    => $request->supplier_id,
-                'warehouse_id'   => $request->warehouse_id,
                 'order_date'     => $request->order_date,
                 'expected_date'  => $request->expected_date,
                 'discount_amount'=> $discountHeader,
@@ -232,7 +251,6 @@ class PurchaseOrderController extends Controller
                 'tax_amount'     => $taxAmount,
                 'total_amount'   => $totalAmount,
                 'notes'          => $request->notes,
-                'ship_to'        => $request->ship_to,
             ]);
 
             foreach ($request->items as $item) {

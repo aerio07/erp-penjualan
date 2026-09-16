@@ -8,8 +8,8 @@
         title="Ringkasan Posisi Stok (5 Dimensi)"
         subtitle="Posisi stok komprehensif: On Hand, Booking SO (Reserved), Bebas Jual (Available), Defisit SO (Backorder), dan Incoming PO.">
         <x-slot:actions>
-            <a href="{{ route('purchase.demands.index') }}" class="btn btn-primary">
-                <i class="fa-solid fa-cart-shopping"></i> Kebutuhan Pengadaan
+            <a href="{{ route('purchase.requests.index') }}" class="btn btn-primary">
+                <i class="fa-solid fa-cart-shopping"></i> Purchase Request
             </a>
             <a href="{{ route('inventory.stock-card') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-rectangle-list"></i> Kartu Stok

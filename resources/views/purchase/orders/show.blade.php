@@ -193,24 +193,20 @@
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Expected Delivery</div>
                         <div style="font-weight:600;">{{ $order->expected_date ? $order->expected_date->format('d F Y') : '-' }}</div>
                     </div>
-                    @if($order->warehouse)
+                    @if($order->purchaseRequest)
                     <div style="grid-column: span 2;">
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Gudang Tujuan Masuk Stok</div>
-                        <div style="font-weight:600; color:var(--primary);"><i class="fa-solid fa-warehouse"></i> {{ $order->warehouse->name }} ({{ $order->warehouse->code }})</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Referensi Purchase Request (PR)</div>
+                        <div style="font-weight:600;">
+                            <a href="{{ route('purchase.requests.show', $order->purchaseRequest) }}" style="color:var(--primary); text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                                <i class="fa-solid fa-file-invoice"></i> {{ $order->purchaseRequest->pr_number }}
+                            </a>
+                            <span style="font-size:12px; color:var(--text-secondary); margin-left:6px; font-weight:normal;">(Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</span>
+                        </div>
                     </div>
                     @endif
                 </div>
-                @if($order->ship_to)
-                <div style="margin-top:16px; padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; font-size:13px; color:#166534;">
-                    <div style="font-weight:600; margin-bottom:3px; display:flex; align-items:center; gap:6px;">
-                        <i class="fa-solid fa-truck-ramp-box"></i> Ship To (Tujuan Pengiriman):
-                    </div>
-                    <div>{{ $order->ship_to }}</div>
-                </div>
-                @endif
-
                 @if($order->notes)
-                <div style="margin-top:12px; padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; color:var(--text-secondary);">
+                <div style="margin-top:14px; padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; color:var(--text-secondary);">
                     <i class="fa-solid fa-note-sticky" style="margin-right:6px;"></i>{{ $order->notes }}
                 </div>
                 @endif

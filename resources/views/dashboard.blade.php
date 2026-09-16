@@ -347,9 +347,9 @@
                     <span class="text-lg font-bold text-indigo-700 font-sans">{{ $operationalQueues['po_waiting_receipt'] ?? 0 }}</span>
                     <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PO Menunggu Masuk</span>
                 </a>
-                <a href="{{ route('purchase.demands.index') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition-all flex flex-col items-center text-center">
-                    <span class="text-lg font-bold text-rose-700 font-sans">{{ $operationalQueues['backorder_count'] ?? 0 }}</span>
-                    <span class="text-[11px] font-semibold text-slate-600 mt-0.5">Backorder Defisit</span>
+                <a href="{{ route('purchase.requests.index') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition-all flex flex-col items-center text-center">
+                    <span class="text-lg font-bold text-rose-700 font-sans">{{ \App\Models\PurchaseRequest::where('status', 'waiting_approval')->count() }}</span>
+                    <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PR Menunggu ACC</span>
                 </a>
             </div>
 

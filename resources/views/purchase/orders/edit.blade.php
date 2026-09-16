@@ -43,6 +43,13 @@
             <div class="card" style="grid-column: span 2;">
                 <div class="card-header"><h3>Informasi PO</h3></div>
                 <div class="card-body">
+                    @if($order->purchaseRequest)
+                    <div style="margin-bottom:16px; padding:10px 14px; border-radius:8px; background:rgba(99, 102, 241, 0.05); border:1px solid rgba(99, 102, 241, 0.2); display:flex; align-items:center; gap:8px;">
+                        <i class="fa-solid fa-file-invoice text-primary"></i>
+                        <span style="font-size:13px;">Dibuat dari Purchase Request: <strong>{{ $order->purchaseRequest->pr_number }}</strong> (Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</span>
+                    </div>
+                    @endif
+
                     <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Supplier <span style="color:var(--danger);">*</span></label>
@@ -71,28 +78,9 @@
                         </div>
                     </div>
 
-                    <div class="form-row form-row-2" style="margin-top:12px;">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-warehouse text-primary"></i> Lokasi Gudang Tujuan</label>
-                            <x-searchable-select 
-                                name="warehouse_id" 
-                                :options="$warehouses" 
-                                :value="old('warehouse_id', $order->warehouse_id)" 
-                                placeholder="-- Pilih Gudang Tujuan --" 
-                                search-placeholder="Cari nama atau kode gudang..." 
-                                on-select="whId => onWarehouseChange(whId)" 
-                            />
-                            <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:block;">Pilih gudang untuk menetapkan alokasi stok dan mengisi alamat pengiriman otomatis.</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-note-sticky text-primary"></i> Catatan Tambahan</label>
-                            <textarea name="notes" class="form-control" rows="2" placeholder="Instruksi khusus, syarat penyerahan barang, atau no. referensi...">{{ old('notes', $order->notes) }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top:6px;">
-                        <label class="form-label"><i class="fa-solid fa-truck-ramp-box text-primary"></i> Ship To (Alamat Tujuan Pengiriman Barang)</label>
-                        <textarea name="ship_to" x-model="shipTo" class="form-control" rows="2" placeholder="Nama penerima, PIC/kontak, nama gudang, dan alamat lengkap tujuan pengiriman...">{{ old('ship_to', $order->ship_to) }}</textarea>
+                    <div class="form-group" style="margin-top:12px;">
+                        <label class="form-label"><i class="fa-solid fa-note-sticky text-primary"></i> Catatan Tambahan</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="Instruksi khusus, syarat penyerahan barang, atau no. referensi...">{{ old('notes', $order->notes) }}</textarea>
                     </div>
                 </div>
             </div>
@@ -294,23 +282,12 @@
 @push('scripts')
 <script>
 const products = @json($products->keyBy('id'));
-const warehouses = @json($warehouses->keyBy('id'));
 
 function poForm() {
     return {
         rows: @json($initialRows),
         taxRate: {{ old('tax_rate', $order->tax_rate ?? 11) }},
         discountHeader: {{ old('discount_amount', $order->discount_amount ?? 0) }},
-        warehouseId: @json(old('warehouse_id', $order->warehouse_id ?? '')),
-        shipTo: @json(old('ship_to', $order->ship_to ?? '')),
-
-        onWarehouseChange(whId) {
-            this.warehouseId = whId;
-            if (whId && warehouses[whId]) {
-                const wh = warehouses[whId];
-                this.shipTo = wh.name + (wh.address ? ' - ' + wh.address : '');
-            }
-        },
 
         addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }); },
         removeRow(idx) { this.rows.splice(idx, 1); },
