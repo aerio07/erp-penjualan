@@ -19,21 +19,35 @@
                 <div class="card-header"><h3>Informasi PO</h3></div>
                 <div class="card-body">
                     {{-- Tarik dari Purchase Request --}}
-                    <div style="margin-bottom:16px; padding:12px 14px; border-radius:8px; background:rgba(99, 102, 241, 0.05); border:1px dashed rgba(99, 102, 241, 0.3);">
+                    <div style="margin-bottom:16px; padding:14px; border-radius:8px; background:rgba(99, 102, 241, 0.05); border:1px solid rgba(99, 102, 241, 0.25);">
                         <label class="form-label" style="font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px;">
-                            <i class="fa-solid fa-file-import"></i> Tarik Data dari Purchase Request (PR)
+                            <i class="fa-solid fa-file-import"></i> Purchase Request (PR) Asal <span style="color:var(--danger);">*</span>
                         </label>
-                        <select name="purchase_request_id" class="form-control" x-model="selectedPrId" @change="onPrSelect($event.target.value)">
-                            <option value="">-- Buat PO Bebas / Tanpa PR --</option>
+                        <select name="purchase_request_id" class="form-control {{ $errors->has('purchase_request_id') ? 'is-invalid' : '' }}" x-model="selectedPrId" @change="onPrSelect($event.target.value)" required>
+                            <option value="">-- Pilih Purchase Request yang Sudah Disetujui (Wajib) --</option>
                             @foreach($purchaseRequests as $pr)
                             <option value="{{ $pr->id }}" {{ (old('purchase_request_id') == $pr->id || (isset($prefilledPrId) && $prefilledPrId == $pr->id)) ? 'selected' : '' }}>
                                 {{ $pr->pr_number }} — Divisi {{ $pr->division ?? 'Umum' }} (Dibutuhkan: {{ $pr->required_date?->format('d/m/Y') }}) · {{ $pr->items->count() }} Item
                             </option>
                             @endforeach
                         </select>
+                        @error('purchase_request_id')
+                        <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
+                        @enderror
+
+                        @if($purchaseRequests->isEmpty())
+                        <div style="margin-top:10px; padding:10px 12px; background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; font-size:12px; color:#be123c; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                            <span><i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i> Belum ada PR berstatus <strong>Approved</strong>. Setiap PO wajib dibuat dari PR yang telah disetujui.</span>
+                            <a href="{{ route('purchase.requests.create') }}" class="btn btn-primary btn-sm" style="font-size:11px; padding:4px 8px; white-space:nowrap;">
+                                <i class="fa-solid fa-plus"></i> Buat PR
+                            </a>
+                        </div>
+                        @else
                         <span style="font-size:11.5px; color:var(--text-secondary); margin-top:4px; display:block;">
-                            Pilih PR yang sudah disetujui (Approved) untuk otomatis menyalin barang, kuantitas kebutuhan, dan tanggal pengiriman.
+                            Pilih PR yang sudah berstatus <strong>Disetujui (Approved)</strong> untuk otomatis menyalin barang dan mengunci kuantitas kebutuhan.
                         </span>
+                        @endif
+
                         <div x-show="selectedPrId && purchaseRequests[selectedPrId]" x-cloak style="margin-top:8px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; color:#1d4ed8; font-weight:500; display:flex; align-items:center; gap:8px;">
                             <i class="fa-solid fa-circle-check text-success" style="font-size:14px;"></i>
                             <span>Memuat produk sesuai Purchase Request <strong x-text="purchaseRequests[selectedPrId]?.pr_number"></strong> (<span x-text="(purchaseRequests[selectedPrId]?.items?.length || 0) + ' item barang'"></span>).</span>
@@ -156,6 +170,19 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <template x-if="!selectedPrId">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 36px 16px; color: #64748b; background: #f8fafc;">
+                                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px;">
+                                        <i class="fa-solid fa-file-import"></i>
+                                    </div>
+                                    <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">Pilih Purchase Request (PR) Terlebih Dahulu</div>
+                                    <div style="font-size: 12.5px; color: #64748b; max-width: 420px; margin: 0 auto;">
+                                        PO wajib dibuat dari Purchase Request yang telah disetujui (Approved). Daftar item barang dan kuantitas akan otomatis ditarik dari PR tersebut.
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
                         <template x-for="(row, idx) in rows" :key="idx">
                             <tr>
                                 <td style="vertical-align: top !important;">
@@ -322,10 +349,8 @@ const products = @json($products->keyBy('id'));
 const purchaseRequests = @json($purchaseRequests->keyBy('id'));
 
 function poForm() {
-    const prefilledId = '{{ $prefilledProductId ?? "" }}';
-    const prefilledQty = {{ $prefilledQty ?? 1 }};
     const prefilledPr = '{{ $prefilledPrId ?? old('purchase_request_id', '') }}';
-    let initialRows = [{ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }];
+    let initialRows = [];
 
     if (prefilledPr && purchaseRequests[prefilledPr] && purchaseRequests[prefilledPr].items && purchaseRequests[prefilledPr].items.length > 0) {
         initialRows = purchaseRequests[prefilledPr].items.map(it => {
@@ -339,15 +364,6 @@ function poForm() {
                 refPrice: pp
             };
         });
-    } else if (prefilledId && products[prefilledId]) {
-        const pp = Math.round(parseFloat(products[prefilledId].purchase_price)) || 0;
-        initialRows = [{
-            product_id: prefilledId,
-            qty: prefilledQty,
-            price: pp,
-            discount: 0,
-            refPrice: pp
-        }];
     }
 
     return {
@@ -361,7 +377,7 @@ function poForm() {
                 const prProdIds = purchaseRequests[this.selectedPrId].items.map(it => String(it.product_id));
                 return Object.values(products).filter(p => prProdIds.includes(String(p.id)));
             }
-            return Object.values(products);
+            return [];
         },
 
         init() {
@@ -373,7 +389,7 @@ function poForm() {
         onPrSelect(prId) {
             this.selectedPrId = prId;
             if (!prId) {
-                this.rows = [{ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }];
+                this.rows = [];
                 return;
             }
             const pr = purchaseRequests[prId];
@@ -401,11 +417,17 @@ function poForm() {
                         notesArea.value = 'Reff PR ' + pr.pr_number + ': ' + pr.notes;
                     }
                 }
+            } else {
+                this.rows = [];
             }
         },
 
-        addRow() { this.rows.push({ product_id: '', qty: 1, price: 0, discount: 0, refPrice: 0 }); },
-        removeRow(idx) { this.rows.splice(idx, 1); },
+        addRow() { 
+            // Pembuatan PO wajib berasal dari item PR
+        },
+        removeRow(idx) { 
+            // Item PO dikunci mengikuti PR
+        },
 
         onProductChange(idx, event) {
             const id = (event && event.target) ? event.target.value : this.rows[idx].product_id;
@@ -428,8 +450,8 @@ function poForm() {
         },
 
         rowSubtotal(row) {
-            const base = row.qty * row.price;
-            return base - (base * (row.discount / 100));
+            const base = (row.qty || 0) * (row.price || 0);
+            return base - (base * ((row.discount || 0) / 100));
         },
 
         get isDiscountInvalid() { return this.discountHeader > this.subtotal; },
@@ -442,6 +464,16 @@ function poForm() {
 
         recalc() { /* Alpine handles reactivity */ },
         validateForm(e) {
+            if (!this.selectedPrId) {
+                e.preventDefault();
+                alert('Pilih Purchase Request (PR) yang telah disetujui terlebih dahulu!');
+                return false;
+            }
+            if (!this.rows || this.rows.length === 0 || !this.rows[0].product_id) {
+                e.preventDefault();
+                alert('Daftar item PO dari Purchase Request belum termuat atau masih kosong!');
+                return false;
+            }
             if (this.isDiscountInvalid) {
                 e.preventDefault();
                 alert('Diskon header tidak boleh melebihi subtotal item!');

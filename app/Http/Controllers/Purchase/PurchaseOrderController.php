@@ -72,7 +72,7 @@ class PurchaseOrderController extends Controller
 
         $request->validate([
             'supplier_id'           => 'required|exists:suppliers,id',
-            'purchase_request_id'   => 'nullable|exists:purchase_requests,id',
+            'purchase_request_id'   => 'required|exists:purchase_requests,id',
             'order_date'            => 'required|date',
             'expected_date'         => 'required|date|after_or_equal:order_date',
             'tax_rate'              => 'required|numeric|min:0|max:100',
@@ -86,24 +86,31 @@ class PurchaseOrderController extends Controller
             'demand_ids'            => 'nullable|array',
             'demand_ids.*'          => 'exists:procurement_demands,id',
         ], [
-            'expected_date.required' => 'Tanggal expected delivery wajib diisi.',
+            'purchase_request_id.required' => 'Purchase Order wajib merujuk pada Purchase Request (PR) yang telah disetujui.',
+            'purchase_request_id.exists'   => 'Purchase Request yang dipilih tidak valid.',
+            'expected_date.required'       => 'Tanggal expected delivery wajib diisi.',
             'expected_date.after_or_equal' => 'Tanggal expected delivery harus sama dengan atau setelah tanggal PO.',
         ]);
 
-        // Jika PO dibuat dari PR, pastikan qty item terkunci mengikuti kuantitas PR
+        // Validasi status PR harus sudah disetujui (Approved)
+        $pr = \App\Models\PurchaseRequest::with('items')->findOrFail($request->purchase_request_id);
+        if (!in_array($pr->status, ['approved', 'ordered'])) {
+            return back()
+                ->withErrors([
+                    'purchase_request_id' => 'Purchase Request #' . $pr->pr_number . ' belum disetujui (Approved). PO hanya dapat dibuat dari PR yang telah disetujui.'
+                ])
+                ->withInput();
+        }
+
+        // Qty item otomatis dikunci mengikuti kuantitas PR
         $items = $request->items;
-        if (!empty($request->purchase_request_id)) {
-            $pr = \App\Models\PurchaseRequest::with('items')->find($request->purchase_request_id);
-            if ($pr) {
-                foreach ($items as &$item) {
-                    $prItem = $pr->items->firstWhere('product_id', $item['product_id']);
-                    if ($prItem) {
-                        $item['qty_ordered'] = (int) $prItem->qty;
-                    }
-                }
-                unset($item);
+        foreach ($items as &$item) {
+            $prItem = $pr->items->firstWhere('product_id', $item['product_id']);
+            if ($prItem) {
+                $item['qty_ordered'] = (int) $prItem->qty;
             }
         }
+        unset($item);
 
         // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
         $subtotal = 0;
