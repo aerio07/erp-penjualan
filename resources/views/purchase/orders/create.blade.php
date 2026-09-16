@@ -130,11 +130,18 @@
 
         {{-- Item Table --}}
         <div class="card" style="margin-bottom:20px; overflow: visible;">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3>Item Purchase Order</h3>
-                <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
-                    <i class="fa-solid fa-plus"></i> Tambah Item
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <template x-if="selectedPrId">
+                        <span class="badge" style="background: #e0e7ff; color: #3730a3; font-size: 11.5px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-lock"></i> Qty Terkunci Mengikuti PR
+                        </span>
+                    </template>
+                    <button type="button" class="btn btn-primary btn-sm" @click="addRow()" x-show="!selectedPrId">
+                        <i class="fa-solid fa-plus"></i> Tambah Item
+                    </button>
+                </div>
             </div>
             <div class="table-responsive" style="overflow: visible; min-height: 180px;">
                 <table class="erp-table">
@@ -222,7 +229,31 @@
                                     </div>
                                 </td>
                                 <td style="vertical-align: top !important;">
-                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" style="height:38px;" min="1" required>
+                                    <div style="position: relative;">
+                                        <input 
+                                            type="number" 
+                                            :name="`items[${idx}][qty_ordered]`" 
+                                            x-model.number="row.qty" 
+                                            @input="recalc()" 
+                                            class="form-control" 
+                                            :class="selectedPrId ? 'bg-slate-100 text-slate-700 cursor-not-allowed font-semibold' : ''"
+                                            :readonly="Boolean(selectedPrId)"
+                                            :title="selectedPrId ? 'Kuantitas terkunci sesuai Purchase Request' : ''"
+                                            style="height:38px; padding-right: 28px;" 
+                                            min="1" 
+                                            required
+                                        >
+                                        <template x-if="selectedPrId">
+                                            <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #6366f1; font-size: 11px; pointer-events: none;" title="Terkunci sesuai PR">
+                                                <i class="fa-solid fa-lock"></i>
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <template x-if="selectedPrId">
+                                        <span style="font-size: 10px; color: #6366f1; font-weight: 600; display: block; margin-top: 2px;">
+                                            <i class="fa-solid fa-check"></i> Sesuai PR
+                                        </span>
+                                    </template>
                                 </td>
                                 <td style="vertical-align: top !important;">
                                     <input type="text" 
@@ -254,9 +285,14 @@
                                 </td>
                                 <td style="vertical-align: top !important; text-align:center;">
                                     <div style="height: 38px; display: flex; align-items: center; justify-content: center;">
-                                        <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
+                                        <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="!selectedPrId && rows.length > 1" title="Hapus Item">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
+                                        <template x-if="selectedPrId">
+                                            <span style="color: #94a3b8; font-size: 13px;" title="Item terdaftar pada PR">
+                                                <i class="fa-solid fa-lock"></i>
+                                            </span>
+                                        </template>
                                     </div>
                                 </td>
                             </tr>
@@ -374,6 +410,12 @@ function poForm() {
         onProductChange(idx, event) {
             const id = (event && event.target) ? event.target.value : this.rows[idx].product_id;
             this.rows[idx].product_id = id;
+            if (this.selectedPrId && purchaseRequests[this.selectedPrId] && purchaseRequests[this.selectedPrId].items) {
+                const prItem = purchaseRequests[this.selectedPrId].items.find(it => String(it.product_id) === String(id));
+                if (prItem) {
+                    this.rows[idx].qty = prItem.qty;
+                }
+            }
             if (id && products[id]) {
                 const ref = Math.round(parseFloat(products[id].purchase_price)) || 0;
                 this.rows[idx].price    = ref;

@@ -138,11 +138,19 @@
 
         {{-- Item Table --}}
         <div class="card" style="margin-bottom:20px; overflow: visible;">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3>Item Purchase Order</h3>
-                <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
-                    <i class="fa-solid fa-plus"></i> Tambah Item
-                </button>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    @if($order->purchase_request_id)
+                    <span class="badge" style="background: #e0e7ff; color: #3730a3; font-size: 11.5px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-lock"></i> Qty Terkunci Mengikuti PR
+                    </span>
+                    @else
+                    <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
+                        <i class="fa-solid fa-plus"></i> Tambah Item
+                    </button>
+                    @endif
+                </div>
             </div>
             <div class="table-responsive" style="overflow: visible; min-height: 180px;">
                 <table class="erp-table">
@@ -227,7 +235,30 @@
                                     </div>
                                 </td>
                                 <td style="vertical-align: top !important;">
-                                    <input type="number" :name="`items[${idx}][qty_ordered]`" x-model.number="row.qty" @input="recalc()" class="form-control" style="height:38px;" min="1" required>
+                                    <div style="position: relative;">
+                                        <input 
+                                            type="number" 
+                                            :name="`items[${idx}][qty_ordered]`" 
+                                            x-model.number="row.qty" 
+                                            @input="recalc()" 
+                                            class="form-control {{ $order->purchase_request_id ? 'bg-slate-100 text-slate-700 cursor-not-allowed font-semibold' : '' }}" 
+                                            style="height:38px; padding-right: 28px;" 
+                                            min="1" 
+                                            {{ $order->purchase_request_id ? 'readonly' : '' }}
+                                            title="{{ $order->purchase_request_id ? 'Kuantitas terkunci sesuai Purchase Request' : '' }}"
+                                            required
+                                        >
+                                        @if($order->purchase_request_id)
+                                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #6366f1; font-size: 11px; pointer-events: none;" title="Terkunci sesuai PR">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </span>
+                                        @endif
+                                    </div>
+                                    @if($order->purchase_request_id)
+                                    <span style="font-size: 10px; color: #6366f1; font-weight: 600; display: block; margin-top: 2px;">
+                                        <i class="fa-solid fa-check"></i> Sesuai PR
+                                    </span>
+                                    @endif
                                 </td>
                                 <td style="vertical-align: top !important;">
                                     <input type="text" 
@@ -259,9 +290,15 @@
                                 </td>
                                 <td style="vertical-align: top !important; text-align:center;">
                                     <div style="height: 38px; display: flex; align-items: center; justify-content: center;">
-                                        <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1">
+                                        @if(!$order->purchase_request_id)
+                                        <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1" title="Hapus Item">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
+                                        @else
+                                        <span style="color: #94a3b8; font-size: 13px;" title="Item terdaftar pada PR">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </span>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

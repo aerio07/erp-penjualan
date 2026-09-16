@@ -90,9 +90,24 @@ class PurchaseOrderController extends Controller
             'expected_date.after_or_equal' => 'Tanggal expected delivery harus sama dengan atau setelah tanggal PO.',
         ]);
 
+        // Jika PO dibuat dari PR, pastikan qty item terkunci mengikuti kuantitas PR
+        $items = $request->items;
+        if (!empty($request->purchase_request_id)) {
+            $pr = \App\Models\PurchaseRequest::with('items')->find($request->purchase_request_id);
+            if ($pr) {
+                foreach ($items as &$item) {
+                    $prItem = $pr->items->firstWhere('product_id', $item['product_id']);
+                    if ($prItem) {
+                        $item['qty_ordered'] = (int) $prItem->qty;
+                    }
+                }
+                unset($item);
+            }
+        }
+
         // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
         $subtotal = 0;
-        foreach ($request->items as $item) {
+        foreach ($items as $item) {
             $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
             $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
             $subtotal += $lineSubtotal - $disc;
@@ -107,7 +122,7 @@ class PurchaseOrderController extends Controller
                 ->withInput();
         }
 
-        DB::transaction(function () use ($request, $subtotal, $discountHeader) {
+        DB::transaction(function () use ($request, $items, $subtotal, $discountHeader) {
             $taxableAmount  = max(0, $subtotal - $discountHeader);
             $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
             $totalAmount    = $taxableAmount + $taxAmount;
@@ -127,7 +142,7 @@ class PurchaseOrderController extends Controller
                 'notes'               => $request->notes,
             ]);
 
-            foreach ($request->items as $item) {
+            foreach ($items as $item) {
                 $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
                 $discPercent  = $item['discount_percent'] ?? 0;
                 $discAmount   = $lineSubtotal * ($discPercent / 100);
@@ -147,7 +162,7 @@ class PurchaseOrderController extends Controller
             if (!empty($request->purchase_request_id)) {
                 $pr = \App\Models\PurchaseRequest::with('items')->find($request->purchase_request_id);
                 if ($pr) {
-                    foreach ($request->items as $item) {
+                    foreach ($items as $item) {
                         $prItem = $pr->items->firstWhere('product_id', $item['product_id']);
                         if ($prItem) {
                             $prItem->increment('qty_ordered', $item['qty_ordered']);
@@ -218,9 +233,24 @@ class PurchaseOrderController extends Controller
             'expected_date.after_or_equal' => 'Tanggal expected delivery harus sama dengan atau setelah tanggal PO.',
         ]);
 
+        // Jika PO terkait dengan PR, pastikan qty item terkunci mengikuti kuantitas PR
+        $items = $request->items;
+        if (!empty($order->purchase_request_id)) {
+            $pr = \App\Models\PurchaseRequest::with('items')->find($order->purchase_request_id);
+            if ($pr) {
+                foreach ($items as &$item) {
+                    $prItem = $pr->items->firstWhere('product_id', $item['product_id']);
+                    if ($prItem) {
+                        $item['qty_ordered'] = (int) $prItem->qty;
+                    }
+                }
+                unset($item);
+            }
+        }
+
         // Hitung subtotal semua item terlebih dahulu untuk memvalidasi diskon header
         $subtotal = 0;
-        foreach ($request->items as $item) {
+        foreach ($items as $item) {
             $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
             $disc = $lineSubtotal * (($item['discount_percent'] ?? 0) / 100);
             $subtotal += $lineSubtotal - $disc;
@@ -235,7 +265,7 @@ class PurchaseOrderController extends Controller
                 ->withInput();
         }
 
-        DB::transaction(function () use ($request, $order, $subtotal, $discountHeader) {
+        DB::transaction(function () use ($request, $order, $items, $subtotal, $discountHeader) {
             $order->items()->delete();
 
             $taxableAmount  = max(0, $subtotal - $discountHeader);
@@ -253,7 +283,7 @@ class PurchaseOrderController extends Controller
                 'notes'          => $request->notes,
             ]);
 
-            foreach ($request->items as $item) {
+            foreach ($items as $item) {
                 $lineSubtotal = $item['qty_ordered'] * $item['unit_price'];
                 $discPercent  = $item['discount_percent'] ?? 0;
                 $discAmount   = $lineSubtotal * ($discPercent / 100);
