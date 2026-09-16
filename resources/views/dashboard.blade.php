@@ -348,7 +348,7 @@
                     <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PO Menunggu Masuk</span>
                 </a>
                 <a href="{{ \Illuminate\Support\Facades\Route::has('purchase.requests.index') ? route('purchase.requests.index') : url('/purchase/requests') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition-all flex flex-col items-center text-center">
-                    <span class="text-lg font-bold text-rose-700 font-sans">{{ \App\Models\PurchaseRequest::where('status', 'waiting_approval')->count() }}</span>
+                    <span class="text-lg font-bold text-rose-700 font-sans">{{ \Illuminate\Support\Facades\Schema::hasTable('purchase_requests') ? \App\Models\PurchaseRequest::where('status', 'waiting_approval')->count() : 0 }}</span>
                     <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PR Menunggu ACC</span>
                 </a>
             </div>
