@@ -225,22 +225,43 @@
         <div class="card">
             <div class="card-header"><h3>Total Tagihan</h3></div>
             <div class="card-body">
+                @php
+                    $grossSubtotal = $order->items->sum(fn($it) => $it->qty_ordered * $it->unit_price);
+                    $itemDiscountSum = $order->items->sum(fn($it) => ($it->qty_ordered * $it->unit_price) * (($it->discount_percent ?? 0) / 100));
+                    $netSubtotal = $order->items->sum('subtotal');
+                @endphp
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">Subtotal</span>
-                        <span>Rp {{ number_format($order->items->sum('subtotal'), 0, ',', '.') }}</span>
+                        <span style="color:var(--text-secondary);">Subtotal Bruto</span>
+                        <span>Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</span>
                     </div>
+                    @if($itemDiscountSum > 0)
+                    <div style="display:flex; justify-content:space-between; color:var(--danger); font-size:13.5px;">
+                        <span>Diskon Item</span>
+                        <span>- Rp {{ number_format($itemDiscountSum, 0, ',', '.') }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-weight:600; border-top:1px dashed var(--border); padding-top:4px;">
+                        <span style="color:var(--text-secondary);">Subtotal Bersih</span>
+                        <span>Rp {{ number_format($netSubtotal, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
                     @if($order->discount_amount > 0)
-                    <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                    <div style="display:flex; justify-content:space-between; color:var(--danger); font-size:13.5px;">
                         <span>Diskon Header</span>
                         <span>- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    @if($itemDiscountSum > 0 || $order->discount_amount > 0)
+                    <div style="display:flex; justify-content:space-between; font-weight:600; color:#b91c1c; font-size:13px; background:#fef2f2; border:1px solid #fecaca; padding:4px 8px; border-radius:6px;">
+                        <span>Total Seluruh Diskon</span>
+                        <span>- Rp {{ number_format($itemDiscountSum + $order->discount_amount, 0, ',', '.') }}</span>
                     </div>
                     @endif
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:var(--text-secondary);">PPN ({{ $order->tax_rate }}%)</span>
                         <span>Rp {{ number_format($order->tax_amount, 0, ',', '.') }}</span>
                     </div>
-                    <hr style="border:none; border-top:1px solid var(--border);">
+                    <hr style="border:none; border-top:1px solid var(--border); margin:0;">
                     <div style="display:flex; justify-content:space-between; font-size:17px; font-weight:700;">
                         <span>Total</span>
                         <span style="color:var(--primary);">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
@@ -359,7 +380,12 @@
                                 <span style="color:var(--text-secondary);">-</span>
                             @endif
                         </td>
-                        <td style="text-align:right; font-weight:700; color:var(--primary);">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                        <td style="text-align:right;">
+                            @if($item->discount_percent > 0)
+                                <div style="font-size:11px; color:#94a3b8; text-decoration:line-through;">Rp {{ number_format($item->qty_ordered * $item->unit_price, 0, ',', '.') }}</div>
+                            @endif
+                            <div style="font-weight:700; color:var(--primary);">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</div>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -432,8 +458,19 @@
                             <span class="badge badge-done">{{ $item->qty_unbilled }}</span>
                         </td>
                         <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                        <td style="text-align:center;">{{ $item->discount_percent > 0 ? $item->discount_percent.'%' : '-' }}</td>
-                        <td style="text-align:right; font-weight:600;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                        <td style="text-align:center;">
+                            @if($item->discount_percent > 0)
+                                <span class="badge badge-pending" style="font-size:11px;">{{ $item->discount_percent }}%</span>
+                            @else
+                                <span style="color:var(--text-secondary);">-</span>
+                            @endif
+                        </td>
+                        <td style="text-align:right;">
+                            @if($item->discount_percent > 0)
+                                <div style="font-size:11px; color:#94a3b8; text-decoration:line-through;">Rp {{ number_format($item->qty_ordered * $item->unit_price, 0, ',', '.') }}</div>
+                            @endif
+                            <div style="font-weight:700; color:var(--primary);">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</div>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
