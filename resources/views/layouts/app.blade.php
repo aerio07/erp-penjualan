@@ -1206,7 +1206,7 @@
                 </button>
                 <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
                     @if($isAdmin || $isPurchasing || $isGudang || $isSales)
-                    <a href="{{ route('purchase.requests.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.requests.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('purchase.requests.index') ? route('purchase.requests.index') : url('/purchase/requests') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.requests.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
                     @endif
                     @if($isAdmin || $isPurchasing)
                     <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
