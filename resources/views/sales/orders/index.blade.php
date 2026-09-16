@@ -147,17 +147,17 @@
                     <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                         <i class="fa-solid fa-pen"></i>
                     </a>
-                    @endif
-                    <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
-                        <i class="fa-solid fa-file-pdf"></i>
-                    </a>
-                    @if($order->status === 'draft')
                     <button data-confirm-delete="del-so-{{ $order->id }}" class="btn btn-danger btn-sm btn-icon" title="Hapus">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                     <form id="del-so-{{ $order->id }}" method="POST" action="{{ route('sales.orders.destroy', $order) }}" style="display:none;">
                         @csrf @method('DELETE')
                     </form>
+                    @endif
+                    @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']))
+                    <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </a>
                     @endif
                 </div>
             </td>

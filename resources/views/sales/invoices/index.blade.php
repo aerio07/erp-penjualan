@@ -101,7 +101,7 @@
                 <x-table-actions 
                     :show-url="route('sales.invoices.show', $inv)"
                     :edit-url="$inv->status === 'draft' ? route('sales.invoices.edit', $inv) : null"
-                    :pdf-url="route('pdf.sales-invoice', $inv)"
+                    :pdf-url="in_array($inv->status, ['unpaid', 'partial', 'paid']) ? route('pdf.sales-invoice', $inv) : null"
                     :delete-url="$inv->status === 'draft' ? route('sales.invoices.destroy', $inv) : null"
                     delete-confirm="Yakin ingin menghapus draft invoice ini? Dokumen Surat Jalan terkait akan otomatis dilepaskan."
                 >

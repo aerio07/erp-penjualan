@@ -17,9 +17,11 @@
                 </a>
             @endif
 
+            @if(in_array($invoice->status, ['unpaid', 'partial', 'paid']))
             <a href="{{ route('pdf.purchase-invoice', $invoice) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
+            @endif
         </x-slot:actions>
     </x-detail-header>
 

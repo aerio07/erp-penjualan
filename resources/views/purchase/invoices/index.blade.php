@@ -102,7 +102,7 @@
                 <x-table-actions 
                     :show-url="route('purchase.invoices.show', $inv)"
                     :edit-url="$inv->status === 'draft' ? route('purchase.invoices.edit', $inv) : null"
-                    :pdf-url="route('pdf.purchase-invoice', $inv)"
+                    :pdf-url="in_array($inv->status, ['unpaid', 'partial', 'paid']) ? route('pdf.purchase-invoice', $inv) : null"
                     :delete-url="$inv->status === 'draft' ? route('purchase.invoices.destroy', $inv) : null"
                     delete-confirm="Yakin ingin menghapus draft invoice ini? LPB terkait akan otomatis dilepaskan."
                 >

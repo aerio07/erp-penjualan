@@ -384,6 +384,8 @@ class SalesOrderController extends Controller
 
     public function exportPdf(SalesOrder $salesOrder)
     {
+        abort_if(!in_array($salesOrder->status, ['confirmed', 'partially_delivered', 'done']), 403, 'PDF hanya dapat diunduh setelah Sales Order disetujui.');
+
         $order = $salesOrder;
         $order->load(['customer', 'user', 'items.product', 'approvalRequests.approver']);
 

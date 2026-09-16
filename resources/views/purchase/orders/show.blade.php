@@ -109,7 +109,9 @@
             <a href="{{ route('purchase.orders.edit', $order) }}" class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Ubah</a>
             @endif
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
+            @if(in_array($order->status, ['confirmed', 'partially_received', 'done']))
             <a href="{{ route('pdf.purchase-order', $order) }}" class="btn btn-secondary" target="_blank"><i class="fa-solid fa-file-pdf"></i> PDF</a>
+            @endif
         </x-slot:actions>
     </x-detail-header>
 

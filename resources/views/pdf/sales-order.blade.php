@@ -50,11 +50,7 @@
                 <td class="detail-colon">:</td>
                 <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
             </tr>
-            <tr>
-                <td class="detail-label">Status</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $order->status ?? 'Draft')) }}</td>
-            </tr>
+
         </table>
     </div>
 

@@ -58,9 +58,11 @@
             </a>
             @endif
 
+            @if(in_array($delivery->status, ['in_transit', 'delivered']))
             <a href="{{ route('pdf.delivery', $delivery) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> Cetak Surat Jalan PDF
             </a>
+            @endif
         </x-slot:actions>
     </x-detail-header>
 
@@ -161,16 +163,13 @@
                             </a>
                         </div>
                     @else
-                        <div style="padding:14px; background:#fffbeb; border:1px solid #fde68a; border-radius:8px;">
-                            <div style="font-size:13px; color:#92400e; font-weight:600;">
+                        <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:8px;">
+                            <div style="font-size:13px; color:var(--text-secondary); font-weight:600;">
                                 <i class="fa-solid fa-hourglass-half"></i> Menunggu Konfirmasi Penerimaan
                             </div>
-                            <p style="font-size:12.5px; color:var(--text-secondary); margin:6px 0 12px 0;">
-                                Invoice tidak dapat diterbitkan sebelum barang dipastikan telah sampai di tangan customer.
+                            <p style="font-size:12.5px; color:var(--text-secondary); margin:6px 0 0 0;">
+                                Invoice dapat diterbitkan setelah konfirmasi penerimaan barang oleh customer.
                             </p>
-                            <button type="button" @click="showConfirmModal = true" class="btn btn-warning btn-sm" style="width:100%; justify-content:center;">
-                                <i class="fa-solid fa-clipboard-check"></i> Konfirmasi Barang Diterima
-                            </button>
                         </div>
                     @endif
                 </div>

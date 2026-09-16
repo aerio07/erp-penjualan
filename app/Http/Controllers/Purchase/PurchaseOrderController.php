@@ -376,6 +376,8 @@ class PurchaseOrderController extends Controller
 
     public function exportPdf(PurchaseOrder $purchaseOrder)
     {
+        abort_if(!in_array($purchaseOrder->status, ['confirmed', 'partially_received', 'done']), 403, 'PDF hanya dapat diunduh setelah Purchase Order disetujui.');
+
         $order = $purchaseOrder;
         $order->load(['supplier', 'warehouse', 'user', 'items.product', 'approvalRequests.approver']);
 

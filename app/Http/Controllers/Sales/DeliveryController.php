@@ -302,6 +302,8 @@ class DeliveryController extends Controller
 
     public function exportPdf(Delivery $delivery)
     {
+        abort_if(!in_array($delivery->status, ['in_transit', 'delivered']), 403, 'PDF tidak dapat dicetak untuk Surat Jalan yang dibatalkan.');
+
         $delivery->load(['salesOrder.customer', 'warehouse', 'user', 'items.salesOrderItem.product']);
         $safeNumber = str_replace(['/', '\\'], '-', $delivery->delivery_number);
         $filename = str_starts_with($safeNumber, 'SJ-') ? $safeNumber : "SJ-{$safeNumber}";

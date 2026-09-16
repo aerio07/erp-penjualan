@@ -97,9 +97,11 @@
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
 
+            @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']))
             <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
+            @endif
         </x-slot:actions>
     </x-detail-header>
 

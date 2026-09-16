@@ -222,8 +222,10 @@
                                     <input type="text" 
                                            inputmode="numeric" 
                                            :name="`items[${idx}][unit_price]`" 
-                                           x-currency="row.price" 
-                                           @input="recalc()" 
+                                           :value="window.formatRupiah ? window.formatRupiah(row.price) : row.price" 
+                                           @input="row.price = window.unformatRupiah ? window.unformatRupiah($event.target.value) : (parseInt($event.target.value) || 0); if(window.applyMaskWithCursor) window.applyMaskWithCursor($event.target); recalc();" 
+                                           @focus="$event.target.select()" 
+                                           @blur="if(window.formatRupiah) $event.target.value = window.formatRupiah(row.price)" 
                                            :class="[row.refPrice > 0 && row.price > row.refPrice ? 'input-price-warning' : '', 'form-control', 'format-currency']" 
                                            style="height:38px;" 
                                            placeholder="0" 
@@ -319,8 +321,10 @@ function poForm() {
                 this.rows[idx].price    = ref;
                 this.rows[idx].refPrice = ref;
             } else {
+                this.rows[idx].price    = 0;
                 this.rows[idx].refPrice = 0;
             }
+            this.recalc();
         },
 
         rowSubtotal(row) {

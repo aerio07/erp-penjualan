@@ -315,6 +315,8 @@ class SalesInvoiceController extends Controller
 
     public function exportPdf(SalesInvoice $invoice)
     {
+        abort_if(!in_array($invoice->status, ['unpaid', 'partial', 'paid']), 403, 'PDF hanya dapat diunduh setelah Faktur Penjualan diposting.');
+
         $invoice->load(['salesOrder.customer', 'delivery.warehouse', 'items.product', 'items.deliveryItem.delivery', 'payments']);
         $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);
         $filename = str_starts_with($safeNumber, 'SINV-') ? $safeNumber : "SINV-{$safeNumber}";

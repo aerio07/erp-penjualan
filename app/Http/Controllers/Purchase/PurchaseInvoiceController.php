@@ -288,6 +288,8 @@ class PurchaseInvoiceController extends Controller
 
     public function exportPdf(PurchaseInvoice $invoice)
     {
+        abort_if(!in_array($invoice->status, ['unpaid', 'partial', 'paid']), 403, 'PDF hanya dapat diunduh setelah Faktur Pembelian diposting.');
+
         $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
         $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);
         $filename = str_starts_with($safeNumber, 'PINV-') ? $safeNumber : "PINV-{$safeNumber}";
