@@ -10,10 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class WarehouseController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function __construct(private StockService $stockService) {}
 
@@ -38,13 +39,16 @@ class WarehouseController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $existingWh = $request->filled('code') 
-            ? Warehouse::where('code', trim($request->code))->first() 
-            : null;
+        $code = $request->filled('code') 
+            ? strtoupper(trim($request->code)) 
+            : $this->generateMasterCode(Warehouse::class, 'code', 'WH', 3);
 
+        $existingWh = Warehouse::where('code', $code)->first();
         $customCodeMsg = $existingWh 
-            ? "Kode gudang \"{$request->code}\" sudah digunakan oleh gudang \"{$existingWh->name}\"." 
+            ? "Kode gudang \"{$code}\" sudah digunakan oleh gudang \"{$existingWh->name}\"." 
             : 'Kode gudang ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+
+        $request->merge(['code' => $code]);
 
         $request->validate([
             'code'    => 'required|string|max:50|unique:warehouses,code',
@@ -58,7 +62,7 @@ class WarehouseController extends Controller
         ]);
 
         Warehouse::create([
-            'code'      => strtoupper(trim($request->code)),
+            'code'      => $code,
             'name'      => trim($request->name),
             'address'   => trim($request->address),
             'is_active' => $request->boolean('is_active', true),
@@ -81,27 +85,15 @@ class WarehouseController extends Controller
 
     public function update(Request $request, Warehouse $warehouse): RedirectResponse
     {
-        $existingWh = $request->filled('code') 
-            ? Warehouse::where('code', trim($request->code))->where('id', '!=', $warehouse->id)->first() 
-            : null;
-
-        $customCodeMsg = $existingWh 
-            ? "Kode gudang \"{$request->code}\" sudah digunakan oleh gudang \"{$existingWh->name}\"." 
-            : 'Kode gudang ":input" sudah terdaftar. Gunakan kode yang berbeda.';
-
         $request->validate([
-            'code'    => 'required|string|max:50|unique:warehouses,code,' . $warehouse->id,
             'name'    => 'required|string|max:255',
             'address' => 'required|string',
         ], [
-            'code.required'    => 'Kode gudang wajib diisi.',
-            'code.unique'      => $customCodeMsg,
             'name.required'    => 'Nama gudang wajib diisi.',
             'address.required' => 'Alamat gudang wajib diisi.',
         ]);
 
         $warehouse->update([
-            'code'      => strtoupper(trim($request->code)),
             'name'      => trim($request->name),
             'address'   => trim($request->address),
             'is_active' => $request->boolean('is_active'),

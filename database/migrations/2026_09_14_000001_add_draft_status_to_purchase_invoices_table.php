@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Ubah ENUM status purchase_invoices untuk menambahkan opsi 'draft' dengan default 'draft'
-        DB::statement("ALTER TABLE purchase_invoices MODIFY COLUMN status ENUM('draft', 'unpaid', 'partial', 'paid') NOT NULL DEFAULT 'draft'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE purchase_invoices MODIFY COLUMN status ENUM('draft', 'unpaid', 'partial', 'paid') NOT NULL DEFAULT 'draft'");
+        }
     }
 
     /**
@@ -21,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE purchase_invoices MODIFY COLUMN status ENUM('unpaid', 'partial', 'paid') NOT NULL DEFAULT 'unpaid'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE purchase_invoices MODIFY COLUMN status ENUM('unpaid', 'partial', 'paid') NOT NULL DEFAULT 'unpaid'");
+        }
     }
 };

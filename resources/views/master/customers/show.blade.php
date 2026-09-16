@@ -65,7 +65,7 @@
                     <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tipe Customer</div>
                         <div><x-status-badge :status="$customer->tax_type ?? 'non_pkp'" /></div>
                     </div>
-                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP / NIK</div>
+                    <div><div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">NPWP / NIK & Dokumen</div>
                         <div style="font-weight:{{ ($customer->npwp || $customer->nik) ? '600' : 'normal' }};">
                             @if($customer->npwp)
                                 <span>NPWP: {{ $customer->npwp }}</span>
@@ -73,7 +73,16 @@
                             @if($customer->nik)
                                 <div style="font-size:12px; color:#475569; margin-top:2px;">NIK: {{ $customer->nik }}</div>
                             @endif
-                            @if(!$customer->npwp && !$customer->nik)
+                            @if($customer->tax_document)
+                                <div style="margin-top:6px;">
+                                    <a href="{{ Storage::url($customer->tax_document) }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-xs font-semibold transition-colors">
+                                        <i class="fa-solid fa-file-pdf text-sm"></i>
+                                        <span>Lihat Dokumen Terlampir</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-0.5"></i>
+                                    </a>
+                                </div>
+                            @endif
+                            @if(!$customer->npwp && !$customer->nik && !$customer->tax_document)
                                 <span>-</span>
                             @endif
                         </div>

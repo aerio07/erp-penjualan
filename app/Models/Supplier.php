@@ -10,7 +10,7 @@ class Supplier extends Model
 {
     protected $fillable = [
         'code', 'name', 'contact_person', 'phone', 'email',
-        'address', 'payment_term', 'npwp', 'ktp_number', 'bank_name', 'bank_account_number', 'bank_account_holder',
+        'address', 'payment_term', 'npwp', 'ktp_number', 'tax_document', 'bank_name', 'bank_account_number', 'bank_account_holder',
         'is_active', 'notes',
     ];
 

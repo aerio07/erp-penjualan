@@ -77,12 +77,27 @@
                         @endif
                     </div>
                     <div>
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Nomor NPWP</div>
-                        <div style="font-weight:500;">{{ $supplier->npwp ?? '-' }}</div>
-                    </div>
-                    <div>
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Nomor KTP / NIK</div>
-                        <div style="font-weight:500; font-family:monospace;">{{ $supplier->ktp_number ?? '-' }}</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Nomor NPWP / NIK & Dokumen</div>
+                        <div style="font-weight:500;">
+                            @if($supplier->npwp)
+                                <div>NPWP: <strong>{{ $supplier->npwp }}</strong></div>
+                            @endif
+                            @if($supplier->ktp_number)
+                                <div style="font-family:monospace; font-size:12px; color:#475569; margin-top:2px;">NIK/KTP: {{ $supplier->ktp_number }}</div>
+                            @endif
+                            @if($supplier->tax_document)
+                                <div style="margin-top:6px;">
+                                    <a href="{{ Storage::url($supplier->tax_document) }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded text-xs font-semibold transition-colors">
+                                        <i class="fa-solid fa-file-pdf text-sm"></i>
+                                        <span>Lihat Dokumen</span>
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-0.5"></i>
+                                    </a>
+                                </div>
+                            @endif
+                            @if(!$supplier->npwp && !$supplier->ktp_number && !$supplier->tax_document)
+                                <span>-</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
 

@@ -187,7 +187,7 @@
         x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-1"
-        style="position: absolute; top: calc(100% + 4px); left: 0; min-width: 100%; width: max(100%, 340px); z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; max-height: 280px; display: flex; flex-direction: column; overflow: hidden;"
+        style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; min-width: 100%; max-width: 100%; box-sizing: border-box; z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0; max-height: 280px; display: flex; flex-direction: column; overflow: hidden;"
         x-cloak
     >
         {{-- Search Input with Magnifying Glass Icon --}}

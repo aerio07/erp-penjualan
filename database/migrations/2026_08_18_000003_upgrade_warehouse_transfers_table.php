@@ -16,7 +16,9 @@ return new class extends Migration
             $table->timestamp('received_at')->nullable()->after('shipped_at');
         });
 
-        DB::statement("ALTER TABLE warehouse_transfers MODIFY COLUMN status ENUM('draft', 'in_transit', 'completed', 'cancelled') NOT NULL DEFAULT 'draft'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE warehouse_transfers MODIFY COLUMN status ENUM('draft', 'in_transit', 'completed', 'cancelled') NOT NULL DEFAULT 'draft'");
+        }
 
         Schema::table('warehouse_transfer_items', function (Blueprint $table) {
             $table->renameColumn('qty_requested', 'qty');
@@ -32,7 +34,9 @@ return new class extends Migration
             $table->enum('condition', ['baik', 'rusak'])->default('baik');
         });
 
-        DB::statement("ALTER TABLE warehouse_transfers MODIFY COLUMN status ENUM('draft', 'in_transit', 'received', 'cancelled') NOT NULL DEFAULT 'draft'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE warehouse_transfers MODIFY COLUMN status ENUM('draft', 'in_transit', 'received', 'cancelled') NOT NULL DEFAULT 'draft'");
+        }
 
         Schema::table('warehouse_transfers', function (Blueprint $table) {
             $table->dropForeign(['shipped_by']);

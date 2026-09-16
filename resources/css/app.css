@@ -209,7 +209,7 @@
     min-width: 0 !important;
 }
 
-.form-label, label {
+.form-label, label.form-label {
     display: block !important;
     width: 100% !important;
     margin-bottom: 0.375rem !important;
@@ -271,7 +271,7 @@ div.form-control[style*="display:flex"] span {
     padding-right: 8px !important;
 }
 
-/* Ensure Search Inputs with icons never overlap */
+/* Ensure Search Inputs with icons have proper padding */
 .search-input,
 .search-box input,
 .has-search-icon input,
@@ -279,9 +279,7 @@ input.search-input,
 input[name="q"],
 input[type="search"],
 .searchable-select-search-input,
-input.searchable-select-search-input,
-.searchable-select-wrapper input[type="text"],
-td[style*="position: relative"] input[type="text"] {
+input.searchable-select-search-input {
     padding-left: 2.25rem !important;
 }
 

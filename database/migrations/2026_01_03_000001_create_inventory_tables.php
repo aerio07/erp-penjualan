@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->restrictOnDelete();
             $table->foreignId('warehouse_id')->constrained()->restrictOnDelete();
-            $table->enum('type', ['in', 'out', 'adjustment', 'return_in', 'return_out', 'transfer_in', 'transfer_out']);
+            $table->enum('type', ['in', 'out', 'adjustment', 'return_in', 'return_out', 'transfer_in', 'transfer_out', 'return_in_damaged', 'write_off', 'reject_out', 'opening_balance']);
             $table->integer('quantity');
             $table->decimal('unit_cost', 15, 2)->default(0)->comment('untuk average cost');
             $table->string('reference_type')->nullable()->comment('Polymorphic model');

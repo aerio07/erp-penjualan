@@ -20,19 +20,14 @@
                 <!-- Row 1: 2 Kolom (Kode & Nama Gudang) -->
                 <div class="form-row form-row-2">
                     <div class="form-group">
-                        <label class="form-label">Kode Gudang <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="code" value="{{ old('code', $warehouse->code ?? '') }}"
-                            class="form-control {{ $errors->has('code') ? 'is-invalid' : '' }}"
-                            required placeholder="Contoh: WH-001, GUD-JKT" style="text-transform:uppercase;">
-                        @if(!$errors->has('code'))
-                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode unik pengenal gudang.</span>
+                        <label class="form-label">Kode Gudang <span class="text-xs text-slate-400 font-normal lowercase">(otomatis sistem)</span></label>
+                        @if(isset($warehouse))
+                            <input type="text" name="code" value="{{ $warehouse->code }}" class="form-control bg-slate-100 font-bold text-[#0e1b35]" readonly title="Kode gudang tetap">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode pengenal permanen gudang.</span>
+                        @else
+                            <input type="text" value="[Dibuat Otomatis oleh Sistem]" class="form-control bg-slate-100 font-semibold text-slate-500 cursor-not-allowed" readonly style="border-style:dashed;">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Format: WH-XXX digenerate saat disimpan.</span>
                         @endif
-                        @error('code')
-                        <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                            <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
-                            <span>{{ $message }}</span>
-                        </div>
-                        @enderror
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nama Gudang <span style="color:var(--danger);">*</span></label>
@@ -47,17 +42,14 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Alamat Lengkap -->
-                <div class="form-group">
-                    <label class="form-label">Alamat Lengkap <span style="color:var(--danger);">*</span></label>
-                    <textarea name="address" class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" rows="2" required
-                        placeholder="Masukkan alamat lengkap lokasi gudang...">{{ old('address', $warehouse->address ?? '') }}</textarea>
-                    @error('address')
-                    <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                        <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
-                        <span>{{ $message }}</span>
-                    </div>
-                    @enderror
+                <!-- Row 2: Alamat Lengkap Bertingkat (Cascading) -->
+                <div class="mb-5">
+                    <x-address-cascading 
+                        name="address" 
+                        :value="$warehouse->address ?? ''" 
+                        label="Alamat Lengkap Gudang" 
+                        :required="true"
+                    />
                 </div>
 
                 <div class="form-group">

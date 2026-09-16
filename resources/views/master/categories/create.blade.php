@@ -22,17 +22,14 @@
                 <!-- Row 1: 2 Kolom (Kode & Nama Kategori) -->
                 <div class="form-row form-row-2">
                     <div class="form-group">
-                        <label class="form-label">Kode Kategori <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="code" value="{{ old('code', $category->code ?? '') }}" class="form-control {{ $errors->has('code') ? 'is-invalid' : '' }}" required placeholder="Contoh: KAT-001, ELK, FNB" style="text-transform:uppercase;">
-                        @if(!$errors->has('code'))
-                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode unik pengenal kategori.</span>
+                        <label class="form-label">Kode Kategori <span class="text-xs text-slate-400 font-normal lowercase">(otomatis sistem)</span></label>
+                        @if(isset($category))
+                            <input type="text" name="code" value="{{ $category->code }}" class="form-control bg-slate-100 font-bold text-[#0e1b35]" readonly title="Kode kategori tetap">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode pengenal permanen kategori.</span>
+                        @else
+                            <input type="text" value="[Dibuat Otomatis oleh Sistem]" class="form-control bg-slate-100 font-semibold text-slate-500 cursor-not-allowed" readonly style="border-style:dashed;">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Format: CAT-XXX digenerate saat disimpan.</span>
                         @endif
-                        @error('code')
-                        <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                            <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
-                            <span>{{ $message }}</span>
-                        </div>
-                        @enderror
                     </div>
 
                     <div class="form-group">

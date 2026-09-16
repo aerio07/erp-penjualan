@@ -20,17 +20,14 @@
                 <!-- Row 1: 4 Kolom (SKU, Nama Produk, Kategori, Satuan) -->
                 <div class="form-row form-row-4">
                     <div class="form-group">
-                        <label class="form-label">Kode SKU <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="sku" value="{{ old('sku', $product->sku ?? '') }}" class="form-control {{ $errors->has('sku') ? 'is-invalid' : '' }}" required placeholder="Contoh: PRD-001, ELK-102">
-                        @if(!$errors->has('sku'))
-                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode pengenal unik.</span>
+                        <label class="form-label">Kode SKU <span class="text-xs text-slate-400 font-normal lowercase">(otomatis sistem)</span></label>
+                        @if(isset($product))
+                            <input type="text" name="sku" value="{{ $product->sku }}" class="form-control bg-slate-100 font-bold text-[#0e1b35]" readonly title="Kode SKU produk tetap">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode pengenal permanen produk.</span>
+                        @else
+                            <input type="text" value="[Dibuat Otomatis oleh Sistem]" class="form-control bg-slate-100 font-semibold text-slate-500 cursor-not-allowed" readonly style="border-style:dashed;">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Format: PRD-XXXX digenerate saat disimpan.</span>
                         @endif
-                        @error('sku')
-                        <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                            <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
-                            <span>{{ $message }}</span>
-                        </div>
-                        @enderror
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nama Produk <span style="color:var(--danger);">*</span></label>

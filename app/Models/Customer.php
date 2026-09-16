@@ -11,7 +11,7 @@ class Customer extends Model
 {
     protected $fillable = [
         'code', 'name', 'contact_person', 'phone', 'email',
-        'address', 'credit_limit', 'payment_term', 'sales_person_id', 'tax_type', 'npwp', 'nik', 'is_active', 'notes',
+        'address', 'credit_limit', 'payment_term', 'sales_person_id', 'tax_type', 'npwp', 'nik', 'tax_document', 'is_active', 'notes',
     ];
 
     protected $casts = [

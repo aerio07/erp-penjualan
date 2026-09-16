@@ -9,16 +9,18 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
+use Illuminate\Support\Facades\Storage;
 
 class SupplierController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function index(Request $request): View
     {
-        $query = Supplier::query();
+        $query = Supplier::withCount('purchaseOrders');
 
-        $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address', 'npwp', 'ktp_number', 'bank_name', 'bank_account_number', 'bank_account_holder']);
+        $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address', 'npwp', 'ktp_number']);
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'payment_term', 'created_at'], 'created_at', 'desc');
 
@@ -35,13 +37,17 @@ class SupplierController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $existingSup = $request->filled('code') 
-            ? Supplier::where('code', trim($request->code))->first() 
-            : null;
+        // Auto-generate system code if not provided
+        $code = $request->filled('code') 
+            ? strtoupper(trim($request->code)) 
+            : $this->generateMasterCode(Supplier::class, 'code', 'SUP', 4);
 
+        $existingSup = Supplier::where('code', $code)->first();
         $customCodeMsg = $existingSup 
-            ? "Kode supplier \"{$request->code}\" sudah digunakan oleh supplier \"{$existingSup->name}\"." 
+            ? "Kode supplier \"{$code}\" sudah digunakan oleh supplier \"{$existingSup->name}\"." 
             : 'Kode supplier ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+
+        $request->merge(['code' => $code]);
 
         $request->validate([
             'code'                => 'required|string|max:50|unique:suppliers,code',
@@ -52,6 +58,7 @@ class SupplierController extends Controller
             'payment_term'        => 'required|string|max:50',
             'npwp'                => 'nullable|string|max:50',
             'ktp_number'          => 'nullable|string|max:50',
+            'tax_document'        => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:3072',
             'address'             => 'required|string',
             'bank_name'           => 'required|string|max:100',
             'bank_account_number' => 'required|string|max:50',
@@ -66,11 +73,19 @@ class SupplierController extends Controller
             'bank_name.required'           => 'Nama bank tujuan transfer wajib dipilih/diisi.',
             'bank_account_number.required' => 'Nomor rekening bank supplier wajib diisi.',
             'bank_account_holder.required' => 'Nama pemilik rekening bank wajib diisi.',
+            'tax_document.file'            => 'Dokumen NPWP / NIK harus berupa file yang valid.',
+            'tax_document.mimes'           => 'Format dokumen yang didukung: PDF, JPG, JPEG, PNG, atau WEBP.',
+            'tax_document.max'             => 'Ukuran dokumen maksimal 3MB.',
             'email.email'                  => 'Format email tidak valid.',
         ]);
 
+        $taxDocumentPath = null;
+        if ($request->hasFile('tax_document')) {
+            $taxDocumentPath = $request->file('tax_document')->store('suppliers/documents', 'public');
+        }
+
         Supplier::create([
-            'code'                => strtoupper(trim($request->code)),
+            'code'                => $code,
             'name'                => trim($request->name),
             'contact_person'      => $request->contact_person ? trim($request->contact_person) : null,
             'phone'               => trim($request->phone),
@@ -78,6 +93,7 @@ class SupplierController extends Controller
             'payment_term'        => $request->payment_term,
             'npwp'                => $request->npwp ? trim($request->npwp) : null,
             'ktp_number'          => $request->ktp_number ? trim($request->ktp_number) : null,
+            'tax_document'        => $taxDocumentPath,
             'address'             => trim($request->address),
             'bank_name'           => trim($request->bank_name),
             'bank_account_number' => trim($request->bank_account_number),
@@ -103,16 +119,7 @@ class SupplierController extends Controller
 
     public function update(Request $request, Supplier $supplier): RedirectResponse
     {
-        $existingSup = $request->filled('code') 
-            ? Supplier::where('code', trim($request->code))->where('id', '!=', $supplier->id)->first() 
-            : null;
-
-        $customCodeMsg = $existingSup 
-            ? "Kode supplier \"{$request->code}\" sudah digunakan oleh supplier \"{$existingSup->name}\"." 
-            : 'Kode supplier ":input" sudah terdaftar. Gunakan kode yang berbeda.';
-
         $request->validate([
-            'code'                => 'required|string|max:50|unique:suppliers,code,' . $supplier->id,
             'name'                => 'required|string|max:255',
             'contact_person'      => 'nullable|string|max:255',
             'phone'               => 'required|string|max:50',
@@ -120,13 +127,12 @@ class SupplierController extends Controller
             'payment_term'        => 'required|string|max:50',
             'npwp'                => 'nullable|string|max:50',
             'ktp_number'          => 'nullable|string|max:50',
+            'tax_document'        => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:3072',
             'address'             => 'required|string',
             'bank_name'           => 'required|string|max:100',
             'bank_account_number' => 'required|string|max:50',
             'bank_account_holder' => 'required|string|max:255',
         ], [
-            'code.required'                => 'Kode supplier wajib diisi.',
-            'code.unique'                  => $customCodeMsg,
             'name.required'                => 'Nama supplier wajib diisi.',
             'phone.required'               => 'Nomor telepon supplier wajib diisi.',
             'payment_term.required'        => 'Payment term (syarat pembayaran) wajib dipilih.',
@@ -134,11 +140,21 @@ class SupplierController extends Controller
             'bank_name.required'           => 'Nama bank tujuan transfer wajib dipilih/diisi.',
             'bank_account_number.required' => 'Nomor rekening bank supplier wajib diisi.',
             'bank_account_holder.required' => 'Nama pemilik rekening bank wajib diisi.',
+            'tax_document.file'            => 'Dokumen NPWP / NIK harus berupa file yang valid.',
+            'tax_document.mimes'           => 'Format dokumen yang didukung: PDF, JPG, JPEG, PNG, atau WEBP.',
+            'tax_document.max'             => 'Ukuran dokumen maksimal 3MB.',
             'email.email'                  => 'Format email tidak valid.',
         ]);
 
+        $taxDocumentPath = $supplier->tax_document;
+        if ($request->hasFile('tax_document')) {
+            if ($supplier->tax_document && Storage::disk('public')->exists($supplier->tax_document)) {
+                Storage::disk('public')->delete($supplier->tax_document);
+            }
+            $taxDocumentPath = $request->file('tax_document')->store('suppliers/documents', 'public');
+        }
+
         $supplier->update([
-            'code'                => strtoupper(trim($request->code)),
             'name'                => trim($request->name),
             'contact_person'      => $request->contact_person ? trim($request->contact_person) : null,
             'phone'               => trim($request->phone),
@@ -146,6 +162,7 @@ class SupplierController extends Controller
             'payment_term'        => $request->payment_term,
             'npwp'                => $request->npwp ? trim($request->npwp) : null,
             'ktp_number'          => $request->ktp_number ? trim($request->ktp_number) : null,
+            'tax_document'        => $taxDocumentPath,
             'address'             => trim($request->address),
             'bank_name'           => trim($request->bank_name),
             'bank_account_number' => trim($request->bank_account_number),

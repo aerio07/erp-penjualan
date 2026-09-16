@@ -9,10 +9,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class ProductCategoryController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function index(Request $request): View
     {
@@ -35,13 +36,11 @@ class ProductCategoryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $existingCat = $request->filled('code') 
-            ? ProductCategory::where('code', trim($request->code))->first() 
-            : null;
+        $code = $request->filled('code') 
+            ? strtoupper(trim($request->code)) 
+            : $this->generateMasterCode(ProductCategory::class, 'code', 'CAT-', 3);
 
-        $customCodeMsg = $existingCat 
-            ? "Kode kategori \"{$request->code}\" sudah digunakan oleh kategori \"{$existingCat->name}\"." 
-            : 'Kode kategori ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+        $request->merge(['code' => $code]);
 
         $request->validate([
             'code'        => 'required|string|max:50|unique:product_categories,code',
@@ -49,19 +48,19 @@ class ProductCategoryController extends Controller
             'description' => 'nullable|string',
         ], [
             'code.required' => 'Kode kategori wajib diisi.',
-            'code.unique'   => $customCodeMsg,
+            'code.unique'   => 'Kode kategori ":input" sudah terdaftar. Gunakan kode yang berbeda.',
             'name.required' => 'Nama kategori wajib diisi.',
         ]);
 
         ProductCategory::create([
-            'code'        => strtoupper(trim($request->code)),
+            'code'        => $code,
             'name'        => trim($request->name),
             'description' => $request->description,
             'is_active'   => $request->boolean('is_active', true),
         ]);
 
         return redirect()->route('master.categories.index')
-            ->with('success', "Kategori produk \"{$request->name}\" berhasil ditambahkan.");
+            ->with('success', "Kategori produk \"{$request->name}\" ({$code}) berhasil ditambahkan.");
     }
 
     public function show(ProductCategory $category): View
@@ -83,28 +82,16 @@ class ProductCategoryController extends Controller
 
     public function update(Request $request, ProductCategory $category): RedirectResponse
     {
-        $existingCat = $request->filled('code') 
-            ? ProductCategory::where('code', trim($request->code))->where('id', '!=', $category->id)->first() 
-            : null;
-
-        $customCodeMsg = $existingCat 
-            ? "Kode kategori \"{$request->code}\" sudah digunakan oleh kategori \"{$existingCat->name}\"." 
-            : 'Kode kategori ":input" sudah terdaftar. Gunakan kode yang berbeda.';
-
         $request->validate([
-            'code'        => 'required|string|max:50|unique:product_categories,code,' . $category->id,
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
         ], [
-            'code.required' => 'Kode kategori wajib diisi.',
-            'code.unique'   => $customCodeMsg,
             'name.required' => 'Nama kategori wajib diisi.',
         ]);
 
         $newName = trim($request->name);
 
         $category->update([
-            'code'        => strtoupper(trim($request->code)),
             'name'        => $newName,
             'description' => $request->description,
             'is_active'   => $request->boolean('is_active'),
@@ -114,7 +101,7 @@ class ProductCategoryController extends Controller
         Product::where('category_id', $category->id)->update(['category' => $newName]);
 
         return redirect()->route('master.categories.index')
-            ->with('success', "Kategori produk \"{$newName}\" berhasil diperbarui.");
+            ->with('success', "Kategori produk \"{$newName}\" ({$category->code}) berhasil diperbarui.");
     }
 
     public function toggleStatus(ProductCategory $category): RedirectResponse

@@ -13,25 +13,21 @@
     <div class="card w-full">
         <div class="card-header"><h3>Informasi Customer</h3></div>
         <div class="card-body">
-            <form method="POST" action="{{ isset($customer) ? route('master.customers.update', $customer) : route('master.customers.store') }}">
+            <form method="POST" action="{{ isset($customer) ? route('master.customers.update', $customer) : route('master.customers.store') }}" enctype="multipart/form-data">
                 @csrf
                 @if(isset($customer)) @method('PUT') @endif
 
                 <!-- Row 1: 4 Kolom (Kode, Nama, CP, Payment Term) -->
                 <div class="form-row form-row-4">
                     <div class="form-group">
-                        <label class="form-label">Kode Customer <span style="color:var(--danger);">*</span></label>
-                        <input type="text" name="code" value="{{ old('code', $customer->code ?? '') }}"
-                            class="form-control {{ $errors->has('code') ? 'is-invalid' : '' }}" required placeholder="Contoh: CUST-001, CUST-JKT" style="text-transform:uppercase;">
-                        @if(!$errors->has('code'))
-                        <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode unik pengenal customer.</span>
+                        <label class="form-label">Kode Customer <span class="text-xs text-slate-400 font-normal lowercase">(otomatis sistem)</span></label>
+                        @if(isset($customer))
+                            <input type="text" name="code" value="{{ $customer->code }}" class="form-control bg-slate-100 font-bold text-[#0e1b35]" readonly title="Kode customer tetap">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Kode pengenal permanen customer.</span>
+                        @else
+                            <input type="text" value="[Dibuat Otomatis oleh Sistem]" class="form-control bg-slate-100 font-semibold text-slate-500 cursor-not-allowed" readonly style="border-style:dashed;">
+                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">Format: CUST-XXXX digenerate saat disimpan.</span>
                         @endif
-                        @error('code')
-                        <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                            <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
-                            <span>{{ $message }}</span>
-                        </div>
-                        @enderror
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nama Customer <span style="color:var(--danger);">*</span></label>
@@ -129,7 +125,7 @@
                     </div>
                     <p class="text-xs text-on-surface-variant mb-4">Klasifikasi Pengusaha Kena Pajak (PKP), NPWP perusahaan, atau NIK untuk customer non-pajak/perorangan.</p>
 
-                    <div class="form-row form-row-3 mb-0">
+                    <div class="form-row form-row-3 mb-3">
                         <!-- Tipe Customer (PKP / Non-PKP) -->
                         <div class="form-group mb-0">
                             <label class="form-label">Tipe Customer <span style="color:var(--danger);">*</span></label>
@@ -196,18 +192,26 @@
                             @enderror
                         </div>
                     </div>
+
+                    <!-- Upload Dokumen NPWP / NIK -->
+                    <div class="pt-2 border-t border-slate-200/80">
+                        <x-file-upload 
+                            name="tax_document" 
+                            label="Dokumen NPWP / NIK (KTP)" 
+                            :value="$customer->tax_document ?? null"
+                            helper-text="Unggah salinan dokumen NPWP (Badan/PKP) atau KTP/NIK (Perorangan) format PDF/JPG/PNG max 3MB"
+                        />
+                    </div>
                 </div>
 
-                <!-- Row 3: Alamat Lengkap (Full width) -->
-                <div class="form-group">
-                    <label class="form-label">Alamat Lengkap <span style="color:var(--danger);">*</span></label>
-                    <textarea name="address" class="form-control {{ $errors->has('address') ? 'is-invalid' : '' }}" rows="2" required placeholder="Masukkan alamat lengkap customer / toko...">{{ old('address', $customer->address ?? '') }}</textarea>
-                    @error('address')
-                    <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                        <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
-                        <span>{{ $message }}</span>
-                    </div>
-                    @enderror
+                <!-- Row 3: Alamat Lengkap Bertingkat (Cascading) -->
+                <div class="mb-5">
+                    <x-address-cascading 
+                        name="address" 
+                        :value="$customer->address ?? ''" 
+                        label="Alamat Lengkap Customer" 
+                        :required="true"
+                    />
                 </div>
 
                 <div class="form-group">

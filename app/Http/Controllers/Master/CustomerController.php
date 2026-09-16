@@ -10,16 +10,18 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function index(Request $request): View
     {
         $query = Customer::with('salesPerson');
 
-        $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address']);
+        $query = $this->applySearch($query, $request, ['code', 'name', 'contact_person', 'phone', 'email', 'address', 'nik', 'npwp']);
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applyFilter($query, $request, 'tax_type');
         $query = $this->applyFilter($query, $request, 'sales_person_id');
@@ -41,13 +43,17 @@ class CustomerController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $existingCust = $request->filled('code') 
-            ? Customer::where('code', trim($request->code))->first() 
-            : null;
+        // Auto-generate system code if not provided
+        $code = $request->filled('code') 
+            ? strtoupper(trim($request->code)) 
+            : $this->generateMasterCode(Customer::class, 'code', 'CUST', 4);
 
+        $existingCust = Customer::where('code', $code)->first();
         $customCodeMsg = $existingCust 
-            ? "Kode customer \"{$request->code}\" sudah digunakan oleh customer \"{$existingCust->name}\"." 
+            ? "Kode customer \"{$code}\" sudah digunakan oleh customer \"{$existingCust->name}\"." 
             : 'Kode customer ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+
+        $request->merge(['code' => $code]);
 
         $request->validate([
             'code'            => 'required|string|max:50|unique:customers,code',
@@ -61,6 +67,7 @@ class CustomerController extends Controller
             'tax_type'        => 'required|in:pkp,non_pkp',
             'npwp'            => 'required_if:tax_type,pkp|nullable|string|max:50',
             'nik'             => 'required_if:tax_type,non_pkp|nullable|string|max:50',
+            'tax_document'    => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:3072',
             'address'         => 'required|string',
         ], [
             'code.required'           => 'Kode customer wajib diisi.',
@@ -75,13 +82,21 @@ class CustomerController extends Controller
             'tax_type.required'       => 'Tipe customer (PKP / Non-PKP) wajib dipilih.',
             'tax_type.in'             => 'Pilihan tipe customer tidak valid.',
             'npwp.required_if'        => 'Nomor NPWP wajib diisi untuk customer bertipe PKP.',
-            'nik.required_if'         => 'Nomor NIK (KTP) wajib diisi untuk customer Non-PKP (non-pajak).',
+            'nik.required_if'         => 'Nomor NIK (KTP) wajib diisi untuk customer Non-PKP (perorangan).',
+            'tax_document.file'       => 'Dokumen NPWP / NIK harus berupa file yang valid.',
+            'tax_document.mimes'      => 'Format dokumen yang didukung: PDF, JPG, JPEG, PNG, atau WEBP.',
+            'tax_document.max'        => 'Ukuran dokumen maksimal 3MB.',
             'address.required'        => 'Alamat customer wajib diisi.',
             'email.email'             => 'Format email tidak valid.',
         ]);
 
+        $taxDocumentPath = null;
+        if ($request->hasFile('tax_document')) {
+            $taxDocumentPath = $request->file('tax_document')->store('customers/documents', 'public');
+        }
+
         Customer::create([
-            'code'            => strtoupper(trim($request->code)),
+            'code'            => $code,
             'name'            => trim($request->name),
             'contact_person'  => $request->contact_person ? trim($request->contact_person) : null,
             'phone'           => trim($request->phone),
@@ -92,6 +107,7 @@ class CustomerController extends Controller
             'tax_type'        => $request->tax_type,
             'npwp'            => $request->npwp ? trim($request->npwp) : null,
             'nik'             => $request->nik ? trim($request->nik) : null,
+            'tax_document'    => $taxDocumentPath,
             'address'         => trim($request->address),
             'is_active'       => $request->boolean('is_active', true),
         ]);
@@ -122,16 +138,10 @@ class CustomerController extends Controller
 
     public function update(Request $request, Customer $customer): RedirectResponse
     {
-        $existingCust = $request->filled('code') 
-            ? Customer::where('code', trim($request->code))->where('id', '!=', $customer->id)->first() 
-            : null;
-
-        $customCodeMsg = $existingCust 
-            ? "Kode customer \"{$request->code}\" sudah digunakan oleh customer \"{$existingCust->name}\"." 
-            : 'Kode customer ":input" sudah terdaftar. Gunakan kode yang berbeda.';
+        // Keep existing customer code
+        $code = $customer->code;
 
         $request->validate([
-            'code'            => 'required|string|max:50|unique:customers,code,' . $customer->id,
             'name'            => 'required|string|max:255',
             'contact_person'  => 'nullable|string|max:255',
             'phone'           => 'required|string|max:50',
@@ -142,10 +152,9 @@ class CustomerController extends Controller
             'tax_type'        => 'required|in:pkp,non_pkp',
             'npwp'            => 'required_if:tax_type,pkp|nullable|string|max:50',
             'nik'             => 'required_if:tax_type,non_pkp|nullable|string|max:50',
+            'tax_document'    => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp|max:3072',
             'address'         => 'required|string',
         ], [
-            'code.required'           => 'Kode customer wajib diisi.',
-            'code.unique'             => $customCodeMsg,
             'name.required'           => 'Nama customer wajib diisi.',
             'phone.required'          => 'Nomor telepon customer wajib diisi.',
             'payment_term.required'   => 'Payment term (syarat pembayaran) wajib dipilih.',
@@ -156,13 +165,23 @@ class CustomerController extends Controller
             'tax_type.required'       => 'Tipe customer (PKP / Non-PKP) wajib dipilih.',
             'tax_type.in'             => 'Pilihan tipe customer tidak valid.',
             'npwp.required_if'        => 'Nomor NPWP wajib diisi untuk customer bertipe PKP.',
-            'nik.required_if'         => 'Nomor NIK (KTP) wajib diisi untuk customer Non-PKP (non-pajak).',
+            'nik.required_if'         => 'Nomor NIK (KTP) wajib diisi untuk customer Non-PKP (perorangan).',
+            'tax_document.file'       => 'Dokumen NPWP / NIK harus berupa file yang valid.',
+            'tax_document.mimes'      => 'Format dokumen yang didukung: PDF, JPG, JPEG, PNG, atau WEBP.',
+            'tax_document.max'        => 'Ukuran dokumen maksimal 3MB.',
             'address.required'        => 'Alamat customer wajib diisi.',
             'email.email'             => 'Format email tidak valid.',
         ]);
 
+        $taxDocumentPath = $customer->tax_document;
+        if ($request->hasFile('tax_document')) {
+            if ($customer->tax_document && Storage::disk('public')->exists($customer->tax_document)) {
+                Storage::disk('public')->delete($customer->tax_document);
+            }
+            $taxDocumentPath = $request->file('tax_document')->store('customers/documents', 'public');
+        }
+
         $customer->update([
-            'code'            => strtoupper(trim($request->code)),
             'name'            => trim($request->name),
             'contact_person'  => $request->contact_person ? trim($request->contact_person) : null,
             'phone'           => trim($request->phone),
@@ -173,6 +192,7 @@ class CustomerController extends Controller
             'tax_type'        => $request->tax_type,
             'npwp'            => $request->npwp ? trim($request->npwp) : null,
             'nik'             => $request->nik ? trim($request->nik) : null,
+            'tax_document'    => $taxDocumentPath,
             'address'         => trim($request->address),
             'is_active'       => $request->boolean('is_active'),
         ]);

@@ -12,10 +12,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\GeneratesDocumentNumber;
 
 class ProductController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, GeneratesDocumentNumber;
 
     public function index(Request $request): View
     {
@@ -50,10 +51,16 @@ class ProductController extends Controller
     {
         $this->sanitizeNumericInputs($request);
 
-        $existingProduct = $request->filled('sku') ? Product::where('sku', trim($request->sku))->first() : null;
+        $sku = $request->filled('sku') 
+            ? strtoupper(trim($request->sku)) 
+            : $this->generateMasterCode(Product::class, 'sku', 'PRD', 4);
+
+        $existingProduct = Product::where('sku', $sku)->first();
         $customSkuMessage = $existingProduct 
-            ? "Kode SKU \"{$request->sku}\" sudah digunakan oleh produk \"{$existingProduct->name}\". Setiap produk wajib memiliki kode SKU yang unik."
+            ? "Kode SKU \"{$sku}\" sudah digunakan oleh produk \"{$existingProduct->name}\". Setiap produk wajib memiliki kode SKU yang unik."
             : 'Kode SKU ":input" sudah terdaftar pada sistem. Gunakan kode SKU yang berbeda.';
+
+        $request->merge(['sku' => $sku]);
 
         $request->validate([
             'sku'            => 'required|string|max:50|unique:products,sku',
@@ -198,9 +205,9 @@ class ProductController extends Controller
     {
         $this->sanitizeNumericInputs($request);
 
-        $existingProduct = $request->filled('sku') 
-            ? Product::where('sku', trim($request->sku))->where('id', '!=', $product->id)->first() 
-            : null;
+        $request->merge(['sku' => $request->filled('sku') ? trim($request->sku) : $product->sku]);
+
+        $existingProduct = Product::where('sku', $request->sku)->where('id', '!=', $product->id)->first();
             
         $customSkuMessage = $existingProduct 
             ? "Kode SKU \"{$request->sku}\" sudah digunakan oleh produk \"{$existingProduct->name}\". Setiap produk wajib memiliki kode SKU yang unik."

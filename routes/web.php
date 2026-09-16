@@ -224,6 +224,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // =========================================================
+    // WILAYAH / REGIONS CASCADING DROPDOWN
+    // =========================================================
+    Route::prefix('regions')->name('regions.')->group(function () {
+        Route::get('provinces', [\App\Http\Controllers\RegionController::class, 'provinces'])->name('provinces');
+        Route::get('provinces/{provinceId}/regencies', [\App\Http\Controllers\RegionController::class, 'regencies'])->name('regencies');
+        Route::get('regencies/{regencyId}/districts', [\App\Http\Controllers\RegionController::class, 'districts'])->name('districts');
+        Route::get('districts/{districtId}/villages', [\App\Http\Controllers\RegionController::class, 'villages'])->name('villages');
+    });
+
+    // =========================================================
     // PDF EXPORT
     // =========================================================
     Route::middleware('role:admin,purchasing,sales,finance,gudang')->prefix('pdf')->name('pdf.')->group(function () {

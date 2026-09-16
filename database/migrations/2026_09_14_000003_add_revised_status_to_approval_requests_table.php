@@ -7,11 +7,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE approval_requests MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'revised') DEFAULT 'pending'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE approval_requests MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'revised') DEFAULT 'pending'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE approval_requests MODIFY COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE approval_requests MODIFY COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'");
+        }
     }
 };

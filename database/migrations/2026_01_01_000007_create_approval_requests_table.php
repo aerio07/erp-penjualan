@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('approvable_id');
             $table->foreignId('requester_id')->constrained('users')->restrictOnDelete();
             $table->foreignId('approver_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'revised'])->default('pending');
             $table->decimal('amount', 15, 2)->nullable()->comment('nilai transaksi untuk threshold');
             $table->text('notes')->nullable()->comment('catatan dari requester');
             $table->text('rejection_reason')->nullable();
