@@ -13,6 +13,7 @@ class PurchaseOrder extends Model
         'po_number', 'supplier_id', 'purchase_request_id', 'warehouse_id', 'user_id', 'status',
         'order_date', 'expected_date', 'discount_amount',
         'tax_rate', 'tax_amount', 'total_amount', 'notes', 'ship_to',
+        'cancel_reason',
     ];
 
     protected $casts = [

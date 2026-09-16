@@ -12,6 +12,7 @@
     {{-- Hidden forms for workflow actions --}}
     <form id="form-cancel-po" method="POST" action="{{ route('purchase.orders.cancel', $order) }}" style="display:none;">
         @csrf @method('PATCH')
+        <input type="hidden" name="cancel_reason" id="po-cancel-reason" value="">
     </form>
     <form id="form-confirm-po" method="POST" action="{{ route('purchase.orders.confirm', $order) }}" style="display:none;">
         @csrf @method('PATCH')
@@ -39,15 +40,7 @@
         <x-slot:actions>
             {{-- Workflow buttons (left) --}}
             @if($order->status === 'draft')
-            <button type="button" class="btn btn-danger"
-                data-confirm-swal="form-cancel-po"
-                data-swal-title="Batalkan Purchase Order"
-                data-swal-html="Yakin ingin membatalkan Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Status PO akan diubah menjadi Cancelled.</span>"
-                data-swal-icon="warning"
-                data-swal-btn-text="Ya, Batalkan PO"
-                data-swal-btn-icon="fa-solid fa-ban"
-                data-swal-btn-class="btn btn-danger"
-            >
+            <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
                 <i class="fa-solid fa-ban"></i> Batalkan PO
             </button>
             <button type="button" class="btn btn-primary"
@@ -77,15 +70,7 @@
                 </button>
                 @else
                 {{-- Non-admin: hanya bisa batalkan --}}
-                <button type="button" class="btn btn-danger"
-                    data-confirm-swal="form-cancel-po"
-                    data-swal-title="Batalkan Purchase Order"
-                    data-swal-html="Yakin ingin membatalkan Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style='font-size:12.5px; color:#64748b;'>Permintaan persetujuan yang sedang berjalan akan dibatalkan.</span>"
-                    data-swal-icon="warning"
-                    data-swal-btn-text="Ya, Batalkan PO"
-                    data-swal-btn-icon="fa-solid fa-ban"
-                    data-swal-btn-class="btn btn-danger"
-                >
+                <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
                     <i class="fa-solid fa-ban"></i> Batalkan PO
                 </button>
                 @endif
@@ -139,25 +124,36 @@
     </div>
     @endif
 
-    {{-- Banner Status: Ditolak (Cancelled dengan riwayat Penolakan) --}}
-    @if($order->status === 'cancelled' && $latestApproval && $latestApproval->status === 'rejected')
+    {{-- Banner Status: Dibatalkan (Cancelled) --}}
+    @if($order->status === 'cancelled')
+    @php
+        $reasonText = $order->cancel_reason ?: ($latestApproval->rejection_reason ?? null);
+        if (!$reasonText && $order->notes && preg_match('/\[Alasan (?:Pembatalan|Penolakan)\]:\s*(.+)/', $order->notes, $matches)) {
+            $reasonText = trim($matches[1]);
+        }
+        $isRejectedByAdmin = ($latestApproval && $latestApproval->status === 'rejected');
+    @endphp
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fffbfb; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
-                <i class="fa-solid fa-circle-xmark"></i>
+                <i class="fa-solid fa-ban"></i>
             </div>
             <div style="flex:1;">
                 <div style="font-weight:700; color:#991b1b; font-size:15px;">
-                    Purchase Order Ditolak (Rejected) oleh {{ $latestApproval->approver->name ?? 'Admin' }}
+                    @if($isRejectedByAdmin)
+                        Purchase Order Ditolak (Rejected) oleh {{ $latestApproval->approver->name ?? 'Admin' }}
+                    @else
+                        Purchase Order Dibatalkan (Cancelled)
+                    @endif
                 </div>
-                @if($latestApproval->rejection_reason)
+                @if($reasonText)
                 <div style="color:#7f1d1d; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fef2f2; border:1px dashed #fca5a5; border-radius:8px;">
                     <i class="fa-solid fa-comment-slash" style="margin-right:6px; color:#ef4444;"></i>
-                    <strong>Alasan Penolakan:</strong> {{ $latestApproval->rejection_reason }}
+                    <strong>Alasan:</strong> {{ $reasonText }}
                 </div>
                 @endif
                 <div style="color:#991b1b; font-size:12.5px; margin-top:8px;">
-                    <i class="fa-solid fa-ban" style="margin-right:4px;"></i>
+                    <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
                     Dokumen ini telah dibatalkan secara permanen dan tidak dapat diproses lagi.
                 </div>
             </div>
@@ -444,6 +440,42 @@ function confirmRevisePO() {
     });
 }
 
+function confirmCancelPO() {
+    Swal.fire({
+        title: 'Batalkan Purchase Order',
+        html: `Apakah Anda yakin ingin membatalkan Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status PO akan diubah menjadi <strong>Dibatalkan (Cancelled)</strong>.</span>`,
+        icon: 'warning',
+        iconColor: '#dc2626',
+        input: 'textarea',
+        inputLabel: 'Alasan Pembatalan (Wajib Diisi)',
+        inputPlaceholder: 'Tuliskan alasan mengapa Purchase Order ini dibatalkan...',
+        inputAttributes: { 'aria-label': 'Alasan Pembatalan' },
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Batalkan PO',
+        cancelButtonText: 'Kembali',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false,
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'Alasan pembatalan Purchase Order wajib diisi!';
+            }
+            if (value.trim().length < 3) {
+                return 'Alasan pembatalan minimal 3 karakter!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('po-cancel-reason').value = result.value.trim();
+            document.getElementById('form-cancel-po').submit();
+        }
+    });
+}
+
 function confirmRejectPO() {
     Swal.fire({
         title: 'Tolak Purchase Order',
@@ -451,7 +483,7 @@ function confirmRejectPO() {
         icon: 'error',
         iconColor: '#dc2626',
         input: 'textarea',
-        inputLabel: 'Alasan Penolakan (Opsional)',
+        inputLabel: 'Alasan Penolakan (Wajib Diisi)',
         inputPlaceholder: 'Tuliskan alasan penolakan dokumen...',
         inputAttributes: { 'aria-label': 'Alasan Penolakan' },
         showCancelButton: true,
@@ -463,10 +495,18 @@ function confirmRejectPO() {
             confirmButton: 'btn btn-danger',
             cancelButton: 'btn btn-secondary'
         },
-        buttonsStyling: false
+        buttonsStyling: false,
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'Alasan penolakan Purchase Order wajib diisi!';
+            }
+            if (value.trim().length < 3) {
+                return 'Alasan penolakan minimal 3 karakter!';
+            }
+        }
     }).then((result) => {
         if (result.isConfirmed) {
-            document.getElementById('po-rejection-reason').value = (result.value || '').trim();
+            document.getElementById('po-rejection-reason').value = result.value.trim();
             document.getElementById('form-reject-po').submit();
         }
     });

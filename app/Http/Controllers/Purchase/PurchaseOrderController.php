@@ -380,12 +380,18 @@ class PurchaseOrderController extends Controller
         abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
 
         $request->validate([
-            'rejection_reason' => 'nullable|string',
+            'rejection_reason' => 'required|string|min:3|max:500',
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan Purchase Order wajib diisi.',
+            'rejection_reason.min'      => 'Alasan penolakan minimal 3 karakter.',
+            'rejection_reason.max'      => 'Alasan penolakan maksimal 500 karakter.',
         ]);
+
+        $reason = trim((string) $request->rejection_reason);
 
         $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
         if ($approval) {
-            $this->approvalService->reject($approval, $request->rejection_reason);
+            $this->approvalService->reject($approval, $reason);
         }
 
         // Kembalikan procurement demands ke pending jika ada
@@ -394,21 +400,52 @@ class PurchaseOrderController extends Controller
             'status'            => 'pending',
         ]);
 
-        $purchaseOrder->update(['status' => 'cancelled']);
+        // Kembalikan kuantitas Purchase Request jika PO berasal dari PR
+        if (!empty($purchaseOrder->purchase_request_id)) {
+            $pr = \App\Models\PurchaseRequest::with('items')->find($purchaseOrder->purchase_request_id);
+            if ($pr) {
+                foreach ($purchaseOrder->items as $poItem) {
+                    $prItem = $pr->items->firstWhere('product_id', $poItem->product_id);
+                    if ($prItem) {
+                        $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
+                    }
+                }
+                $pr->update(['status' => 'approved']);
+            }
+        }
+
+        $updateData = ['status' => 'cancelled'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
+            $updateData['cancel_reason'] = $reason;
+        } else {
+            $updateData['notes'] = ($purchaseOrder->notes ? $purchaseOrder->notes . "\n" : '') . "[Alasan Penolakan]: " . $reason;
+        }
+
+        $purchaseOrder->update($updateData);
 
         return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil ditolak (Rejected) dan dibatalkan.");
     }
 
 
-    public function cancel(PurchaseOrder $purchaseOrder): RedirectResponse
+    public function cancel(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft', 'waiting_approval']), 403, 'Purchase Order yang sudah dikonfirmasi tidak dapat dibatalkan.');
 
+        $request->validate([
+            'cancel_reason' => 'required|string|min:3|max:500',
+        ], [
+            'cancel_reason.required' => 'Alasan pembatalan Purchase Order wajib diisi.',
+            'cancel_reason.min'      => 'Alasan pembatalan minimal 3 karakter.',
+            'cancel_reason.max'      => 'Alasan pembatalan maksimal 500 karakter.',
+        ]);
+
+        $reason = trim((string) $request->cancel_reason);
+
         // Batalkan approval request yang masih pending jika ada
         $order->approvalRequests()->where('status', 'pending')->update([
             'status'           => 'rejected',
-            'rejection_reason' => 'Purchase Order dibatalkan oleh pengguna.',
+            'rejection_reason' => $reason,
         ]);
 
         // Kembalikan procurement demands ke pending jika ada
@@ -417,9 +454,31 @@ class PurchaseOrderController extends Controller
             'status'            => 'pending',
         ]);
 
-        $order->update(['status' => 'cancelled']);
+        // Kembalikan kuantitas Purchase Request jika PO berasal dari PR
+        if (!empty($order->purchase_request_id)) {
+            $pr = \App\Models\PurchaseRequest::with('items')->find($order->purchase_request_id);
+            if ($pr) {
+                foreach ($order->items as $poItem) {
+                    $prItem = $pr->items->firstWhere('product_id', $poItem->product_id);
+                    if ($prItem) {
+                        $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
+                    }
+                }
+                // Kembalikan status PR ke approved agar siap dibuatkan PO baru
+                $pr->update(['status' => 'approved']);
+            }
+        }
 
-        return back()->with('success', 'Purchase Order berhasil dibatalkan.');
+        $updateData = ['status' => 'cancelled'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
+            $updateData['cancel_reason'] = $reason;
+        } else {
+            $updateData['notes'] = ($order->notes ? $order->notes . "\n" : '') . "[Alasan Pembatalan]: " . $reason;
+        }
+
+        $order->update($updateData);
+
+        return back()->with('success', 'Purchase Order #' . $order->po_number . ' berhasil dibatalkan.');
     }
 
     public function exportPdf(PurchaseOrder $purchaseOrder)
