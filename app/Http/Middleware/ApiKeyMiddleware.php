@@ -16,8 +16,9 @@ class ApiKeyMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Daftar key yang diperbolehkan
+        // Daftar key yang diperbolehkan (ambil dari config, env, dan default keys)
         $validKeys = array_filter(array_unique([
+            trim((string) config('services.mobile_api_key', '')),
             trim((string) env('MOBILE_API_KEY', '')),
             'traderp_mobile_key_2026',
             'traderp_mobile_secret_key_2026',

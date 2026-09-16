@@ -35,4 +35,6 @@ return [
         ],
     ],
 
+    'mobile_api_key' => env('MOBILE_API_KEY', 'traderp_mobile_key_2026'),
+
 ];
