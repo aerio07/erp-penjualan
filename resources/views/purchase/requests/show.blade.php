@@ -4,6 +4,18 @@
 
 @section('content')
 <div class="animate-in">
+    {{-- Hidden forms for workflow actions --}}
+    <form id="form-submit-pr" method="POST" action="{{ route('purchase.requests.submit', $purchase_request) }}" style="display:none;">
+        @csrf @method('PATCH')
+    </form>
+    <form id="form-approve-pr" method="POST" action="{{ route('purchase.requests.approve', $purchase_request) }}" style="display:none;">
+        @csrf @method('PATCH')
+    </form>
+    <form id="form-reject-pr" method="POST" action="{{ route('purchase.requests.reject', $purchase_request) }}" style="display:none;">
+        @csrf @method('PATCH')
+        <input type="hidden" name="rejection_reason" id="pr-rejection-reason" value="">
+    </form>
+
     <x-page-header 
         title="{{ $purchase_request->pr_number }}" 
         subtitle="Diajukan oleh {{ $purchase_request->user->name ?? 'User' }} (Divisi {{ $purchase_request->division ?? 'Umum' }}) pada {{ $purchase_request->request_date?->format('d/m/Y') }}"
@@ -15,29 +27,28 @@
                 <a href="{{ route('purchase.requests.edit', $purchase_request) }}" class="btn btn-secondary">
                     <i class="fa-solid fa-pen"></i> Edit PR
                 </a>
-                @endif
 
-                @if(in_array($purchase_request->status, ['draft', 'rejected']))
-                <form method="POST" action="{{ route('purchase.requests.submit', $purchase_request) }}" style="display:inline;">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit" class="btn btn-primary" onclick="return confirm('Ajukan Purchase Request {{ $purchase_request->pr_number }} ini untuk persetujuan (approval)?')">
-                        <i class="fa-solid fa-paper-plane"></i> Ajukan Approval
-                    </button>
-                </form>
+                <button type="button" class="btn btn-primary"
+                    data-confirm-swal="form-submit-pr"
+                    data-swal-title="Ajukan Purchase Request"
+                    data-swal-html="Ajukan Purchase Request <strong>{{ $purchase_request->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Status PR akan diubah menjadi Waiting Approval.</span>"
+                    data-swal-icon="question"
+                    data-swal-icon-color="#2563eb"
+                    data-swal-btn-text="Ya, Ajukan PR"
+                    data-swal-btn-icon="fa-solid fa-paper-plane"
+                    data-swal-btn-class="btn btn-primary"
+                >
+                    <i class="fa-solid fa-paper-plane"></i> Ajukan Approval
+                </button>
                 @endif
 
                 @if($purchase_request->status === 'waiting_approval' && (auth()->user()->role === 'admin' || auth()->user()->role === 'purchasing'))
-                <button type="button" class="btn btn-danger" onclick="document.getElementById('rejectModal').style.display = 'flex'">
-                    <i class="fa-solid fa-xmark"></i> Tolak PR
+                <button type="button" class="btn btn-danger" onclick="confirmRejectPR()">
+                    <i class="fa-solid fa-ban"></i> Tolak PR
                 </button>
-                <form method="POST" action="{{ route('purchase.requests.approve', $purchase_request) }}" style="display:inline;">
-                    @csrf
-                    @method('PATCH')
-                    <button type="submit" class="btn btn-success" onclick="return confirm('Setujui Purchase Request {{ $purchase_request->pr_number }} ini?')">
-                        <i class="fa-solid fa-check"></i> Setujui (Approve)
-                    </button>
-                </form>
+                <button type="button" class="btn btn-success" onclick="confirmApprovePR()">
+                    <i class="fa-solid fa-check"></i> Setujui PR (Approve)
+                </button>
                 @endif
 
                 @if($purchase_request->status === 'approved')
@@ -53,15 +64,27 @@
         </x-slot:actions>
     </x-page-header>
 
-    {{-- Alert Alasan Penolakan jika ada --}}
-    @if($purchase_request->status === 'rejected' && $purchase_request->rejection_reason)
-    <div class="alert alert-danger" style="margin-bottom:20px; display:flex; align-items:flex-start; gap:12px; padding:14px 18px; border-radius:8px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;">
-        <i class="fa-solid fa-circle-xmark" style="font-size:20px; margin-top:2px;"></i>
-        <div>
-            <strong>Purchase Request Ini Telah Ditolak</strong>
-            <div style="margin-top:2px;">Alasan: {{ $purchase_request->rejection_reason }}</div>
-            <div style="font-size:12px; color:#991b1b; margin-top:4px;">
-                Ditolak oleh: {{ $purchase_request->approver->name ?? 'Approver' }} pada {{ $purchase_request->approved_at?->format('d/m/Y H:i') }}
+    {{-- Banner Status: Ditolak (Rejected) --}}
+    @if($purchase_request->status === 'rejected')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fffbfb; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-ban"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#991b1b; font-size:15px;">
+                    Purchase Request Ditolak (Rejected)
+                </div>
+                @if($purchase_request->rejection_reason)
+                <div style="color:#7f1d1d; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fef2f2; border:1px dashed #fca5a5; border-radius:8px;">
+                    <i class="fa-solid fa-comment-slash" style="margin-right:6px; color:#ef4444;"></i>
+                    <strong>Alasan Penolakan:</strong> {{ $purchase_request->rejection_reason }}
+                </div>
+                @endif
+                <div style="color:#991b1b; font-size:12.5px; margin-top:8px;">
+                    <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
+                    Ditolak oleh: {{ $purchase_request->approver->name ?? 'Approver' }} pada {{ $purchase_request->approved_at?->format('d/m/Y H:i') }} | Dokumen ini ditolak oleh reviewer. Silakan perbaiki data melalui tombol <strong>Edit PR</strong> di atas lalu ajukan kembali.
+                </div>
             </div>
         </div>
     </div>
@@ -212,28 +235,67 @@
         </div>
     </div>
 </div>
-
-{{-- Modal Reject PR --}}
-<div id="rejectModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
-    <div class="card" style="width:100%; max-width:450px; background:var(--bg-card, #fff); box-shadow:0 10px 25px rgba(0,0,0,0.2);">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>Tolak Purchase Request</h3>
-            <button type="button" onclick="document.getElementById('rejectModal').style.display = 'none'" style="background:none; border:none; font-size:18px; cursor:pointer;">&times;</button>
-        </div>
-        <form method="POST" action="{{ route('purchase.requests.reject', $purchase_request) }}">
-            @csrf
-            @method('PATCH')
-            <div class="card-body">
-                <div class="form-group">
-                    <label class="form-label">Alasan Penolakan <span style="color:var(--danger);">*</span></label>
-                    <textarea name="rejection_reason" class="form-control" rows="3" required placeholder="Tuliskan alasan mengapa PR ini ditolak..."></textarea>
-                </div>
-            </div>
-            <div class="card-footer" style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px;">
-                <button type="button" class="btn btn-secondary" onclick="document.getElementById('rejectModal').style.display = 'none'">Batal</button>
-                <button type="submit" class="btn btn-danger">Tolak PR Ini</button>
-            </div>
-        </form>
-    </div>
-</div>
 @endsection
+
+@push('scripts')
+<script>
+function confirmApprovePR() {
+    Swal.fire({
+        title: 'Setujui Purchase Request',
+        html: `Apakah Anda yakin ingin menyetujui Purchase Request <strong>{{ $purchase_request->pr_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">PR yang telah disetujui dapat diproses untuk penerbitan Purchase Order (PO).</span>`,
+        icon: 'question',
+        iconColor: '#16a34a',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px;"></i> Ya, Setujui PR',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-success',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('form-approve-pr').submit();
+        }
+    });
+}
+
+function confirmRejectPR() {
+    Swal.fire({
+        title: 'Tolak Purchase Request',
+        html: `Apakah Anda yakin ingin menolak Purchase Request <strong>{{ $purchase_request->pr_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status PR akan diubah menjadi <strong>Ditolak (Rejected)</strong>.</span>`,
+        icon: 'error',
+        iconColor: '#dc2626',
+        input: 'textarea',
+        inputLabel: 'Alasan Penolakan (Wajib Diisi)',
+        inputPlaceholder: 'Tuliskan alasan mengapa Purchase Request ini ditolak...',
+        inputAttributes: { 'aria-label': 'Alasan Penolakan' },
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Tolak PR',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            popup: 'erp-swal-modal',
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false,
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return 'Alasan penolakan Purchase Request wajib diisi!';
+            }
+            if (value.trim().length < 3) {
+                return 'Alasan penolakan minimal 3 karakter!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('pr-rejection-reason').value = result.value.trim();
+            document.getElementById('form-reject-pr').submit();
+        }
+    });
+}
+</script>
+@endpush

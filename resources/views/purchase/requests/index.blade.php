@@ -84,19 +84,32 @@
                     <a href="{{ route('purchase.requests.edit', $pr) }}" class="btn btn-sm btn-secondary" title="Edit PR">
                         <i class="fa-solid fa-pen"></i>
                     </a>
-                    <form method="POST" action="{{ route('purchase.requests.submit', $pr) }}" style="display:inline;" onsubmit="return confirm('Ajukan Purchase Request {{ $pr->pr_number }} ini untuk persetujuan?')">
+                    <button type="button" class="btn btn-sm btn-primary" title="Ajukan Persetujuan"
+                        data-confirm-swal="submit-pr-{{ $pr->id }}"
+                        data-swal-title="Ajukan Purchase Request"
+                        data-swal-html="Ajukan Purchase Request <strong>{{ $pr->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Status PR akan diubah menjadi Waiting Approval.</span>"
+                        data-swal-icon="question"
+                        data-swal-icon-color="#2563eb"
+                        data-swal-btn-text="Ya, Ajukan"
+                        data-swal-btn-icon="fa-solid fa-paper-plane"
+                        data-swal-btn-class="btn btn-primary"
+                    >
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                    <form id="submit-pr-{{ $pr->id }}" method="POST" action="{{ route('purchase.requests.submit', $pr) }}" style="display:none;">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn btn-sm btn-primary" title="Ajukan Persetujuan">
-                            <i class="fa-solid fa-paper-plane"></i>
-                        </button>
                     </form>
-                    <form method="POST" action="{{ route('purchase.requests.destroy', $pr) }}" style="display:inline;" onsubmit="return confirm('Hapus draft Purchase Request ini?')">
+
+                    <button type="button" class="btn btn-sm btn-danger" title="Hapus"
+                        data-confirm-delete="delete-pr-{{ $pr->id }}"
+                        data-name="Purchase Request {{ $pr->pr_number }}"
+                    >
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <form id="delete-pr-{{ $pr->id }}" method="POST" action="{{ route('purchase.requests.destroy', $pr) }}" style="display:none;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
                     </form>
                     @endif
                 </div>
