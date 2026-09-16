@@ -16,7 +16,7 @@
                 <span class="material-symbols-outlined text-[18px]">warning</span>
                 <span class="font-medium text-xs sm:text-sm"><strong>{{ $alerts['po_waiting_approval'] }} Purchase Order</strong> menunggu approval limit otorisasi</span>
             </div>
-            <a href="{{ route('approvals.index') }}" class="bg-[#03193c] text-white px-3 py-1 rounded hover:bg-[#1b2e52] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+            <a href="{{ route('approvals.index') }}" style="background-color: #03193c; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Review Approval &rarr;
             </a>
         </div>
@@ -31,7 +31,7 @@
                     <strong>{{ $alerts['due_receivables'] }} Invoice Piutang</strong> (Rp {{ number_format($totalUpcomingReceivables, 0, ',', '.') }}) jatuh tempo dalam 7 hari ke depan
                 </span>
             </div>
-            <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="bg-[#0284c7] text-white px-3 py-1 rounded hover:bg-[#0369a1] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+            <a href="{{ route('accounting.reports.receivables-upcoming') }}" style="background-color: #0284c7; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Tagih Sekarang &rarr;
             </a>
         </div>
@@ -46,7 +46,7 @@
                     <strong>{{ $alerts['due_payables'] }} Invoice Hutang Supplier</strong> (Rp {{ number_format($totalUpcomingPayables, 0, ',', '.') }}) jatuh tempo dalam 7 hari ke depan
                 </span>
             </div>
-            <a href="{{ route('accounting.reports.payables-upcoming') }}" class="bg-[#dc2626] text-white px-3 py-1 rounded hover:bg-[#b91c1c] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+            <a href="{{ route('accounting.reports.payables-upcoming') }}" style="background-color: #dc2626; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Alokasi Bayar &rarr;
             </a>
         </div>
@@ -59,7 +59,7 @@
                 <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                 <span class="font-medium text-xs sm:text-sm">Stok Kritis: <strong>{{ $alerts['low_stock'] }} Produk</strong> menipis</span>
             </div>
-            <a href="{{ route('inventory.stock-summary') }}" class="bg-[#ea580c] text-white px-3 py-1 rounded hover:bg-[#c2410c] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+            <a href="{{ route('inventory.stock-summary') }}" style="background-color: #c2410c; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Lihat Stok &rarr;
             </a>
         </div>
@@ -72,7 +72,7 @@
                 <span class="material-symbols-outlined text-[18px]">healing</span>
                 <span class="font-medium text-xs sm:text-sm">Karantina: <strong>{{ $alerts['quarantine_pending'] }} Produk</strong> rusak perlu disposisi</span>
             </div>
-            <a href="{{ route('inventory.dispositions.index') }}" class="bg-[#9333ea] text-white px-3 py-1 rounded hover:bg-[#7e22ce] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+            <a href="{{ route('inventory.dispositions.index') }}" style="background-color: #7e22ce; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Disposisi &rarr;
             </a>
         </div>
