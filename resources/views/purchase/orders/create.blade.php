@@ -18,43 +18,20 @@
             <div class="card" style="grid-column: span 2;">
                 <div class="card-header"><h3>Informasi PO</h3></div>
                 <div class="card-body">
-                    {{-- Tarik dari Purchase Request --}}
-                    <div style="margin-bottom:16px; padding:14px; border-radius:8px; background:rgba(99, 102, 241, 0.05); border:1px solid rgba(99, 102, 241, 0.25);">
-                        <label class="form-label" style="font-weight:700; color:var(--primary); display:flex; align-items:center; gap:8px;">
-                            <i class="fa-solid fa-file-import"></i> Purchase Request (PR) Asal <span style="color:var(--danger);">*</span>
-                        </label>
-                        <select name="purchase_request_id" class="form-control {{ $errors->has('purchase_request_id') ? 'is-invalid' : '' }}" x-model="selectedPrId" @change="onPrSelect($event.target.value)" required>
-                            <option value="">-- Pilih Purchase Request yang Sudah Disetujui (Wajib) --</option>
-                            @foreach($purchaseRequests as $pr)
-                            <option value="{{ $pr->id }}" {{ (old('purchase_request_id') == $pr->id || (isset($prefilledPrId) && $prefilledPrId == $pr->id)) ? 'selected' : '' }}>
-                                {{ $pr->pr_number }} — Divisi {{ $pr->division ?? 'Umum' }} (Dibutuhkan: {{ $pr->required_date?->format('d/m/Y') }}) · {{ $pr->items->count() }} Item
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('purchase_request_id')
-                        <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
-                        @enderror
-
-                        @if($purchaseRequests->isEmpty())
-                        <div style="margin-top:10px; padding:10px 12px; background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; font-size:12px; color:#be123c; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                            <span><i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i> Belum ada PR berstatus <strong>Approved</strong>. Setiap PO wajib dibuat dari PR yang telah disetujui.</span>
-                            <a href="{{ route('purchase.requests.create') }}" class="btn btn-primary btn-sm" style="font-size:11px; padding:4px 8px; white-space:nowrap;">
-                                <i class="fa-solid fa-plus"></i> Buat PR
-                            </a>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label">Purchase Request <span style="color:var(--danger);">*</span></label>
+                            <select name="purchase_request_id" class="form-control {{ $errors->has('purchase_request_id') ? 'is-invalid' : '' }}" x-model="selectedPrId" @change="onPrSelect($event.target.value)" required>
+                                <option value="">-- Pilih Purchase Request --</option>
+                                @foreach($purchaseRequests as $pr)
+                                <option value="{{ $pr->id }}" {{ (old('purchase_request_id') == $pr->id || (isset($prefilledPrId) && $prefilledPrId == $pr->id)) ? 'selected' : '' }}>
+                                    {{ $pr->pr_number }} — Divisi {{ $pr->division ?? 'Umum' }} ({{ $pr->items->count() }} Item)
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('purchase_request_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
-                        @else
-                        <span style="font-size:11.5px; color:var(--text-secondary); margin-top:4px; display:block;">
-                            Pilih PR yang sudah berstatus <strong>Disetujui (Approved)</strong> untuk otomatis menyalin barang dan mengunci kuantitas kebutuhan.
-                        </span>
-                        @endif
 
-                        <div x-show="selectedPrId && purchaseRequests[selectedPrId]" x-cloak style="margin-top:8px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:12px; color:#1d4ed8; font-weight:500; display:flex; align-items:center; gap:8px;">
-                            <i class="fa-solid fa-circle-check text-success" style="font-size:14px;"></i>
-                            <span>Memuat produk sesuai Purchase Request <strong x-text="purchaseRequests[selectedPrId]?.pr_number"></strong> (<span x-text="(purchaseRequests[selectedPrId]?.items?.length || 0) + ' item barang'"></span>).</span>
-                        </div>
-                    </div>
-
-                    <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Supplier <span style="color:var(--danger);">*</span></label>
                             <x-searchable-select 
@@ -66,6 +43,9 @@
                                 required 
                             />
                         </div>
+                    </div>
+
+                    <div class="form-row form-row-3" style="margin-top:12px;">
                         <div class="form-group">
                             <label class="form-label">Tanggal PO <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="order_date" value="{{ old('order_date', date('Y-m-d')) }}" class="form-control {{ $errors->has('order_date') ? 'is-invalid' : '' }}" required>
@@ -144,18 +124,8 @@
 
         {{-- Item Table --}}
         <div class="card" style="margin-bottom:20px; overflow: visible;">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="card-header">
                 <h3>Item Purchase Order</h3>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <template x-if="selectedPrId">
-                        <span class="badge" style="background: #e0e7ff; color: #3730a3; font-size: 11.5px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-lock"></i> Qty Terkunci Mengikuti PR
-                        </span>
-                    </template>
-                    <button type="button" class="btn btn-primary btn-sm" @click="addRow()" x-show="!selectedPrId">
-                        <i class="fa-solid fa-plus"></i> Tambah Item
-                    </button>
-                </div>
             </div>
             <div class="table-responsive" style="overflow: visible; min-height: 180px;">
                 <table class="erp-table">
@@ -172,14 +142,9 @@
                     <tbody>
                         <template x-if="!selectedPrId">
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 36px 16px; color: #64748b; background: #f8fafc;">
-                                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #e0e7ff; color: #4338ca; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 10px;">
-                                        <i class="fa-solid fa-file-import"></i>
-                                    </div>
-                                    <div style="font-weight: 700; font-size: 14px; color: #1e293b; margin-bottom: 4px;">Pilih Purchase Request (PR) Terlebih Dahulu</div>
-                                    <div style="font-size: 12.5px; color: #64748b; max-width: 420px; margin: 0 auto;">
-                                        PO wajib dibuat dari Purchase Request yang telah disetujui (Approved). Daftar item barang dan kuantitas akan otomatis ditarik dari PR tersebut.
-                                    </div>
+                                <td colspan="6" style="text-align: center; padding: 40px 16px; color: var(--text-secondary);">
+                                    <i class="fa-solid fa-file-lines" style="font-size: 28px; margin-bottom: 8px; display: block; opacity: 0.4;"></i>
+                                    Pilih Purchase Request terlebih dahulu
                                 </td>
                             </tr>
                         </template>
