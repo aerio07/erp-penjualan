@@ -131,16 +131,32 @@ class FormRevisionsAndValidationTest extends TestCase
 
         $file = UploadedFile::fake()->image('supplier_tax.png');
 
+        // 1. Validation fails if perorangan (non_pkp) has missing/invalid ktp_number
+        $failResponse = $this->actingAs($this->user)->post(route('master.suppliers.store'), [
+            'name'                => 'Pak Budi Supplier Kayu',
+            'supplier_type'       => 'non_pkp',
+            'ktp_number'          => '12345', // invalid length
+            'phone'               => '08123456789',
+            'payment_term'        => 'COD',
+            'bank_name'           => 'BCA',
+            'bank_account_number' => '1234567890',
+            'bank_account_holder' => 'Pak Budi',
+            'address'             => 'Sentra Kayu Jepara',
+        ]);
+        $failResponse->assertSessionHasErrors(['ktp_number']);
+
+        // 2. Validation passes with 16 digit NIK for non_pkp
         $response = $this->actingAs($this->user)->post(route('master.suppliers.store'), [
             'name'                => 'PT Supplier Utama Mandiri',
+            'supplier_type'       => 'pkp',
             'npwp'                => '09.876.543.2-109.000',
             'tax_document'        => $file,
             'phone'               => '021-99887766',
-            'payment_term'        => 'net_30',
+            'payment_term'        => 'NET 30',
             'bank_name'           => 'BCA',
             'bank_account_number' => '1234567890',
             'bank_account_holder' => 'PT Supplier Utama Mandiri',
-            'address'             => 'Gedung Wisma Niaga Lt. 5',
+            'address'             => 'Gedung Wisma Niaga Lt. 5, Gambir, Kota Jakarta Pusat, DKI Jakarta, 10110',
         ]);
 
         $response->assertRedirect(route('master.suppliers.index'));
@@ -154,8 +170,10 @@ class FormRevisionsAndValidationTest extends TestCase
         $originalCode = $supplier->code;
         $this->actingAs($this->user)->put(route('master.suppliers.update', $supplier), [
             'name'                => 'PT Supplier Utama Mandiri Tbk',
+            'supplier_type'       => 'pkp',
+            'npwp'                => '09.876.543.2-109.000',
             'phone'               => '021-99887766',
-            'payment_term'        => 'net_30',
+            'payment_term'        => 'NET 30',
             'bank_name'           => 'BCA',
             'bank_account_number' => '1234567890',
             'bank_account_holder' => 'PT Supplier Utama Mandiri',
