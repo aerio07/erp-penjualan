@@ -178,14 +178,14 @@
 
         <!-- Top 5 Produk Terlaris (1 Col) -->
         <div class="bg-white rounded-lg shadow-sm p-6 flex flex-col border border-[#E2E8F0]">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-2">
                 <div>
                     <h2 class="font-bold text-[#0e1b35] text-base font-sans">Top 5 Produk Terlaris</h2>
                     <p class="text-xs text-[#44474e]">Kuantitas terjual 30 hari terakhir</p>
                 </div>
                 <a href="{{ route('sales.reports.recap-by-product') }}" class="text-xs text-[#03193c] font-bold hover:underline">Rekap &rarr;</a>
             </div>
-            <div class="flex-1 relative w-full min-h-[260px] flex items-center justify-center">
+            <div class="flex-1 relative w-full min-h-[290px] flex items-center justify-center">
                 @if(!empty($topProduk['series']) && array_sum($topProduk['series']) > 0)
                     <div id="topProductChart" class="w-full h-full"></div>
                 @else
@@ -522,22 +522,41 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: topProdukData.labels || [],
             chart: {
                 type: 'donut',
-                height: 260,
-                fontFamily: 'Inter, sans-serif'
+                height: 290,
+                fontFamily: 'Inter, sans-serif',
+                toolbar: { show: false }
             },
             colors: ['#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+            stroke: {
+                width: 2,
+                colors: ['#ffffff']
+            },
             legend: {
                 position: 'bottom',
+                horizontalAlign: 'center',
                 fontSize: '11px',
-                labels: { colors: '#475569' }
-            },
-            dataLabels: {
-                enabled: true,
-                formatter: function (val, opts) {
-                    return opts.w.config.series[opts.seriesIndex] + ' pcs';
+                fontFamily: 'Inter, sans-serif',
+                labels: { colors: '#475569' },
+                itemMargin: {
+                    horizontal: 6,
+                    vertical: 2
+                },
+                markers: {
+                    width: 8,
+                    height: 8,
+                    radius: 4
+                },
+                formatter: function(seriesName, opts) {
+                    var val = opts.w.globals.series[opts.seriesIndex];
+                    var shortName = seriesName.length > 16 ? seriesName.substring(0, 14) + '...' : seriesName;
+                    return shortName + ' (' + val + ' pcs)';
                 }
             },
+            dataLabels: {
+                enabled: false // Nonaktifkan teks di atas slice untuk mencegah bentrok/overlap
+            },
             tooltip: {
+                enabled: true,
                 y: {
                     formatter: function (val) {
                         return val + ' pcs terjual';
@@ -547,13 +566,34 @@ document.addEventListener('DOMContentLoaded', function() {
             plotOptions: {
                 pie: {
                     donut: {
-                        size: '60%',
+                        size: '72%',
                         labels: {
                             show: true,
+                            name: {
+                                show: true,
+                                fontSize: '11px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: 500,
+                                color: '#64748b',
+                                offsetY: -6
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '18px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: 700,
+                                color: '#0e1b35',
+                                offsetY: 6,
+                                formatter: function (val) {
+                                    return val + ' pcs';
+                                }
+                            },
                             total: {
                                 show: true,
                                 label: 'Total Terjual',
                                 fontSize: '11px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: 600,
                                 color: '#64748b',
                                 formatter: function (w) {
                                     return w.globals.seriesTotals.reduce((a, b) => a + b, 0) + ' pcs';
