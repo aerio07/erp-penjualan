@@ -18,7 +18,7 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Informasi Surat Jalan / Penerimaan</h3></div>
                 <div class="card-body">
-                    <div class="form-row form-row-2">
+                    <div class="form-row form-row-3">
                         <div class="form-group">
                             <label class="form-label">Purchase Order <span style="color:var(--danger);">*</span></label>
                             <x-searchable-select 
@@ -29,6 +29,20 @@
                                 on-select="poId => { selectedPoId = poId; onPoChange(); }" 
                                 required 
                             />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Gudang Penerimaan <span style="color:var(--danger);">*</span></label>
+                            <x-searchable-select 
+                                name="warehouse_id" 
+                                :options="$warehouses->map(fn($wh) => ['id' => $wh->id, 'name' => $wh->name . ' (' . $wh->code . ')'])" 
+                                :value="old('warehouse_id', $warehouses->first()?->id ?? '')" 
+                                placeholder="-- Pilih Gudang Penerimaan --" 
+                                search-placeholder="Cari nama atau kode gudang..." 
+                                on-select="whId => onWarehouseHeaderChange(whId)" 
+                                required 
+                            />
+                            @error('warehouse_id')<div class="invalid-feedback" style="display:block;">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="form-group">
@@ -54,12 +68,12 @@
                                 <div style="font-size:12px; color:var(--text-secondary);">Supplier</div>
                                 <div style="font-weight:600;" x-text="selectedPo.supplier ? selectedPo.supplier.name : '-'"></div>
                             </div>
-                            <template x-if="selectedPo.warehouse">
-                                <div>
-                                    <div style="font-size:12px; color:var(--text-secondary);">Gudang Tujuan PO</div>
-                                    <div style="font-weight:600; color:var(--primary);"><i class="fa-solid fa-warehouse"></i> <span x-text="selectedPo.warehouse.name + ' (' + selectedPo.warehouse.code + ')'"></span></div>
+                            <div>
+                                <div style="font-size:12px; color:var(--text-secondary);">Gudang Penerimaan</div>
+                                <div style="font-weight:600; color:var(--primary);">
+                                    <i class="fa-solid fa-warehouse"></i> <span x-text="selectedWarehouseName"></span>
                                 </div>
-                            </template>
+                            </div>
                             <template x-if="selectedPo.ship_to">
                                 <div style="font-size:12px; color:var(--text-secondary); background:#f8fafc; padding:8px 10px; border-radius:6px;">
                                     <i class="fa-solid fa-truck-ramp-box text-primary"></i> <strong>Ship To:</strong> <span x-text="selectedPo.ship_to"></span>
@@ -316,6 +330,8 @@ function grnForm() {
     return {
         selectedPoId: initialPoId,
         selectedPo: null,
+        headerWarehouseId: @json((string)(old('warehouse_id', $warehouses->first()?->id ?? ''))),
+        warehouses: @json($warehouses->keyBy('id')),
         rows: [],
         nextUid: 1,
         autoGenerateInvoice: {{ old('auto_generate_invoice') ? 'true' : 'false' }},
@@ -326,6 +342,23 @@ function grnForm() {
         taxRate: 11,
         paymentTerm: 30,
         paymentTermLabel: 'NET 30',
+
+        get selectedWarehouseName() {
+            if (this.headerWarehouseId && this.warehouses[this.headerWarehouseId]) {
+                const wh = this.warehouses[this.headerWarehouseId];
+                return wh.name + ' (' + wh.code + ')';
+            }
+            return '-';
+        },
+
+        onWarehouseHeaderChange(whId) {
+            this.headerWarehouseId = whId ? String(whId) : '';
+            if (this.headerWarehouseId && this.rows && this.rows.length > 0) {
+                this.rows.forEach(r => {
+                    r.warehouse_id = this.headerWarehouseId;
+                });
+            }
+        },
 
         init() {
             if (this.selectedPoId) {
@@ -352,9 +385,7 @@ function grnForm() {
 
             this.rows = [];
 
-            const poWarehouseId = (this.selectedPo && this.selectedPo.warehouse_id) 
-                ? String(this.selectedPo.warehouse_id) 
-                : defaultWarehouseId;
+            const whIdToUse = this.headerWarehouseId || defaultWarehouseId;
 
             this.selectedPo.items.forEach(item => {
                 const alreadyArrived = (item.qty_received || 0) + (item.qty_rejected || 0);
@@ -370,7 +401,7 @@ function grnForm() {
                     qty_already_rejected: item.qty_rejected || 0,
                     qty_already_arrived: alreadyArrived,
                     qty_remaining: remaining,
-                    warehouse_id: poWarehouseId,
+                    warehouse_id: whIdToUse,
                     qty_physical: remaining, // Datang fisik default = sisa PO yang belum tiba
                     qty_rejected: 0,         // Rusak default = 0
                     shortage_reason: 'none',
@@ -422,7 +453,7 @@ function grnForm() {
                 qty_already_rejected: sourceRow.qty_already_rejected,
                 qty_already_arrived: sourceRow.qty_already_arrived,
                 qty_remaining: sourceRow.qty_remaining,
-                warehouse_id: '',
+                warehouse_id: this.headerWarehouseId || defaultWarehouseId,
                 qty_physical: unallocated,
                 qty_rejected: 0,
                 shortage_reason: unallocated < sourceRow.qty_remaining ? 'not_shipped' : 'none',

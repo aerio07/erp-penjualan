@@ -64,6 +64,7 @@ class GoodsReceiptController extends Controller
     {
         $request->validate([
             'purchase_order_id'                  => 'required|exists:purchase_orders,id',
+            'warehouse_id'                       => 'required|exists:warehouses,id',
             'received_date'                      => 'required|date',
             'notes'                              => 'nullable|string',
             'auto_generate_invoice'              => 'nullable|boolean',
@@ -73,7 +74,7 @@ class GoodsReceiptController extends Controller
             'invoice_tax_rate'                   => 'nullable|numeric|min:0|max:100',
             'items'                              => 'required|array|min:1',
             'items.*.purchase_order_item_id'    => 'required|exists:purchase_order_items,id',
-            'items.*.warehouse_id'               => 'required|exists:warehouses,id',
+            'items.*.warehouse_id'               => 'nullable|exists:warehouses,id',
             'items.*.qty_physical'               => 'nullable|integer|min:0',
             'items.*.qty_received'               => 'nullable|integer|min:0',
             'items.*.qty_rejected'               => 'nullable|integer|min:0',
@@ -129,12 +130,12 @@ class GoodsReceiptController extends Controller
 
             $grnNumber = $this->generateNumber();
 
-            $firstWarehouseId = $request->items[0]['warehouse_id'] ?? null;
+            $headerWarehouseId = (int) $request->warehouse_id;
 
             $grn = GoodsReceipt::create([
                 'receipt_number'    => $grnNumber,
                 'purchase_order_id' => $po->id,
-                'warehouse_id'      => $firstWarehouseId,
+                'warehouse_id'      => $headerWarehouseId,
                 'user_id'           => Auth::id(),
                 'qc_status'         => 'passed',
                 'received_date'     => $request->received_date,
@@ -150,7 +151,7 @@ class GoodsReceiptController extends Controller
                     ? (int) $itemData['qty_physical'] 
                     : ((int)($itemData['qty_received'] ?? 0) + $qtyRejected);
                 $qtyGood = max(0, $qtyPhysical - $qtyRejected);
-                $warehouseId = (int) $itemData['warehouse_id'];
+                $warehouseId = !empty($itemData['warehouse_id']) ? (int) $itemData['warehouse_id'] : $headerWarehouseId;
 
                 if ($qtyPhysical <= 0) {
                     continue;
