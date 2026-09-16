@@ -2,6 +2,16 @@
 @section('title', 'Buat Purchase Order')
 @section('page-title', 'Buat Purchase Order')
 
+@php
+    $prOptions = $purchaseRequests->map(function($pr) {
+        return [
+            'id' => (string) $pr->id,
+            'name' => $pr->pr_number . ' — Divisi ' . ($pr->division ?? 'Umum') . ' (' . $pr->items->count() . ' Item)',
+            'subtext' => $pr->pr_number . ' · Divisi ' . ($pr->division ?? 'Umum'),
+        ];
+    });
+@endphp
+
 @section('content')
 <div class="animate-in" x-data="poForm()">
     <x-page-header 
@@ -21,15 +31,16 @@
                     <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Purchase Request <span style="color:var(--danger);">*</span></label>
-                            <select name="purchase_request_id" class="form-control {{ $errors->has('purchase_request_id') ? 'is-invalid' : '' }}" x-model="selectedPrId" @change="onPrSelect($event.target.value)" required>
-                                <option value="">-- Pilih Purchase Request --</option>
-                                @foreach($purchaseRequests as $pr)
-                                <option value="{{ $pr->id }}" {{ (old('purchase_request_id') == $pr->id || (isset($prefilledPrId) && $prefilledPrId == $pr->id)) ? 'selected' : '' }}>
-                                    {{ $pr->pr_number }} — Divisi {{ $pr->division ?? 'Umum' }} ({{ $pr->items->count() }} Item)
-                                </option>
-                                @endforeach
-                            </select>
-                            @error('purchase_request_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <x-searchable-select 
+                                name="purchase_request_id" 
+                                :options="$prOptions" 
+                                :value="old('purchase_request_id', $prefilledPrId ?? '')" 
+                                placeholder="-- Pilih Purchase Request --" 
+                                search-placeholder="Cari nomor PR atau divisi..." 
+                                on-select="window.onPrChange"
+                                required 
+                            />
+                            @error('purchase_request_id')<div class="invalid-feedback" style="display:block;">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="form-group">
@@ -221,31 +232,17 @@
                                     </div>
                                 </td>
                                 <td style="vertical-align: top !important;">
-                                    <div style="position: relative;">
-                                        <input 
-                                            type="number" 
-                                            :name="`items[${idx}][qty_ordered]`" 
-                                            x-model.number="row.qty" 
-                                            @input="recalc()" 
-                                            class="form-control" 
-                                            :class="selectedPrId ? 'bg-slate-100 text-slate-700 cursor-not-allowed font-semibold' : ''"
-                                            :readonly="Boolean(selectedPrId)"
-                                            :title="selectedPrId ? 'Kuantitas terkunci sesuai Purchase Request' : ''"
-                                            style="height:38px; padding-right: 28px;" 
-                                            min="1" 
-                                            required
-                                        >
-                                        <template x-if="selectedPrId">
-                                            <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #6366f1; font-size: 11px; pointer-events: none;" title="Terkunci sesuai PR">
-                                                <i class="fa-solid fa-lock"></i>
-                                            </span>
-                                        </template>
-                                    </div>
-                                    <template x-if="selectedPrId">
-                                        <span style="font-size: 10px; color: #6366f1; font-weight: 600; display: block; margin-top: 2px;">
-                                            <i class="fa-solid fa-check"></i> Sesuai PR
-                                        </span>
-                                    </template>
+                                    <input 
+                                        type="number" 
+                                        :name="`items[${idx}][qty_ordered]`" 
+                                        x-model.number="row.qty" 
+                                        class="form-control bg-slate-100 text-slate-700 cursor-not-allowed font-semibold" 
+                                        style="height:38px;" 
+                                        readonly
+                                        tabindex="-1"
+                                        min="1" 
+                                        required
+                                    >
                                 </td>
                                 <td style="vertical-align: top !important;">
                                     <input type="text" 
@@ -277,13 +274,10 @@
                                 </td>
                                 <td style="vertical-align: top !important; text-align:center;">
                                     <div style="height: 38px; display: flex; align-items: center; justify-content: center;">
-                                        <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="!selectedPrId && rows.length > 1" title="Hapus Item">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                        <template x-if="selectedPrId">
-                                            <span style="color: #94a3b8; font-size: 13px;" title="Item terdaftar pada PR">
-                                                <i class="fa-solid fa-lock"></i>
-                                            </span>
+                                        <template x-if="rows.length > 1">
+                                            <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" title="Hapus Item">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
                                         </template>
                                     </div>
                                 </td>
@@ -312,6 +306,12 @@
 <script>
 const products = @json($products->keyBy('id'));
 const purchaseRequests = @json($purchaseRequests->keyBy('id'));
+
+window.onPrChange = function(prId) {
+    if (window.poApp) {
+        window.poApp.onPrSelect(prId);
+    }
+};
 
 function poForm() {
     const prefilledPr = '{{ $prefilledPrId ?? old('purchase_request_id', '') }}';
@@ -346,18 +346,19 @@ function poForm() {
         },
 
         init() {
+            window.poApp = this;
             if (this.selectedPrId) {
                 this.onPrSelect(this.selectedPrId);
             }
         },
 
         onPrSelect(prId) {
-            this.selectedPrId = prId;
-            if (!prId) {
+            this.selectedPrId = prId ? String(prId) : '';
+            if (!this.selectedPrId) {
                 this.rows = [];
                 return;
             }
-            const pr = purchaseRequests[prId];
+            const pr = purchaseRequests[this.selectedPrId];
             if (pr && pr.items && pr.items.length > 0) {
                 this.rows = pr.items.map(it => {
                     const prod = products[it.product_id] || (it.product || {});
@@ -391,7 +392,10 @@ function poForm() {
             // Pembuatan PO wajib berasal dari item PR
         },
         removeRow(idx) { 
-            // Item PO dikunci mengikuti PR
+            if (this.rows.length > 1) {
+                this.rows.splice(idx, 1);
+                this.recalc();
+            }
         },
 
         onProductChange(idx, event) {

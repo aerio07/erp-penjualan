@@ -235,30 +235,17 @@
                                     </div>
                                 </td>
                                 <td style="vertical-align: top !important;">
-                                    <div style="position: relative;">
-                                        <input 
-                                            type="number" 
-                                            :name="`items[${idx}][qty_ordered]`" 
-                                            x-model.number="row.qty" 
-                                            @input="recalc()" 
-                                            class="form-control {{ $order->purchase_request_id ? 'bg-slate-100 text-slate-700 cursor-not-allowed font-semibold' : '' }}" 
-                                            style="height:38px; padding-right: 28px;" 
-                                            min="1" 
-                                            {{ $order->purchase_request_id ? 'readonly' : '' }}
-                                            title="{{ $order->purchase_request_id ? 'Kuantitas terkunci sesuai Purchase Request' : '' }}"
-                                            required
-                                        >
-                                        @if($order->purchase_request_id)
-                                        <span style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #6366f1; font-size: 11px; pointer-events: none;" title="Terkunci sesuai PR">
-                                            <i class="fa-solid fa-lock"></i>
-                                        </span>
-                                        @endif
-                                    </div>
-                                    @if($order->purchase_request_id)
-                                    <span style="font-size: 10px; color: #6366f1; font-weight: 600; display: block; margin-top: 2px;">
-                                        <i class="fa-solid fa-check"></i> Sesuai PR
-                                    </span>
-                                    @endif
+                                    <input 
+                                        type="number" 
+                                        :name="`items[${idx}][qty_ordered]`" 
+                                        x-model.number="row.qty" 
+                                        @input="recalc()" 
+                                        class="form-control {{ $order->purchase_request_id ? 'bg-slate-100 text-slate-700 cursor-not-allowed font-semibold' : '' }}" 
+                                        style="height:38px;" 
+                                        min="1" 
+                                        {{ $order->purchase_request_id ? 'readonly tabindex=-1' : '' }}
+                                        required
+                                    >
                                 </td>
                                 <td style="vertical-align: top !important;">
                                     <input type="text" 
@@ -294,10 +281,6 @@
                                         <button type="button" class="btn btn-danger btn-sm btn-icon" @click="removeRow(idx)" x-show="rows.length > 1" title="Hapus Item">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
-                                        @else
-                                        <span style="color: #94a3b8; font-size: 13px;" title="Item terdaftar pada PR">
-                                            <i class="fa-solid fa-lock"></i>
-                                        </span>
                                         @endif
                                     </div>
                                 </td>
