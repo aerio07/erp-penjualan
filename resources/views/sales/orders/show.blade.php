@@ -251,25 +251,28 @@
     </div>
 
     @php
+        $isDraftOrApproval = in_array($order->status, ['draft', 'waiting_approval']);
         $whAllocations = [];
         $totalActiveReserved = 0;
         $totalActiveDemanded = 0;
 
-        foreach($order->items as $it) {
-            $totalActiveDemanded += (int) $it->qty_demanded;
-            foreach($it->reservations->where('status', 'active') as $res) {
-                $act = max(0, $res->qty_reserved - $res->qty_delivered);
-                if ($act > 0) {
-                    $wName = $res->warehouse->name ?? ('Gudang #' . $res->warehouse_id);
-                    $whAllocations[$wName] = ($whAllocations[$wName] ?? 0) + $act;
-                    $totalActiveReserved += $act;
+        if (!$isDraftOrApproval) {
+            foreach($order->items as $it) {
+                $totalActiveDemanded += (int) $it->qty_demanded;
+                foreach($it->reservations->where('status', 'active') as $res) {
+                    $act = max(0, $res->qty_reserved - $res->qty_delivered);
+                    if ($act > 0) {
+                        $wName = $res->warehouse->name ?? ('Gudang #' . $res->warehouse_id);
+                        $whAllocations[$wName] = ($whAllocations[$wName] ?? 0) + $act;
+                        $totalActiveReserved += $act;
+                    }
                 }
             }
         }
     @endphp
 
-    {{-- Multi-Warehouse Allocation & Fulfillment Breakdown Banner --}}
-    @if(count($whAllocations) > 0 || $totalActiveDemanded > 0)
+    {{-- Multi-Warehouse Allocation & Fulfillment Breakdown Banner (Hanya muncul jika SO sudah Confirmed / Eksekusi) --}}
+    @if(!$isDraftOrApproval && (count($whAllocations) > 0 || $totalActiveDemanded > 0))
     <div class="card" style="margin-bottom:20px; border-left: 4px solid var(--primary); background: #f8fafc;">
         <div class="card-body" style="padding:14px 18px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -315,17 +318,70 @@
     </div>
     @endif
 
-    {{-- Item Table --}}
+    {{-- Item Table: Mode Draft / Approval vs Mode Confirmed / Fulfillment --}}
+    @if($isDraftOrApproval)
+    {{-- Tampilan Sederhana & Fokus Komersial untuk Draft / Waiting Approval --}}
     <div class="card" style="margin-bottom:20px;">
-        <div class="card-header"><h3>Item Pesanan & Alokasi Stok</h3></div>
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3><i class="fa-solid fa-cart-flatbed" style="color:var(--primary); margin-right:8px;"></i> Rincian Produk Pesanan</h3>
+            <span class="badge badge-{{ $order->status }}" style="font-size:11px; padding:4px 10px;">
+                {{ $order->status === 'draft' ? 'Draft' : 'Menunggu Approval' }}
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="erp-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px; text-align:center;">No</th>
+                        <th>Produk</th>
+                        <th style="text-align:center; width:130px;">Qty Pesan</th>
+                        <th style="text-align:right; width:160px;">Harga Satuan</th>
+                        <th style="text-align:center; width:110px;">Diskon</th>
+                        <th style="text-align:right; width:170px;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($order->items as $idx => $item)
+                    <tr>
+                        <td style="text-align:center; color:var(--text-secondary); font-size:12px;">{{ $idx + 1 }}</td>
+                        <td>
+                            <div style="font-weight:600;">{{ $item->product->name }}</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">SKU: {{ $item->product->sku }} · Satuan: {{ $item->product->unit ?? 'pcs' }}</div>
+                        </td>
+                        <td style="text-align:center; font-weight:700; font-size:14px; color:#0e1b35;">
+                            {{ number_format($item->qty_ordered) }} <span style="font-size:12px; font-weight:normal; color:var(--text-secondary);">{{ $item->product->unit }}</span>
+                        </td>
+                        <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                        <td style="text-align:center;">
+                            @if($item->discount_percent > 0)
+                                <span class="badge badge-pending" style="font-size:11px;">{{ $item->discount_percent }}%</span>
+                            @else
+                                <span style="color:var(--text-secondary);">-</span>
+                            @endif
+                        </td>
+                        <td style="text-align:right; font-weight:700; color:var(--primary);">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer" style="background:#f8fafc; padding:10px 16px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-circle-info" style="color:var(--primary);"></i>
+            <span>Alokasi stok fisik gudang dan Surat Jalan pengiriman akan diproses setelah pesanan ini disetujui / dikonfirmasi (Confirmed).</span>
+        </div>
+    </div>
+    @else
+    {{-- Tampilan Lengkap Tracking Logistik & Fulfillment untuk SO yang sudah Confirmed / Berjalan --}}
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header"><h3><i class="fa-solid fa-truck-ramp-box" style="color:var(--primary); margin-right:8px;"></i> Item Pesanan & Status Pengiriman (Fulfillment)</h3></div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
                         <th>Produk</th>
                         <th style="text-align:center;">Qty Pesan</th>
-                        <th style="text-align:center; background:rgba(37, 99, 235, 0.06); width:180px;">Reserved (Teralokasi)</th>
-                        <th style="text-align:center; background:rgba(220, 38, 38, 0.06); width:150px;">Backorder</th>
+                        <th style="text-align:center; background:rgba(37, 99, 235, 0.06); width:180px;">Reserved (Siap Kirim)</th>
+                        <th style="text-align:center; background:rgba(220, 38, 38, 0.06); width:150px;">Backorder (Kurang)</th>
                         <th style="text-align:center;">Qty Terkirim</th>
                         <th style="text-align:center;">Sisa Kirim</th>
                         <th style="text-align:center; background:rgba(16, 185, 129, 0.06);">Sisa Unbilled</th>
@@ -384,6 +440,7 @@
             </table>
         </div>
     </div>
+    @endif
 
 
 
