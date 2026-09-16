@@ -8,15 +8,15 @@
     <!-- ========================================================= -->
     <!-- 1. ALERT BARS (Action Items & Early Warnings) -->
     <!-- ========================================================= -->
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-2">
         {{-- PO Waiting Approval (Khusus Admin) --}}
         @if(auth()->user()->isAdmin() && isset($alerts['po_waiting_approval']) && $alerts['po_waiting_approval'] > 0)
-        <div class="bg-[#FBEBD2] border-l-4 border-[#92640B] p-3.5 rounded-lg flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3 text-[#92640B]">
-                <span class="material-symbols-outlined text-[20px]">warning</span>
-                <span class="font-medium text-sm"><strong>{{ $alerts['po_waiting_approval'] }} Purchase Order</strong> menunggu approval limit otorisasi</span>
+        <div class="bg-[#FBEBD2] border-l-4 border-[#92640B] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 text-[#92640B]">
+                <span class="material-symbols-outlined text-[18px]">warning</span>
+                <span class="font-medium text-xs sm:text-sm"><strong>{{ $alerts['po_waiting_approval'] }} Purchase Order</strong> menunggu approval limit otorisasi</span>
             </div>
-            <a href="{{ route('approvals.index') }}" class="bg-[#03193c] text-white px-3.5 py-1.5 rounded hover:bg-[#1b2e52] transition-colors text-xs font-bold shadow-sm">
+            <a href="{{ route('approvals.index') }}" class="bg-[#03193c] text-white px-3 py-1 rounded hover:bg-[#1b2e52] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
                 Review Approval &rarr;
             </a>
         </div>
@@ -24,14 +24,14 @@
 
         {{-- Piutang Mendekati Jatuh Tempo --}}
         @if(isset($alerts['due_receivables']) && $alerts['due_receivables'] > 0)
-        <div class="bg-[#e0f2fe] border-l-4 border-[#0284c7] p-3.5 rounded-lg flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3 text-[#0369a1]">
-                <span class="material-symbols-outlined text-[20px]">notifications_active</span>
-                <span class="font-medium text-sm">
+        <div class="bg-[#e0f2fe] border-l-4 border-[#0284c7] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 text-[#0369a1]">
+                <span class="material-symbols-outlined text-[18px]">notifications_active</span>
+                <span class="font-medium text-xs sm:text-sm">
                     <strong>{{ $alerts['due_receivables'] }} Invoice Piutang</strong> (Rp {{ number_format($totalUpcomingReceivables, 0, ',', '.') }}) jatuh tempo dalam 7 hari ke depan
                 </span>
             </div>
-            <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="bg-[#0284c7] text-white px-3.5 py-1.5 rounded hover:bg-[#0369a1] transition-colors text-xs font-bold shadow-sm">
+            <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="bg-[#0284c7] text-white px-3 py-1 rounded hover:bg-[#0369a1] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
                 Tagih Sekarang &rarr;
             </a>
         </div>
@@ -39,45 +39,44 @@
 
         {{-- Hutang Mendekati Jatuh Tempo --}}
         @if(isset($alerts['due_payables']) && $alerts['due_payables'] > 0)
-        <div class="bg-[#fee2e2] border-l-4 border-[#dc2626] p-3.5 rounded-lg flex items-center justify-between shadow-sm">
-            <div class="flex items-center gap-3 text-[#b91c1c]">
-                <span class="material-symbols-outlined text-[20px]">schedule</span>
-                <span class="font-medium text-sm">
+        <div class="bg-[#fee2e2] border-l-4 border-[#dc2626] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 text-[#b91c1c]">
+                <span class="material-symbols-outlined text-[18px]">schedule</span>
+                <span class="font-medium text-xs sm:text-sm">
                     <strong>{{ $alerts['due_payables'] }} Invoice Hutang Supplier</strong> (Rp {{ number_format($totalUpcomingPayables, 0, ',', '.') }}) jatuh tempo dalam 7 hari ke depan
                 </span>
             </div>
-            <a href="{{ route('accounting.reports.payables-upcoming') }}" class="bg-[#dc2626] text-white px-3.5 py-1.5 rounded hover:bg-[#b91c1c] transition-colors text-xs font-bold shadow-sm">
+            <a href="{{ route('accounting.reports.payables-upcoming') }}" class="bg-[#dc2626] text-white px-3 py-1 rounded hover:bg-[#b91c1c] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
                 Alokasi Bayar &rarr;
             </a>
         </div>
         @endif
 
-        {{-- Stok Kritis & Karantina --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            @if(isset($alerts['low_stock']) && $alerts['low_stock'] > 0)
-            <div class="bg-[#fff7ed] border-l-4 border-[#ea580c] p-3 rounded-lg flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-2.5 text-[#c2410c]">
-                    <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                    <span class="font-medium text-xs">Stok Kritis: <strong>{{ $alerts['low_stock'] }} Produk</strong> menipis</span>
-                </div>
-                <a href="{{ route('inventory.stock-summary') }}" class="text-xs text-[#c2410c] font-bold hover:underline">
-                    Lihat Stok &rarr;
-                </a>
+        {{-- Stok Kritis --}}
+        @if(isset($alerts['low_stock']) && $alerts['low_stock'] > 0)
+        <div class="bg-[#fff7ed] border-l-4 border-[#ea580c] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 text-[#c2410c]">
+                <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                <span class="font-medium text-xs sm:text-sm">Stok Kritis: <strong>{{ $alerts['low_stock'] }} Produk</strong> menipis</span>
             </div>
-            @endif
-
-            @if(isset($alerts['quarantine_pending']) && $alerts['quarantine_pending'] > 0)
-            <div class="bg-[#faf5ff] border-l-4 border-[#9333ea] p-3 rounded-lg flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-2.5 text-[#7e22ce]">
-                    <span class="material-symbols-outlined text-[18px]">healing</span>
-                    <span class="font-medium text-xs">Karantina: <strong>{{ $alerts['quarantine_pending'] }} Produk</strong> rusak perlu disposisi</span>
-                </div>
-                <a href="{{ route('inventory.dispositions.index') }}" class="text-xs text-[#7e22ce] font-bold hover:underline">
-                    Disposisi &rarr;
-                </a>
-            </div>
-            @endif
+            <a href="{{ route('inventory.stock-summary') }}" class="bg-[#ea580c] text-white px-3 py-1 rounded hover:bg-[#c2410c] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+                Lihat Stok &rarr;
+            </a>
         </div>
+        @endif
+
+        {{-- Karantina --}}
+        @if(isset($alerts['quarantine_pending']) && $alerts['quarantine_pending'] > 0)
+        <div class="bg-[#faf5ff] border-l-4 border-[#9333ea] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 text-[#7e22ce]">
+                <span class="material-symbols-outlined text-[18px]">healing</span>
+                <span class="font-medium text-xs sm:text-sm">Karantina: <strong>{{ $alerts['quarantine_pending'] }} Produk</strong> rusak perlu disposisi</span>
+            </div>
+            <a href="{{ route('inventory.dispositions.index') }}" class="bg-[#9333ea] text-white px-3 py-1 rounded hover:bg-[#7e22ce] transition-colors text-xs font-semibold shadow-sm whitespace-nowrap">
+                Disposisi &rarr;
+            </a>
+        </div>
+        @endif
     </div>
 
     <!-- ========================================================= -->
