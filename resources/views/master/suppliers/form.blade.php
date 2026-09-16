@@ -88,44 +88,28 @@
                 <!-- ========================================================= -->
                 <!-- INFORMASI PERPAJAKAN & IDENTITAS SUPPLIER (SECTION) -->
                 <!-- ========================================================= -->
-                <div class="p-4 rounded-lg border border-border-light bg-[#FAF9FF] mb-5 w-full"
-                     x-data="{ supplierType: '{{ old('supplier_type', (isset($supplier) && $supplier->ktp_number && !$supplier->npwp) ? 'non_pkp' : 'pkp') }}' }">
+                <div class="p-4 rounded-lg border border-border-light bg-[#FAF9FF] mb-5 w-full">
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="text-sm font-bold text-[#0e1b35] font-sans">Informasi Perpajakan & Identitas</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#E0E7FF] text-[#3730A3] border border-[#3730A3]/20">NPWP / NIK</span>
+                        <span class="text-sm font-bold text-[#0e1b35] font-sans">Informasi Identitas & Perpajakan</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEE2E2] text-[#B91C1C] border border-[#B91C1C]/20">NIK Wajib</span>
                     </div>
-                    <p class="text-xs text-on-surface-variant mb-4">Pilih jenis entitas supplier: Badan Usaha (NPWP) atau Perorangan (Wajib NIK/KTP 16 digit).</p>
+                    <p class="text-xs text-on-surface-variant mb-4">Nomor NIK/KTP wajib diisi sebagai identitas utama supplier. Nomor NPWP bersifat opsional jika supplier memilikinya.</p>
 
-                    <div class="form-row form-row-3 mb-3">
-                        <!-- Tipe Supplier -->
-                        <div class="form-group mb-0">
-                            <label class="form-label">Jenis Supplier / Pajak <span style="color:var(--danger);">*</span></label>
-                            <select name="supplier_type" x-model="supplierType" class="form-control {{ $errors->has('supplier_type') ? 'is-invalid' : '' }}">
-                                <option value="pkp">Badan Usaha / PKP (Memiliki NPWP)</option>
-                                <option value="non_pkp">Perorangan / Non-PKP (Wajib NIK KTP)</option>
-                            </select>
-                            <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">
-                                Menentukan identitas pajak wajib yang harus dilengkapi.
-                            </span>
-                        </div>
-
-                        <!-- Nomor NPWP -->
+                    <div class="form-row form-row-2 mb-3">
+                        <!-- Nomor KTP / NIK (WAJIB) -->
                         <div class="form-group mb-0">
                             <label class="form-label">
-                                Nomor NPWP 
-                                <template x-if="supplierType === 'pkp'">
-                                    <span style="color:var(--danger);">*</span>
-                                </template>
+                                Nomor KTP / NIK <span style="color:var(--danger);">*</span>
                             </label>
-                            <input type="text" name="npwp" value="{{ old('npwp', $supplier->npwp ?? '') }}" 
-                                class="form-control {{ $errors->has('npwp') ? 'is-invalid' : '' }}" 
-                                :required="supplierType === 'pkp'"
-                                placeholder="00.000.000.0-000.000">
+                            <input type="text" name="ktp_number" value="{{ old('ktp_number', $supplier->ktp_number ?? '') }}" 
+                                class="form-control {{ $errors->has('ktp_number') ? 'is-invalid' : '' }}" 
+                                required
+                                placeholder="16 digit NIK / KTP"
+                                maxlength="20">
                             <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">
-                                <span x-show="supplierType === 'pkp'" class="text-red-600 font-semibold">Wajib diisi 15 atau 16 digit untuk Badan/PKP.</span>
-                                <span x-show="supplierType !== 'pkp'">Opsional untuk perorangan.</span>
+                                <span class="text-red-600 font-semibold">Wajib diisi 16 digit angka KTP/NIK.</span>
                             </span>
-                            @error('npwp')
+                            @error('ktp_number')
                             <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
                                 <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
                                 <span>{{ $message }}</span>
@@ -133,24 +117,18 @@
                             @enderror
                         </div>
 
-                        <!-- Nomor KTP / NIK -->
+                        <!-- Nomor NPWP (OPSIONAL) -->
                         <div class="form-group mb-0">
                             <label class="form-label">
-                                Nomor KTP / NIK 
-                                <template x-if="supplierType === 'non_pkp'">
-                                    <span style="color:var(--danger);">*</span>
-                                </template>
+                                Nomor NPWP <span class="text-xs text-slate-400 font-normal lowercase">(opsional)</span>
                             </label>
-                            <input type="text" name="ktp_number" value="{{ old('ktp_number', $supplier->ktp_number ?? '') }}" 
-                                class="form-control {{ $errors->has('ktp_number') ? 'is-invalid' : '' }}" 
-                                :required="supplierType === 'non_pkp'"
-                                placeholder="16 digit NIK / KTP"
-                                maxlength="20">
+                            <input type="text" name="npwp" value="{{ old('npwp', $supplier->npwp ?? '') }}" 
+                                class="form-control {{ $errors->has('npwp') ? 'is-invalid' : '' }}" 
+                                placeholder="00.000.000.0-000.000">
                             <span class="form-text" style="font-size:11px; color:var(--text-secondary); margin-top:3px;">
-                                <span x-show="supplierType === 'non_pkp'" class="text-red-600 font-semibold">Wajib 16 digit jika supplier tidak ada NPWP.</span>
-                                <span x-show="supplierType !== 'non_pkp'">Opsional untuk badan usaha.</span>
+                                Isi jika supplier memiliki NPWP perusahaan / pribadi.
                             </span>
-                            @error('ktp_number')
+                            @error('npwp')
                             <div class="invalid-feedback" style="display:flex; align-items:flex-start; gap:6px; color:#b91c1c; font-size:12px; margin-top:6px; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
                                 <i class="fa-solid fa-circle-exclamation" style="margin-top:2px; flex-shrink:0;"></i>
                                 <span>{{ $message }}</span>
@@ -163,7 +141,7 @@
                     <div class="mt-4 pt-3 border-t border-border-light">
                         <x-file-upload 
                             name="tax_document" 
-                            label="Unggah Salinan Dokumen NPWP atau KTP/NIK" 
+                            label="Unggah Salinan Dokumen KTP/NIK atau NPWP" 
                             :value="$supplier->tax_document ?? null"
                             helper-text="Format file yang didukung: PDF, JPG, JPEG, PNG, WEBP (maksimal 3MB)"
                         />

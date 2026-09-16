@@ -131,10 +131,9 @@ class FormRevisionsAndValidationTest extends TestCase
 
         $file = UploadedFile::fake()->image('supplier_tax.png');
 
-        // 1. Validation fails if perorangan (non_pkp) has missing/invalid ktp_number
+        // 1. Validation fails if ktp_number is missing or invalid
         $failResponse = $this->actingAs($this->user)->post(route('master.suppliers.store'), [
             'name'                => 'Pak Budi Supplier Kayu',
-            'supplier_type'       => 'non_pkp',
             'ktp_number'          => '12345', // invalid length
             'phone'               => '08123456789',
             'payment_term'        => 'COD',
@@ -145,10 +144,10 @@ class FormRevisionsAndValidationTest extends TestCase
         ]);
         $failResponse->assertSessionHasErrors(['ktp_number']);
 
-        // 2. Validation passes with 16 digit NIK for non_pkp
+        // 2. Validation passes with 16 digit NIK (NPWP is optional)
         $response = $this->actingAs($this->user)->post(route('master.suppliers.store'), [
             'name'                => 'PT Supplier Utama Mandiri',
-            'supplier_type'       => 'pkp',
+            'ktp_number'          => '3201012345670001',
             'npwp'                => '09.876.543.2-109.000',
             'tax_document'        => $file,
             'phone'               => '021-99887766',
@@ -163,6 +162,7 @@ class FormRevisionsAndValidationTest extends TestCase
         $supplier = Supplier::where('name', 'PT Supplier Utama Mandiri')->first();
         $this->assertNotNull($supplier);
         $this->assertStringStartsWith('SUP-', $supplier->code);
+        $this->assertEquals('3201012345670001', $supplier->ktp_number);
         $this->assertNotNull($supplier->tax_document);
         Storage::disk('public')->assertExists($supplier->tax_document);
 
@@ -170,7 +170,7 @@ class FormRevisionsAndValidationTest extends TestCase
         $originalCode = $supplier->code;
         $this->actingAs($this->user)->put(route('master.suppliers.update', $supplier), [
             'name'                => 'PT Supplier Utama Mandiri Tbk',
-            'supplier_type'       => 'pkp',
+            'ktp_number'          => '3201012345670001',
             'npwp'                => '09.876.543.2-109.000',
             'phone'               => '021-99887766',
             'payment_term'        => 'NET 30',
