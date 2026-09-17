@@ -87,7 +87,7 @@
                     <button type="button" class="btn btn-sm btn-primary" title="Ajukan Persetujuan"
                         data-confirm-swal="submit-pr-{{ $pr->id }}"
                         data-swal-title="Ajukan Purchase Request"
-                        data-swal-html="Ajukan Purchase Request <strong>{{ $pr->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Status PR akan diubah menjadi Waiting Approval.</span>"
+                        data-swal-html="Ajukan Purchase Request <strong>{{ $pr->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Dokumen akan dikirim ke Menu Approval.</span>"
                         data-swal-icon="question"
                         data-swal-icon-color="#2563eb"
                         data-swal-btn-text="Ya, Ajukan"

@@ -118,8 +118,8 @@ class WarehouseTransferController extends Controller
             return $transfer;
         });
 
-        return redirect()->route('inventory.transfers.show', $transfer)
-            ->with('success', "Draft Transfer Gudang #{$transfer->transfer_number} berhasil dibuat. Silakan periksa dan lakukan Posting/Kirim Transfer saat siap.");
+        return redirect()->route('inventory.transfers.index')
+            ->with('success', "Draft Transfer Gudang #{$transfer->transfer_number} berhasil dibuat.");
     }
 
     public function edit(WarehouseTransfer $transfer): View

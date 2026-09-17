@@ -8,13 +8,6 @@
     <form id="form-submit-pr" method="POST" action="{{ route('purchase.requests.submit', $purchase_request) }}" style="display:none;">
         @csrf @method('PATCH')
     </form>
-    <form id="form-approve-pr" method="POST" action="{{ route('purchase.requests.approve', $purchase_request) }}" style="display:none;">
-        @csrf @method('PATCH')
-    </form>
-    <form id="form-reject-pr" method="POST" action="{{ route('purchase.requests.reject', $purchase_request) }}" style="display:none;">
-        @csrf @method('PATCH')
-        <input type="hidden" name="rejection_reason" id="pr-rejection-reason" value="">
-    </form>
 
     <x-page-header 
         title="{{ $purchase_request->pr_number }}" 
@@ -31,7 +24,7 @@
                 <button type="button" class="btn btn-primary"
                     data-confirm-swal="form-submit-pr"
                     data-swal-title="Ajukan Purchase Request"
-                    data-swal-html="Ajukan Purchase Request <strong>{{ $purchase_request->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Status PR akan diubah menjadi Waiting Approval.</span>"
+                    data-swal-html="Ajukan Purchase Request <strong>{{ $purchase_request->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Dokumen akan dikirim ke Menu Approval.</span>"
                     data-swal-icon="question"
                     data-swal-icon-color="#2563eb"
                     data-swal-btn-text="Ya, Ajukan PR"
@@ -42,13 +35,10 @@
                 </button>
                 @endif
 
-                @if($purchase_request->status === 'waiting_approval' && (auth()->user()->role === 'admin' || auth()->user()->role === 'purchasing'))
-                <button type="button" class="btn btn-danger" onclick="confirmRejectPR()">
-                    <i class="fa-solid fa-ban"></i> Tolak PR
-                </button>
-                <button type="button" class="btn btn-success" onclick="confirmApprovePR()">
-                    <i class="fa-solid fa-check"></i> Setujui PR (Approve)
-                </button>
+                @if($purchase_request->status === 'waiting_approval' && auth()->user()->isAdmin())
+                <a href="{{ route('approvals.index') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-stamp"></i> Buka Menu Approval
+                </a>
                 @endif
 
                 @if($purchase_request->status === 'approved')
@@ -236,66 +226,3 @@
     </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-function confirmApprovePR() {
-    Swal.fire({
-        title: 'Setujui Purchase Request',
-        html: `Apakah Anda yakin ingin menyetujui Purchase Request <strong>{{ $purchase_request->pr_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">PR yang telah disetujui dapat diproses untuk penerbitan Purchase Order (PO).</span>`,
-        icon: 'question',
-        iconColor: '#16a34a',
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px;"></i> Ya, Setujui PR',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('form-approve-pr').submit();
-        }
-    });
-}
-
-function confirmRejectPR() {
-    Swal.fire({
-        title: 'Tolak Purchase Request',
-        html: `Apakah Anda yakin ingin menolak Purchase Request <strong>{{ $purchase_request->pr_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status PR akan diubah menjadi <strong>Ditolak (Rejected)</strong>.</span>`,
-        icon: 'error',
-        iconColor: '#dc2626',
-        input: 'textarea',
-        inputLabel: 'Alasan Penolakan (Wajib Diisi)',
-        inputPlaceholder: 'Tuliskan alasan mengapa Purchase Request ini ditolak...',
-        inputAttributes: { 'aria-label': 'Alasan Penolakan' },
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Tolak PR',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
-        inputValidator: (value) => {
-            if (!value || !value.trim()) {
-                return 'Alasan penolakan Purchase Request wajib diisi!';
-            }
-            if (value.trim().length < 3) {
-                return 'Alasan penolakan minimal 3 karakter!';
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('pr-rejection-reason').value = result.value.trim();
-            document.getElementById('form-reject-pr').submit();
-        }
-    });
-}
-</script>
-@endpush

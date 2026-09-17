@@ -4,12 +4,13 @@
 
 @section('content')
 <div class="animate-in">
-    <x-page-header title="Approval" subtitle="Persetujuan dokumen Purchase Order dan Sales Order yang melebihi batas nominal limit" />
+    <x-page-header title="Approval" subtitle="Persetujuan dokumen Purchase Request, Purchase Order, dan Sales Order" />
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('approvals.index')" placeholder="Cari No. Request, Catatan..." :showDateFilter="true">
         <select name="approvable_type" class="form-control" style="height:38px; font-size:13px; min-width:160px; border-radius:6px;">
             <option value="">Semua Dokumen</option>
+            <option value="App\Models\PurchaseRequest" {{ request('approvable_type') === 'App\Models\PurchaseRequest' ? 'selected' : '' }}>Purchase Request</option>
             <option value="App\Models\PurchaseOrder" {{ request('approvable_type') === 'App\Models\PurchaseOrder' ? 'selected' : '' }}>Purchase Order</option>
             <option value="App\Models\SalesOrder" {{ request('approvable_type') === 'App\Models\SalesOrder' ? 'selected' : '' }}>Sales Order</option>
         </select>
@@ -38,16 +39,30 @@
                     @forelse($pendingApprovals as $app)
                     @php
                         $doc = $app->approvable;
-                        $docNum = $doc->po_number ?? $doc->so_number ?? '#'.$app->approvable_id;
-                        $docRoute = $app->approvable_type === 'App\Models\PurchaseOrder' 
-                            ? route('purchase.orders.show', $app->approvable_id) 
-                            : route('sales.orders.show', $app->approvable_id);
+                        $docNum = $doc->po_number ?? $doc->so_number ?? $doc->pr_number ?? '#'.$app->approvable_id;
+                        $docRoute = '#';
+                        $docTypeLabel = 'Dokumen';
+                        $badgeClass = 'badge-confirmed';
+                        
+                        if ($app->approvable_type === 'App\Models\PurchaseRequest') {
+                            $docRoute = route('purchase.requests.show', $app->approvable_id);
+                            $docTypeLabel = 'Purchase Request';
+                            $badgeClass = 'badge-warning';
+                        } elseif ($app->approvable_type === 'App\Models\PurchaseOrder') {
+                            $docRoute = route('purchase.orders.show', $app->approvable_id);
+                            $docTypeLabel = 'Purchase Order';
+                            $badgeClass = 'badge-confirmed';
+                        } elseif ($app->approvable_type === 'App\Models\SalesOrder') {
+                            $docRoute = route('sales.orders.show', $app->approvable_id);
+                            $docTypeLabel = 'Sales Order';
+                            $badgeClass = 'badge-info';
+                        }
                     @endphp
                     <tr>
                         <td style="font-weight:600; color:var(--primary);">{{ $app->request_number }}</td>
                         <td>
-                            <span class="badge badge-confirmed">
-                                {{ strtoupper($app->approvable_type === 'App\Models\PurchaseOrder' ? 'Purchase Order' : 'Sales Order') }}
+                            <span class="badge {{ $badgeClass }}">
+                                {{ strtoupper($docTypeLabel) }}
                             </span>
                         </td>
                         <td>
@@ -57,7 +72,13 @@
                         </td>
                         <td>{{ $app->requester->name ?? '-' }}</td>
                         <td style="text-align:right; font-weight:700; color:var(--primary);">
-                            Rp {{ number_format($app->amount, 0, ',', '.') }}
+                            @if($app->amount > 0)
+                                Rp {{ number_format($app->amount, 0, ',', '.') }}
+                            @else
+                                <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">
+                                    {{ ($doc && $doc->items ? $doc->items->count() : 0) }} Item
+                                </span>
+                            @endif
                         </td>
                         <td>{{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}</td>
                         <td style="text-align:center;">
@@ -66,7 +87,7 @@
                                 <form id="approve-form-{{ $app->id }}" method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline;">
                                     @csrf 
                                     @method('PATCH')
-                                    <button type="button" class="btn btn-success btn-sm" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ number_format($app->amount, 0, ',', '.') }}')">
+                                    <button type="button" class="btn btn-success btn-sm" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ $app->amount > 0 ? number_format($app->amount, 0, ',', '.') : '' }}')">
                                         <i class="fa-solid fa-check"></i> Setujui
                                     </button>
                                 </form>
@@ -130,10 +151,24 @@
                 </thead>
                 <tbody>
                     @forelse($myApprovals as $app)
+                    @php
+                        $typeLabel = match($app->approvable_type) {
+                            'App\Models\PurchaseRequest' => 'Purchase Request',
+                            'App\Models\PurchaseOrder' => 'Purchase Order',
+                            'App\Models\SalesOrder' => 'Sales Order',
+                            default => class_basename($app->approvable_type ?? 'Dokumen'),
+                        };
+                    @endphp
                     <tr>
                         <td style="font-weight:600;">{{ $app->request_number }}</td>
-                        <td>{{ $app->approvable_type === 'App\Models\PurchaseOrder' ? 'Purchase Order' : 'Sales Order' }}</td>
-                        <td style="text-align:right;">Rp {{ number_format($app->amount, 0, ',', '.') }}</td>
+                        <td>{{ $typeLabel }}</td>
+                        <td style="text-align:right;">
+                            @if($app->amount > 0)
+                                Rp {{ number_format($app->amount, 0, ',', '.') }}
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td>{{ $app->requester->name ?? '-' }}</td>
                         <td style="text-align:center;">
                             <span class="badge badge-{{ $app->status === 'approved' ? 'done' : 'cancelled' }}">
@@ -164,9 +199,10 @@
 @push('scripts')
 <script>
 function approveApproval(id, docNum, amount) {
+    const amountText = amount ? ` sebesar <strong style="color:var(--primary);">Rp ${amount}</strong>` : '';
     Swal.fire({
         title: 'Konfirmasi Persetujuan',
-        html: `Setujui transaksi <strong>${docNum}</strong> sebesar <strong style="color:var(--primary);">Rp ${amount}</strong>?`,
+        html: `Setujui transaksi <strong>${docNum}</strong>${amountText}?`,
         icon: 'question',
         iconColor: '#16a34a',
         showCancelButton: true,

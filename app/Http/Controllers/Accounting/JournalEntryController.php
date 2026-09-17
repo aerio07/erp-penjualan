@@ -79,7 +79,7 @@ class JournalEntryController extends Controller
             return $entry;
         });
 
-        return redirect()->route('accounting.journals.show', $entry)
+        return redirect()->route('accounting.journals.index')
             ->with('success', 'Journal Entry berhasil dibuat.');
     }
 

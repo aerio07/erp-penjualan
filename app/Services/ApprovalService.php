@@ -82,9 +82,10 @@ class ApprovalService
     public function needsApproval(string $docType, float $amount): bool
     {
         return match ($docType) {
-            'purchase_order' => true,
-            'sales_order'    => true,
-            default          => false,
+            'purchase_request' => true,
+            'purchase_order'   => true,
+            'sales_order'      => true,
+            default            => false,
         };
     }
 

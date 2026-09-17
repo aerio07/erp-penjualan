@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
+use App\Services\ApprovalService;
 use App\Services\StockService;
 use App\Traits\GeneratesDocumentNumber;
 use App\Traits\HasListFilters;
@@ -27,7 +28,10 @@ class PurchaseRequestController extends Controller
         'Finance & Accounting',
     ];
 
-    public function __construct(private StockService $stockService) {}
+    public function __construct(
+        private StockService $stockService,
+        private ApprovalService $approvalService
+    ) {}
 
     /**
      * Menampilkan daftar Purchase Request.
@@ -128,7 +132,7 @@ class PurchaseRequestController extends Controller
             return $pr;
         });
 
-        return redirect()->route('purchase.requests.show', $pr)
+        return redirect()->route('purchase.requests.index')
             ->with('success', "Draft Purchase Request {$pr->pr_number} berhasil disimpan.");
     }
 
@@ -234,12 +238,25 @@ class PurchaseRequestController extends Controller
             return back()->with('error', 'Hanya dokumen berstatus Draft atau Ditolak yang dapat diajukan untuk approval.');
         }
 
+        $purchase_request->load(['items.product', 'user']);
+
         $purchase_request->update([
             'status'           => 'waiting_approval',
             'rejection_reason' => null,
         ]);
 
-        return back()->with('success', "Purchase Request {$purchase_request->pr_number} berhasil diajukan untuk persetujuan (approval).");
+        $estimatedAmount = (float) $purchase_request->items->sum(function ($item) {
+            return $item->qty * (float) ($item->product->purchase_price ?? 0);
+        });
+
+        $this->approvalService->request(
+            PurchaseRequest::class,
+            $purchase_request->id,
+            $estimatedAmount,
+            "PR #{$purchase_request->pr_number} diajukan oleh " . ($purchase_request->user->name ?? 'User') . " (" . ($purchase_request->division ?? 'Umum') . ")."
+        );
+
+        return back()->with('success', "Purchase Request {$purchase_request->pr_number} berhasil diajukan. Dokumen kini berada di antrean Menu Approval.");
     }
 
     /**
@@ -265,6 +282,11 @@ class PurchaseRequestController extends Controller
             return back()->with('error', 'Hanya PR yang sedang menunggu approval yang dapat disetujui.');
         }
 
+        $approval = $purchase_request->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->approve($approval);
+        }
+
         $purchase_request->update([
             'status'      => 'approved',
             'approved_by' => auth()->id(),
@@ -286,6 +308,11 @@ class PurchaseRequestController extends Controller
         $request->validate([
             'rejection_reason' => 'required|string|max:500',
         ]);
+
+        $approval = $purchase_request->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->reject($approval, $request->rejection_reason);
+        }
 
         $purchase_request->update([
             'status'           => 'rejected',

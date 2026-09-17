@@ -18,20 +18,6 @@
         @csrf @method('PATCH')
     </form>
 
-    @if($isAdmin && $order->status === 'waiting_approval')
-    <form id="form-approve-po" method="POST" action="{{ route('purchase.orders.approve', $order) }}" style="display:none;">
-        @csrf @method('PATCH')
-    </form>
-    <form id="form-revise-po" method="POST" action="{{ route('purchase.orders.revise', $order) }}" style="display:none;">
-        @csrf @method('PATCH')
-        <input type="hidden" name="revision_reason" id="po-revision-reason" value="">
-    </form>
-    <form id="form-reject-po" method="POST" action="{{ route('purchase.orders.reject', $order) }}" style="display:none;">
-        @csrf @method('PATCH')
-        <input type="hidden" name="rejection_reason" id="po-rejection-reason" value="">
-    </form>
-    @endif
-
     <x-detail-header 
         :title="$order->po_number" 
         :subtitle="$order->supplier->name . ' · ' . $order->order_date->format('d/m/Y')"
@@ -57,23 +43,13 @@
             </button>
             @elseif($order->status === 'waiting_approval')
                 @if($isAdmin)
-                <button type="button" class="btn btn-danger" onclick="confirmRejectPO()">
-                    <i class="fa-solid fa-ban"></i> Tolak PO
-                </button>
-
-                <button type="button" class="btn btn-warning" onclick="confirmRevisePO()" style="color:#78350f; background:#fde68a; border-color:#fcd34d;">
-                    <i class="fa-solid fa-rotate-left"></i> Minta Revisi
-                </button>
-
-                <button type="button" class="btn btn-success" onclick="confirmApprovePO()">
-                    <i class="fa-solid fa-check"></i> Setujui PO (Approve)
-                </button>
-                @else
-                {{-- Non-admin: hanya bisa batalkan --}}
+                <a href="{{ route('approvals.index') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-stamp"></i> Buka Menu Approval
+                </a>
+                @endif
                 <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
                     <i class="fa-solid fa-ban"></i> Batalkan PO
                 </button>
-                @endif
             @elseif(in_array($order->status, ['confirmed', 'partial_received']))
                 <a href="{{ route('purchase.goods-receipts.create', ['po_id' => $order->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-truck-ramp-box"></i> Terima Barang
@@ -381,65 +357,6 @@
 
 @push('scripts')
 <script>
-function confirmApprovePO() {
-    Swal.fire({
-        title: 'Setujui Purchase Order',
-        html: `Apakah Anda yakin ingin menyetujui Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status PO akan dikonfirmasi dan siap diteruskan ke supplier.</span>`,
-        icon: 'question',
-        iconColor: '#16a34a',
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px;"></i> Ya, Setujui PO',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('form-approve-po').submit();
-        }
-    });
-}
-
-function confirmRevisePO() {
-    Swal.fire({
-        title: 'Minta Revisi Purchase Order',
-        html: `<div style="font-size:13px; color:#64748b; margin-bottom:8px;">Purchase Order <strong>{{ $order->po_number }}</strong> akan dikembalikan ke status <strong>Draft</strong> agar tim purchasing dapat mengedit data pesanan.</div>`,
-        icon: 'warning',
-        iconColor: '#f59e0b',
-        input: 'textarea',
-        inputLabel: 'Catatan / Alasan Revisi (Wajib)',
-        inputPlaceholder: 'Tuliskan catatan detail bagian mana yang harus diperbaiki (contoh: kurangi qty, sesuaikan harga satuan)...',
-        inputAttributes: { 'aria-label': 'Catatan Revisi' },
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-rotate-left" style="margin-right:6px;"></i> Kirim Permintaan Revisi',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-warning',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
-        inputValidator: (value) => {
-            if (!value || !value.trim()) {
-                return 'Catatan revisi wajib diisi agar purchasing mengetahui apa yang perlu diperbaiki!';
-            }
-            if (value.trim().length < 3) {
-                return 'Catatan revisi minimal 3 karakter!';
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('po-revision-reason').value = result.value.trim();
-            document.getElementById('form-revise-po').submit();
-        }
-    });
-}
-
 function confirmCancelPO() {
     Swal.fire({
         title: 'Batalkan Purchase Order',
@@ -472,42 +389,6 @@ function confirmCancelPO() {
         if (result.isConfirmed) {
             document.getElementById('po-cancel-reason').value = result.value.trim();
             document.getElementById('form-cancel-po').submit();
-        }
-    });
-}
-
-function confirmRejectPO() {
-    Swal.fire({
-        title: 'Tolak Purchase Order',
-        html: `Apakah Anda yakin ingin menolak Purchase Order <strong>{{ $order->po_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status PO akan diubah menjadi <strong>Dibatalkan (Cancelled)</strong>.</span>`,
-        icon: 'error',
-        iconColor: '#dc2626',
-        input: 'textarea',
-        inputLabel: 'Alasan Penolakan (Wajib Diisi)',
-        inputPlaceholder: 'Tuliskan alasan penolakan dokumen...',
-        inputAttributes: { 'aria-label': 'Alasan Penolakan' },
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Tolak PO',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
-        inputValidator: (value) => {
-            if (!value || !value.trim()) {
-                return 'Alasan penolakan Purchase Order wajib diisi!';
-            }
-            if (value.trim().length < 3) {
-                return 'Alasan penolakan minimal 3 karakter!';
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('po-rejection-reason').value = result.value.trim();
-            document.getElementById('form-reject-po').submit();
         }
     });
 }

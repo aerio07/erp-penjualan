@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ApprovalRequest;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
 use App\Models\SalesOrder;
 use App\Services\ApprovalService;
 use App\Services\StockService;
@@ -51,10 +52,18 @@ class ApprovalController extends Controller
         // Update status dokumen terkait
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            $approvable->update(['status' => 'confirmed']);
+            if ($approvable instanceof PurchaseRequest) {
+                $approvable->update([
+                    'status'      => 'approved',
+                    'approved_by' => auth()->id(),
+                    'approved_at' => now(),
+                ]);
+            } else {
+                $approvable->update(['status' => 'confirmed']);
 
-            if ($approvable instanceof SalesOrder) {
-                $this->stockService->allocateStockForSalesOrder($approvable);
+                if ($approvable instanceof SalesOrder) {
+                    $this->stockService->allocateStockForSalesOrder($approvable);
+                }
             }
         }
 
@@ -67,22 +76,31 @@ class ApprovalController extends Controller
 
         $this->approvalService->reject($approval, $request->rejection_reason);
 
-        // Ubah status dokumen terkait menjadi cancelled
+        // Ubah status dokumen terkait menjadi cancelled / rejected
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            $approvable->update(['status' => 'cancelled']);
-
-            if ($approvable instanceof SalesOrder) {
-                $this->stockService->releaseReservationsForSalesOrder($approvable);
-            } elseif ($approvable instanceof PurchaseOrder) {
-                $approvable->procurementDemands()->update([
-                    'purchase_order_id' => null,
-                    'status'            => 'pending',
+            if ($approvable instanceof PurchaseRequest) {
+                $approvable->update([
+                    'status'           => 'rejected',
+                    'rejection_reason' => $request->rejection_reason,
+                    'approved_by'      => auth()->id(),
+                    'approved_at'      => now(),
                 ]);
+            } else {
+                $approvable->update(['status' => 'cancelled']);
+
+                if ($approvable instanceof SalesOrder) {
+                    $this->stockService->releaseReservationsForSalesOrder($approvable);
+                } elseif ($approvable instanceof PurchaseOrder) {
+                    $approvable->procurementDemands()->update([
+                        'purchase_order_id' => null,
+                        'status'            => 'pending',
+                    ]);
+                }
             }
         }
 
-        return back()->with('success', "Approval #{$approval->request_number} berhasil ditolak dan dokumen dibatalkan.");
+        return back()->with('success', "Approval #{$approval->request_number} berhasil ditolak.");
     }
 
     public function revise(Request $request, ApprovalRequest $approval): RedirectResponse
@@ -97,18 +115,25 @@ class ApprovalController extends Controller
         // Ubah status dokumen terkait kembali ke draft untuk direvisi
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            $approvable->update([
-                'status'             => 'draft',
-                'fulfillment_status' => 'pending',
-            ]);
-
-            if ($approvable instanceof SalesOrder) {
-                $this->stockService->releaseReservationsForSalesOrder($approvable);
-            } elseif ($approvable instanceof PurchaseOrder) {
-                $approvable->procurementDemands()->update([
-                    'purchase_order_id' => null,
-                    'status'            => 'pending',
+            if ($approvable instanceof PurchaseRequest) {
+                $approvable->update([
+                    'status'           => 'draft',
+                    'rejection_reason' => $request->revision_reason,
                 ]);
+            } else {
+                $approvable->update([
+                    'status'             => 'draft',
+                    'fulfillment_status' => 'pending',
+                ]);
+
+                if ($approvable instanceof SalesOrder) {
+                    $this->stockService->releaseReservationsForSalesOrder($approvable);
+                } elseif ($approvable instanceof PurchaseOrder) {
+                    $approvable->procurementDemands()->update([
+                        'purchase_order_id' => null,
+                        'status'            => 'pending',
+                    ]);
+                }
             }
         }
 
