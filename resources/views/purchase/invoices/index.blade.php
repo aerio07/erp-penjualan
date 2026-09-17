@@ -105,13 +105,7 @@
                     :pdf-url="in_array($inv->status, ['unpaid', 'partial', 'paid']) ? route('pdf.purchase-invoice', $inv) : null"
                     :delete-url="$inv->status === 'draft' ? route('purchase.invoices.destroy', $inv) : null"
                     delete-confirm="Yakin ingin menghapus draft invoice ini? LPB terkait akan otomatis dilepaskan."
-                >
-                    @if($inv->status !== 'draft' && $inv->outstanding_amount > 0)
-                        <a href="{{ route('purchase.payments.create') }}?invoice_id={{ $inv->id }}" class="btn btn-success btn-sm btn-icon" title="Bayar Hutang">
-                            <i class="fa-solid fa-money-check-dollar"></i>
-                        </a>
-                    @endif
-                </x-table-actions>
+                />
             </td>
         </tr>
         @empty

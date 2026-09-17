@@ -74,32 +74,10 @@
                         <i class="fa-solid fa-eye"></i>
                     </a>
 
-                    @if($pr->status === 'approved')
-                    <a href="{{ route('purchase.orders.create', ['purchase_request_id' => $pr->id]) }}" class="btn btn-sm btn-primary" title="Terbitkan PO dari PR ini" style="background:#2563eb;">
-                        <i class="fa-solid fa-file-invoice-dollar"></i>
-                    </a>
-                    @endif
-
                     @if(in_array($pr->status, ['draft', 'rejected']))
                     <a href="{{ route('purchase.requests.edit', $pr) }}" class="btn btn-sm btn-secondary" title="Edit PR">
                         <i class="fa-solid fa-pen"></i>
                     </a>
-                    <button type="button" class="btn btn-sm btn-primary" title="Ajukan Persetujuan"
-                        data-confirm-swal="submit-pr-{{ $pr->id }}"
-                        data-swal-title="Ajukan Purchase Request"
-                        data-swal-html="Ajukan Purchase Request <strong>{{ $pr->pr_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Dokumen akan dikirim ke Menu Approval.</span>"
-                        data-swal-icon="question"
-                        data-swal-icon-color="#2563eb"
-                        data-swal-btn-text="Ya, Ajukan"
-                        data-swal-btn-icon="fa-solid fa-paper-plane"
-                        data-swal-btn-class="btn btn-primary"
-                    >
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </button>
-                    <form id="submit-pr-{{ $pr->id }}" method="POST" action="{{ route('purchase.requests.submit', $pr) }}" style="display:none;">
-                        @csrf
-                        @method('PATCH')
-                    </form>
 
                     <button type="button" class="btn btn-sm btn-danger" title="Hapus"
                         data-confirm-delete="delete-pr-{{ $pr->id }}"

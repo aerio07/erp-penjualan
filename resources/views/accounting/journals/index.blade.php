@@ -52,14 +52,6 @@
                     <a href="{{ route('accounting.journals.show', $entry) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Jurnal">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if($entry->status === 'draft')
-                    <form method="POST" action="{{ route('accounting.journals.post', $entry) }}" style="display:inline;">
-                        @csrf @method('PATCH')
-                        <button type="submit" class="btn btn-success btn-sm btn-icon" title="Posting Jurnal">
-                            <i class="fa-solid fa-check"></i>
-                        </button>
-                    </form>
-                    @endif
                 </div>
             </td>
         </tr>

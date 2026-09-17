@@ -106,11 +106,6 @@
                     <a href="{{ route('sales.deliveries.show', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if($del->status === 'in_transit')
-                    <a href="{{ route('sales.deliveries.show', $del) }}" class="btn btn-primary btn-sm btn-icon" title="Konfirmasi Penerimaan Barang">
-                        <i class="fa-solid fa-clipboard-check"></i>
-                    </a>
-                    @endif
                     @if(in_array($del->status, ['in_transit', 'delivered']))
                     <a href="{{ route('pdf.delivery', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Cetak Surat Jalan" target="_blank">
                         <i class="fa-solid fa-file-pdf"></i>

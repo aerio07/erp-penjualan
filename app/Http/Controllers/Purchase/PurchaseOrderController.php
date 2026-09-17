@@ -341,7 +341,8 @@ class PurchaseOrderController extends Controller
             "PO #{$order->po_number} membutuhkan approval sebelum dapat diproses."
         );
 
-        return back()->with('info', 'PO telah dikirim untuk approval.');
+        return redirect()->route('purchase.orders.index')
+            ->with('info', "Purchase Order #{$order->po_number} telah diajukan ke Menu Approval.");
     }
 
     public function approve(PurchaseOrder $purchaseOrder): RedirectResponse

@@ -91,11 +91,6 @@
                     <a href="{{ route('purchase.goods-receipts.show', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if(!$receipt->is_invoiced)
-                    <a href="{{ route('purchase.invoices.create', ['po_id' => $receipt->purchase_order_id, 'grn_id' => $receipt->id]) }}" class="btn btn-primary btn-sm btn-icon" title="Lempar ke Invoice / Buat Tagihan">
-                        <i class="fa-solid fa-file-invoice-dollar"></i>
-                    </a>
-                    @endif
                 </div>
             </td>
         </tr>

@@ -110,13 +110,6 @@
                         <a href="{{ route('inventory.transfers.edit', $trf) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit Draft" style="color:var(--primary);">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </a>
-
-                        <form method="POST" action="{{ route('inventory.transfers.ship', $trf) }}" style="display:inline;">
-                            @csrf @method('PATCH')
-                            <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Post / Kirim Transfer" onclick="return confirm('Posting / Kirim transfer #{{ $trf->transfer_number }} sekarang? Stok gudang asal akan dikurangi.')">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </form>
                     @endif
                 </div>
             </td>

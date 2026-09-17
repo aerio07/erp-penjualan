@@ -256,7 +256,8 @@ class PurchaseRequestController extends Controller
             "PR #{$purchase_request->pr_number} diajukan oleh " . ($purchase_request->user->name ?? 'User') . " (" . ($purchase_request->division ?? 'Umum') . ")."
         );
 
-        return back()->with('success', "Purchase Request {$purchase_request->pr_number} berhasil diajukan. Dokumen kini berada di antrean Menu Approval.");
+        return redirect()->route('purchase.requests.index')
+            ->with('success', "Purchase Request {$purchase_request->pr_number} berhasil diajukan. Dokumen kini berada di antrean Menu Approval.");
     }
 
     /**

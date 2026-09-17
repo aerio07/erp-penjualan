@@ -274,7 +274,8 @@ class SalesOrderController extends Controller
                 "SO #{$order->so_number} membutuhkan approval sebelum dapat diproses."
             );
 
-            return back()->with('info', "Sales Order #{$order->so_number} telah dikirim untuk approval.");
+            return redirect()->route('sales.orders.index')
+                ->with('info', "Sales Order #{$order->so_number} telah diajukan ke Menu Approval.");
         }
 
         $order->update(['status' => 'confirmed']);
