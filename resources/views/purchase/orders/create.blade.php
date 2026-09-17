@@ -377,12 +377,6 @@ function poForm() {
                         expInput.value = (typeof pr.required_date === 'string') ? pr.required_date.substring(0, 10) : '';
                     }
                 }
-                if (pr.notes) {
-                    const notesArea = document.querySelector('textarea[name="notes"]');
-                    if (notesArea && !notesArea.value) {
-                        notesArea.value = 'Reff PR ' + pr.pr_number + ': ' + pr.notes;
-                    }
-                }
             } else {
                 this.rows = [];
             }
