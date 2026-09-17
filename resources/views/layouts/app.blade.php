@@ -41,9 +41,38 @@
             z-index: 50 !important;
             display: flex !important;
             flex-direction: column !important;
-            overflow-y: auto !important;
+            overflow: hidden !important;
             box-sizing: border-box !important;
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), left 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        #erp-sidebar-logo {
+            flex-shrink: 0 !important;
+            min-height: 68px !important;
+            max-height: 68px !important;
+            height: 68px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        #erp-sidebar-nav {
+            flex: 1 1 0% !important;
+            min-height: 0 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            scrollbar-width: thin;
+            scrollbar-color: #1b2e52 transparent;
+        }
+        #erp-sidebar-nav::-webkit-scrollbar {
+            width: 5px;
+        }
+        #erp-sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #erp-sidebar-nav::-webkit-scrollbar-thumb {
+            background-color: #1b2e52;
+            border-radius: 4px;
         }
 
         .erp-backdrop {
@@ -1132,13 +1161,13 @@
     <!-- ========================================================= -->
     <!-- SIDEBAR NAVIGATION (240px Navy #03193c) -->
     <!-- ========================================================= -->
-    <aside id="erp-sidebar" class="fixed left-0 top-0 h-full w-[240px] bg-[#03193c] z-50 flex flex-col overflow-y-auto border-r border-[#1b2e52]">
-        <!-- Brand Header -->
-        <a href="{{ route('dashboard') }}" class="flex items-center justify-center px-6 h-[68px] border-b border-[#1b2e52] mb-4 hover:opacity-90 transition-opacity">
-            <img src="{{ asset('assets/FlashSuitePro - white.png') }}" alt="FlashSuite Pro" class="h-[21px] w-auto max-w-[172px] object-contain">
+    <aside id="erp-sidebar" class="fixed left-0 top-0 h-full w-[240px] bg-[#03193c] z-50 flex flex-col overflow-hidden border-r border-[#1b2e52]">
+        <!-- Brand Header (Fixed Top) -->
+        <a id="erp-sidebar-logo" href="{{ route('dashboard') }}" class="shrink-0 flex items-center justify-center px-6 h-[68px] min-h-[68px] border-b border-[#1b2e52] hover:opacity-90 transition-opacity" style="flex-shrink: 0; min-height: 68px; height: 68px;">
+            <img src="{{ asset('assets/FlashSuitePro - white.png') }}" alt="FlashSuite Pro" class="h-[22px] max-h-[26px] w-auto max-w-[172px] object-contain shrink-0" style="flex-shrink: 0;">
         </a>
 
-        <nav class="flex-1 flex flex-col gap-1 px-2">
+        <nav id="erp-sidebar-nav" class="flex-1 flex flex-col gap-1 px-2 pt-3 pb-6 overflow-y-auto">
             @php
                 $u = auth()->user();
                 $isAdmin = $u && $u->isAdmin();
