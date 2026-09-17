@@ -248,6 +248,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PDF EXPORT
     // =========================================================
     Route::middleware('role:admin,purchasing,sales,finance,gudang')->prefix('pdf')->name('pdf.')->group(function () {
+        Route::get('purchase-request/{purchase_request}', [PurchaseRequestController::class, 'exportPdf'])->name('purchase-request');
         Route::get('purchase-order/{purchase_order}', [PurchaseOrderController::class, 'exportPdf'])->name('purchase-order');
         Route::get('purchase-invoice/{invoice}', [PurchaseInvoiceController::class, 'exportPdf'])->name('purchase-invoice');
         Route::get('delivery/{delivery}', [DeliveryController::class, 'exportPdf'])->name('delivery');

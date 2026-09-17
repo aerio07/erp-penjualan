@@ -8,6 +8,7 @@ use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use App\Services\ApprovalService;
 use App\Services\StockService;
+use App\Traits\ExportsPdfDocument;
 use App\Traits\GeneratesDocumentNumber;
 use App\Traits\HasListFilters;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,7 @@ use Illuminate\View\View;
 
 class PurchaseRequestController extends Controller
 {
-    use GeneratesDocumentNumber, HasListFilters;
+    use GeneratesDocumentNumber, HasListFilters, ExportsPdfDocument;
 
     private const DIVISIONS = [
         'Administrasi & Umum',
@@ -353,5 +354,26 @@ class PurchaseRequestController extends Controller
             'notes'         => $purchase_request->notes,
             'items'         => $items,
         ]);
+    }
+
+    /**
+     * Ekspor Purchase Request ke format PDF.
+     */
+    public function exportPdf(PurchaseRequest $purchase_request)
+    {
+        abort_if(!in_array($purchase_request->status, ['approved', 'ordered']), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
+
+        $purchase_request->load([
+            'user',
+            'approver',
+            'category',
+            'warehouse',
+            'purchaseOrders',
+            'items.product',
+        ]);
+
+        $filename = 'Purchase-Request-' . $purchase_request->pr_number;
+
+        return $this->streamPdf('pdf.purchase-request', compact('purchase_request'), $filename);
     }
 }

@@ -74,6 +74,12 @@
                         <i class="fa-solid fa-eye"></i>
                     </a>
 
+                    @if(in_array($pr->status, ['approved', 'ordered']))
+                    <a href="{{ route('pdf.purchase-request', $pr) }}" class="btn btn-sm btn-secondary" title="Export PDF" target="_blank">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </a>
+                    @endif
+
                     @if(in_array($pr->status, ['draft', 'rejected']))
                     <a href="{{ route('purchase.requests.edit', $pr) }}" class="btn btn-sm btn-secondary" title="Edit PR">
                         <i class="fa-solid fa-pen"></i>
