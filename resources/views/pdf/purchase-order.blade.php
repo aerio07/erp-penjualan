@@ -6,14 +6,21 @@
 
 @section('content')
     @php
-        // Subtotal dari seluruh item pesanan (sudah terpotong diskon per item)
-        $itemsSubtotal = $order->items->sum('subtotal');
+        // Gross subtotal (harga kotor sebelum seluruh diskon)
+        $grossSubtotal = $order->items->sum(function($item) {
+            return ($item->qty_ordered ?? 0) * ($item->unit_price ?? 0);
+        });
+
+        // Total diskon per item
+        $itemDiscountSum = $order->items->sum(function($item) {
+            return (($item->qty_ordered ?? 0) * ($item->unit_price ?? 0)) * (($item->discount_percent ?? 0) / 100);
+        });
 
         // Diskon header
         $headerDiscount = (float) ($order->discount_amount ?? 0);
 
-        // Dasar Pengenaan Pajak (DPP) setelah dikurangi diskon header
-        $taxableAmount = max(0, $itemsSubtotal - $headerDiscount);
+        // Total seluruh diskon (diskon item + diskon header)
+        $totalDiskon = $itemDiscountSum + $headerDiscount;
     @endphp
 
     {{-- VENDOR & ORDER DETAILS SECTION (Side by Side) --}}
@@ -57,6 +64,13 @@
                         <td class="detail-value">{{ $order->purchaseRequest->pr_number }} (Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</td>
                     </tr>
                     @endif
+                    @if($headerDiscount > 0)
+                    <tr>
+                        <td class="detail-label">Diskon Header</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value" style="color: #dc2626; font-weight: 600;">Rp {{ number_format($headerDiscount, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
                     <tr>
                         <td class="detail-label">Purchasing Staff</td>
                         <td class="detail-colon">:</td>
@@ -73,11 +87,12 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th class="text-center" style="width: 5%;">#</th>
-                    <th class="text-left" style="width: 37%;">Description</th>
-                    <th class="text-center" style="width: 9%;">Quantity</th>
-                    <th class="text-center" style="width: 9%;">Satuan</th>
-                    <th class="text-right" style="width: 16%;">Unit Price</th>
+                    <th class="text-center" style="width: 4%;">#</th>
+                    <th class="text-left" style="width: 14%;">Kode Produk</th>
+                    <th class="text-left" style="width: 28%;">Deskripsi Barang</th>
+                    <th class="text-center" style="width: 8%;">Qty</th>
+                    <th class="text-center" style="width: 8%;">Satuan</th>
+                    <th class="text-right" style="width: 14%;">Harga Satuan</th>
                     <th class="text-center" style="width: 9%;">Diskon</th>
                     <th class="text-right" style="width: 15%;">Total</th>
                 </tr>
@@ -86,11 +101,11 @@
                 @forelse($order->items as $i => $item)
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
-                    <td class="text-left">
-                        <span style="font-weight: 600; color: #111;">{{ $item->product->name ?? '-' }}</span>
-                        @if(!empty($item->product->sku))
-                            <div style="font-size: 7.5pt; color: #777;">SKU: {{ $item->product->sku }}</div>
-                        @endif
+                    <td class="text-left" style="font-family: monospace; font-size: 8pt; color: #444;">
+                        {{ $item->product->sku ?? '-' }}
+                    </td>
+                    <td class="text-left" style="font-weight: 600; color: #111;">
+                        {{ $item->product->name ?? '-' }}
                     </td>
                     <td class="text-center" style="font-weight: 600;">
                         {{ number_format($item->qty_ordered ?? 0) }}
@@ -114,7 +129,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
+                    <td colspan="8" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -135,26 +150,30 @@
             <td style="width: 50%; vertical-align: top;">
                 <table style="width: 100%;">
                     <tr>
-                        <td class="tot-label">Subtotal:</td>
-                        <td class="tot-value">Rp {{ number_format($itemsSubtotal, 0, ',', '.') }}</td>
-                    </tr>
-                    @if($headerDiscount > 0)
-                    <tr>
-                        <td class="tot-label tot-discount">Diskon Header:</td>
-                        <td class="tot-value tot-discount">- Rp {{ number_format($headerDiscount, 0, ',', '.') }}</td>
+                        <td class="tot-label">Sub Total:</td>
+                        <td class="tot-value">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <td class="tot-label" style="color: #555; font-size: 8pt;">DPP (Setelah Diskon):</td>
-                        <td class="tot-value" style="color: #555; font-size: 8pt;">Rp {{ number_format($taxableAmount, 0, ',', '.') }}</td>
+                        <td class="tot-label {{ $totalDiskon > 0 ? 'tot-discount' : '' }}">Total Diskon:</td>
+                        <td class="tot-value {{ $totalDiskon > 0 ? 'tot-discount' : '' }}">
+                            @if($totalDiskon > 0)
+                                - Rp {{ number_format($totalDiskon, 0, ',', '.') }}
+                                @if($headerDiscount > 0 && $itemDiscountSum > 0)
+                                    <div style="font-size: 7pt; color: #dc2626; font-weight: normal;">
+                                        (Item: Rp {{ number_format($itemDiscountSum, 0, ',', '.') }} + Header: Rp {{ number_format($headerDiscount, 0, ',', '.') }})
+                                    </div>
+                                @elseif($headerDiscount > 0)
+                                    <div style="font-size: 7pt; color: #dc2626; font-weight: normal;">
+                                        (Diskon Header: Rp {{ number_format($headerDiscount, 0, ',', '.') }})
+                                    </div>
+                                @endif
+                            @else
+                                <span style="color: #666;">-</span>
+                            @endif
+                        </td>
                     </tr>
-                    @else
                     <tr>
-                        <td class="tot-label" style="color: #666;">Diskon Header:</td>
-                        <td class="tot-value" style="color: #666;">-</td>
-                    </tr>
-                    @endif
-                    <tr>
-                        <td class="tot-label">Tax ({{ $order->tax_rate ?? 0 }}%):</td>
+                        <td class="tot-label">Pajak ({{ $order->tax_rate ?? 0 }}%):</td>
                         <td class="tot-value">Rp {{ number_format($order->tax_amount ?? 0, 0, ',', '.') }}</td>
                     </tr>
                     <tr class="total-final">
