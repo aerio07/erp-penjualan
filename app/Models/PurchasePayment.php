@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PurchasePayment extends Model
 {
     protected $fillable = [
-        'purchase_invoice_id', 'user_id', 'amount',
+        'purchase_invoice_id', 'user_id', 'amount', 'status',
         'payment_date', 'method', 'reference_number', 'notes',
     ];
 
@@ -16,6 +16,16 @@ class PurchasePayment extends Model
         'payment_date' => 'date',
         'amount' => 'decimal:2',
     ];
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function isPosted(): bool
+    {
+        return $this->status === 'posted';
+    }
 
     public function purchaseInvoice(): BelongsTo
     {

@@ -156,11 +156,19 @@
             </div>
         </div>
 
-        <x-form-actions 
-            :cancel-url="route('sales.payments.show', $payment)" 
-            submit-label="Simpan Perubahan & Update Jurnal" 
-            submit-icon="fa-solid fa-save"
-        />
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+            <a href="{{ route('sales.payments.show', $payment) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" name="action" value="update" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Update Draft
+                </button>
+                <button type="submit" name="action" value="post" class="btn btn-success" onclick="return confirm('Posting penerimaan piutang ini sekarang? Jurnal akuntansi akan otomatis dicatat dan pembayaran yang sudah diposting tidak dapat diubah lagi.')">
+                    <i class="fa-solid fa-paper-plane"></i> Simpan & Posting
+                </button>
+            </div>
+        </div>
     </form>
 </div>
 @endsection

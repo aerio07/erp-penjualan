@@ -14,7 +14,26 @@
         </x-slot:actions>
     </x-page-header>
 
+    @if(session('success'))
+    <div class="alert alert-success" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
+        <div>{{ session('success') }}</div>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px;"></i>
+        <div>{{ session('error') }}</div>
+    </div>
+    @endif
+
     <x-list-filter-bar :action="route('sales.payments.index')" placeholder="Cari Ref / Resi, No. Invoice, Customer..." :showDateFilter="true">
+        <select name="status" class="form-control filter-select">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="posted" {{ request('status') === 'posted' ? 'selected' : '' }}>Posted</option>
+        </select>
         <select name="method" class="form-control filter-select">
             <option value="">Semua Metode</option>
             <option value="transfer" {{ request('method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
@@ -33,6 +52,7 @@
                 <x-sortable-header column="method" title="Metode" />
                 <th>No. Ref / Resi</th>
                 <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />
+                <x-sortable-header column="status" title="Status" align="center" />
                 <th>Dicatat Oleh</th>
                 <th class="text-center col-actions">Aksi</th>
             </tr>
@@ -53,8 +73,13 @@
             <td>{{ $p->payment_date ? $p->payment_date->format('m/d/Y') : '-' }}</td>
             <td><span class="badge badge-confirmed">{{ strtoupper($p->method) }}</span></td>
             <td>{{ $p->reference_number ?? '-' }}</td>
-            <td style="text-align:right; font-weight:600; color:var(--success);">
+            <td style="text-align:right; font-weight:600; color:var(--success); font-family: 'Inter', monospace;">
                 Rp {{ number_format($p->amount, 0, ',', '.') }}
+            </td>
+            <td style="text-align:center;">
+                <span class="badge badge-{{ $p->status === 'posted' ? 'posted' : 'draft' }}">
+                    {{ ucfirst($p->status) }}
+                </span>
             </td>
             <td>{{ $p->user->name ?? '-' }}</td>
             <td class="col-actions text-center">
@@ -62,15 +87,30 @@
                     <a href="{{ route('sales.payments.show', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    <a href="{{ route('sales.payments.edit', $p) }}" class="btn btn-warning btn-sm btn-icon" title="Edit Pembayaran">
+                    @if($p->status === 'draft')
+                    <a href="{{ route('sales.payments.edit', $p) }}" class="btn btn-warning btn-sm btn-icon" title="Edit Draft">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
+                    <form method="POST" action="{{ route('sales.payments.post', $p) }}" style="display:inline;" onsubmit="return confirm('Posting penerimaan piutang ini?')">
+                        @csrf
+                        <button type="submit" class="btn btn-success btn-sm btn-icon" title="Posting Pembayaran">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('sales.payments.destroy', $p) }}" style="display:inline;" onsubmit="return confirm('Hapus draft pembayaran ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm btn-icon" title="Hapus Draft">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </form>
+                    @endif
                 </div>
             </td>
         </tr>
         @empty
         <tr>
-            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-hand-holding-dollar" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada riwayat pembayaran piutang yang sesuai filter
             </td>

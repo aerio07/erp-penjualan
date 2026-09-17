@@ -26,8 +26,9 @@ class SalesPaymentController extends Controller
 
         $query = $this->applySearch($query, $request, ['reference_number', 'salesInvoice.invoice_number', 'salesInvoice.salesOrder.customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'method');
+        $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyDateRange($query, $request, 'payment_date');
-        $query = $this->applySort($query, $request, ['payment_date', 'amount', 'method', 'created_at'], 'payment_date', 'desc');
+        $query = $this->applySort($query, $request, ['payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $payments = $query->paginate($perPage)->withQueryString();
@@ -57,9 +58,12 @@ class SalesPaymentController extends Controller
             'method'           => 'required|in:cash,transfer,giro,cek',
             'reference_number' => 'nullable|string',
             'notes'            => 'nullable|string',
+            'action'           => 'nullable|in:draft,post',
         ]);
 
-        return DB::transaction(function () use ($request) {
+        $action = $request->input('action', 'post');
+
+        return DB::transaction(function () use ($request, $action) {
             $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->sales_invoice_id);
 
             if ($invoice->status === 'draft') {
@@ -74,23 +78,30 @@ class SalesPaymentController extends Controller
                 'sales_invoice_id' => $invoice->id,
                 'user_id'          => Auth::id(),
                 'amount'           => $request->amount,
+                'status'           => ($action === 'post') ? 'posted' : 'draft',
                 'payment_date'     => $request->payment_date,
                 'method'           => $request->method,
                 'reference_number' => $request->reference_number,
                 'notes'            => $request->notes,
             ]);
 
-            // Update status invoice
-            $newTotalPaid = $invoice->total_paid + $request->amount;
-            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : 'partial';
-            $invoice->update(['status' => $status]);
+            if ($action === 'post') {
+                // Update status invoice
+                $invoice->unsetRelation('payments');
+                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
+                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+                $invoice->update(['status' => $status]);
 
-            // Automatic Journal Entry (Kas/Bank -> Piutang Usaha)
-            $entry = $this->journalService->createFromSalesPayment($payment);
-            $this->journalService->postEntry($entry);
+                // Automatic Journal Entry (Kas/Bank -> Piutang Usaha)
+                $entry = $this->journalService->createFromSalesPayment($payment);
+                $this->journalService->postEntry($entry);
+
+                return redirect()->route('sales.payments.index')
+                    ->with('success', 'Penerimaan Piutang berhasil dicatat dan diposting ke Jurnal Akuntansi.');
+            }
 
             return redirect()->route('sales.payments.index')
-                ->with('success', 'Penerimaan Piutang berhasil dicatat dan Jurnal Akuntansi otomatis diposting.');
+                ->with('success', 'Draft Penerimaan Piutang berhasil disimpan. Silakan posting jika pembayaran sudah final.');
         });
     }
 
@@ -103,10 +114,12 @@ class SalesPaymentController extends Controller
 
     public function edit(SalesPayment $payment): View
     {
+        abort_if($payment->isPosted(), 403, 'Penerimaan piutang yang sudah diposting tidak dapat diedit.');
+
         $payment->load(['salesInvoice.salesOrder.customer', 'salesInvoice.payments']);
         $invoice = $payment->salesInvoice;
 
-        $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->sum('amount');
+        $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
         $maxAllowed = max(0, $invoice->effective_total_amount - $otherPaid);
 
         return view('sales.payments.edit', compact('payment', 'invoice', 'maxAllowed', 'otherPaid'));
@@ -114,18 +127,23 @@ class SalesPaymentController extends Controller
 
     public function update(Request $request, SalesPayment $payment): RedirectResponse
     {
+        abort_if($payment->isPosted(), 403, 'Penerimaan piutang yang sudah diposting tidak dapat diubah.');
+
         $request->validate([
             'amount'           => 'required|numeric|min:1',
             'payment_date'     => 'required|date',
             'method'           => 'required|in:cash,transfer,giro,cek',
             'reference_number' => 'nullable|string',
             'notes'            => 'nullable|string',
+            'action'           => 'nullable|in:update,post',
         ]);
 
-        return DB::transaction(function () use ($request, $payment) {
+        $action = $request->input('action', 'update');
+
+        return DB::transaction(function () use ($request, $payment, $action) {
             $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($payment->sales_invoice_id);
 
-            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->sum('amount');
+            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
             $maxAllowed = $invoice->effective_total_amount - $otherPaid;
 
             if ($request->amount > $maxAllowed + 0.01) {
@@ -134,22 +152,66 @@ class SalesPaymentController extends Controller
 
             $payment->update([
                 'amount'           => $request->amount,
+                'status'           => ($action === 'post') ? 'posted' : 'draft',
                 'payment_date'     => $request->payment_date,
                 'method'           => $request->method,
                 'reference_number' => $request->reference_number,
                 'notes'            => $request->notes,
             ]);
 
-            // Update status invoice
-            $newTotalPaid = $otherPaid + $request->amount;
+            if ($action === 'post') {
+                // Update status invoice
+                $invoice->unsetRelation('payments');
+                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
+                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+                $invoice->update(['status' => $status]);
+
+                // Posting Jurnal Otomatis Akuntansi
+                $entry = $this->journalService->createFromSalesPayment($payment);
+                $this->journalService->postEntry($entry);
+
+                return redirect()->route('sales.payments.show', $payment)
+                    ->with('success', 'Penerimaan Piutang berhasil diperbarui dan diposting.');
+            }
+
+            return redirect()->route('sales.payments.show', $payment)
+                ->with('success', 'Draft Penerimaan Piutang berhasil diperbarui.');
+        });
+    }
+
+    public function post(SalesPayment $payment): RedirectResponse
+    {
+        abort_if($payment->isPosted(), 422, 'Penerimaan piutang ini sudah berstatus posted.');
+
+        return DB::transaction(function () use ($payment) {
+            $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($payment->sales_invoice_id);
+
+            if ($payment->amount > $invoice->outstanding_amount + 0.01) {
+                return back()->with('error', "Jumlah penerimaan (Rp " . number_format($payment->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").");
+            }
+
+            $payment->update(['status' => 'posted']);
+
+            $invoice->unsetRelation('payments');
+            $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
             $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
             $invoice->update(['status' => $status]);
 
-            // Perbarui Jurnal Otomatis Akuntansi
-            $this->journalService->updateFromSalesPayment($payment);
+            // Jurnal Otomatis
+            $entry = $this->journalService->createFromSalesPayment($payment);
+            $this->journalService->postEntry($entry);
 
-            return redirect()->route('sales.payments.show', $payment)
-                ->with('success', 'Penerimaan Piutang berhasil diperbarui dan Jurnal Akuntansi otomatis disesuaikan.');
+            return back()->with('success', 'Penerimaan Piutang berhasil diposting dan Jurnal Akuntansi otomatis tercatat.');
         });
+    }
+
+    public function destroy(SalesPayment $payment): RedirectResponse
+    {
+        abort_if($payment->isPosted(), 403, 'Penerimaan piutang yang sudah diposting tidak dapat dihapus.');
+
+        $payment->delete();
+
+        return redirect()->route('sales.payments.index')
+            ->with('success', 'Draft Penerimaan Piutang berhasil dihapus.');
     }
 }

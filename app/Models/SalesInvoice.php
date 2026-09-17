@@ -48,10 +48,10 @@ class SalesInvoice extends Model
     public function getTotalPaidAttribute(): float
     {
         if ($this->relationLoaded('payments')) {
-            return (float) $this->payments->sum('amount');
+            return (float) $this->payments->where('status', '!=', 'draft')->sum('amount');
         }
 
-        return (float) $this->payments()->sum('amount');
+        return (float) $this->payments()->where('status', '!=', 'draft')->sum('amount');
     }
 
     public function getTotalReversedAmountAttribute(): float

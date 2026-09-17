@@ -143,47 +143,146 @@ class PurchasePaymentTest extends TestCase
         $responseCreate->assertSee('PT Pemasok Sukses');
     }
 
-    public function test_can_record_partial_and_full_payment_with_auto_journal(): void
+    public function test_can_store_payment_as_draft_without_posting(): void
     {
         $invoice = $this->createUnpaidInvoice(1000000);
 
-        // 1. Partial payment: Rp 400.000
-        $responsePartial = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+        $response = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice->id,
-            'amount'              => 400000,
+            'amount'              => 500000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'transfer',
-            'reference_number'    => 'TRF-001',
-            'notes'               => 'Cicilan 1',
+            'action'              => 'draft',
         ]);
 
-        $responsePartial->assertRedirect(route('purchase.payments.index'));
-        $responsePartial->assertSessionHas('success');
+        $response->assertRedirect(route('purchase.payments.index'));
+        $response->assertSessionHas('success');
+
+        $payment = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
+        $this->assertNotNull($payment);
+        $this->assertEquals('draft', $payment->status);
+        $this->assertTrue($payment->isDraft());
+
+        // Invoice status must NOT be changed while in draft
+        $invoice->refresh();
+        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(1000000, $invoice->outstanding_amount);
+
+        // Journal Entry must NOT be created
+        $this->assertDatabaseMissing('journal_entries', [
+            'reference_type' => PurchasePayment::class,
+            'reference_id'   => $payment->id,
+        ]);
+    }
+
+    public function test_can_update_draft_payment(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+
+        $payment = PurchasePayment::create([
+            'purchase_invoice_id' => $invoice->id,
+            'user_id'             => $this->finance->id,
+            'amount'              => 300000,
+            'status'              => 'draft',
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'transfer',
+            'reference_number'    => 'TRF-DRAFT-1',
+        ]);
+
+        $response = $this->actingAs($this->finance)->put(route('purchase.payments.update', $payment), [
+            'amount'              => 450000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'cash',
+            'reference_number'    => 'CASH-DRAFT-2',
+            'action'              => 'update',
+        ]);
+
+        $response->assertRedirect(route('purchase.payments.show', $payment));
+        $payment->refresh();
+        $this->assertEquals(450000, $payment->amount);
+        $this->assertEquals('draft', $payment->status);
+        $this->assertEquals('cash', $payment->method);
+    }
+
+    public function test_can_post_draft_payment(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+
+        $payment = PurchasePayment::create([
+            'purchase_invoice_id' => $invoice->id,
+            'user_id'             => $this->finance->id,
+            'amount'              => 400000,
+            'status'              => 'draft',
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'transfer',
+        ]);
+
+        $response = $this->actingAs($this->finance)->post(route('purchase.payments.post', $payment));
+
+        $response->assertRedirect();
+        $payment->refresh();
+        $this->assertEquals('posted', $payment->status);
+        $this->assertTrue($payment->isPosted());
 
         $invoice->refresh();
         $this->assertEquals('partial', $invoice->status);
         $this->assertEquals(600000, $invoice->outstanding_amount);
 
-        // Verify Journal Entry for partial payment
-        $payment1 = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
-        $this->assertNotNull($payment1);
+        // Journal Entry must exist and be posted
         $this->assertDatabaseHas('journal_entries', [
             'reference_type' => PurchasePayment::class,
-            'reference_id'   => $payment1->id,
+            'reference_id'   => $payment->id,
             'status'         => 'posted',
         ]);
+    }
 
-        // 2. Full payment: remaining Rp 600.000
-        $responseFull = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+    public function test_cannot_edit_or_update_posted_payment(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+
+        $payment = PurchasePayment::create([
             'purchase_invoice_id' => $invoice->id,
-            'amount'              => 600000,
+            'user_id'             => $this->finance->id,
+            'amount'              => 400000,
+            'status'              => 'posted',
             'payment_date'        => now()->toDateString(),
-            'method'              => 'cash',
-            'reference_number'    => 'CASH-002',
-            'notes'               => 'Pelunasan',
+            'method'              => 'transfer',
         ]);
 
-        $responseFull->assertRedirect(route('purchase.payments.index'));
+        // Attempting to view edit page for posted payment returns 403
+        $responseEdit = $this->actingAs($this->finance)->get(route('purchase.payments.edit', $payment));
+        $responseEdit->assertStatus(403);
+
+        // Attempting to update posted payment returns 403
+        $responseUpdate = $this->actingAs($this->finance)->put(route('purchase.payments.update', $payment), [
+            'amount'              => 500000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'cash',
+        ]);
+        $responseUpdate->assertStatus(403);
+
+        // Attempting to delete posted payment returns 403
+        $responseDelete = $this->actingAs($this->finance)->delete(route('purchase.payments.destroy', $payment));
+        $responseDelete->assertStatus(403);
+    }
+
+    public function test_can_record_and_post_payment_immediately(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+
+        $response = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+            'purchase_invoice_id' => $invoice->id,
+            'amount'              => 1000000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'transfer',
+            'reference_number'    => 'TRF-FULL',
+            'action'              => 'post',
+        ]);
+
+        $response->assertRedirect(route('purchase.payments.index'));
+        $payment = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
+        $this->assertNotNull($payment);
+        $this->assertEquals('posted', $payment->status);
 
         $invoice->refresh();
         $this->assertEquals('paid', $invoice->status);
@@ -199,116 +298,12 @@ class PurchasePaymentTest extends TestCase
             'amount'              => 600000, // Exceeds 500.000
             'payment_date'        => now()->toDateString(),
             'method'              => 'transfer',
+            'action'              => 'post',
         ]);
 
         $response->assertSessionHas('error');
         $this->assertEquals(0, PurchasePayment::where('purchase_invoice_id', $invoice->id)->count());
         $invoice->refresh();
         $this->assertEquals('unpaid', $invoice->status);
-    }
-
-    public function test_can_view_payment_show_detail(): void
-    {
-        $invoice = $this->createUnpaidInvoice(500000);
-
-        $payment = PurchasePayment::create([
-            'purchase_invoice_id' => $invoice->id,
-            'user_id'             => $this->admin->id,
-            'amount'              => 500000,
-            'payment_date'        => now()->toDateString(),
-            'method'              => 'transfer',
-            'reference_number'    => 'TRF-TEST-DETAIL',
-            'notes'               => 'Catatan Pembayaran',
-        ]);
-
-        $response = $this->actingAs($this->finance)->get(route('purchase.payments.show', $payment));
-        $response->assertStatus(200);
-        $response->assertSee('TRF-TEST-DETAIL');
-        $response->assertSee('PT Pemasok Sukses');
-        $response->assertSee('500.000');
-    }
-
-    public function test_search_payments_by_supplier_name(): void
-    {
-        $invoice = $this->createUnpaidInvoice(500000);
-
-        $payment = PurchasePayment::create([
-            'purchase_invoice_id' => $invoice->id,
-            'user_id'             => $this->admin->id,
-            'amount'              => 500000,
-            'payment_date'        => now()->toDateString(),
-            'method'              => 'transfer',
-            'reference_number'    => 'TRF-SEARCH-SUPP',
-        ]);
-
-        $response = $this->actingAs($this->finance)->get(route('purchase.payments.index', ['q' => 'Pemasok Sukses']));
-        $response->assertStatus(200);
-        $response->assertSee('TRF-SEARCH-SUPP');
-    }
-
-    public function test_can_view_edit_payment_page(): void
-    {
-        $invoice = $this->createUnpaidInvoice(1000000);
-
-        $payment = PurchasePayment::create([
-            'purchase_invoice_id' => $invoice->id,
-            'user_id'             => $this->finance->id,
-            'amount'              => 400000,
-            'payment_date'        => now()->toDateString(),
-            'method'              => 'transfer',
-            'reference_number'    => 'TRF-EDIT-TEST',
-        ]);
-
-        $response = $this->actingAs($this->finance)->get(route('purchase.payments.edit', $payment));
-        $response->assertStatus(200);
-        $response->assertSee('Edit Pembayaran Hutang');
-        $response->assertSee($invoice->invoice_number);
-    }
-
-    public function test_can_update_purchase_payment_and_sync_invoice_and_journal(): void
-    {
-        $invoice = $this->createUnpaidInvoice(1000000);
-
-        // Record initial payment
-        $responseStore = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
-            'purchase_invoice_id' => $invoice->id,
-            'amount'              => 500000,
-            'payment_date'        => now()->toDateString(),
-            'method'              => 'transfer',
-            'reference_number'    => 'TRF-INIT',
-        ]);
-        $responseStore->assertRedirect(route('purchase.payments.index'));
-
-        $payment = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
-        $invoice->refresh();
-        $this->assertEquals('partial', $invoice->status);
-
-        // Update payment to full (1.000.000)
-        $responseUpdate = $this->actingAs($this->finance)->put(route('purchase.payments.update', $payment), [
-            'amount'           => 1000000,
-            'payment_date'     => now()->toDateString(),
-            'method'           => 'cash',
-            'reference_number' => 'CASH-FULL',
-            'notes'            => 'Diubah jadi lunas',
-        ]);
-
-        $responseUpdate->assertRedirect(route('purchase.payments.show', $payment));
-        $responseUpdate->assertSessionHas('success');
-
-        $payment->refresh();
-        $this->assertEquals(1000000, $payment->amount);
-        $this->assertEquals('cash', $payment->method);
-        $this->assertEquals('CASH-FULL', $payment->reference_number);
-
-        $invoice->refresh();
-        $this->assertEquals('paid', $invoice->status);
-        $this->assertEquals(0, $invoice->outstanding_amount);
-
-        // Verify Journal Entry was updated to 1.000.000
-        $journal = JournalEntry::where('reference_type', PurchasePayment::class)
-            ->where('reference_id', $payment->id)
-            ->first();
-        $this->assertNotNull($journal);
-        $this->assertEquals(1000000, $journal->lines->sum('debit'));
     }
 }

@@ -181,11 +181,19 @@
             </div>
         </div>
 
-        <x-form-actions 
-            :cancel-url="route('purchase.payments.index')" 
-            submit-label="Simpan Pembayaran & Posting Jurnal" 
-            submit-icon="fa-solid fa-money-bill-transfer"
-        />
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+            <a href="{{ route('purchase.payments.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
+            </a>
+            <div style="display:flex; gap:10px;">
+                <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
+                </button>
+                <button type="submit" name="action" value="post" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Simpan & Posting
+                </button>
+            </div>
+        </div>
     </form>
 </div>
 @endsection
