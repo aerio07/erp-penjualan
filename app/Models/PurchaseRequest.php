@@ -72,12 +72,12 @@ class PurchaseRequest extends Model
 
     public function scopeApproved($query)
     {
-        return $query->where('status', 'approved');
+        return $query->whereIn('status', ['confirmed', 'approved']);
     }
 
     public function scopeAvailableForPo($query)
     {
-        return $query->where('status', 'approved')
+        return $query->whereIn('status', ['confirmed', 'approved'])
             ->whereHas('items', function ($q) {
                 $q->whereRaw('qty > qty_ordered');
             });
@@ -88,10 +88,11 @@ class PurchaseRequest extends Model
         return match ($this->status) {
             'draft'            => 'Draft',
             'waiting_approval' => 'Menunggu Approval',
-            'approved'         => 'Approved',
-            'rejected'         => 'Ditolak',
             'confirmed'        => 'Confirmed',
-            'ordered'          => 'Confirmed',
+            'approved'         => 'Confirmed',
+            'done'             => 'Done',
+            'ordered'          => 'Done',
+            'rejected'         => 'Ditolak',
             'cancelled'        => 'Dibatalkan',
             default            => ucfirst($this->status),
         };
@@ -102,10 +103,11 @@ class PurchaseRequest extends Model
         return match ($this->status) {
             'draft'            => 'badge-secondary',
             'waiting_approval' => 'badge-warning',
+            'confirmed'        => 'badge-info',
             'approved'         => 'badge-info',
-            'rejected'         => 'badge-danger',
-            'confirmed'        => 'badge-success',
+            'done'             => 'badge-success',
             'ordered'          => 'badge-success',
+            'rejected'         => 'badge-danger',
             'cancelled'        => 'badge-dark',
             default            => 'badge-secondary',
         };

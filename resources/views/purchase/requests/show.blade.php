@@ -41,13 +41,13 @@
                 </a>
                 @endif
 
-                @if($purchase_request->status === 'approved')
+                @if(in_array($purchase_request->status, ['confirmed', 'approved']))
                 <a href="{{ route('purchase.orders.create', ['purchase_request_id' => $purchase_request->id]) }}" class="btn btn-primary" style="background:#2563eb;">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Purchase Order (PO)
                 </a>
                 @endif
 
-                @if(in_array($purchase_request->status, ['approved', 'confirmed', 'ordered']))
+                @if(in_array($purchase_request->status, ['confirmed', 'done', 'approved', 'ordered']))
                 <a href="{{ route('pdf.purchase-request', $purchase_request) }}" class="btn btn-secondary" target="_blank">
                     <i class="fa-solid fa-file-pdf"></i> PDF
                 </a>

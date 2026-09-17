@@ -45,7 +45,9 @@ class PurchaseRequestController extends Controller
 
         if ($status !== 'all') {
             if ($status === 'confirmed') {
-                $query->whereIn('status', ['confirmed', 'ordered']);
+                $query->whereIn('status', ['confirmed', 'approved']);
+            } elseif ($status === 'done') {
+                $query->whereIn('status', ['done', 'ordered']);
             } else {
                 $query->where('status', $status);
             }
@@ -294,7 +296,7 @@ class PurchaseRequestController extends Controller
         }
 
         $purchase_request->update([
-            'status'      => 'approved',
+            'status'      => 'confirmed',
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
@@ -365,7 +367,7 @@ class PurchaseRequestController extends Controller
      */
     public function exportPdf(PurchaseRequest $purchase_request)
     {
-        abort_if(!in_array($purchase_request->status, ['approved', 'confirmed', 'ordered']), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
+        abort_if(!in_array($purchase_request->status, ['confirmed', 'done', 'approved', 'ordered']), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
 
         $purchase_request->load([
             'user',

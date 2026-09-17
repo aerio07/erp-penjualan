@@ -21,8 +21,8 @@
             <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Semua Status</option>
             <option value="draft" {{ $status === 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="waiting_approval" {{ $status === 'waiting_approval' ? 'selected' : '' }}>Menunggu Approval</option>
-            <option value="approved" {{ $status === 'approved' ? 'selected' : '' }}>Approved (Siap PO)</option>
-            <option value="confirmed" {{ in_array($status, ['confirmed', 'ordered']) ? 'selected' : '' }}>Confirmed</option>
+            <option value="confirmed" {{ in_array($status, ['confirmed', 'approved']) ? 'selected' : '' }}>Confirmed (Siap PO)</option>
+            <option value="done" {{ in_array($status, ['done', 'ordered']) ? 'selected' : '' }}>Done (Sudah di-PO)</option>
             <option value="rejected" {{ $status === 'rejected' ? 'selected' : '' }}>Ditolak</option>
             <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
         </select>
@@ -74,7 +74,7 @@
                         <i class="fa-solid fa-eye"></i>
                     </a>
 
-                    @if(in_array($pr->status, ['approved', 'confirmed', 'ordered']))
+                    @if(in_array($pr->status, ['confirmed', 'done', 'approved', 'ordered']))
                     <a href="{{ route('pdf.purchase-request', $pr) }}" class="btn btn-sm btn-secondary" title="Export PDF" target="_blank">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>

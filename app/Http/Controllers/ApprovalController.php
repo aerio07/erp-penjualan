@@ -54,7 +54,7 @@ class ApprovalController extends Controller
         if ($approvable && method_exists($approvable, 'update')) {
             if ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
-                    'status'      => 'approved',
+                    'status'      => 'confirmed',
                     'approved_by' => auth()->id(),
                     'approved_at' => now(),
                 ]);

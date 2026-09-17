@@ -55,7 +55,7 @@ class PurchaseOrderController extends Controller
 
         $purchaseRequests = \App\Models\PurchaseRequest::with(['items.product'])
             ->where(function($q) use ($prefilledPrId) {
-                $q->where('status', 'approved');
+                $q->whereIn('status', ['confirmed', 'approved']);
                 if ($prefilledPrId) {
                     $q->orWhere('id', $prefilledPrId);
                 }
@@ -94,10 +94,10 @@ class PurchaseOrderController extends Controller
 
         // Validasi status PR harus sudah disetujui (Approved)
         $pr = \App\Models\PurchaseRequest::with('items')->findOrFail($request->purchase_request_id);
-        if (!in_array($pr->status, ['approved', 'confirmed', 'ordered'])) {
+        if (!in_array($pr->status, ['confirmed', 'approved', 'done', 'ordered'])) {
             return back()
                 ->withErrors([
-                    'purchase_request_id' => 'Purchase Request #' . $pr->pr_number . ' belum disetujui (Approved). PO hanya dapat dibuat dari PR yang telah disetujui.'
+                    'purchase_request_id' => 'Purchase Request #' . $pr->pr_number . ' belum disetujui (Confirmed). PO hanya dapat dibuat dari PR yang telah dikonfirmasi.'
                 ])
                 ->withInput();
         }
@@ -176,7 +176,7 @@ class PurchaseOrderController extends Controller
                         }
                     }
                     $allFulfilled = $pr->fresh()->items->every(fn($it) => $it->qty_ordered >= $it->qty);
-                    $pr->update(['status' => $allFulfilled ? 'confirmed' : 'approved']);
+                    $pr->update(['status' => $allFulfilled ? 'done' : 'confirmed']);
                 }
             }
 
@@ -418,7 +418,7 @@ class PurchaseOrderController extends Controller
                         $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
                     }
                 }
-                $pr->update(['status' => 'approved']);
+                $pr->update(['status' => 'confirmed']);
             }
         }
 
@@ -472,8 +472,8 @@ class PurchaseOrderController extends Controller
                         $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
                     }
                 }
-                // Kembalikan status PR ke approved agar siap dibuatkan PO baru
-                $pr->update(['status' => 'approved']);
+                // Kembalikan status PR ke confirmed agar siap dibuatkan PO baru
+                $pr->update(['status' => 'confirmed']);
             }
         }
 
