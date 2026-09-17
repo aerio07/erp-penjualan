@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Manajemen User')
-@section('page-title', 'Manajemen User')
+@section('title', 'User Management')
+@section('page-title', 'User Management')
 
 @section('content')
 <div class="animate-in">
     <x-page-header 
-        title="Manajemen User" 
+        title="User Management" 
         subtitle="Kelola akun dan hak akses pengguna sistem"
     >
         <x-slot:action>

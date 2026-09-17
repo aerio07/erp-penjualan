@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Log Mutasi Stok')
-@section('page-title', 'Log Audit Mutasi Stok')
+@section('title', 'Mutasi Stok')
+@section('page-title', 'Mutasi Stok')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Log Audit Mutasi Stok"
+        title="Mutasi Stok"
         subtitle="Jejak histori mutasi barang di seluruh gudang"
     />
 

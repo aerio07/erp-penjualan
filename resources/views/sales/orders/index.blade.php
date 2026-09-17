@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Sales Order')
-@section('page-title', 'Sales Order (Pesanan Penjualan)')
+@section('page-title', 'Sales Order')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Daftar Sales Order"
+        title="Sales Order"
         subtitle="Kelola pesanan penjualan customer, alokasi stok, dan pelacakan status pemenuhan pengiriman.">
         <x-slot:actions>
             <a href="{{ route('sales.orders.create') }}" class="btn btn-primary">
@@ -28,18 +28,18 @@
             <option value="">-- Semua Status Order --</option>
             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="waiting_approval" {{ request('status') == 'waiting_approval' ? 'selected' : '' }}>Menunggu Approval</option>
-            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-            <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Done</option>
-            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+            <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Dikonfirmasi</option>
+            <option value="done" {{ request('status') == 'done' ? 'selected' : '' }}>Selesai</option>
+            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
         </select>
 
         <select name="fulfillment_status" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">-- Semua Status Pemenuhan --</option>
-            <option value="ready_to_ship" {{ request('fulfillment_status') == 'ready_to_ship' ? 'selected' : '' }}>Ready to Ship</option>
-            <option value="partially_available" {{ request('fulfillment_status') == 'partially_available' ? 'selected' : '' }}>Partially Available</option>
+            <option value="ready_to_ship" {{ request('fulfillment_status') == 'ready_to_ship' ? 'selected' : '' }}>Siap Kirim</option>
+            <option value="partially_available" {{ request('fulfillment_status') == 'partially_available' ? 'selected' : '' }}>Tersedia Sebagian</option>
             <option value="backorder" {{ request('fulfillment_status') == 'backorder' ? 'selected' : '' }}>Backorder</option>
-            <option value="partially_delivered" {{ request('fulfillment_status') == 'partially_delivered' ? 'selected' : '' }}>Partially Delivered</option>
-            <option value="delivered" {{ request('fulfillment_status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
+            <option value="partially_delivered" {{ request('fulfillment_status') == 'partially_delivered' ? 'selected' : '' }}>Terkirim Sebagian</option>
+            <option value="delivered" {{ request('fulfillment_status') == 'delivered' ? 'selected' : '' }}>Terkirim</option>
         </select>
 
         <select name="channel" class="form-control filter-select" onchange="this.form.submit()">

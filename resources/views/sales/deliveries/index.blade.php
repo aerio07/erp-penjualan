@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Surat Jalan')
-@section('page-title', 'Surat Jalan / Pengiriman')
+@section('page-title', 'Surat Jalan')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Surat Jalan / Pengiriman"
+        title="Surat Jalan"
         subtitle="Bukti pengiriman fisik barang ke lokasi customer">
         <x-slot:actions>
             <a href="{{ route('sales.deliveries.create') }}" class="btn btn-primary">

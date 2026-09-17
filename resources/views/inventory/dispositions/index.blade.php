@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Disposisi Stok Karantina')
-@section('page-title', 'Penyelesaian Barang Karantina')
+@section('title', 'Disposisi Karantina')
+@section('page-title', 'Disposisi Karantina')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Disposisi Stok Karantina"
+        title="Disposisi Karantina"
         subtitle="Riwayat penyelesaian barang rusak (stok karantina) melalui Write Off atau Jual Sebagai Reject">
         <x-slot:actions>
             <a href="{{ route('inventory.dispositions.create') }}" class="btn btn-primary">

@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Transfer Gudang')
-@section('page-title', 'Transfer Antar Gudang')
+@section('page-title', 'Transfer Gudang')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Transfer Antar Gudang"
+        title="Transfer Gudang"
         subtitle="Pindahkan stok produk antar lokasi gudang perusahaan">
         <x-slot:actions>
             <a href="{{ route('inventory.transfers.create') }}" class="btn btn-primary">

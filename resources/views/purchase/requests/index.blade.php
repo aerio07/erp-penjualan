@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Purchase Request (PR)')
+@section('title', 'Purchase Request')
 @section('page-title', 'Purchase Request')
 
 @section('content')
@@ -34,7 +34,7 @@
                 <th>No. PR</th>
                 <th>Pemohon & Divisi</th>
                 <th>Tanggal PR</th>
-                <th>Date Needed</th>
+                <th>Tgl Dibutuhkan</th>
                 <th style="text-align:center;">Jumlah Item</th>
                 <th style="text-align:center;">Status</th>
                 <th class="text-center col-actions">Aksi</th>

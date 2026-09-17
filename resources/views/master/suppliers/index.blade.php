@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Supplier')
-@section('page-title', 'Manajemen Supplier')
+@section('page-title', 'Supplier')
 
 @section('content')
 <div class="animate-in">

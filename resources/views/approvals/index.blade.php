@@ -1,10 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Approval Request')
-@section('page-title', 'Approval Request')
+@section('title', 'Approval')
+@section('page-title', 'Approval')
 
 @section('content')
 <div class="animate-in">
-    <x-page-header title="Approval Request" subtitle="Persetujuan dokumen Purchase Order dan Sales Order yang melebihi batas nominal limit" />
+    <x-page-header title="Approval" subtitle="Persetujuan dokumen Purchase Order dan Sales Order yang melebihi batas nominal limit" />
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('approvals.index')" placeholder="Cari No. Request, Catatan..." :showDateFilter="true">

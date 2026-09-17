@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Chart of Accounts')
-@section('page-title', 'Chart of Accounts (Bagan Akun)')
+@section('page-title', 'Chart of Accounts')
 
 @section('content')
 <div class="animate-in">

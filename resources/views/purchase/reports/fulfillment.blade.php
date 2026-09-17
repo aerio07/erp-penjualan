@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Laporan Monitoring Fulfillment Purchase Order')
+@section('page-title', 'Monitoring PO')
 
 @section('content')
 <div class="animate-in" x-data="{ activeRow: null }">

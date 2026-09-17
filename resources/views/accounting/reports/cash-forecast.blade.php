@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Proyeksi Kas (Cash Flow Forecast)')
+@section('title', 'Proyeksi Kas')
 @section('page-title', 'Proyeksi Kas')
 
 @section('content')

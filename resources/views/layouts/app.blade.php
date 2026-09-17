@@ -1437,7 +1437,7 @@
                     <span class="material-symbols-outlined text-xs shrink-0 opacity-40">chevron_right</span>
                     <span class="shrink-0 font-medium hidden md:inline">FlashSuite Pro</span>
                     <span class="material-symbols-outlined text-xs shrink-0 opacity-40 hidden md:inline">chevron_right</span>
-                    <span class="text-[#03193c] font-bold truncate">@yield('page-title', 'Overview')</span>
+                    <span class="text-[#03193c] font-bold truncate">@yield('page-title', View::yieldContent('title', 'Dashboard'))</span>
                 </div>
             </div>
 
@@ -1519,7 +1519,7 @@
                 @endif
 
                 <!-- Page Content -->
-                @yield('content')
+                @yield('content', $slot ?? '')
             </div>
         </main>
     </div>

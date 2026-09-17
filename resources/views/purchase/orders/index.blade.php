@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Purchase Orders')
+@section('title', 'Purchase Order')
 @section('page-title', 'Purchase Order')
 
 @section('content')
@@ -26,8 +26,18 @@
 
         <select name="status" class="form-control filter-select">
             <option value="">Semua Status</option>
-            @foreach(['draft','waiting_approval','confirmed','partially_received','done','cancelled'] as $s)
-            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$s)) }}</option>
+            @php
+                $statusLabels = [
+                    'draft' => 'Draft',
+                    'waiting_approval' => 'Menunggu Approval',
+                    'confirmed' => 'Dikonfirmasi',
+                    'partially_received' => 'Diterima Sebagian',
+                    'done' => 'Selesai',
+                    'cancelled' => 'Dibatalkan',
+                ];
+            @endphp
+            @foreach($statusLabels as $s => $lbl)
+            <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ $lbl }}</option>
             @endforeach
         </select>
     </x-list-filter-bar>
@@ -38,7 +48,7 @@
                 <x-sortable-header column="po_number" title="No. PO" />
                 <th>Supplier</th>
                 <x-sortable-header column="order_date" title="Tanggal" :isDefault="true" />
-                <x-sortable-header column="expected_date" title="Exp. Delivery" />
+                <x-sortable-header column="expected_date" title="Estimasi Kirim" />
                 <th style="text-align:right;">Diskon</th>
                 <x-sortable-header column="total_amount" title="Total" align="right" />
                 <x-sortable-header column="status" title="Status" align="center" />
