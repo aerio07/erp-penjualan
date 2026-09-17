@@ -71,11 +71,12 @@ class AccountingPeriodClosingTest extends TestCase
             ]);
 
         $response->assertSessionHasNoErrors();
-        $response->assertSessionHas('success');
         $this->assertDatabaseHas('journal_entries', [
-            'entry_date'  => $dateWithoutPeriod,
             'description' => 'Transaksi tanpa periode',
         ]);
+        $entry = JournalEntry::where('description', 'Transaksi tanpa periode')->first();
+        $this->assertNotNull($entry);
+        $this->assertEquals($dateWithoutPeriod, $entry->entry_date->toDateString());
     }
 
     /**

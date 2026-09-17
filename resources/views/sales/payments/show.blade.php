@@ -13,6 +13,11 @@
         <x-slot:subtitle>
             Invoice Ref: <a href="{{ route('sales.invoices.show', $payment->salesInvoice) }}" style="color:var(--primary); font-weight:600;">{{ $payment->salesInvoice->invoice_number }}</a>
         </x-slot:subtitle>
+        <x-slot:actions>
+            <a href="{{ route('sales.payments.edit', $payment) }}" class="btn btn-warning">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Pembayaran
+            </a>
+        </x-slot:actions>
     </x-detail-header>
 
     <div class="card w-full">

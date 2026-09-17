@@ -22,7 +22,7 @@ class JournalEntryController extends Controller
 
     public function index(Request $request): View
     {
-        $query = JournalEntry::with(['creator', 'poster']);
+        $query = JournalEntry::with(['creator', 'poster', 'lines.chartOfAccount']);
 
         $query = $this->applySearch($query, $request, ['entry_number', 'description']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -43,14 +43,35 @@ class JournalEntryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $lines = $request->lines ?? [];
+        $totalDebit = 0;
+        $totalCredit = 0;
+
+        foreach ($lines as $i => $line) {
+            $lines[$i]['debit'] = isset($line['debit']) && $line['debit'] !== '' ? (float)$line['debit'] : 0;
+            $lines[$i]['credit'] = isset($line['credit']) && $line['credit'] !== '' ? (float)$line['credit'] : 0;
+            $totalDebit += $lines[$i]['debit'];
+            $totalCredit += $lines[$i]['credit'];
+        }
+        $request->merge(['lines' => $lines]);
+
         $request->validate([
             'entry_date'            => 'required|date',
-            'description'           => 'nullable|string',
+            'description'           => 'required|string|max:255',
             'lines'                 => 'required|array|min:2',
             'lines.*.chart_of_account_id' => 'required|exists:chart_of_accounts,id',
             'lines.*.debit'         => 'required|numeric|min:0',
             'lines.*.credit'        => 'required|numeric|min:0',
+        ], [
+            'description.required' => 'Keterangan transaksi wajib diisi.',
+            'lines.*.chart_of_account_id.required' => 'Pilih akun COA untuk setiap baris transaksi.',
+            'lines.*.chart_of_account_id.exists' => 'Akun COA yang dipilih tidak valid.',
+            'lines.min' => 'Jurnal umum minimal harus memiliki 2 baris akun.',
         ]);
+
+        if (abs($totalDebit - $totalCredit) > 0.01 || $totalDebit <= 0) {
+            return back()->withInput()->with('error', 'Jurnal tidak balance! Total Debit (Rp ' . number_format($totalDebit, 0, ',', '.') . ') tidak sama dengan Total Kredit (Rp ' . number_format($totalCredit, 0, ',', '.') . '). Selisih: Rp ' . number_format(abs($totalDebit - $totalCredit), 0, ',', '.'));
+        }
 
         try {
             app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked(\Carbon\Carbon::parse($request->entry_date));
@@ -61,26 +82,28 @@ class JournalEntryController extends Controller
         $entry = DB::transaction(function () use ($request) {
             $entry = JournalEntry::create([
                 'entry_number' => $this->journalService->generateEntryNumber(),
-                'entry_date'   => $request->entry_date,
+                'entry_date'   => \Carbon\Carbon::parse($request->entry_date)->toDateString(),
                 'description'  => $request->description,
                 'status'       => 'draft',
                 'created_by'   => auth()->id(),
             ]);
 
             foreach ($request->lines as $line) {
-                $entry->lines()->create([
-                    'chart_of_account_id' => $line['chart_of_account_id'],
-                    'debit'               => $line['debit'] ?? 0,
-                    'credit'              => $line['credit'] ?? 0,
-                    'description'         => $line['description'] ?? null,
-                ]);
+                if (($line['debit'] ?? 0) > 0 || ($line['credit'] ?? 0) > 0) {
+                    $entry->lines()->create([
+                        'chart_of_account_id' => $line['chart_of_account_id'],
+                        'debit'               => $line['debit'] ?? 0,
+                        'credit'              => $line['credit'] ?? 0,
+                        'description'         => $line['description'] ?? null,
+                    ]);
+                }
             }
 
             return $entry;
         });
 
         return redirect()->route('accounting.journals.index')
-            ->with('success', 'Journal Entry berhasil dibuat.');
+            ->with('success', "Journal Entry {$entry->entry_number} berhasil dibuat sebagai draft.");
     }
 
     public function show(JournalEntry $journal): View
@@ -92,19 +115,44 @@ class JournalEntryController extends Controller
     public function edit(JournalEntry $journal): View
     {
         abort_if($journal->status === 'posted', 403, 'Journal yang sudah diposting tidak dapat diedit.');
+        $journal->load('lines.chartOfAccount');
         $accounts = ChartOfAccount::where('is_active', true)->orderBy('code')->get();
         return view('accounting.journals.edit', compact('journal', 'accounts'));
     }
 
     public function update(Request $request, JournalEntry $journal): RedirectResponse
     {
-        abort_if($journal->status === 'posted', 403);
+        abort_if($journal->status === 'posted', 403, 'Journal yang sudah diposting tidak dapat diubah.');
+
+        $lines = $request->lines ?? [];
+        $totalDebit = 0;
+        $totalCredit = 0;
+
+        foreach ($lines as $i => $line) {
+            $lines[$i]['debit'] = isset($line['debit']) && $line['debit'] !== '' ? (float)$line['debit'] : 0;
+            $lines[$i]['credit'] = isset($line['credit']) && $line['credit'] !== '' ? (float)$line['credit'] : 0;
+            $totalDebit += $lines[$i]['debit'];
+            $totalCredit += $lines[$i]['credit'];
+        }
+        $request->merge(['lines' => $lines]);
 
         $request->validate([
             'entry_date'  => 'required|date',
-            'description' => 'nullable|string',
+            'description' => 'required|string|max:255',
             'lines'       => 'required|array|min:2',
+            'lines.*.chart_of_account_id' => 'required|exists:chart_of_accounts,id',
+            'lines.*.debit'         => 'required|numeric|min:0',
+            'lines.*.credit'        => 'required|numeric|min:0',
+        ], [
+            'description.required' => 'Keterangan transaksi wajib diisi.',
+            'lines.*.chart_of_account_id.required' => 'Pilih akun COA untuk setiap baris transaksi.',
+            'lines.*.chart_of_account_id.exists' => 'Akun COA yang dipilih tidak valid.',
+            'lines.min' => 'Jurnal umum minimal harus memiliki 2 baris akun.',
         ]);
+
+        if (abs($totalDebit - $totalCredit) > 0.01 || $totalDebit <= 0) {
+            return back()->withInput()->with('error', 'Jurnal tidak balance! Total Debit (Rp ' . number_format($totalDebit, 0, ',', '.') . ') tidak sama dengan Total Kredit (Rp ' . number_format($totalCredit, 0, ',', '.') . '). Selisih: Rp ' . number_format(abs($totalDebit - $totalCredit), 0, ',', '.'));
+        }
 
         try {
             app(\App\Services\AccountingPeriodService::class)->assertDateNotLocked(\Carbon\Carbon::parse($request->entry_date));
@@ -114,28 +162,31 @@ class JournalEntryController extends Controller
 
         DB::transaction(function () use ($request, $journal) {
             $journal->update([
-                'entry_date'  => $request->entry_date,
+                'entry_date'  => \Carbon\Carbon::parse($request->entry_date)->toDateString(),
                 'description' => $request->description,
             ]);
 
             $journal->lines()->delete();
             foreach ($request->lines as $line) {
-                $journal->lines()->create([
-                    'chart_of_account_id' => $line['chart_of_account_id'],
-                    'debit'               => $line['debit'] ?? 0,
-                    'credit'              => $line['credit'] ?? 0,
-                    'description'         => $line['description'] ?? null,
-                ]);
+                if (($line['debit'] ?? 0) > 0 || ($line['credit'] ?? 0) > 0) {
+                    $journal->lines()->create([
+                        'chart_of_account_id' => $line['chart_of_account_id'],
+                        'debit'               => $line['debit'] ?? 0,
+                        'credit'              => $line['credit'] ?? 0,
+                        'description'         => $line['description'] ?? null,
+                    ]);
+                }
             }
         });
 
         return redirect()->route('accounting.journals.show', $journal)
-            ->with('success', 'Journal Entry berhasil diperbarui.');
+            ->with('success', "Journal Entry {$journal->entry_number} berhasil diperbarui.");
     }
 
     public function destroy(JournalEntry $journal): RedirectResponse
     {
-        abort_if($journal->status === 'posted', 403);
+        abort_if($journal->status === 'posted', 403, 'Journal yang sudah diposting tidak dapat dihapus.');
+        $journal->lines()->delete();
         $journal->delete();
         return redirect()->route('accounting.journals.index')
             ->with('success', 'Journal Entry berhasil dihapus.');
