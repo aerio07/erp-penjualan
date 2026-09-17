@@ -64,13 +64,6 @@
                         <td class="detail-value">{{ $order->purchaseRequest->pr_number }} (Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</td>
                     </tr>
                     @endif
-                    @if($headerDiscount > 0)
-                    <tr>
-                        <td class="detail-label">Diskon Header</td>
-                        <td class="detail-colon">:</td>
-                        <td class="detail-value" style="color: #dc2626; font-weight: 600;">Rp {{ number_format($headerDiscount, 0, ',', '.') }}</td>
-                    </tr>
-                    @endif
                     <tr>
                         <td class="detail-label">Purchasing Staff</td>
                         <td class="detail-colon">:</td>
@@ -87,18 +80,24 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th class="text-center" style="width: 4%;">#</th>
-                    <th class="text-left" style="width: 14%;">Kode Produk</th>
-                    <th class="text-left" style="width: 28%;">Deskripsi Barang</th>
-                    <th class="text-center" style="width: 8%;">Qty</th>
-                    <th class="text-center" style="width: 8%;">Satuan</th>
-                    <th class="text-right" style="width: 14%;">Harga Satuan</th>
-                    <th class="text-center" style="width: 9%;">Diskon</th>
-                    <th class="text-right" style="width: 15%;">Total</th>
+                    <th class="text-center" style="width: 3%;">#</th>
+                    <th class="text-left" style="width: 13%;">Kode Produk</th>
+                    <th class="text-left" style="width: 24%;">Deskripsi Barang</th>
+                    <th class="text-center" style="width: 7%;">Qty</th>
+                    <th class="text-center" style="width: 7%;">Satuan</th>
+                    <th class="text-right" style="width: 13%;">Harga Satuan</th>
+                    <th class="text-center" style="width: 9%;">Diskon Item</th>
+                    <th class="text-right" style="width: 11%;">Diskon Header</th>
+                    <th class="text-right" style="width: 13%;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($order->items as $i => $item)
+                @php
+                    $rowHeaderDisc = ($grossSubtotal > 0 && $headerDiscount > 0)
+                        ? (($item->qty_ordered * $item->unit_price) / $grossSubtotal) * $headerDiscount
+                        : 0;
+                @endphp
                 <tr>
                     <td class="text-center">{{ $i + 1 }}</td>
                     <td class="text-left" style="font-family: monospace; font-size: 8pt; color: #444;">
@@ -118,7 +117,14 @@
                     </td>
                     <td class="text-center">
                         @if(($item->discount_percent ?? 0) > 0)
-                            <span style="font-weight: 600; color: #dc2626;">{{ $item->discount_percent }}%</span>
+                            <span style="font-weight: 600;">{{ $item->discount_percent }}%</span>
+                        @else
+                            <span style="color: #888;">-</span>
+                        @endif
+                    </td>
+                    <td class="text-right">
+                        @if($rowHeaderDisc > 0)
+                            <span>Rp {{ number_format($rowHeaderDisc, 0, ',', '.') }}</span>
                         @else
                             <span style="color: #888;">-</span>
                         @endif
@@ -129,7 +135,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
+                    <td colspan="9" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -154,19 +160,10 @@
                         <td class="tot-value">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</td>
                     </tr>
                     <tr>
-                        <td class="tot-label {{ $totalDiskon > 0 ? 'tot-discount' : '' }}">Total Diskon:</td>
-                        <td class="tot-value {{ $totalDiskon > 0 ? 'tot-discount' : '' }}">
+                        <td class="tot-label">Total Diskon:</td>
+                        <td class="tot-value">
                             @if($totalDiskon > 0)
                                 - Rp {{ number_format($totalDiskon, 0, ',', '.') }}
-                                @if($headerDiscount > 0 && $itemDiscountSum > 0)
-                                    <div style="font-size: 7pt; color: #dc2626; font-weight: normal;">
-                                        (Item: Rp {{ number_format($itemDiscountSum, 0, ',', '.') }} + Header: Rp {{ number_format($headerDiscount, 0, ',', '.') }})
-                                    </div>
-                                @elseif($headerDiscount > 0)
-                                    <div style="font-size: 7pt; color: #dc2626; font-weight: normal;">
-                                        (Diskon Header: Rp {{ number_format($headerDiscount, 0, ',', '.') }})
-                                    </div>
-                                @endif
                             @else
                                 <span style="color: #666;">-</span>
                             @endif
