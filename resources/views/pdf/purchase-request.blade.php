@@ -28,18 +28,18 @@
                     <tr>
                         <td class="detail-label">Tanggal Pengajuan</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $purchase_request->request_date ? $purchase_request->request_date->format('m/d/Y') : date('m/d/Y') }}</td>
+                        <td class="detail-value">{{ $purchase_request->request_date ? $purchase_request->request_date->format('d/m/Y') : date('d/m/Y') }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Tanggal Dibutuhkan</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $purchase_request->required_date ? $purchase_request->required_date->format('m/d/Y') : '-' }}</td>
+                        <td class="detail-value">{{ $purchase_request->required_date ? $purchase_request->required_date->format('d/m/Y') : '-' }}</td>
                     </tr>
                     @if($purchase_request->expired_date)
                     <tr>
                         <td class="detail-label">Batas Waktu (Exp)</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $purchase_request->expired_date->format('m/d/Y') }}</td>
+                        <td class="detail-value">{{ $purchase_request->expired_date->format('d/m/Y') }}</td>
                     </tr>
                     @endif
                     <tr>

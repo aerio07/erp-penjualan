@@ -33,12 +33,12 @@
                     <tr>
                         <td class="detail-label">Tanggal Invoice</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $invoice->invoice_date ? $invoice->invoice_date->format('m/d/Y') : '-' }}</td>
+                        <td class="detail-value">{{ $invoice->invoice_date ? $invoice->invoice_date->format('d/m/Y') : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Jatuh Tempo</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $invoice->due_date ? $invoice->due_date->format('m/d/Y') : '-' }}</td>
+                        <td class="detail-value">{{ $invoice->due_date ? $invoice->due_date->format('d/m/Y') : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Ref. Sales Order</td>

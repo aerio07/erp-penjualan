@@ -92,12 +92,12 @@
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Pengiriman (Kirim)</div>
-                        <div style="font-weight:600;">{{ $delivery->delivery_date ? $delivery->delivery_date->format('m/d/Y') : '-' }}</div>
+                        <div style="font-weight:600;">{{ $delivery->delivery_date ? $delivery->delivery_date->format('d/m/Y') : '-' }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Diterima Customer</div>
                         <div style="font-weight:600; {{ $delivery->received_date ? 'color:#059669;' : 'color:var(--text-secondary);' }}">
-                            {{ $delivery->received_date ? $delivery->received_date->format('m/d/Y') : 'Belum Diterima' }}
+                            {{ $delivery->received_date ? $delivery->received_date->format('d/m/Y') : 'Belum Diterima' }}
                         </div>
                     </div>
                     <div>
@@ -142,7 +142,7 @@
                                 Total Tagihan: <strong>Rp {{ number_format($delivery->salesInvoice->total_amount, 0, ',', '.') }}</strong>
                             </div>
                             <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                                Jatuh Tempo: {{ $delivery->salesInvoice->due_date ? $delivery->salesInvoice->due_date->format('m/d/Y') : '-' }}
+                                Jatuh Tempo: {{ $delivery->salesInvoice->due_date ? $delivery->salesInvoice->due_date->format('d/m/Y') : '-' }}
                             </div>
                             <div style="margin-top:10px;">
                                 <span class="badge {{ $delivery->salesInvoice->status === 'paid' ? 'badge-success' : 'badge-warning' }}">

@@ -189,7 +189,7 @@
                     @foreach($supplier->purchaseOrders as $po)
                     <tr>
                         <td><a href="{{ route('purchase.orders.show', $po) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">{{ $po->po_number }}</a></td>
-                        <td>{{ $po->order_date->format('m/d/Y') }}</td>
+                        <td>{{ $po->order_date->format('d/m/Y') }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($po->total_amount, 0, ',', '.') }}</td>
                         <td style="text-align:center;"><span class="badge badge-{{ $po->status }}">{{ ucfirst(str_replace('_',' ',$po->status)) }}</span></td>
                     </tr>

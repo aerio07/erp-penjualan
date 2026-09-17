@@ -54,7 +54,7 @@
                     {{ $entry->entry_number }}
                 </a>
             </td>
-            <td>{{ $entry->entry_date ? $entry->entry_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $entry->entry_date ? $entry->entry_date->format('d/m/Y') : '-' }}</td>
             <td class="col-notes" title="{{ $entry->description ?? '-' }}">{{ $entry->description ?? '-' }}</td>
             <td style="text-align: right; font-weight: 600; font-family: 'Inter', monospace; color: var(--primary);">
                 Rp {{ number_format($entry->total_debit, 0, ',', '.') }}

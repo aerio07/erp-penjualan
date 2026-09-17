@@ -69,7 +69,7 @@
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Dokumen</div>
-                        <div style="font-weight:600;">{{ $transfer->transfer_date ? $transfer->transfer_date->format('m/d/Y') : '-' }}</div>
+                        <div style="font-weight:600;">{{ $transfer->transfer_date ? $transfer->transfer_date->format('d/m/Y') : '-' }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Dibuat Oleh</div>
@@ -93,7 +93,7 @@
                     <div style="color:var(--text-secondary); font-size:11.5px;">1. Posting / Pengirim (Ship)</div>
                     @if($transfer->shippedBy)
                         <div style="font-weight:600; color:var(--text-primary);"><i class="fa-solid fa-user-check"></i> {{ $transfer->shippedBy->name }}</div>
-                        <div style="font-size:11px; color:var(--text-secondary);">{{ $transfer->shipped_at ? $transfer->shipped_at->format('m/d/Y H:i') : '-' }}</div>
+                        <div style="font-size:11px; color:var(--text-secondary);">{{ $transfer->shipped_at ? $transfer->shipped_at->format('d/m/Y H:i') : '-' }}</div>
                     @else
                         <div style="color:var(--text-secondary); font-style:italic;">Belum diposting / dikirim</div>
                     @endif
@@ -105,7 +105,7 @@
                     <div style="color:var(--text-secondary); font-size:11.5px;">2. Penerima (Receive)</div>
                     @if($transfer->receivedBy)
                         <div style="font-weight:600; color:var(--success);"><i class="fa-solid fa-box-open"></i> {{ $transfer->receivedBy->name }}</div>
-                        <div style="font-size:11px; color:var(--text-secondary);">{{ $transfer->received_at ? $transfer->received_at->format('m/d/Y H:i') : '-' }}</div>
+                        <div style="font-size:11px; color:var(--text-secondary);">{{ $transfer->received_at ? $transfer->received_at->format('d/m/Y H:i') : '-' }}</div>
                     @else
                         <div style="color:var(--text-secondary); font-style:italic;">Belum diterima di gudang tujuan</div>
                     @endif

@@ -13,7 +13,7 @@
                 <span class="text-slate-700 font-bold">{{ $period->period_name }}</span>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Periode: {{ $period->period_name }}</h1>
-            <p class="text-xs text-slate-500">Rentang pembukuan: {{ $period->start_date->format('m/d/Y') }} s/d {{ $period->end_date->format('m/d/Y') }}</p>
+            <p class="text-xs text-slate-500">Rentang pembukuan: {{ $period->start_date->format('d/m/Y') }} s/d {{ $period->end_date->format('d/m/Y') }}</p>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('accounting.periods.index', ['year' => $period->fiscal_year]) }}" class="btn btn-secondary px-4 py-2 rounded-xl text-xs font-bold">
@@ -77,11 +77,11 @@
                     </div>
                     <div>
                         <span class="text-slate-400 block mb-0.5">Tanggal Mulai</span>
-                        <span class="font-semibold text-slate-700">{{ $period->start_date->format('m/d/Y') }}</span>
+                        <span class="font-semibold text-slate-700">{{ $period->start_date->format('d/m/Y') }}</span>
                     </div>
                     <div>
                         <span class="text-slate-400 block mb-0.5">Tanggal Berakhir</span>
-                        <span class="font-semibold text-slate-700">{{ $period->end_date->format('m/d/Y') }}</span>
+                        <span class="font-semibold text-slate-700">{{ $period->end_date->format('d/m/Y') }}</span>
                     </div>
                 </div>
 
@@ -179,7 +179,7 @@
                                 </span>
                             </div>
                             <p class="text-xs text-slate-500 mt-1">
-                                Seluruh entri jurnal dalam rentang {{ $period->start_date->format('m/d/Y') }} s/d {{ $period->end_date->format('m/d/Y') }} harus sudah diposting atau dihapus.
+                                Seluruh entri jurnal dalam rentang {{ $period->start_date->format('d/m/Y') }} s/d {{ $period->end_date->format('d/m/Y') }} harus sudah diposting atau dihapus.
                             </p>
                             @if(!$checklist['drafts_valid'])
                             <div class="mt-2.5">

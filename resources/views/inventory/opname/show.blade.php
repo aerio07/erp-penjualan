@@ -11,7 +11,7 @@
         :badge-class="'badge-' . ($opname->status === 'completed' ? 'done' : 'pending')"
     >
         <x-slot:subtitle>
-            Gudang: <strong>{{ $opname->warehouse->name ?? '-' }}</strong> &bull; Tgl Opname: {{ $opname->opname_date->format('m/d/Y') }}
+            Gudang: <strong>{{ $opname->warehouse->name ?? '-' }}</strong> &bull; Tgl Opname: {{ $opname->opname_date->format('d/m/Y') }}
         </x-slot:subtitle>
         <x-slot:actions>
             @if($opname->status === 'draft')

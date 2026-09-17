@@ -5,7 +5,7 @@
 ])
 
 @php
-    $formatted = $time ? format_datetime($value, 'm/d/Y H:i') : format_date($value, 'm/d/Y');
+    $formatted = $time ? format_datetime($value, 'd/m/Y H:i') : format_date($value, 'd/m/Y');
 @endphp
 
 <span>{{ $formatted ?: $placeholder }}</span>

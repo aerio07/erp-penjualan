@@ -156,7 +156,7 @@
                                 {{ $order->po_number }}
                             </div>
                             <div style="font-size: 11.5px; color: var(--text-secondary);">
-                                {{ $order->order_date ? $order->order_date->format('m/d/Y') : '-' }}
+                                {{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}
                             </div>
                         </td>
 
@@ -315,7 +315,7 @@
                                                         {{ $grn->receipt_number }}
                                                     </a>
                                                 </td>
-                                                <td>{{ $grn->received_date ? $grn->received_date->format('m/d/Y') : '-' }}</td>
+                                                <td>{{ $grn->received_date ? $grn->received_date->format('d/m/Y') : '-' }}</td>
                                                 <td style="text-align: center;">{{ $grn->items->count() }} item</td>
                                                 <td style="text-align: center;">
                                                     @if($grn->is_invoiced)

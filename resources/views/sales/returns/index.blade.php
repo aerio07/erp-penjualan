@@ -52,7 +52,7 @@
             </td>
             <td>{{ $r->delivery->delivery_number ?? '-' }}</td>
             <td>{{ $r->customer->name ?? '-' }}</td>
-            <td>{{ $r->return_date ? $r->return_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $r->return_date ? $r->return_date->format('d/m/Y') : '-' }}</td>
             <td class="col-notes" title="{{ $r->reason ?? '-' }}">{{ $r->reason ?? '-' }}</td>
             <td style="text-align:center;">
                 <span class="badge badge-{{ $r->status === 'completed' ? 'done' : ($r->status === 'received' ? 'confirmed' : 'pending') }}">

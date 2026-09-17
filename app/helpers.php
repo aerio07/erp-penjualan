@@ -39,13 +39,13 @@ if (!function_exists('unrupiah')) {
 
 if (!function_exists('format_date')) {
     /**
-     * Format tanggal ke mm/dd/yyyy (standar aplikasi)
+     * Format tanggal ke dd/mm/yyyy (standar aplikasi)
      *
      * @param mixed $date
      * @param string $format
      * @return string
      */
-    function format_date($date, string $format = 'm/d/Y'): string
+    function format_date($date, string $format = 'd/m/Y'): string
     {
         if (empty($date)) {
             return '-';
@@ -65,13 +65,13 @@ if (!function_exists('format_date')) {
 
 if (!function_exists('format_datetime')) {
     /**
-     * Format tanggal & waktu ke mm/dd/yyyy HH:mm
+     * Format tanggal & waktu ke dd/mm/yyyy HH:mm
      *
      * @param mixed $date
      * @param string $format
      * @return string
      */
-    function format_datetime($date, string $format = 'm/d/Y H:i'): string
+    function format_datetime($date, string $format = 'd/m/Y H:i'): string
     {
         if (empty($date)) {
             return '-';

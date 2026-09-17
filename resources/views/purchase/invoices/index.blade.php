@@ -74,10 +74,10 @@
                 <span style="color:var(--text-secondary);">-</span>
                 @endif
             </td>
-            <td>{{ $inv->invoice_date ? $inv->invoice_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>
             <td>
                 <span style="{{ $inv->status !== 'paid' && $inv->status !== 'draft' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
-                    {{ $inv->due_date ? $inv->due_date->format('m/d/Y') : '-' }}
+                    {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}
                 </span>
             </td>
             <td style="text-align:right; font-weight:600;">

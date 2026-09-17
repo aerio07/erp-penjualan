@@ -55,7 +55,7 @@
                     <i class="fa-solid fa-warehouse"></i> {{ $op->warehouse->name ?? '-' }}
                 </span>
             </td>
-            <td>{{ $op->opname_date ? $op->opname_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $op->opname_date ? $op->opname_date->format('d/m/Y') : '-' }}</td>
             <td>{{ $op->user->name ?? '-' }}</td>
             <td style="text-align:center;">
                 <span class="badge badge-{{ $op->status === 'completed' ? 'done' : 'pending' }}">

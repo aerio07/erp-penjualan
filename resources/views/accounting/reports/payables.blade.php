@@ -103,8 +103,8 @@
                             </a>
                         </td>
                         <td class="font-medium">{{ $inv->purchaseOrder->supplier->name ?? '-' }}</td>
-                        <td>{{ $inv->invoice_date->format('m/d/Y') }}</td>
-                        <td>{{ $inv->due_date->format('m/d/Y') }}</td>
+                        <td>{{ $inv->invoice_date->format('d/m/Y') }}</td>
+                        <td>{{ $inv->due_date->format('d/m/Y') }}</td>
                         <td style="text-align:center;">
                             @if($inv->aging_bucket === 'current')
                                 <span class="badge badge-done" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">Belum Jatuh Tempo</span>

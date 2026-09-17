@@ -14,7 +14,7 @@
             @if($existingEntry)
                 <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Jurnal Terposting: <strong class="font-mono text-emerald-900">#{{ $existingEntry->entry_number }}</strong> ({{ $existingEntry->entry_date->format('m/d/Y') }})</span>
+                    <span>Jurnal Terposting: <strong class="font-mono text-emerald-900">#{{ $existingEntry->entry_number }}</strong> ({{ $existingEntry->entry_date->format('d/m/Y') }})</span>
                 </div>
             @else
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium">

@@ -153,7 +153,7 @@
                     @foreach($customer->salesOrders as $so)
                     <tr>
                         <td><a href="{{ route('sales.orders.show', $so) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">{{ $so->so_number }}</a></td>
-                        <td>{{ $so->order_date->format('m/d/Y') }}</td>
+                        <td>{{ $so->order_date->format('d/m/Y') }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($so->total_amount, 0, ',', '.') }}</td>
                         <td style="text-align:center;"><span class="badge badge-{{ $so->status }}">{{ ucfirst(str_replace('_',' ',$so->status)) }}</span></td>
                     </tr>

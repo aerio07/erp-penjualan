@@ -70,7 +70,7 @@
                 @endif
             </td>
             <td>{{ $p->salesInvoice->salesOrder->customer->name ?? '-' }}</td>
-            <td>{{ $p->payment_date ? $p->payment_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $p->payment_date ? $p->payment_date->format('d/m/Y') : '-' }}</td>
             <td><span class="badge badge-confirmed">{{ strtoupper($p->method) }}</span></td>
             <td>{{ $p->reference_number ?? '-' }}</td>
             <td style="text-align:right; font-weight:600; color:var(--success); font-family: 'Inter', monospace;">
