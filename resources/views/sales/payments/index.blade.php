@@ -58,9 +58,14 @@
             </td>
             <td>{{ $p->user->name ?? '-' }}</td>
             <td class="col-actions text-center">
-                <a href="{{ route('sales.payments.show', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
+                <div style="display:flex; gap:4px; justify-content:center;">
+                    <a href="{{ route('sales.payments.show', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                    <a href="{{ route('sales.payments.edit', $p) }}" class="btn btn-warning btn-sm btn-icon" title="Edit Pembayaran">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                </div>
             </td>
         </tr>
         @empty

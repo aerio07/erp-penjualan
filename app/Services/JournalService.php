@@ -88,6 +88,57 @@ class JournalService
     }
 
     /**
+     * Update journal entry dari purchase payment saat diedit.
+     */
+    public function updateFromPurchasePayment(PurchasePayment $payment): JournalEntry
+    {
+        $existing = JournalEntry::where('reference_type', PurchasePayment::class)
+            ->where('reference_id', $payment->id)
+            ->first();
+
+        if (!$existing) {
+            $entry = $this->createFromPurchasePayment($payment);
+            return $this->postEntry($entry);
+        }
+
+        $payment->loadMissing(['purchaseInvoice']);
+        $hutang = $this->findAccount('2-1100');
+        $kas    = $this->findAccount('1-1100'); // Kas / Bank
+
+        app(AccountingPeriodService::class)->assertDateNotLocked(Carbon::parse($payment->payment_date));
+
+        return DB::transaction(function () use ($existing, $payment, $hutang, $kas) {
+            $existing->update([
+                'entry_date'  => $payment->payment_date->toDateString(),
+                'description' => "Pembayaran Hutang #{$payment->purchaseInvoice->invoice_number}",
+                'status'      => 'posted',
+                'posted_by'   => Auth::id() ?? 1,
+                'posted_at'   => now(),
+            ]);
+
+            $existing->lines()->delete();
+
+            JournalLine::create([
+                'journal_entry_id'    => $existing->id,
+                'chart_of_account_id' => $hutang->id,
+                'debit'               => $payment->amount,
+                'credit'              => 0,
+                'description'         => 'Pelunasan Hutang',
+            ]);
+
+            JournalLine::create([
+                'journal_entry_id'    => $existing->id,
+                'chart_of_account_id' => $kas->id,
+                'debit'               => 0,
+                'credit'              => $payment->amount,
+                'description'         => 'Kas Keluar',
+            ]);
+
+            return $existing->fresh(['lines.chartOfAccount']);
+        });
+    }
+
+    /**
      * Buat journal entry dari sales invoice.
      * Debit: Piutang Usaha | Credit: Penjualan
      * Debit: HPP          | Credit: Persediaan
@@ -150,6 +201,57 @@ class JournalService
                 ['account_id' => $piutang->id, 'debit' => 0,                'credit' => $payment->amount, 'description' => 'Pelunasan Piutang'],
             ]
         );
+    }
+
+    /**
+     * Update journal entry dari sales payment saat diedit.
+     */
+    public function updateFromSalesPayment(SalesPayment $payment): JournalEntry
+    {
+        $existing = JournalEntry::where('reference_type', SalesPayment::class)
+            ->where('reference_id', $payment->id)
+            ->first();
+
+        if (!$existing) {
+            $entry = $this->createFromSalesPayment($payment);
+            return $this->postEntry($entry);
+        }
+
+        $payment->loadMissing(['salesInvoice']);
+        $kas     = $this->findAccount('1-1100');
+        $piutang = $this->findAccount('1-1200');
+
+        app(AccountingPeriodService::class)->assertDateNotLocked(Carbon::parse($payment->payment_date));
+
+        return DB::transaction(function () use ($existing, $payment, $kas, $piutang) {
+            $existing->update([
+                'entry_date'  => $payment->payment_date->toDateString(),
+                'description' => "Penerimaan Pembayaran #{$payment->salesInvoice->invoice_number}",
+                'status'      => 'posted',
+                'posted_by'   => Auth::id() ?? 1,
+                'posted_at'   => now(),
+            ]);
+
+            $existing->lines()->delete();
+
+            JournalLine::create([
+                'journal_entry_id'    => $existing->id,
+                'chart_of_account_id' => $kas->id,
+                'debit'               => $payment->amount,
+                'credit'              => 0,
+                'description'         => 'Kas Masuk',
+            ]);
+
+            JournalLine::create([
+                'journal_entry_id'    => $existing->id,
+                'chart_of_account_id' => $piutang->id,
+                'debit'               => 0,
+                'credit'              => $payment->amount,
+                'description'         => 'Pelunasan Piutang',
+            ]);
+
+            return $existing->fresh(['lines.chartOfAccount']);
+        });
     }
 
     /**

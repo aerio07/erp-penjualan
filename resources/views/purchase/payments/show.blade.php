@@ -9,7 +9,13 @@
         :subtitle="'Invoice Ref: ' . ($payment->purchaseInvoice->invoice_number ?? '-')"
         status="done"
         :back-url="route('purchase.payments.index')"
-    />
+    >
+        <x-slot:actions>
+            <a href="{{ route('purchase.payments.edit', $payment) }}" class="btn btn-warning">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Pembayaran
+            </a>
+        </x-slot:actions>
+    </x-detail-header>
 
     <div class="card w-full">
         <div class="card-header">

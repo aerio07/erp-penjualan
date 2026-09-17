@@ -100,4 +100,56 @@ class PurchasePaymentController extends Controller
 
         return view('purchase.payments.show', compact('payment'));
     }
+
+    public function edit(PurchasePayment $payment): View
+    {
+        $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'purchaseInvoice.payments']);
+        $invoice = $payment->purchaseInvoice;
+
+        $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->sum('amount');
+        $maxAllowed = max(0, $invoice->effective_total_amount - $otherPaid);
+
+        return view('purchase.payments.edit', compact('payment', 'invoice', 'maxAllowed', 'otherPaid'));
+    }
+
+    public function update(Request $request, PurchasePayment $payment): RedirectResponse
+    {
+        $request->validate([
+            'amount'           => 'required|numeric|min:1',
+            'payment_date'     => 'required|date',
+            'method'           => 'required|in:cash,transfer,giro,cek',
+            'reference_number' => 'nullable|string',
+            'notes'            => 'nullable|string',
+        ]);
+
+        return DB::transaction(function () use ($request, $payment) {
+            $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($payment->purchase_invoice_id);
+
+            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->sum('amount');
+            $maxAllowed = $invoice->effective_total_amount - $otherPaid;
+
+            if ($request->amount > $maxAllowed + 0.01) {
+                return back()->with('error', "Jumlah pembayaran (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa hutang tagihan (Maks: Rp " . number_format($maxAllowed, 0, ',', '.') . ").")->withInput();
+            }
+
+            $payment->update([
+                'amount'           => $request->amount,
+                'payment_date'     => $request->payment_date,
+                'method'           => $request->method,
+                'reference_number' => $request->reference_number,
+                'notes'            => $request->notes,
+            ]);
+
+            // Update status invoice
+            $newTotalPaid = $otherPaid + $request->amount;
+            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+            $invoice->update(['status' => $status]);
+
+            // Perbarui Jurnal Otomatis Akuntansi
+            $this->journalService->updateFromPurchasePayment($payment);
+
+            return redirect()->route('purchase.payments.show', $payment)
+                ->with('success', 'Pembayaran Hutang berhasil diperbarui dan Jurnal Akuntansi otomatis disesuaikan.');
+        });
+    }
 }

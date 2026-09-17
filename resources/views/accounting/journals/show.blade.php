@@ -13,10 +13,19 @@
     >
         <x-slot:actions>
             @if($journal->status === 'draft')
-            <form method="POST" action="{{ route('accounting.journals.post', $journal) }}" style="display:inline;">
+            <a href="{{ route('accounting.journals.edit', $journal) }}" class="btn btn-warning">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Jurnal
+            </a>
+            <form method="POST" action="{{ route('accounting.journals.post', $journal) }}" style="display:inline;" onsubmit="return confirm('Posting jurnal ini? Jurnal yang diposting akan mempengaruhi buku besar dan laporan keuangan.')">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-success">
                     <i class="fa-solid fa-check"></i> Posting Jurnal
+                </button>
+            </form>
+            <form method="POST" action="{{ route('accounting.journals.destroy', $journal) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jurnal draft ini?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-trash"></i> Hapus
                 </button>
             </form>
             @endif

@@ -245,4 +245,70 @@ class PurchasePaymentTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('TRF-SEARCH-SUPP');
     }
+
+    public function test_can_view_edit_payment_page(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+
+        $payment = PurchasePayment::create([
+            'purchase_invoice_id' => $invoice->id,
+            'user_id'             => $this->finance->id,
+            'amount'              => 400000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'transfer',
+            'reference_number'    => 'TRF-EDIT-TEST',
+        ]);
+
+        $response = $this->actingAs($this->finance)->get(route('purchase.payments.edit', $payment));
+        $response->assertStatus(200);
+        $response->assertSee('Edit Pembayaran Hutang');
+        $response->assertSee($invoice->invoice_number);
+    }
+
+    public function test_can_update_purchase_payment_and_sync_invoice_and_journal(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+
+        // Record initial payment
+        $responseStore = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+            'purchase_invoice_id' => $invoice->id,
+            'amount'              => 500000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'transfer',
+            'reference_number'    => 'TRF-INIT',
+        ]);
+        $responseStore->assertRedirect(route('purchase.payments.index'));
+
+        $payment = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
+        $invoice->refresh();
+        $this->assertEquals('partial', $invoice->status);
+
+        // Update payment to full (1.000.000)
+        $responseUpdate = $this->actingAs($this->finance)->put(route('purchase.payments.update', $payment), [
+            'amount'           => 1000000,
+            'payment_date'     => now()->toDateString(),
+            'method'           => 'cash',
+            'reference_number' => 'CASH-FULL',
+            'notes'            => 'Diubah jadi lunas',
+        ]);
+
+        $responseUpdate->assertRedirect(route('purchase.payments.show', $payment));
+        $responseUpdate->assertSessionHas('success');
+
+        $payment->refresh();
+        $this->assertEquals(1000000, $payment->amount);
+        $this->assertEquals('cash', $payment->method);
+        $this->assertEquals('CASH-FULL', $payment->reference_number);
+
+        $invoice->refresh();
+        $this->assertEquals('paid', $invoice->status);
+        $this->assertEquals(0, $invoice->outstanding_amount);
+
+        // Verify Journal Entry was updated to 1.000.000
+        $journal = JournalEntry::where('reference_type', PurchasePayment::class)
+            ->where('reference_id', $payment->id)
+            ->first();
+        $this->assertNotNull($journal);
+        $this->assertEquals(1000000, $journal->lines->sum('debit'));
+    }
 }

@@ -117,7 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:admin,finance')->prefix('purchase')->name('purchase.')->group(function () {
         Route::post('invoices/{invoice}/post', [PurchaseInvoiceController::class, 'post'])->name('invoices.post');
         Route::resource('invoices', PurchaseInvoiceController::class);
-        Route::resource('payments', PurchasePaymentController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('payments', PurchasePaymentController::class)->except(['destroy']);
     });
 
     Route::middleware('role:admin,purchasing,finance')->prefix('purchase')->name('purchase.')->group(function () {
@@ -173,7 +173,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('invoices/{invoice}/tax-invoice', [SalesInvoiceController::class, 'updateTaxInvoice'])->name('invoices.tax-invoice.update');
         Route::post('invoices/{invoice}/post', [SalesInvoiceController::class, 'post'])->name('invoices.post');
         Route::resource('invoices', SalesInvoiceController::class);
-        Route::resource('payments', SalesPaymentController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('payments', SalesPaymentController::class)->except(['destroy']);
     });
 
     Route::middleware('role:admin,sales,finance')->prefix('sales')->name('sales.')->group(function () {
