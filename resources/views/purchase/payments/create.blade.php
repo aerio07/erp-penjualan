@@ -186,7 +186,7 @@
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
             <div style="display:flex; gap:10px;">
-                <button type="submit" name="action" value="draft" class="btn btn-secondary">
+                <button type="submit" name="action" value="draft" class="btn btn-success">
                     <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
                 </button>
                 <button type="submit" name="action" value="post" class="btn btn-primary">

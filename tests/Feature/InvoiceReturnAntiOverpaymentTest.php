@@ -144,6 +144,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
             'sales_invoice_id' => $invoice->id,
             'payment_date' => now()->toDateString(),
             'amount' => 600000,
+            'status' => 'posted',
             'payment_method' => 'bank_transfer',
             'user_id' => $this->admin->id,
         ]);
@@ -266,6 +267,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
             'sales_invoice_id' => $invoice->id,
             'payment_date' => now()->toDateString(),
             'amount' => 650000,
+            'status' => 'posted',
             'payment_method' => 'bank_transfer',
             'user_id' => $this->admin->id,
         ]);
@@ -416,6 +418,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
             'sales_invoice_id' => $invoice->id,
             'payment_date' => now()->toDateString(),
             'amount' => 500000,
+            'status' => 'posted',
             'payment_method' => 'bank_transfer',
             'user_id' => $this->admin->id,
         ]);
@@ -535,6 +538,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
             'sales_invoice_id' => $invoice->id,
             'payment_date' => now()->toDateString(),
             'amount' => 800000,
+            'status' => 'posted',
             'payment_method' => 'bank_transfer',
             'user_id' => $this->admin->id,
         ]);
@@ -658,6 +662,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
             'purchase_invoice_id' => $invoice->id,
             'payment_date' => now()->toDateString(),
             'amount' => 600000,
+            'status' => 'posted',
             'payment_method' => 'bank_transfer',
             'user_id' => $this->admin->id,
         ]);

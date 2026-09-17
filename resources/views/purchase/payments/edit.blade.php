@@ -161,10 +161,10 @@
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
             <div style="display:flex; gap:10px;">
-                <button type="submit" name="action" value="update" class="btn btn-primary">
+                <button type="submit" name="action" value="update" class="btn btn-success">
                     <i class="fa-solid fa-floppy-disk"></i> Update Draft
                 </button>
-                <button type="submit" name="action" value="post" class="btn btn-success" onclick="return confirm('Posting pembayaran ini sekarang? Jurnal akuntansi akan otomatis dicatat dan pembayaran yang sudah diposting tidak dapat diubah lagi.')">
+                <button type="submit" name="action" value="post" class="btn btn-primary" onclick="return confirm('Posting pembayaran ini sekarang? Jurnal akuntansi akan otomatis dicatat dan pembayaran yang sudah diposting tidak dapat diubah lagi.')">
                     <i class="fa-solid fa-paper-plane"></i> Simpan & Posting
                 </button>
             </div>
