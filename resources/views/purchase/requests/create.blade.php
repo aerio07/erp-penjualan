@@ -86,18 +86,18 @@
             </div>
 
             <div class="table-responsive" style="overflow: visible; width: 100%;">
-                <table class="erp-table" style="width: 100%;">
+                <table class="erp-table" style="table-layout: fixed; width: 100%;">
                     <thead>
                         <tr>
-                            <th style="width:45px; text-align:center;">No</th>
-                            <th style="width:120px;">Kode (SKU)</th>
-                            <th style="min-width:220px;">Nama Barang <span style="color:var(--danger);">*</span></th>
-                            <th style="width:75px; text-align:center;">On Hand</th>
-                            <th style="width:75px; text-align:center;">Min Stock</th>
-                            <th style="width:95px; text-align:center;">Qty Diminta <span style="color:var(--danger);">*</span></th>
-                            <th style="width:75px; text-align:center;">Satuan</th>
-                            <th style="width:180px;">Catatan Barang</th>
-                            <th style="width:55px; text-align:center; padding-left:4px !important; padding-right:4px !important;">Aksi</th>
+                            <th style="width:4%; text-align:center;">No</th>
+                            <th style="width:11%;">Kode (SKU)</th>
+                            <th style="width:31%;">Nama Barang <span style="color:var(--danger);">*</span></th>
+                            <th style="width:7%; text-align:center;">On Hand</th>
+                            <th style="width:7%; text-align:center;">Min Stock</th>
+                            <th style="width:9%; text-align:center;">Qty Diminta <span style="color:var(--danger);">*</span></th>
+                            <th style="width:7%; text-align:center;">Satuan</th>
+                            <th style="width:18%;">Catatan Barang</th>
+                            <th style="width:6%; text-align:center; padding-left:2px !important; padding-right:2px !important;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -107,7 +107,7 @@
                                 <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     <span style="font-family:monospace; font-weight:600;" x-text="item.sku || '-'"></span>
                                 </td>
-                                <td style="vertical-align: top !important; position: relative;">
+                                <td style="vertical-align: top !important; position: relative; max-width: 0; overflow: visible;">
                                     <div style="position: relative; width: 100%;" x-data="{ openProd: false, prodSearch: '' }" @click.outside="openProd = false" @keydown.escape.window="openProd = false">
                                         <input type="hidden" :name="'items[' + index + '][product_id]'" :value="item.product_id" required>
                                         
@@ -201,26 +201,20 @@
                                            style="width: 100%; max-width: 100%; box-sizing: border-box;"
                                            placeholder="Catatan item (opsional)">
                                 </td>
-                                <td style="text-align:center; vertical-align:middle; padding-left:4px !important; padding-right:4px !important;">
+                                <td style="text-align:center; vertical-align:middle; padding-left:2px !important; padding-right:2px !important;">
                                     <button type="button" 
                                             @click="removeItem(index)" 
                                             class="btn btn-danger btn-sm btn-icon" 
-                                            style="width:32px; height:32px; min-width:32px; max-width:32px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; margin:0 auto;" 
+                                            style="width:30px; height:30px; min-width:30px; max-width:30px; padding:0; display:inline-flex; align-items:center; justify-content:center; border-radius:6px; margin:0 auto;" 
                                             :disabled="items.length <= 1"
                                             title="Hapus Item">
-                                        <i class="fa-solid fa-trash" style="font-size:12px;"></i>
+                                        <i class="fa-solid fa-trash" style="font-size:11px;"></i>
                                     </button>
                                 </td>
                             </tr>
                         </template>
                     </tbody>
                 </table>
-            </div>
-
-            <div class="card-footer" style="display:flex; justify-content:flex-end; align-items:center; padding:16px 20px; background:var(--bg-card);">
-                <div style="font-size:13px; color:var(--text-secondary);">
-                    Total: <strong style="color:var(--text-primary);" x-text="items.length"></strong> jenis barang diajukan
-                </div>
             </div>
         </div>
 
