@@ -25,7 +25,7 @@
     <div class="grid grid-4" style="gap: 16px; margin-bottom: 20px;">
         <div class="card" style="border-left: 4px solid #64748b; padding: 16px 20px;">
             <div style="font-size: 11.5px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
-                Saldo Awal {{ $dateFrom ? '(' . date('d/m/Y', strtotime($dateFrom)) . ')' : '' }}
+                Saldo Awal {{ $dateFrom ? '(' . date('m/d/Y', strtotime($dateFrom)) . ')' : '' }}
             </div>
             <div style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">
                 Rp {{ number_format($beginningBalance, 0, ',', '.') }}
@@ -116,14 +116,14 @@
                 <tbody>
                     {{-- Baris Saldo Awal --}}
                     <tr style="background: #f8fafc; font-weight: 600; border-bottom: 2px solid #e2e8f0;">
-                        <td>{{ $dateFrom ? date('d/m/Y', strtotime($dateFrom)) : '-' }}</td>
+                        <td>{{ $dateFrom ? date('m/d/Y', strtotime($dateFrom)) : '-' }}</td>
                         <td style="color: var(--text-secondary); font-family: monospace;">-</td>
                         <td style="text-align: center;">
                             <span class="badge" style="background: #e2e8f0; color: #475569; font-size: 10px;">SALDO AWAL</span>
                         </td>
                         <td style="color: var(--text-secondary);">-</td>
                         <td style="color: var(--text-secondary);">
-                            Saldo Awal Hutang {{ $dateFrom ? 'per ' . date('d/m/Y', strtotime($dateFrom)) : 'Awal Pembukuan' }}
+                            Saldo Awal Hutang {{ $dateFrom ? 'per ' . date('m/d/Y', strtotime($dateFrom)) : 'Awal Pembukuan' }}
                         </td>
                         <td style="text-align: right; color: var(--text-secondary);">-</td>
                         <td style="text-align: right; color: var(--text-secondary);">-</td>
@@ -135,7 +135,7 @@
                     {{-- Baris Mutasi Transaksi --}}
                     @forelse($filteredTransactions as $t)
                     <tr>
-                        <td>{{ date('d/m/Y', strtotime($t->date)) }}</td>
+                        <td>{{ date('m/d/Y', strtotime($t->date)) }}</td>
                         <td>
                             @if($t->link)
                                 <a href="{{ $t->link }}" style="font-family: monospace; font-weight: 700; color: var(--primary); text-decoration: none;">

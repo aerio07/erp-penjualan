@@ -11,7 +11,7 @@
 
     <x-page-header 
         title="{{ $purchase_request->pr_number }}" 
-        subtitle="Diajukan oleh {{ $purchase_request->user->name ?? 'User' }} (Divisi {{ $purchase_request->division ?? 'Umum' }}) pada {{ $purchase_request->request_date?->format('d/m/Y') }}"
+        subtitle="Diajukan oleh {{ $purchase_request->user->name ?? 'User' }} (Divisi {{ $purchase_request->division ?? 'Umum' }}) pada {{ $purchase_request->request_date?->format('m/d/Y') }}"
         :back-url="route('purchase.requests.index')"
     >
         <x-slot:actions>
@@ -73,7 +73,7 @@
                 @endif
                 <div style="color:#991b1b; font-size:12.5px; margin-top:8px;">
                     <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
-                    Ditolak oleh: {{ $purchase_request->approver->name ?? 'Approver' }} pada {{ $purchase_request->approved_at?->format('d/m/Y H:i') }} | Dokumen ini ditolak oleh reviewer. Silakan perbaiki data melalui tombol <strong>Edit PR</strong> di atas lalu ajukan kembali.
+                    Ditolak oleh: {{ $purchase_request->approver->name ?? 'Approver' }} pada {{ $purchase_request->approved_at?->format('m/d/Y H:i') }} | Dokumen ini ditolak oleh reviewer. Silakan perbaiki data melalui tombol <strong>Edit PR</strong> di atas lalu ajukan kembali.
                 </div>
             </div>
         </div>
@@ -97,13 +97,13 @@
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary);">Tanggal Pengajuan</div>
                         <div style="font-size:14px; font-weight:600; margin-top:2px;">
-                            {{ $purchase_request->request_date?->format('d F Y') }}
+                            {{ $purchase_request->request_date?->format('m/d/Y') }}
                         </div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary);">Date Needed (Tgl Dibutuhkan)</div>
                         <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-top:2px;">
-                            <i class="fa-solid fa-calendar-check text-primary"></i> {{ $purchase_request->required_date?->format('d F Y') }}
+                            <i class="fa-solid fa-calendar-check text-primary"></i> {{ $purchase_request->required_date?->format('m/d/Y') }}
                         </div>
                     </div>
                     <div>
@@ -121,7 +121,7 @@
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary);">Batas Kedaluwarsa PR</div>
                         <div style="font-size:14px; font-weight:600; margin-top:2px;">
-                            {{ $purchase_request->expired_date ? $purchase_request->expired_date->format('d F Y') : '-' }}
+                            {{ $purchase_request->expired_date ? $purchase_request->expired_date->format('m/d/Y') : '-' }}
                         </div>
                     </div>
                 </div>
@@ -157,7 +157,7 @@
                     </div>
                     <div>{{ $purchase_request->approver->name ?? '-' }}</div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-                        {{ $purchase_request->approved_at->format('d/m/Y H:i') }}
+                        {{ $purchase_request->approved_at->format('m/d/Y H:i') }}
                     </div>
                 </div>
                 @endif

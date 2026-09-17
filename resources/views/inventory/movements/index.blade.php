@@ -68,7 +68,7 @@
             $isIncoming = in_array($m->type, ['in', 'return_in', 'transfer_in', 'opening_balance']) || $isAdjustmentSurplus; 
         @endphp
         <tr>
-            <td>{{ $m->movement_date ? $m->movement_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $m->movement_date ? $m->movement_date->format('m/d/Y') : '-' }}</td>
             <td>
                 <div style="font-weight:600;">{{ $m->product->name ?? '-' }}</div>
                 <div style="font-size:12px; color:var(--text-secondary);">{{ $m->product->sku ?? '-' }}</div>

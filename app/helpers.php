@@ -36,3 +36,55 @@ if (!function_exists('unrupiah')) {
         return (int)$clean;
     }
 }
+
+if (!function_exists('format_date')) {
+    /**
+     * Format tanggal ke mm/dd/yyyy (standar aplikasi)
+     *
+     * @param mixed $date
+     * @param string $format
+     * @return string
+     */
+    function format_date($date, string $format = 'm/d/Y'): string
+    {
+        if (empty($date)) {
+            return '-';
+        }
+
+        if (is_string($date)) {
+            try {
+                $date = \Carbon\Carbon::parse($date);
+            } catch (\Throwable $e) {
+                return $date;
+            }
+        }
+
+        return ($date instanceof \DateTimeInterface) ? $date->format($format) : '-';
+    }
+}
+
+if (!function_exists('format_datetime')) {
+    /**
+     * Format tanggal & waktu ke mm/dd/yyyy HH:mm
+     *
+     * @param mixed $date
+     * @param string $format
+     * @return string
+     */
+    function format_datetime($date, string $format = 'm/d/Y H:i'): string
+    {
+        if (empty($date)) {
+            return '-';
+        }
+
+        if (is_string($date)) {
+            try {
+                $date = \Carbon\Carbon::parse($date);
+            } catch (\Throwable $e) {
+                return $date;
+            }
+        }
+
+        return ($date instanceof \DateTimeInterface) ? $date->format($format) : '-';
+    }
+}

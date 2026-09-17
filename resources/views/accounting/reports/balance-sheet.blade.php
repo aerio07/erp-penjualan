@@ -143,7 +143,7 @@
                             <tr>
                                 <td>
                                     <div style="font-weight:600; color:var(--primary);">Laba / (Rugi) Berjalan</div>
-                                    <div style="font-size:11px; color:var(--text-secondary);">Akumulasi Laba/Rugi hingga {{ Carbon\Carbon::parse($asOfDate)->format('d/m/Y') }}</div>
+                                    <div style="font-size:11px; color:var(--text-secondary);">Akumulasi Laba/Rugi hingga {{ Carbon\Carbon::parse($asOfDate)->format('m/d/Y') }}</div>
                                 </td>
                                 <td style="text-align:right; font-weight:700; color:var(--primary);">
                                     Rp {{ number_format($currentProfit, 0, ',', '.') }}

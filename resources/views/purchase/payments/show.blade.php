@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Pembayaran</div>
-                    <div style="font-weight:600;">{{ $payment->payment_date->format('d F Y') }}</div>
+                    <div style="font-weight:600;">{{ $payment->payment_date->format('m/d/Y') }}</div>
                 </div>
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">No. Referensi / Cek</div>

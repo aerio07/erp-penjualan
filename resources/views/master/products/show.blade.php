@@ -370,7 +370,7 @@
                 <tbody>
                     @forelse($recentMovements as $mov)
                     <tr>
-                        <td>{{ $mov->movement_date ? $mov->movement_date->format('d/m/Y') : $mov->created_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $mov->movement_date ? $mov->movement_date->format('m/d/Y') : $mov->created_at->format('m/d/Y H:i') }}</td>
                         <td>
                             @php
                                 $typeBadge = match($mov->type) {
@@ -437,7 +437,7 @@
                             @endif
                         </td>
                         <td>{{ $item->salesOrder->customer->name ?? '-' }}</td>
-                        <td>{{ $item->salesOrder && $item->salesOrder->order_date ? $item->salesOrder->order_date->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $item->salesOrder && $item->salesOrder->order_date ? $item->salesOrder->order_date->format('m/d/Y') : '-' }}</td>
                         <td style="text-align:right; font-weight:600;">{{ number_format($item->qty_ordered) }} {{ $product->unit }}</td>
                         <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
@@ -489,7 +489,7 @@
                             @endif
                         </td>
                         <td>{{ $item->purchaseOrder->supplier->name ?? '-' }}</td>
-                        <td>{{ $item->purchaseOrder && $item->purchaseOrder->order_date ? $item->purchaseOrder->order_date->format('d/m/Y') : '-' }}</td>
+                        <td>{{ $item->purchaseOrder && $item->purchaseOrder->order_date ? $item->purchaseOrder->order_date->format('m/d/Y') : '-' }}</td>
                         <td style="text-align:right; font-weight:600;">{{ number_format($item->qty_ordered) }} {{ $product->unit }}</td>
                         <td style="text-align:right; color:#16a34a;">{{ number_format($item->qty_received) }} {{ $product->unit }}</td>
                         <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>

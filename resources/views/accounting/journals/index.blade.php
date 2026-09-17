@@ -39,7 +39,7 @@
                     {{ $entry->entry_number }}
                 </a>
             </td>
-            <td>{{ $entry->entry_date ? $entry->entry_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $entry->entry_date ? $entry->entry_date->format('m/d/Y') : '-' }}</td>
             <td class="col-notes" title="{{ $entry->description ?? '-' }}">{{ $entry->description ?? '-' }}</td>
             <td>{{ $entry->creator->name ?? '-' }}</td>
             <td style="text-align:center;">

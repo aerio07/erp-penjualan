@@ -53,7 +53,7 @@
             </td>
             <td>{{ $r->goodsReceipt->receipt_number ?? '-' }}</td>
             <td>{{ $r->supplier->name ?? '-' }}</td>
-            <td>{{ $r->return_date ? $r->return_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $r->return_date ? $r->return_date->format('m/d/Y') : '-' }}</td>
             <td class="col-notes" title="{{ $r->reason ?? '-' }}">{{ $r->reason ?? '-' }}</td>
             <td style="text-align:center;">
                 <span class="badge badge-{{ $r->status === 'completed' ? 'done' : ($r->status === 'sent' ? 'confirmed' : 'pending') }}">

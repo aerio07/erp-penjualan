@@ -72,10 +72,10 @@
                     <i class="fa-solid fa-warehouse"></i> {{ $del->warehouse->name ?? '-' }}
                 </span>
             </td>
-            <td>{{ $del->delivery_date ? $del->delivery_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $del->delivery_date ? $del->delivery_date->format('m/d/Y') : '-' }}</td>
             <td>
                 @if($del->status === 'delivered')
-                    <span class="badge badge-success" title="Diterima: {{ $del->received_date ? $del->received_date->format('d/m/Y') : '-' }}">
+                    <span class="badge badge-success" title="Diterima: {{ $del->received_date ? $del->received_date->format('m/d/Y') : '-' }}">
                         <i class="fa-solid fa-circle-check"></i> Diterima
                     </span>
                 @elseif($del->status === 'in_transit')

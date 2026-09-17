@@ -51,12 +51,12 @@
                     <span class="date-label"><i class="fa-regular fa-calendar" style="margin-right: 4px;"></i> Periode:</span>
                     <div class="date-input-wrap">
                         <input type="date" name="{{ $dateFromParam }}" value="{{ request($dateFromParam) }}" 
-                                class="form-control date-input" title="Dari Tanggal">
+                                class="form-control date-input" title="Dari Tanggal" lang="en-US">
                     </div>
                     <span class="date-sep">s/d</span>
                     <div class="date-input-wrap">
                         <input type="date" name="{{ $dateToParam }}" value="{{ request($dateToParam) }}" 
-                                class="form-control date-input" title="Sampai Tanggal">
+                                class="form-control date-input" title="Sampai Tanggal" lang="en-US">
                     </div>
                 </div>
                 @endif

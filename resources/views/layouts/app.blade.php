@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1610,6 +1610,165 @@
                 });
             });
         });
+
+        // Universal mm/dd/yyyy Date Input Display & Native Browser Calendar Enhancer
+        window.initErpNativeDatePickers = function(root = document) {
+            root.querySelectorAll('input[type="date"]:not(.erp-date-native-trigger)').forEach(function(rawInput) {
+                if (rawInput._erpDateEnhanced) return;
+                rawInput._erpDateEnhanced = true;
+
+                const parent = rawInput.parentNode;
+                const origVal = rawInput.value;
+                const origName = rawInput.name;
+                const origId = rawInput.id;
+                const origRequired = rawInput.required;
+                const origDisabled = rawInput.disabled;
+                const origReadonly = rawInput.readOnly;
+                const minVal = rawInput.min;
+                const maxVal = rawInput.max;
+                const origClasses = rawInput.className || 'form-control';
+                const origStyle = rawInput.getAttribute('style') || '';
+
+                // Hitung nilai tampilan visual mm/dd/yyyy
+                let displayVal = '';
+                if (origVal && origVal.includes('-')) {
+                    const parts = origVal.split('-');
+                    if (parts.length === 3) {
+                        displayVal = `${parts[1]}/${parts[2]}/${parts[0]}`;
+                    }
+                }
+
+                // Buat pembungkus
+                const wrap = document.createElement('div');
+                wrap.className = 'erp-native-datepicker-wrap';
+                const isFormCtrl = origClasses.includes('form-control');
+                wrap.style.cssText = 'position:relative; display:inline-flex; align-items:center; width:' + (rawInput.style.width || (isFormCtrl ? '100%' : 'auto')) + ';';
+
+                // Input teks yang terlihat dengan format mm/dd/yyyy
+                const displayInput = document.createElement('input');
+                displayInput.type = 'text';
+                displayInput.className = origClasses;
+                displayInput.placeholder = 'mm/dd/yyyy';
+                displayInput.value = displayVal;
+                displayInput.maxLength = 10;
+                displayInput.autocomplete = 'off';
+                if (origRequired) displayInput.required = true;
+                if (origDisabled) displayInput.disabled = true;
+                if (origReadonly) displayInput.readOnly = true;
+                if (origStyle) displayInput.style.cssText = origStyle;
+                displayInput.style.paddingRight = '32px';
+
+                // Input hidden pengirim nilai Y-m-d ke Laravel
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = origName;
+                if (origId) hiddenInput.id = origId;
+                hiddenInput.value = origVal;
+
+                // Ikon kalender & trigger kalender bawaan browser (Area klik diperbesar 36px & responsif)
+                const calBtn = document.createElement('div');
+                calBtn.className = 'erp-date-trigger-btn';
+                calBtn.title = 'Pilih Tanggal';
+                calBtn.style.cssText = 'position:absolute; right:0; top:0; bottom:0; width:38px; height:100%; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:5;';
+                calBtn.innerHTML = '<i class="fa-regular fa-calendar" style="color:#64748b; font-size:15px; pointer-events:none; transition:color 0.15s;"></i>';
+
+                const nativeTrigger = document.createElement('input');
+                nativeTrigger.type = 'date';
+                nativeTrigger.className = 'erp-date-native-trigger';
+                nativeTrigger.tabIndex = -1;
+                nativeTrigger.setAttribute('aria-hidden', 'true');
+                nativeTrigger.value = origVal;
+                if (minVal) nativeTrigger.min = minVal;
+                if (maxVal) nativeTrigger.max = maxVal;
+                if (origDisabled) nativeTrigger.disabled = true;
+                nativeTrigger.style.cssText = 'position:absolute; right:0; bottom:0; width:1px; height:1px; opacity:0; border:0; padding:0; margin:0; pointer-events:none;';
+
+                calBtn.appendChild(nativeTrigger);
+                wrap.appendChild(displayInput);
+                wrap.appendChild(hiddenInput);
+                wrap.appendChild(calBtn);
+
+                parent.insertBefore(wrap, rawInput);
+                parent.removeChild(rawInput);
+
+                // Hover effect pada ikon kalender
+                calBtn.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('i');
+                    if (icon) icon.style.color = '#2563eb';
+                });
+                calBtn.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('i');
+                    if (icon) icon.style.color = '#64748b';
+                });
+
+                // Klik tombol kalender -> Buka kalender bawaan browser secara presisi
+                calBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (displayInput.disabled || displayInput.readOnly) return;
+                    if (typeof nativeTrigger.showPicker === 'function') {
+                        try {
+                            nativeTrigger.showPicker();
+                        } catch (err) {
+                            nativeTrigger.focus();
+                        }
+                    } else {
+                        nativeTrigger.focus();
+                    }
+                });
+
+                // Sinkronisasi: Saat tanggal dipilih dari kalender bawaan browser
+                nativeTrigger.addEventListener('change', function() {
+                    if (this.value) {
+                        const parts = this.value.split('-');
+                        if (parts.length === 3) {
+                            displayInput.value = `${parts[1]}/${parts[2]}/${parts[0]}`;
+                            hiddenInput.value = this.value;
+                            displayInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            displayInput.dispatchEvent(new Event('change', { bubbles: true }));
+                            return;
+                        }
+                    }
+                    displayInput.value = '';
+                    hiddenInput.value = '';
+                    displayInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    displayInput.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+
+                // Sinkronisasi: Saat pengguna mengetik manual ke kotak teks (input mask mm/dd/yyyy)
+                displayInput.addEventListener('input', function() {
+                    let v = this.value.replace(/\D/g, '').slice(0, 8);
+                    if (v.length >= 5) {
+                        v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4);
+                    } else if (v.length >= 3) {
+                        v = v.slice(0, 2) + '/' + v.slice(2);
+                    }
+                    this.value = v;
+
+                    if (v.length === 10) {
+                        const [m, d, y] = v.split('/');
+                        const month = parseInt(m, 10);
+                        const day = parseInt(d, 10);
+                        if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && y.length === 4) {
+                            const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                            hiddenInput.value = iso;
+                            nativeTrigger.value = iso;
+                            return;
+                        }
+                    }
+                    hiddenInput.value = '';
+                });
+
+                displayInput.addEventListener('blur', function() {
+                    if (this.value && this.value.length < 10) {
+                        this.value = '';
+                        hiddenInput.value = '';
+                        nativeTrigger.value = '';
+                    }
+                });
+            });
+        };
+        initErpNativeDatePickers();
     });
     </script>
     @stack('scripts')

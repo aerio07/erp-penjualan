@@ -21,7 +21,7 @@
                         <label class="form-label">Purchase Order (PO) <span style="color:var(--danger);">*</span></label>
                         <x-searchable-select 
                             name="purchase_order_id" 
-                            :options="$purchaseOrders->map(fn($po) => ['id' => $po->id, 'name' => $po->po_number . ' — ' . ($po->supplier->name ?? '-') . ' (' . ($po->order_date ? $po->order_date->format('d/m/Y') : '-') . ')'])" 
+                            :options="$purchaseOrders->map(fn($po) => ['id' => $po->id, 'name' => $po->po_number . ' — ' . ($po->supplier->name ?? '-') . ' (' . ($po->order_date ? $po->order_date->format('m/d/Y') : '-') . ')'])" 
                             placeholder="-- Pilih Purchase Order --" 
                             search-placeholder="Cari nomor PO atau nama supplier..." 
                             on-select="poId => { selectedPoId = poId; onPoChange(); }" 

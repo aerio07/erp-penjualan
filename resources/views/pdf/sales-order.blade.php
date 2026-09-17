@@ -46,12 +46,12 @@
                     <tr>
                         <td class="detail-label">Date</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
+                        <td class="detail-value">{{ $order->order_date ? $order->order_date->format('m/d/Y') : date('m/d/Y') }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Expected Delivery</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
+                        <td class="detail-value">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('m/d/Y') : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Channel</td>

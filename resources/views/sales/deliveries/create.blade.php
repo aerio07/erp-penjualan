@@ -21,7 +21,7 @@
                         <label class="form-label">Sales Order <span style="color:var(--danger);">*</span></label>
                         <x-searchable-select 
                             name="sales_order_id" 
-                            :options="$confirmedSos->map(fn($so) => ['id' => $so->id, 'name' => $so->so_number . ' - ' . $so->customer->name . ' (' . $so->order_date->format('d/m/Y') . ')'])" 
+                            :options="$confirmedSos->map(fn($so) => ['id' => $so->id, 'name' => $so->so_number . ' - ' . $so->customer->name . ' (' . $so->order_date->format('m/d/Y') . ')'])" 
                             :value="old('sales_order_id', $selectedSoId)" 
                             placeholder="-- Pilih Sales Order --" 
                             search-placeholder="Cari nomor SO atau nama customer..." 

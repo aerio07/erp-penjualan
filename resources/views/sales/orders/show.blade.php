@@ -13,7 +13,7 @@
 
     <x-detail-header 
         :title="$order->so_number"
-        :subtitle="($order->customer->name ?? '-') . ' · ' . $order->order_date->format('d/m/Y') . ' · Channel: ' . ucfirst($order->channel ?? 'offline')"
+        :subtitle="($order->customer->name ?? '-') . ' · ' . $order->order_date->format('m/d/Y') . ' · Channel: ' . ucfirst($order->channel ?? 'offline')"
         :status="$order->status"
     >
         <x-slot:actions>
@@ -206,11 +206,11 @@
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Order</div>
-                        <div style="font-weight:600;">{{ $order->order_date->format('d F Y') }}</div>
+                        <div style="font-weight:600;">{{ $order->order_date->format('m/d/Y') }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Target Pengiriman</div>
-                        <div style="font-weight:600;">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d F Y') : '-' }}</div>
+                        <div style="font-weight:600;">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('m/d/Y') : '-' }}</div>
                     </div>
                 </div>
 

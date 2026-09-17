@@ -23,5 +23,21 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('rupiah', function ($expression) {
             return "<?php echo rupiah($expression); ?>";
         });
+
+        Blade::directive('date', function ($expression) {
+            return "<?php echo format_date($expression); ?>";
+        });
+
+        Blade::directive('datetime', function ($expression) {
+            return "<?php echo format_datetime($expression); ?>";
+        });
+
+        \Carbon\Carbon::macro('toAppDate', function () {
+            return $this->format('m/d/Y');
+        });
+
+        \Carbon\Carbon::macro('toAppDateTime', function () {
+            return $this->format('m/d/Y H:i');
+        });
     }
 }

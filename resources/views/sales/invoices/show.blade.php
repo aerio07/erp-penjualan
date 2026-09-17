@@ -56,12 +56,12 @@
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Invoice</div>
-                        <div style="font-weight:600;">{{ $invoice->invoice_date->format('d F Y') }}</div>
+                        <div style="font-weight:600;">{{ $invoice->invoice_date->format('m/d/Y') }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Jatuh Tempo</div>
                         <div style="font-weight:600; color:{{ $invoice->status !== 'paid' && $invoice->due_date < today() ? 'var(--danger)' : 'var(--text-primary)' }};">
-                            {{ $invoice->due_date->format('d F Y') }}
+                            {{ $invoice->due_date->format('m/d/Y') }}
                         </div>
                     </div>
                 </div>
@@ -248,7 +248,7 @@
                                 {{ $payment->reference_number ?: ('REC-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT)) }}
                             </a>
                         </td>
-                        <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                        <td>{{ $payment->payment_date->format('m/d/Y') }}</td>
                         <td><span class="badge badge-confirmed">{{ strtoupper($payment->method) }}</span></td>
                         <td>{{ $payment->reference_number ?? '-' }}</td>
                         <td style="text-align:right; font-weight:600; color:var(--success);">

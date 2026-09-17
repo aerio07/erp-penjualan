@@ -43,7 +43,7 @@
 
     <div class="card mb-0">
         <div class="card-header">
-            <h3>Daftar Saldo Akun (Per {{ Carbon\Carbon::parse($asOfDate)->format('d F Y') }})</h3>
+            <h3>Daftar Saldo Akun (Per {{ Carbon\Carbon::parse($asOfDate)->format('m/d/Y') }})</h3>
         </div>
         <div class="table-responsive">
             <table class="erp-table">

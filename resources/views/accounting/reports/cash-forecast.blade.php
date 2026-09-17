@@ -119,7 +119,7 @@
             <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-900 mb-4 flex items-start gap-2.5">
                 <i class="fa-solid fa-circle-info text-blue-600 text-sm mt-0.5 shrink-0"></i>
                 <div>
-                    <strong>Bulan Berjalan ({{ $fcLabel }}):</strong> Saldo Awal menggunakan saldo riil jurnal akun kas & bank s/d hari ini. Estimasi penerimaan & pengeluaran mencakup seluruh tagihan belum lunas yang jatuh tempo s/d {{ $fcEnd->format('d/m/Y') }}.
+                    <strong>Bulan Berjalan ({{ $fcLabel }}):</strong> Saldo Awal menggunakan saldo riil jurnal akun kas & bank s/d hari ini. Estimasi penerimaan & pengeluaran mencakup seluruh tagihan belum lunas yang jatuh tempo s/d {{ $fcEnd->format('m/d/Y') }}.
                 </div>
             </div>
             @endif
@@ -200,7 +200,7 @@
                                 </span>
                             </div>
                             <span class="text-[11px] text-slate-400 mt-1 block truncate">
-                                Jatuh tempo s/d {{ $fcEnd->format('d/m/Y') }}
+                                Jatuh tempo s/d {{ $fcEnd->format('m/d/Y') }}
                             </span>
                         </div>
                     </div>
@@ -244,7 +244,7 @@
                                 </span>
                             </div>
                             <span class="text-[11px] text-slate-400 mt-1 block truncate">
-                                Jatuh tempo s/d {{ $fcEnd->format('d/m/Y') }}
+                                Jatuh tempo s/d {{ $fcEnd->format('m/d/Y') }}
                             </span>
                         </div>
                     </div>
@@ -358,12 +358,12 @@
                                 <td class="text-xs text-slate-500">
                                     @if(!$fcIsCurrent)
                                         Tagihan jatuh tempo pada <strong>{{ $fcLabel }}</strong>.
-                                        Total akumulasi s/d {{ $fcEnd->format('d/m/Y') }} adalah <strong>Rp {{ number_format($fcTotalReceivableCumulative, 0, ',', '.') }}</strong>
+                                        Total akumulasi s/d {{ $fcEnd->format('m/d/Y') }} adalah <strong>Rp {{ number_format($fcTotalReceivableCumulative, 0, ',', '.') }}</strong>
                                         @if($fcTotalReceivablePrior > 0)
                                             (Rp {{ number_format($fcTotalReceivablePrior, 0, ',', '.') }} nota lampau sudah terserap dalam Saldo Awal).
                                         @endif
                                     @else
-                                        Penerimaan dari {{ $recCountTotal }} invoice jatuh tempo s/d {{ $fcEnd->format('d/m/Y') }}.
+                                        Penerimaan dari {{ $recCountTotal }} invoice jatuh tempo s/d {{ $fcEnd->format('m/d/Y') }}.
                                     @endif
                                 </td>
                                 <td style="text-align: center;">
@@ -383,12 +383,12 @@
                                 <td class="text-xs text-slate-500">
                                     @if(!$fcIsCurrent)
                                         Kewajiban jatuh tempo pada <strong>{{ $fcLabel }}</strong>.
-                                        Total akumulasi s/d {{ $fcEnd->format('d/m/Y') }} adalah <strong>Rp {{ number_format($fcTotalPayableCumulative, 0, ',', '.') }}</strong>
+                                        Total akumulasi s/d {{ $fcEnd->format('m/d/Y') }} adalah <strong>Rp {{ number_format($fcTotalPayableCumulative, 0, ',', '.') }}</strong>
                                         @if($fcTotalPayablePrior > 0)
                                             (Rp {{ number_format($fcTotalPayablePrior, 0, ',', '.') }} kewajiban lampau sudah terserap dalam Saldo Awal).
                                         @endif
                                     @else
-                                        Kewajiban atas {{ $payCountTotal }} invoice jatuh tempo s/d {{ $fcEnd->format('d/m/Y') }}.
+                                        Kewajiban atas {{ $payCountTotal }} invoice jatuh tempo s/d {{ $fcEnd->format('m/d/Y') }}.
                                     @endif
                                 </td>
                                 <td style="text-align: center;">
@@ -516,7 +516,7 @@
                                 <span x-show="activeBox === 4">Rincian Estimasi Pengeluaran Hutang</span>
                             </h3>
                             <span class="badge text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
-                                Jatuh Tempo s/d {{ $fcEnd->format('d/m/Y') }}
+                                Jatuh Tempo s/d {{ $fcEnd->format('m/d/Y') }}
                             </span>
                         </div>
                         <p class="text-xs text-slate-500 m-0 mt-1">
@@ -644,7 +644,7 @@
                                                     {{ $inv->invoice_number }}
                                                 </td>
                                                 <td class="text-slate-500">
-                                                    {{ $inv->invoice_date_formatted ?? \Carbon\Carbon::parse($inv->invoice_date)->format('d/m/Y') }}
+                                                    {{ $inv->invoice_date_formatted ?? \Carbon\Carbon::parse($inv->invoice_date)->format('m/d/Y') }}
                                                 </td>
                                                 <td class="font-medium text-slate-700">
                                                     {{ $inv->due_date_formatted }}
@@ -745,7 +745,7 @@
                                                     {{ $inv->invoice_number }}
                                                 </td>
                                                 <td class="text-slate-500">
-                                                    {{ $inv->invoice_date_formatted ?? \Carbon\Carbon::parse($inv->invoice_date)->format('d/m/Y') }}
+                                                    {{ $inv->invoice_date_formatted ?? \Carbon\Carbon::parse($inv->invoice_date)->format('m/d/Y') }}
                                                 </td>
                                                 <td class="font-medium text-slate-700">
                                                     {{ $inv->due_date_formatted }}

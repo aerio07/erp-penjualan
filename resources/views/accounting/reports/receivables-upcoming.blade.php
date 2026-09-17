@@ -127,12 +127,12 @@
                         </td>
                         <td>
                             <span style="font-size: 12.5px; color: var(--text-secondary);">
-                                {{ \Carbon\Carbon::parse($inv->invoice_date)->format('d/m/Y') }}
+                                {{ \Carbon\Carbon::parse($inv->invoice_date)->format('m/d/Y') }}
                             </span>
                         </td>
                         <td>
                             <strong style="color: var(--text-primary); font-size: 12.5px;">
-                                {{ \Carbon\Carbon::parse($inv->due_date)->format('d/m/Y') }}
+                                {{ \Carbon\Carbon::parse($inv->due_date)->format('m/d/Y') }}
                             </strong>
                         </td>
                         <td style="text-align: center;">

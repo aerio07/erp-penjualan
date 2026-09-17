@@ -124,7 +124,7 @@
                         $isOutgoing = in_array($m->type, ['out', 'return_out', 'transfer_out']) || $isAdjustmentDeficit;
                     @endphp
                     <tr>
-                        <td>{{ $m->movement_date->format('d/m/Y') }}</td>
+                        <td>{{ $m->movement_date->format('m/d/Y') }}</td>
                         <td>
                             <span class="badge" style="background:#f1f5f9; color:#334155; font-weight:600;">
                                 <i class="fa-solid fa-warehouse"></i> {{ $m->warehouse->name ?? '-' }}

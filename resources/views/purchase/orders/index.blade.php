@@ -64,8 +64,8 @@
                 </a>
             </td>
             <td>{{ $order->supplier->name ?? '-' }}</td>
-            <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
-            <td>{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $order->order_date ? $order->order_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $order->expected_date ? $order->expected_date->format('m/d/Y') : '-' }}</td>
             <td style="text-align:right;">
                 @php
                     $itemDiscountTotal = $order->items->sum(function($item) {

@@ -80,7 +80,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td>{{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}</td>
+                        <td>{{ $app->created_at ? $app->created_at->format('m/d/Y H:i') : '-' }}</td>
                         <td style="text-align:center;">
                             <div style="display:flex; gap:8px; justify-content:center;">
                                 {{-- Form Setujui --}}

@@ -44,7 +44,7 @@ class AccountingPeriodService
 
         if ($this->isDateLocked($carbonDate)) {
             throw new PeriodClosedException(
-                "Tanggal {$carbonDate->format('d/m/Y')} berada di periode yang sudah ditutup. Hubungi Admin untuk membuka kembali periode ini jika perlu koreksi."
+                "Tanggal {$carbonDate->format('m/d/Y')} berada di periode yang sudah ditutup. Hubungi Admin untuk membuka kembali periode ini jika perlu koreksi."
             );
         }
     }

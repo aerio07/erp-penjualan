@@ -54,10 +54,10 @@
                     <i class="fa-solid fa-building-user"></i> {{ $pr->division ?? 'Umum' }}
                 </div>
             </td>
-            <td>{{ $pr->request_date ? $pr->request_date->format('d/m/Y') : '-' }}</td>
+            <td>{{ $pr->request_date ? $pr->request_date->format('m/d/Y') : '-' }}</td>
             <td>
                 <span style="font-weight:600; {{ $pr->required_date && $pr->required_date->isPast() && in_array($pr->status, ['draft','waiting_approval']) ? 'color:var(--danger);' : '' }}">
-                    {{ $pr->required_date ? $pr->required_date->format('d/m/Y') : '-' }}
+                    {{ $pr->required_date ? $pr->required_date->format('m/d/Y') : '-' }}
                 </span>
             </td>
             <td style="text-align:center; font-weight:600;">

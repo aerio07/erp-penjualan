@@ -134,7 +134,7 @@
                                     {{ $c->oldest_invoice_number }}
                                 </div>
                                 <div style="font-size: 11px; color: var(--text-secondary);">
-                                    Tgl: {{ $c->oldest_invoice_date ? date('d/m/Y', strtotime($c->oldest_invoice_date)) : '-' }}
+                                    Tgl: {{ $c->oldest_invoice_date ? date('m/d/Y', strtotime($c->oldest_invoice_date)) : '-' }}
                                 </div>
                             @else
                                 <span style="color: var(--text-secondary); font-size: 12px;">-</span>
@@ -145,7 +145,7 @@
                         <td>
                             @if($c->oldest_due_date)
                                 <span style="font-size: 12px; font-weight: 500;">
-                                    {{ date('d/m/Y', strtotime($c->oldest_due_date)) }}
+                                    {{ date('m/d/Y', strtotime($c->oldest_due_date)) }}
                                 </span>
                             @else
                                 <span style="color: var(--text-secondary); font-size: 12px;">-</span>

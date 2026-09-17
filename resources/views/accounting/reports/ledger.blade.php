@@ -56,7 +56,7 @@
                 </div>
             </div>
             <div style="text-align:right;">
-                <div style="font-size:12px; color:var(--text-secondary);">Saldo Awal (sebelum {{ Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }}):</div>
+                <div style="font-size:12px; color:var(--text-secondary);">Saldo Awal (sebelum {{ Carbon\Carbon::parse($dateFrom)->format('m/d/Y') }}):</div>
                 <div style="font-size:16px; font-weight:700; color:var(--primary);">
                     Rp {{ number_format($openingBalance, 0, ',', '.') }}
                 </div>
@@ -76,7 +76,7 @@
                 </thead>
                 <tbody>
                     <tr style="background:#f8fafc; font-weight:600;">
-                        <td>{{ Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }}</td>
+                        <td>{{ Carbon\Carbon::parse($dateFrom)->format('m/d/Y') }}</td>
                         <td>-</td>
                         <td><em>Saldo Awal Periode</em></td>
                         <td style="text-align:right;">-</td>
@@ -88,7 +88,7 @@
 
                     @forelse($lines as $line)
                     <tr>
-                        <td>{{ $line->journalEntry->entry_date->format('d/m/Y') }}</td>
+                        <td>{{ $line->journalEntry->entry_date->format('m/d/Y') }}</td>
                         <td style="font-weight:600;">
                             <a href="{{ route('accounting.journals.show', $line->journalEntry->id) }}" style="color:var(--primary); text-decoration:none;">
                                 {{ $line->journalEntry->entry_number }}
