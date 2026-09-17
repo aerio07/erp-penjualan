@@ -6,6 +6,13 @@
 
 @section('content')
     @php
+        // Item discounts sum
+        $pdfItemDiscount = $order->items->sum(function($item) {
+            return ($item->discount_amount ?? 0) > 0 
+                ? (float) $item->discount_amount 
+                : ((($item->qty_ordered ?? 0) * ($item->unit_price ?? 0)) * (($item->discount_percent ?? 0) / 100));
+        });
+
         // Gross subtotal
         $grossSubtotal = $order->items->sum(function($item) {
             return ($item->qty_ordered ?? 0) * ($item->unit_price ?? 0);
@@ -22,9 +29,15 @@
                     @if(!empty($order->customer->contact_person))
                         Attn: {{ $order->customer->contact_person }}<br>
                     @endif
-                    {{ $order->customer->address ?: 'Alamat tidak tercatat' }}<br>
-                    Phone: {{ $order->customer->phone ?: '-' }}<br>
-                    Email: {{ $order->customer->email ?: '-' }}
+                    @if(!empty($order->customer->address))
+                        {{ $order->customer->address }}<br>
+                    @endif
+                    @if(!empty($order->customer->phone))
+                        Phone: {{ $order->customer->phone }}<br>
+                    @endif
+                    @if(!empty($order->customer->email))
+                        Email: {{ $order->customer->email }}<br>
+                    @endif
                 </div>
             </td>
             <td style="width: 48%; vertical-align: top;">
@@ -77,6 +90,8 @@
                         @endif
                         @if(($item->discount_percent ?? 0) > 0)
                             <div style="font-size: 7pt; color: #dc2626;">Diskon: {{ $item->discount_percent }}%</div>
+                        @elseif(($item->discount_amount ?? 0) > 0)
+                            <div style="font-size: 7pt; color: #dc2626;">Diskon: Rp {{ number_format($item->discount_amount, 0, ',', '.') }}</div>
                         @endif
                     </td>
                     <td class="text-center">
@@ -115,6 +130,12 @@
                         <td class="tot-label">Subtotal:</td>
                         <td class="tot-value">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</td>
                     </tr>
+                    @if($pdfItemDiscount > 0)
+                    <tr>
+                        <td class="tot-label tot-discount">Diskon Item:</td>
+                        <td class="tot-value tot-discount">- Rp {{ number_format($pdfItemDiscount, 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
                     @if(($order->discount_amount ?? 0) > 0)
                     <tr>
                         <td class="tot-label tot-discount">Diskon Header:</td>

@@ -27,9 +27,15 @@
                     @if(!empty($order->supplier->contact_person))
                         Attn: {{ $order->supplier->contact_person }}<br>
                     @endif
-                    {{ $order->supplier->address ?: 'Alamat tidak tercatat' }}<br>
-                    Phone: {{ $order->supplier->phone ?: '-' }}<br>
-                    Email: {{ $order->supplier->email ?: '-' }}
+                    @if(!empty($order->supplier->address))
+                        {{ $order->supplier->address }}<br>
+                    @endif
+                    @if(!empty($order->supplier->phone))
+                        Phone: {{ $order->supplier->phone }}<br>
+                    @endif
+                    @if(!empty($order->supplier->email))
+                        Email: {{ $order->supplier->email }}<br>
+                    @endif
                 </div>
             </td>
             <td style="width: 48%; vertical-align: top;">

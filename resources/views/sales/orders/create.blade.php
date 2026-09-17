@@ -3,6 +3,22 @@
 @section('page-title', 'Buat Sales Order')
 
 @section('content')
+@php
+    $initialRows = old('items');
+    if ($initialRows) {
+        $initialRows = collect($initialRows)->map(function($item) {
+            return [
+                'product_id' => $item['product_id'] ?? '',
+                'qty' => (int)($item['qty_ordered'] ?? 1),
+                'price' => (float)($item['unit_price'] ?? 0),
+                'discount' => (float)($item['discount_percent'] ?? 0),
+            ];
+        })->values()->toArray();
+    } else {
+        $initialRows = [['product_id' => '', 'qty' => 1, 'price' => 0, 'discount' => 0]];
+    }
+@endphp
+
 <div class="animate-in" x-data="soForm()">
     <x-page-header
         title="Buat Sales Order"
@@ -331,10 +347,10 @@ const products = @json($products->keyBy('id'));
 
 function soForm() {
     return {
-        rows: [{ product_id: '', qty: 1, price: 0, discount: 0 }],
+        rows: @json($initialRows),
         channel: '{{ old('channel', 'offline') }}',
-        taxRate: 11,
-        discountHeader: 0,
+        taxRate: {{ old('tax_rate', 11) }},
+        discountHeader: {{ old('discount_amount', 0) }},
         hppWarningConfirmed: false,
 
         getProductHpp(productId) {
