@@ -5,66 +5,69 @@
 @section('doc-subtitle', 'Invoice #: ' . $invoice->invoice_number)
 
 @section('content')
-    {{-- CUSTOMER SECTION --}}
-    <div class="party-box">
-        <div class="section-heading">TAGIHAN KEPADA (CUSTOMER):</div>
-        <div class="party-name">{{ $invoice->salesOrder->customer->name ?? '-' }}</div>
-        <div class="party-info">
-            @if($invoice->salesOrder->customer?->address)
-                {{ $invoice->salesOrder->customer->address }}<br>
-            @endif
-            @if($invoice->salesOrder->customer?->phone)
-                Telp: {{ $invoice->salesOrder->customer->phone }}<br>
-            @endif
-            @if($invoice->salesOrder->customer?->isPkp())
-                Status: <strong>PKP</strong>
-                @if($invoice->salesOrder->customer->npwp)
-                    · NPWP: {{ $invoice->salesOrder->customer->npwp }}
-                @endif
-                <br>
-            @endif
-        </div>
-    </div>
-
-    {{-- DETAILS SECTION (Key - Value Pairs) --}}
-    <div class="details-box">
-        <table class="details-table">
-            <tr>
-                <td class="detail-label">Tanggal Invoice</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $invoice->invoice_date ? $invoice->invoice_date->format('d F Y') : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Jatuh Tempo</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $invoice->due_date ? $invoice->due_date->format('d F Y') : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Ref. Sales Order</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $invoice->salesOrder->so_number ?? '-' }}</td>
-            </tr>
-            @if($invoice->delivery)
-            <tr>
-                <td class="detail-label">Ref. Surat Jalan</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $invoice->delivery->delivery_number }}</td>
-            </tr>
-            @endif
-            @if($invoice->salesOrder->customer?->isPkp() && $invoice->tax_invoice_number)
-            <tr>
-                <td class="detail-label">No. Faktur Pajak</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ $invoice->tax_invoice_number }}</td>
-            </tr>
-            @endif
-            <tr>
-                <td class="detail-label">Status Pembayaran</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $invoice->status)) }}</td>
-            </tr>
-        </table>
-    </div>
+    {{-- CUSTOMER & INVOICE DETAILS SECTION (Side by Side) --}}
+    <table class="parties-table">
+        <tr>
+            <td style="width: 52%; vertical-align: top; padding-right: 15px;">
+                <div class="section-heading">TAGIHAN KEPADA (CUSTOMER):</div>
+                <div class="party-name">{{ $invoice->salesOrder->customer->name ?? '-' }}</div>
+                <div class="party-info">
+                    @if($invoice->salesOrder->customer?->address)
+                        {{ $invoice->salesOrder->customer->address }}<br>
+                    @endif
+                    @if($invoice->salesOrder->customer?->phone)
+                        Telp: {{ $invoice->salesOrder->customer->phone }}<br>
+                    @endif
+                    @if($invoice->salesOrder->customer?->isPkp())
+                        Status: <strong>PKP</strong>
+                        @if($invoice->salesOrder->customer->npwp)
+                            · NPWP: {{ $invoice->salesOrder->customer->npwp }}
+                        @endif
+                        <br>
+                    @endif
+                </div>
+            </td>
+            <td style="width: 48%; vertical-align: top;">
+                <div class="section-heading">RINCIAN INVOICE</div>
+                <table class="details-table">
+                    <tr>
+                        <td class="detail-label">Tanggal Invoice</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $invoice->invoice_date ? $invoice->invoice_date->format('d F Y') : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Jatuh Tempo</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $invoice->due_date ? $invoice->due_date->format('d F Y') : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Ref. Sales Order</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $invoice->salesOrder->so_number ?? '-' }}</td>
+                    </tr>
+                    @if($invoice->delivery)
+                    <tr>
+                        <td class="detail-label">Ref. Surat Jalan</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $invoice->delivery->delivery_number }}</td>
+                    </tr>
+                    @endif
+                    @if($invoice->salesOrder->customer?->isPkp() && $invoice->tax_invoice_number)
+                    <tr>
+                        <td class="detail-label">No. Faktur Pajak</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ $invoice->tax_invoice_number }}</td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td class="detail-label">Status Pembayaran</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $invoice->status)) }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
     {{-- ITEMS TABLE --}}
     <div class="items-section">

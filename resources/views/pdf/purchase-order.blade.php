@@ -17,48 +17,50 @@
         });
     @endphp
 
-    {{-- VENDOR / SUPPLIER SECTION --}}
-    <div class="party-box">
-        <div class="section-heading">VENDOR / SUPPLIER</div>
-        <div class="party-name">{{ $order->supplier->name ?? '-' }}</div>
-        <div class="party-info">
-            @if(!empty($order->supplier->contact_person))
-                Attn: {{ $order->supplier->contact_person }}<br>
-            @endif
-            {{ $order->supplier->address ?: 'Alamat tidak tercatat' }}<br>
-            Phone: {{ $order->supplier->phone ?: '-' }}<br>
-            Email: {{ $order->supplier->email ?: '-' }}
-        </div>
-    </div>
-
-    {{-- ORDER DETAILS SECTION --}}
-    <div class="details-box">
-        <div class="section-heading">ORDER DETAILS</div>
-        <table class="details-table">
-            <tr>
-                <td class="detail-label">Date</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Expected Delivery</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
-            @if($order->purchaseRequest)
-            <tr>
-                <td class="detail-label">Ref. PR</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->purchaseRequest->pr_number }} (Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</td>
-            </tr>
-            @endif
-            <tr>
-                <td class="detail-label">Purchasing Staff</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
-            </tr>
-
-        </table>
-    </div>
+    {{-- VENDOR & ORDER DETAILS SECTION (Side by Side) --}}
+    <table class="parties-table">
+        <tr>
+            <td style="width: 52%; vertical-align: top; padding-right: 15px;">
+                <div class="section-heading">VENDOR / SUPPLIER</div>
+                <div class="party-name">{{ $order->supplier->name ?? '-' }}</div>
+                <div class="party-info">
+                    @if(!empty($order->supplier->contact_person))
+                        Attn: {{ $order->supplier->contact_person }}<br>
+                    @endif
+                    {{ $order->supplier->address ?: 'Alamat tidak tercatat' }}<br>
+                    Phone: {{ $order->supplier->phone ?: '-' }}<br>
+                    Email: {{ $order->supplier->email ?: '-' }}
+                </div>
+            </td>
+            <td style="width: 48%; vertical-align: top;">
+                <div class="section-heading">ORDER DETAILS</div>
+                <table class="details-table">
+                    <tr>
+                        <td class="detail-label">Date</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Expected Delivery</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
+                    </tr>
+                    @if($order->purchaseRequest)
+                    <tr>
+                        <td class="detail-label">Ref. PR</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->purchaseRequest->pr_number }} (Divisi {{ $order->purchaseRequest->division ?? 'Umum' }})</td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td class="detail-label">Purchasing Staff</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
     {{-- ITEMS SECTION --}}
     <div class="items-section">

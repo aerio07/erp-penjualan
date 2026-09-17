@@ -5,55 +5,58 @@
 @section('doc-subtitle', 'No. Pengiriman #: ' . $delivery->delivery_number)
 
 @section('content')
-    {{-- RECIPIENT / CUSTOMER SECTION --}}
-    <div class="party-box">
-        <div class="section-heading">PENERIMA / TUJUAN PENGIRIMAN:</div>
-        <div class="party-name">{{ $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? '-' }}</div>
-        <div class="party-info">
-            @php
-                $shipAddress = $delivery->shipping_address ?? $delivery->salesOrder->customer?->address;
-            @endphp
-            @if($shipAddress)
-                {{ $shipAddress }}<br>
-            @endif
-            @if($delivery->salesOrder->customer?->phone)
-                Telp: {{ $delivery->salesOrder->customer->phone }}<br>
-            @endif
-        </div>
-    </div>
-
-    {{-- DETAILS SECTION (Key - Value Pairs) --}}
-    <div class="details-box">
-        <table class="details-table">
-            <tr>
-                <td class="detail-label">Tanggal Pengiriman</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $delivery->delivery_date ? $delivery->delivery_date->format('d F Y') : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Ref. Sales Order</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $delivery->salesOrder->so_number ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Gudang Asal</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $delivery->warehouse->name ?? '-' }}</td>
-            </tr>
-            @if($delivery->tracking_number)
-            <tr>
-                <td class="detail-label">No. Resi / Tracking</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ $delivery->tracking_number }}</td>
-            </tr>
-            @endif
-            <tr>
-                <td class="detail-label">Status Pengiriman</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $delivery->status)) }}</td>
-            </tr>
-        </table>
-    </div>
+    {{-- RECIPIENT & DELIVERY DETAILS SECTION (Side by Side) --}}
+    <table class="parties-table">
+        <tr>
+            <td style="width: 52%; vertical-align: top; padding-right: 15px;">
+                <div class="section-heading">PENERIMA / TUJUAN PENGIRIMAN:</div>
+                <div class="party-name">{{ $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? '-' }}</div>
+                <div class="party-info">
+                    @php
+                        $shipAddress = $delivery->shipping_address ?? $delivery->salesOrder->customer?->address;
+                    @endphp
+                    @if($shipAddress)
+                        {{ $shipAddress }}<br>
+                    @endif
+                    @if($delivery->salesOrder->customer?->phone)
+                        Telp: {{ $delivery->salesOrder->customer->phone }}<br>
+                    @endif
+                </div>
+            </td>
+            <td style="width: 48%; vertical-align: top;">
+                <div class="section-heading">RINCIAN PENGIRIMAN</div>
+                <table class="details-table">
+                    <tr>
+                        <td class="detail-label">Tanggal Pengiriman</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $delivery->delivery_date ? $delivery->delivery_date->format('d F Y') : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Ref. Sales Order</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $delivery->salesOrder->so_number ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Gudang Asal</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $delivery->warehouse->name ?? '-' }}</td>
+                    </tr>
+                    @if($delivery->tracking_number)
+                    <tr>
+                        <td class="detail-label">No. Resi / Tracking</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ $delivery->tracking_number }}</td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td class="detail-label">Status Pengiriman</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $delivery->status)) }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
     {{-- ITEMS TABLE --}}
     <div class="items-section">

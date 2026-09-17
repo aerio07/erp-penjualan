@@ -103,18 +103,20 @@
         .details-table td {
             padding: 2px 0;
             font-size: 8.5pt;
+            vertical-align: top;
         }
         .detail-label {
-            width: 22%;
+            width: 42%;
             font-weight: 700;
             color: #111111;
         }
         .detail-colon {
-            width: 2%;
+            width: 4%;
             color: #111111;
+            text-align: center;
         }
         .detail-value {
-            width: 76%;
+            width: 54%;
             color: #333333;
         }
 

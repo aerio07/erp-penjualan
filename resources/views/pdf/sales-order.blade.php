@@ -12,47 +12,48 @@
         });
     @endphp
 
-    {{-- BILL TO / CUSTOMER SECTION --}}
-    <div class="party-box">
-        <div class="section-heading">BILL TO / CUSTOMER</div>
-        <div class="party-name">{{ $order->customer->name ?? '-' }}</div>
-        <div class="party-info">
-            @if(!empty($order->customer->contact_person))
-                Attn: {{ $order->customer->contact_person }}<br>
-            @endif
-            {{ $order->customer->address ?: 'Alamat tidak tercatat' }}<br>
-            Phone: {{ $order->customer->phone ?: '-' }}<br>
-            Email: {{ $order->customer->email ?: '-' }}
-        </div>
-    </div>
-
-    {{-- ORDER DETAILS SECTION --}}
-    <div class="details-box">
-        <div class="section-heading">ORDER DETAILS</div>
-        <table class="details-table">
-            <tr>
-                <td class="detail-label">Date</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Expected Delivery</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Channel</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ ucfirst($order->channel ?? 'offline') }}</td>
-            </tr>
-            <tr>
-                <td class="detail-label">Sales Representative</td>
-                <td class="detail-colon">:</td>
-                <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
-            </tr>
-
-        </table>
-    </div>
+    {{-- BILL TO & ORDER DETAILS SECTION (Side by Side) --}}
+    <table class="parties-table">
+        <tr>
+            <td style="width: 52%; vertical-align: top; padding-right: 15px;">
+                <div class="section-heading">BILL TO / CUSTOMER</div>
+                <div class="party-name">{{ $order->customer->name ?? '-' }}</div>
+                <div class="party-info">
+                    @if(!empty($order->customer->contact_person))
+                        Attn: {{ $order->customer->contact_person }}<br>
+                    @endif
+                    {{ $order->customer->address ?: 'Alamat tidak tercatat' }}<br>
+                    Phone: {{ $order->customer->phone ?: '-' }}<br>
+                    Email: {{ $order->customer->email ?: '-' }}
+                </div>
+            </td>
+            <td style="width: 48%; vertical-align: top;">
+                <div class="section-heading">ORDER DETAILS</div>
+                <table class="details-table">
+                    <tr>
+                        <td class="detail-label">Date</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Expected Delivery</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Channel</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ ucfirst($order->channel ?? 'offline') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-label">Sales Representative</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
     {{-- ITEMS SECTION --}}
     <div class="items-section">
