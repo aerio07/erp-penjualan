@@ -85,26 +85,26 @@
                 </button>
             </div>
 
-            <div class="table-responsive" style="overflow: visible; min-height: 220px;">
-                <table class="erp-table">
+            <div class="table-responsive" style="overflow-x: auto; overflow-y: visible; min-height: 280px; width: 100%;">
+                <table class="erp-table" style="table-layout: fixed; width: 100%; min-width: 820px;">
                     <thead>
                         <tr>
-                            <th style="width:45px; text-align:center;">No</th>
-                            <th style="width:140px;">Kode (SKU)</th>
-                            <th style="min-width:280px;">Nama Barang <span style="color:var(--danger);">*</span></th>
-                            <th style="width:110px; text-align:center;">On Hand</th>
-                            <th style="width:100px; text-align:center;">Min Stock</th>
-                            <th style="width:120px; text-align:center;">Qty Diminta <span style="color:var(--danger);">*</span></th>
-                            <th style="width:90px; text-align:center;">Satuan</th>
-                            <th style="width:220px;">Catatan Barang</th>
-                            <th style="width:60px; text-align:center;">Aksi</th>
+                            <th style="width:4%; text-align:center;">No</th>
+                            <th style="width:13%;">Kode (SKU)</th>
+                            <th style="width:28%;">Nama Barang <span style="color:var(--danger);">*</span></th>
+                            <th style="width:8%; text-align:center;">On Hand</th>
+                            <th style="width:8%; text-align:center;">Min Stock</th>
+                            <th style="width:10%; text-align:center;">Qty Diminta <span style="color:var(--danger);">*</span></th>
+                            <th style="width:7%; text-align:center;">Satuan</th>
+                            <th style="width:17%;">Catatan Barang</th>
+                            <th style="width:5%; text-align:center;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-for="(item, index) in items" :key="index">
                             <tr>
                                 <td style="text-align:center; color:var(--text-secondary);" x-text="index + 1"></td>
-                                <td>
+                                <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     <span style="font-family:monospace; font-weight:600;" x-text="item.sku || '-'"></span>
                                 </td>
                                 <td style="vertical-align: top !important; position: relative;">
@@ -189,15 +189,16 @@
                                            x-model.number="item.qty" 
                                            class="form-control" 
                                            min="1" 
-                                           style="text-align:center; font-weight:700;" 
+                                           style="width: 100%; max-width: 100%; box-sizing: border-box; text-align:center; font-weight:700;" 
                                            required>
                                 </td>
-                                <td style="text-align:center; color:var(--text-secondary);" x-text="item.unit || '-'"></td>
+                                <td style="text-align:center; color:var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" x-text="item.unit || '-'"></td>
                                 <td>
                                     <input type="text" 
                                            :name="'items[' + index + '][notes]'" 
                                            x-model="item.notes" 
                                            class="form-control" 
+                                           style="width: 100%; max-width: 100%; box-sizing: border-box;"
                                            placeholder="Catatan item (opsional)">
                                 </td>
                                 <td style="text-align:center;">

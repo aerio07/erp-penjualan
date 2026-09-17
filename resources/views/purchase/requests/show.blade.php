@@ -45,7 +45,9 @@
                 <a href="{{ route('purchase.orders.create', ['purchase_request_id' => $purchase_request->id]) }}" class="btn btn-primary" style="background:#2563eb;">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Purchase Order (PO)
                 </a>
-                @if(in_array($purchase_request->status, ['approved', 'ordered']))
+                @endif
+
+                @if(in_array($purchase_request->status, ['approved', 'confirmed', 'ordered']))
                 <a href="{{ route('pdf.purchase-request', $purchase_request) }}" class="btn btn-secondary" target="_blank">
                     <i class="fa-solid fa-file-pdf"></i> PDF
                 </a>
@@ -194,7 +196,7 @@
                         <th style="width:140px;">Kode (SKU)</th>
                         <th>Nama Produk</th>
                         <th style="text-align:center; width:130px;">Qty Diminta</th>
-                        <th style="text-align:center; width:130px;">Qty Sudah di-PO</th>
+                        <th style="text-align:center; width:130px;">Qty Diproses PO</th>
                         <th style="text-align:center; width:130px;">Sisa Kebutuhan</th>
                         <th style="width:100px; text-align:center;">Satuan</th>
                         <th>Catatan Item</th>

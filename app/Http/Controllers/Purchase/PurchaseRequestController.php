@@ -44,7 +44,11 @@ class PurchaseRequestController extends Controller
         $query = PurchaseRequest::with(['user', 'approver', 'items.product']);
 
         if ($status !== 'all') {
-            $query->where('status', $status);
+            if ($status === 'confirmed') {
+                $query->whereIn('status', ['confirmed', 'ordered']);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         $query = $this->applySearch($query, $request, ['pr_number', 'division', 'notes', 'user.name']);
@@ -150,7 +154,7 @@ class PurchaseRequestController extends Controller
     /**
      * Form edit Purchase Request (hanya jika draft atau rejected).
      */
-    public function edit(PurchaseRequest $purchase_request): View
+    public function edit(PurchaseRequest $purchase_request): View|RedirectResponse
     {
         if (!in_array($purchase_request->status, ['draft', 'rejected'])) {
             return redirect()->route('purchase.requests.show', $purchase_request)
@@ -361,7 +365,7 @@ class PurchaseRequestController extends Controller
      */
     public function exportPdf(PurchaseRequest $purchase_request)
     {
-        abort_if(!in_array($purchase_request->status, ['approved', 'ordered']), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
+        abort_if(!in_array($purchase_request->status, ['approved', 'confirmed', 'ordered']), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
 
         $purchase_request->load([
             'user',

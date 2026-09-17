@@ -90,7 +90,8 @@ class PurchaseRequest extends Model
             'waiting_approval' => 'Menunggu Approval',
             'approved'         => 'Approved',
             'rejected'         => 'Ditolak',
-            'ordered'          => 'Sudah di-PO',
+            'confirmed'        => 'Confirmed',
+            'ordered'          => 'Confirmed',
             'cancelled'        => 'Dibatalkan',
             default            => ucfirst($this->status),
         };
@@ -103,6 +104,7 @@ class PurchaseRequest extends Model
             'waiting_approval' => 'badge-warning',
             'approved'         => 'badge-info',
             'rejected'         => 'badge-danger',
+            'confirmed'        => 'badge-success',
             'ordered'          => 'badge-success',
             'cancelled'        => 'badge-dark',
             default            => 'badge-secondary',

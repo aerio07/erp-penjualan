@@ -94,7 +94,7 @@ class PurchaseOrderController extends Controller
 
         // Validasi status PR harus sudah disetujui (Approved)
         $pr = \App\Models\PurchaseRequest::with('items')->findOrFail($request->purchase_request_id);
-        if (!in_array($pr->status, ['approved', 'ordered'])) {
+        if (!in_array($pr->status, ['approved', 'confirmed', 'ordered'])) {
             return back()
                 ->withErrors([
                     'purchase_request_id' => 'Purchase Request #' . $pr->pr_number . ' belum disetujui (Approved). PO hanya dapat dibuat dari PR yang telah disetujui.'
@@ -176,7 +176,7 @@ class PurchaseOrderController extends Controller
                         }
                     }
                     $allFulfilled = $pr->fresh()->items->every(fn($it) => $it->qty_ordered >= $it->qty);
-                    $pr->update(['status' => $allFulfilled ? 'ordered' : 'approved']);
+                    $pr->update(['status' => $allFulfilled ? 'confirmed' : 'approved']);
                 }
             }
 
