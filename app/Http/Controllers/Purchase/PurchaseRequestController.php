@@ -154,11 +154,11 @@ class PurchaseRequestController extends Controller
     }
 
     /**
-     * Form edit Purchase Request (hanya jika draft atau rejected).
+     * Form edit Purchase Request (hanya jika draft, revisi, atau rejected).
      */
     public function edit(PurchaseRequest $purchase_request): View|RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'rejected'])) {
+        if (!in_array($purchase_request->status, ['draft', 'revised', 'rejected'])) {
             return redirect()->route('purchase.requests.show', $purchase_request)
                 ->with('error', 'Purchase Request yang sudah diajukan atau disetujui tidak dapat diedit.');
         }
@@ -189,7 +189,7 @@ class PurchaseRequestController extends Controller
      */
     public function update(Request $request, PurchaseRequest $purchase_request): RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'rejected'])) {
+        if (!in_array($purchase_request->status, ['draft', 'revised', 'rejected'])) {
             return redirect()->route('purchase.requests.show', $purchase_request)
                 ->with('error', 'Purchase Request tidak dapat diedit pada status ini.');
         }
@@ -237,12 +237,12 @@ class PurchaseRequestController extends Controller
     }
 
     /**
-     * Mengajukan draft Purchase Request untuk persetujuan (approval).
+     * Mengajukan draft/revisi Purchase Request untuk persetujuan (approval).
      */
     public function submit(PurchaseRequest $purchase_request): RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'rejected'])) {
-            return back()->with('error', 'Hanya dokumen berstatus Draft atau Ditolak yang dapat diajukan untuk approval.');
+        if (!in_array($purchase_request->status, ['draft', 'revised', 'rejected'])) {
+            return back()->with('error', 'Hanya dokumen berstatus Draft, Revisi, atau Ditolak yang dapat diajukan untuk approval.');
         }
 
         $purchase_request->load(['items.product', 'user']);
@@ -264,12 +264,12 @@ class PurchaseRequestController extends Controller
     }
 
     /**
-     * Menghapus Purchase Request (hanya draft).
+     * Menghapus Purchase Request (hanya draft atau revisi).
      */
     public function destroy(PurchaseRequest $purchase_request): RedirectResponse
     {
-        if ($purchase_request->status !== 'draft') {
-            return back()->with('error', 'Hanya Purchase Request berstatus Draft yang dapat dihapus.');
+        if (!in_array($purchase_request->status, ['draft', 'revised'])) {
+            return back()->with('error', 'Hanya Purchase Request berstatus Draft atau Revisi yang dapat dihapus.');
         }
 
         $purchase_request->delete();
@@ -298,6 +298,34 @@ class PurchaseRequestController extends Controller
         ]);
 
         return back()->with('success', "Purchase Request {$purchase_request->pr_number} berhasil disetujui.");
+    }
+
+    /**
+     * Kembalikan Purchase Request untuk revisi.
+     */
+    public function revise(Request $request, PurchaseRequest $purchase_request): RedirectResponse
+    {
+        if ($purchase_request->status !== 'waiting_approval') {
+            return back()->with('error', 'Hanya PR yang sedang menunggu approval yang dapat diminta revisi.');
+        }
+
+        $request->validate([
+            'revision_reason' => 'required|string|max:500',
+        ]);
+
+        $approval = $purchase_request->approvalRequests()->where('status', 'pending')->latest()->first();
+        if ($approval) {
+            $this->approvalService->revise($approval, $request->revision_reason);
+        }
+
+        $purchase_request->update([
+            'status'           => 'revised',
+            'rejection_reason' => $request->revision_reason,
+            'approved_by'      => auth()->id(),
+            'approved_at'      => now(),
+        ]);
+
+        return back()->with('success', "Purchase Request {$purchase_request->pr_number} telah dikembalikan untuk revisi.");
     }
 
     /**

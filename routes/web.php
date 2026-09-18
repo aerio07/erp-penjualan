@@ -89,6 +89,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('requests/{purchase_request}/submit', [PurchaseRequestController::class, 'submit'])->name('requests.submit');
         Route::patch('requests/{purchase_request}/approve', [PurchaseRequestController::class, 'approve'])->name('requests.approve');
         Route::patch('requests/{purchase_request}/reject', [PurchaseRequestController::class, 'reject'])->name('requests.reject');
+        Route::patch('requests/{purchase_request}/revise', [PurchaseRequestController::class, 'revise'])->name('requests.revise');
         Route::resource('requests', PurchaseRequestController::class)->parameters(['requests' => 'purchase_request']);
     });
 
