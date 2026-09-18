@@ -1,8 +1,8 @@
 @extends('layouts.pdf')
 
-@section('title', $payment->voucher_title . ' - ' . $payment->voucher_number)
+@section('title', ($payment->voucher_type ?? 'BBK') . ' - ' . $payment->voucher_number)
 @section('doc-title', $payment->voucher_title)
-@section('doc-subtitle', 'Voucher #: ' . $payment->voucher_number)
+@section('doc-subtitle', $payment->voucher_number)
 
 @section('content')
     {{-- SUPPLIER & PAYMENT DETAILS SECTION (Side by Side) --}}
@@ -36,11 +36,6 @@
                 <div class="section-heading">RINCIAN PEMBAYARAN</div>
                 <table class="details-table">
                     <tr>
-                        <td class="detail-label">{{ $payment->voucher_label }}</td>
-                        <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: bold; color: #111111;">{{ $payment->voucher_number }}</td>
-                    </tr>
-                    <tr>
                         <td class="detail-label">Tanggal Pembayaran</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $payment->payment_date ? $payment->payment_date->format('d/m/Y') : '-' }}</td>
@@ -50,43 +45,29 @@
                         <td class="detail-colon">:</td>
                         <td class="detail-value" style="font-weight: bold; text-transform: uppercase;">{{ $payment->method }}</td>
                     </tr>
-                    @if($payment->reference_number)
+                    @if(!empty(trim($payment->reference_number ?? '')))
                     <tr>
                         <td class="detail-label">No. Ref / Transfer</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $payment->reference_number }}</td>
                     </tr>
                     @endif
-                    <tr>
-                        <td class="detail-label">Ref. Invoice Pembelian</td>
-                        <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $payment->purchaseInvoice->invoice_number ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="detail-label">Ref. Purchase Order</td>
-                        <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $payment->purchaseInvoice->purchaseOrder->po_number ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="detail-label">Status Transaksi</td>
-                        <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: 700; color: #111111;">BERHASIL / LUNAS</td>
-                    </tr>
                 </table>
             </td>
         </tr>
     </table>
 
     {{-- PAYMENT ALLOCATION TABLE --}}
-    <div class="section-heading" style="margin-top: 15px; margin-bottom: 6px;">ALOKASI PELUNASAN TAGIHAN:</div>
+    <div class="section-heading" style="margin-top: 15px; margin-bottom: 6px;">ALOKASI PEMBAYARAN HUTANG:</div>
     <table class="items-table">
         <thead>
             <tr>
                 <th style="width: 5%; text-align: center;">No.</th>
-                <th style="width: 35%;">No. Invoice Pembelian</th>
-                <th style="width: 20%; text-align: center;">Tanggal Invoice</th>
-                <th style="width: 20%; text-align: right;">Total Nilai Tagihan</th>
-                <th style="width: 20%; text-align: right;">Jumlah Dibayarkan</th>
+                <th style="width: 31%;">No. Invoice Pembelian</th>
+                <th style="width: 15%; text-align: center;">Tanggal Invoice</th>
+                <th style="width: 15%; text-align: center;">Tgl Jatuh Tempo</th>
+                <th style="width: 17%; text-align: right;">Total Nilai Tagihan</th>
+                <th style="width: 17%; text-align: right;">Jumlah Bayar</th>
             </tr>
         </thead>
         <tbody>
@@ -97,15 +78,25 @@
                     @if($payment->purchaseInvoice->supplier_invoice_number)
                         <br><span style="font-size: 8pt; color: #555555;">(No. Faktur Vendor: {{ $payment->purchaseInvoice->supplier_invoice_number }})</span>
                     @endif
+                    @if($payment->purchaseInvoice->purchaseOrder?->po_number)
+                        <br><span style="font-size: 8pt; color: #555555;">(Ref. PO: {{ $payment->purchaseInvoice->purchaseOrder->po_number }})</span>
+                    @endif
                 </td>
                 <td style="text-align: center;">{{ $payment->purchaseInvoice->invoice_date ? $payment->purchaseInvoice->invoice_date->format('d/m/Y') : '-' }}</td>
+                <td style="text-align: center;">{{ $payment->purchaseInvoice->due_date ? $payment->purchaseInvoice->due_date->format('d/m/Y') : '-' }}</td>
                 <td style="text-align: right;">Rp {{ number_format($payment->purchaseInvoice->effective_total_amount ?? $payment->purchaseInvoice->total_amount, 0, ',', '.') }}</td>
                 <td style="text-align: right; font-weight: bold; color: #111111;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
             </tr>
         </tbody>
         <tfoot>
+            <tr style="background: #f8fafc;">
+                <td colspan="6" style="padding: 7px 10px; font-size: 8.5pt; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                    <span style="font-weight: bold; color: #333333;">Terbilang:</span>
+                    <span style="font-style: italic; color: #0f172a; font-weight: 600;"># {{ terbilang($payment->amount) }} #</span>
+                </td>
+            </tr>
             <tr class="grand-total-row">
-                <td colspan="4" style="text-align: right; font-weight: bold; padding: 6px 8px; text-transform: uppercase;">TOTAL {{ $payment->method === 'cash' ? 'KAS' : 'BANK' }} KELUAR:</td>
+                <td colspan="5" style="text-align: right; font-weight: bold; padding: 6px 8px; text-transform: uppercase;">TOTAL:</td>
                 <td style="text-align: right; font-weight: bold; padding: 6px 8px; font-size: 10pt; color: #111111;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
             </tr>
         </tfoot>
@@ -115,14 +106,10 @@
     <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
         <tr>
             <td style="width: 55%; vertical-align: top; padding-right: 20px;">
-                @if($payment->notes)
+                @if(!empty(trim($payment->notes ?? '')))
                     <div style="font-size: 8pt; font-weight: bold; color: #555555; text-transform: uppercase; margin-bottom: 3px;">CATATAN PEMBAYARAN:</div>
                     <div style="font-size: 8.5pt; color: #333333; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px; padding: 8px;">
                         {{ $payment->notes }}
-                    </div>
-                @else
-                    <div style="font-size: 8pt; color: #888888; font-style: italic;">
-                        Bukti pembayaran sah ini diterbitkan secara elektronik oleh sistem ERP FlashSuite Pro.
                     </div>
                 @endif
             </td>

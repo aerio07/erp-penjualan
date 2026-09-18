@@ -41,35 +41,34 @@
                         />
                     </div>
 
-                    <div class="form-row form-row-2">
-                        <div class="form-group">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
-                                <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
-                                <template x-if="selectedInvoice">
-                                    <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:10px; padding:1px 6px; height:20px; line-height:1;" title="Isi otomatis sisa hutang">
-                                        <i class="fa-solid fa-bolt"></i> Sisa Lunas
-                                    </button>
-                                </template>
-                            </div>
-                            <div style="position:relative;">
-                                <input type="text" 
-                                       inputmode="numeric"
-                                       name="amount" 
-                                       x-currency="amount" 
-                                       class="form-control format-currency" 
-                                       required 
-                                       placeholder="cth: 5.000.000">
-                            </div>
-                            <template x-if="amount && amount > maxAmount">
-                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Melebihi sisa hutang!
-                                </div>
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
+                            <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
+                            <template x-if="selectedInvoice">
+                                <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:10px; padding:1px 6px; height:20px; line-height:1;" title="Isi otomatis sisa hutang">
+                                    <i class="fa-solid fa-bolt"></i> Sisa Lunas
+                                </button>
                             </template>
-                            <template x-if="amount !== null && amount !== '' && amount <= 0">
-                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Harus > 0!
-                                </div>
-                            </template>
+                        </div>
+                        <div style="position:relative;">
+                            <input type="text" 
+                                   inputmode="numeric"
+                                   name="amount" 
+                                   x-currency="amount" 
+                                   class="form-control format-currency" 
+                                   required 
+                                   placeholder="cth: 5.000.000">
+                        </div>
+                        <template x-if="amount && amount > maxAmount">
+                            <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                <i class="fa-solid fa-circle-exclamation"></i> Melebihi sisa hutang!
+                            </div>
+                        </template>
+                        <template x-if="amount !== null && amount !== '' && amount <= 0">
+                            <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                <i class="fa-solid fa-circle-exclamation"></i> Harus > 0!
+                            </div>
+                        </template>
                     </div>
 
                     <div class="form-row form-row-2">
