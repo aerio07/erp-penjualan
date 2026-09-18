@@ -131,11 +131,37 @@
         <div class="card">
             <div class="card-header"><h3>Ringkasan Piutang</h3></div>
             <div class="card-body">
+                @php
+                    $invoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : ($invoice->salesOrder->items ?? collect());
+                    $grossSubtotal = $invoiceItems->sum(function($item) {
+                        $qty = $item->qty_invoiced ?? $item->qty_ordered ?? 0;
+                        return $qty * ($item->unit_price ?? 0);
+                    });
+                    $itemDiscountSum = $invoiceItems->sum(function($item) {
+                        $qty = $item->qty_invoiced ?? $item->qty_ordered ?? 0;
+                        $price = $item->unit_price ?? 0;
+                        return ($qty * $price) * (($item->discount_percent ?? 0) / 100);
+                    });
+                    $netItemSubtotal = $grossSubtotal - $itemDiscountSum;
+                    $headerDiscount = max(0, round($netItemSubtotal - (float) $invoice->amount, 2));
+                @endphp
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">Subtotal (DPP)</span>
-                        <span>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                        <span style="color:var(--text-secondary);">Subtotal Item</span>
+                        <span>Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</span>
                     </div>
+                    @if($itemDiscountSum > 0)
+                    <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                        <span>Diskon Item</span>
+                        <span>- Rp {{ number_format($itemDiscountSum, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    @if($headerDiscount > 0)
+                    <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                        <span>Diskon Header</span>
+                        <span>- Rp {{ number_format($headerDiscount, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:var(--text-secondary);">PPN ({{ $invoice->tax_rate }}%)</span>
                         <span>Rp {{ number_format($invoice->tax_amount, 0, ',', '.') }}</span>

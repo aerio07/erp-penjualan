@@ -85,6 +85,20 @@
             <tbody>
                 @php
                     $invoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : ($invoice->salesOrder->items ?? collect());
+
+                    $grossSubtotal = $invoiceItems->sum(function($item) {
+                        $qty = $item->qty_invoiced ?? $item->qty_ordered ?? 0;
+                        return $qty * ($item->unit_price ?? 0);
+                    });
+
+                    $itemDiscountSum = $invoiceItems->sum(function($item) {
+                        $qty = $item->qty_invoiced ?? $item->qty_ordered ?? 0;
+                        $price = $item->unit_price ?? 0;
+                        return ($qty * $price) * (($item->discount_percent ?? 0) / 100);
+                    });
+
+                    $netItemSubtotal = $grossSubtotal - $itemDiscountSum;
+                    $headerDiscount = max(0, round($netItemSubtotal - (float) $invoice->amount, 2));
                 @endphp
                 @forelse($invoiceItems as $i => $item)
                     @php
@@ -119,9 +133,21 @@
     <div class="totals-table">
         <table class="totals-summary">
             <tr>
-                <td class="tot-label">Subtotal (DPP):</td>
-                <td class="tot-value">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
+                <td class="tot-label">Subtotal:</td>
+                <td class="tot-value">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</td>
             </tr>
+            @if($itemDiscountSum > 0)
+            <tr>
+                <td class="tot-label tot-discount">Diskon Item:</td>
+                <td class="tot-value tot-discount">- Rp {{ number_format($itemDiscountSum, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            @if($headerDiscount > 0)
+            <tr>
+                <td class="tot-label tot-discount">Diskon Header:</td>
+                <td class="tot-value tot-discount">- Rp {{ number_format($headerDiscount, 0, ',', '.') }}</td>
+            </tr>
+            @endif
             @if($invoice->tax_amount > 0 || $invoice->tax_rate > 0)
             <tr>
                 <td class="tot-label">PPN ({{ $invoice->tax_rate }}%):</td>
