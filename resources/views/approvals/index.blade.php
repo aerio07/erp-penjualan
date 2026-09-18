@@ -18,21 +18,21 @@
 
     {{-- Pending Approvals --}}
     <div class="card" style="margin-bottom:24px;">
-        <div class="card-header">
-            <h3><i class="fa-solid fa-clock" style="color:var(--warning); margin-right:8px;"></i> Menunggu Persetujuan Anda</h3>
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;"><i class="fa-solid fa-clock" style="color:var(--warning); margin-right:8px;"></i> Menunggu Persetujuan Anda</h3>
             <span class="badge badge-pending">{{ $pendingApprovals->total() }} pengajuan</span>
         </div>
-        <div class="table-responsive">
-            <table class="erp-table">
+        <div class="table-responsive" style="overflow-x:hidden;">
+            <table class="erp-table" style="min-width:100% !important; table-layout:auto; width:100%;">
                 <thead>
                     <tr>
                         <x-sortable-header column="request_number" title="No. Request" />
-                        <th>Tipe Dokumen</th>
+                        <th>Tipe</th>
                         <th>Dokumen / Ref</th>
                         <th>Pemohon</th>
                         <x-sortable-header column="amount" title="Nilai Transaksi" align="right" />
-                        <x-sortable-header column="created_at" title="Tanggal Pengajuan" />
-                        <th style="text-align:center;">Aksi Approval</th>
+                        <x-sortable-header column="created_at" title="Tgl Pengajuan" />
+                        <th style="text-align:center; width:220px;">Aksi Approval</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,54 +46,57 @@
                         
                         if ($app->approvable_type === 'App\Models\PurchaseRequest') {
                             $docRoute = route('purchase.requests.show', $app->approvable_id);
-                            $docTypeLabel = 'Purchase Request';
+                            $docTypeLabel = 'PR';
                             $badgeClass = 'badge-warning';
                         } elseif ($app->approvable_type === 'App\Models\PurchaseOrder') {
                             $docRoute = route('purchase.orders.show', $app->approvable_id);
-                            $docTypeLabel = 'Purchase Order';
+                            $docTypeLabel = 'PO';
                             $badgeClass = 'badge-confirmed';
                         } elseif ($app->approvable_type === 'App\Models\SalesOrder') {
                             $docRoute = route('sales.orders.show', $app->approvable_id);
-                            $docTypeLabel = 'Sales Order';
+                            $docTypeLabel = 'SO';
                             $badgeClass = 'badge-info';
                         }
+                        $isPr = ($app->approvable_type === 'App\Models\PurchaseRequest');
                     @endphp
                     <tr>
-                        <td style="font-weight:600; color:var(--primary);">{{ $app->request_number }}</td>
-                        <td>
-                            <span class="badge {{ $badgeClass }}">
-                                {{ strtoupper($docTypeLabel) }}
+                        <td style="font-weight:600; color:var(--primary); white-space:nowrap; padding:10px 12px;">{{ $app->request_number }}</td>
+                        <td style="padding:10px 12px;">
+                            <span class="badge {{ $badgeClass }}" style="font-size:11px; padding:2px 6px;">
+                                {{ $docTypeLabel }}
                             </span>
                         </td>
-                        <td>
-                            <a href="{{ $docRoute }}" style="font-weight:700; font-size:14px; color:var(--primary); text-decoration:none;">
-                                {{ $docNum }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>
+                        <td style="padding:10px 12px; white-space:nowrap;">
+                            <a href="{{ $docRoute }}" style="font-weight:700; font-size:13.5px; color:var(--primary); text-decoration:none;">
+                                {{ $docNum }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
                             </a>
                         </td>
-                        <td>{{ $app->requester->name ?? '-' }}</td>
-                        <td style="text-align:right; font-weight:700; color:var(--primary);">
-                            @if($app->amount > 0)
+                        <td style="padding:10px 12px;">{{ $app->requester->name ?? '-' }}</td>
+                        <td style="text-align:right; font-weight:700; color:var(--primary); padding:10px 12px; white-space:nowrap;">
+                            @if($isPr)
+                                <span style="color:var(--text-secondary); font-weight:400;">-</span>
+                            @elseif($app->amount > 0)
                                 Rp {{ number_format($app->amount, 0, ',', '.') }}
                             @else
-                                <span style="font-size:12px; color:var(--text-secondary); font-weight:600;">
-                                    {{ ($doc && $doc->items ? $doc->items->count() : 0) }} Item
-                                </span>
+                                <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">-</span>
                             @endif
                         </td>
-                        <td>{{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}</td>
-                        <td style="text-align:center;">
-                            <div style="display:flex; gap:8px; justify-content:center;">
+                        <td style="padding:10px 12px; white-space:nowrap; font-size:12.5px; color:var(--text-secondary);">
+                            {{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}
+                        </td>
+                        <td style="text-align:center; padding:10px 12px;">
+                            <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
                                 {{-- Form Setujui --}}
                                 <form id="approve-form-{{ $app->id }}" method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline;">
                                     @csrf 
                                     @method('PATCH')
-                                    <button type="button" class="btn btn-success btn-sm" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ $app->amount > 0 ? number_format($app->amount, 0, ',', '.') : '' }}')">
+                                    <button type="button" class="btn btn-success btn-sm" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ (!$isPr && $app->amount > 0) ? number_format($app->amount, 0, ',', '.') : '' }}')" style="padding:4px 8px; font-size:11.5px; border-radius:5px; font-weight:600; white-space:nowrap;">
                                         <i class="fa-solid fa-check"></i> Setujui
                                     </button>
                                 </form>
 
                                 {{-- Form Revisi --}}
-                                <button type="button" class="btn btn-warning btn-sm" onclick="reviseApproval({{ $app->id }}, '{{ $docNum }}')" style="color:#78350f; background:#fde68a; border-color:#fcd34d;">
+                                <button type="button" class="btn btn-warning btn-sm" onclick="reviseApproval({{ $app->id }}, '{{ $docNum }}')" style="padding:4px 8px; font-size:11.5px; border-radius:5px; font-weight:600; color:#78350f; background:#fde68a; border-color:#fcd34d; white-space:nowrap;">
                                     <i class="fa-solid fa-rotate-left"></i> Revisi
                                 </button>
 
@@ -104,7 +107,7 @@
                                 </form>
 
                                 {{-- Form Tolak --}}
-                                <button type="button" class="btn btn-danger btn-sm" onclick="rejectApproval({{ $app->id }}, '{{ $docNum }}')">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="rejectApproval({{ $app->id }}, '{{ $docNum }}')" style="padding:4px 8px; font-size:11.5px; border-radius:5px; font-weight:600; white-space:nowrap;">
                                     <i class="fa-solid fa-ban"></i> Tolak
                                 </button>
 
@@ -118,7 +121,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
+                        <td colspan="7" style="text-align:center; padding:40px; color:var(--text-secondary);">
                             <i class="fa-solid fa-circle-check" style="font-size:32px; color:var(--success); display:block; margin-bottom:12px;"></i>
                             Tidak ada pengajuan approval yang sedang menunggu.
                         </td>
@@ -128,7 +131,7 @@
             </table>
         </div>
         @if($pendingApprovals->hasPages())
-        <div style="padding:16px 20px; border-top:1px solid var(--border);">
+        <div style="padding:14px 20px; border-top:1px solid var(--border);">
             {{ $pendingApprovals->links() }}
         </div>
         @endif
@@ -136,50 +139,105 @@
 
     {{-- History Approvals --}}
     <div class="card">
-        <div class="card-header"><h3>Riwayat Approval Anda</h3></div>
-        <div class="table-responsive">
-            <table class="erp-table">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0;"><i class="fa-solid fa-clock-rotate-left text-primary" style="margin-right:8px;"></i> Riwayat Approval</h3>
+            <span class="badge badge-secondary">{{ $myApprovals->total() }} riwayat</span>
+        </div>
+        <div class="table-responsive" style="overflow-x:hidden;">
+            <table class="erp-table" style="min-width:100% !important; table-layout:auto; width:100%;">
                 <thead>
                     <tr>
                         <th>No. Request</th>
-                        <th>Tipe Dokumen</th>
-                        <th style="text-align:right;">Nilai Transaksi</th>
+                        <th>Tipe</th>
+                        <th>Dokumen / Ref</th>
                         <th>Pemohon</th>
+                        <th style="text-align:right;">Nilai Transaksi</th>
                         <th style="text-align:center;">Status</th>
-                        <th>Alasan Penolakan / Catatan</th>
+                        <th>Tgl Diproses</th>
+                        <th>Diproses Oleh</th>
+                        <th>Catatan / Alasan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($myApprovals as $app)
                     @php
-                        $typeLabel = match($app->approvable_type) {
-                            'App\Models\PurchaseRequest' => 'Purchase Request',
-                            'App\Models\PurchaseOrder' => 'Purchase Order',
-                            'App\Models\SalesOrder' => 'Sales Order',
-                            default => class_basename($app->approvable_type ?? 'Dokumen'),
+                        $doc = $app->approvable;
+                        $docNum = $doc->po_number ?? $doc->so_number ?? $doc->pr_number ?? ($app->approvable_id ? '#'.$app->approvable_id : '-');
+                        $docRoute = '#';
+                        $typeLabel = 'Dokumen';
+                        $badgeClass = 'badge-confirmed';
+                        
+                        if ($app->approvable_type === 'App\Models\PurchaseRequest') {
+                            $docRoute = $app->approvable_id ? route('purchase.requests.show', $app->approvable_id) : '#';
+                            $typeLabel = 'PR';
+                            $badgeClass = 'badge-warning';
+                        } elseif ($app->approvable_type === 'App\Models\PurchaseOrder') {
+                            $docRoute = $app->approvable_id ? route('purchase.orders.show', $app->approvable_id) : '#';
+                            $typeLabel = 'PO';
+                            $badgeClass = 'badge-confirmed';
+                        } elseif ($app->approvable_type === 'App\Models\SalesOrder') {
+                            $docRoute = $app->approvable_id ? route('sales.orders.show', $app->approvable_id) : '#';
+                            $typeLabel = 'SO';
+                            $badgeClass = 'badge-info';
+                        }
+                        $isPr = ($app->approvable_type === 'App\Models\PurchaseRequest');
+                        
+                        $statusBadge = match($app->status) {
+                            'approved' => 'badge-done',
+                            'revised'  => 'badge-warning',
+                            'rejected' => 'badge-cancelled',
+                            default    => 'badge-secondary',
                         };
+                        $statusLabel = match($app->status) {
+                            'approved' => 'Disetujui',
+                            'revised'  => 'Revisi',
+                            'rejected' => 'Ditolak',
+                            default    => ucfirst($app->status),
+                        };
+                        $processDate = $app->approved_at ?? $app->updated_at;
                     @endphp
                     <tr>
-                        <td style="font-weight:600;">{{ $app->request_number }}</td>
-                        <td>{{ $typeLabel }}</td>
-                        <td style="text-align:right;">
-                            @if($app->amount > 0)
-                                Rp {{ number_format($app->amount, 0, ',', '.') }}
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td>{{ $app->requester->name ?? '-' }}</td>
-                        <td style="text-align:center;">
-                            <span class="badge badge-{{ $app->status === 'approved' ? 'done' : 'cancelled' }}">
-                                {{ ucfirst($app->status) }}
+                        <td style="font-weight:600; padding:10px 12px; white-space:nowrap;">{{ $app->request_number }}</td>
+                        <td style="padding:10px 12px;">
+                            <span class="badge {{ $badgeClass }}" style="font-size:11px; padding:2px 6px;">
+                                {{ $typeLabel }}
                             </span>
                         </td>
-                        <td>{{ $app->rejection_reason ?? '-' }}</td>
+                        <td style="padding:10px 12px; white-space:nowrap;">
+                            @if($docRoute !== '#')
+                            <a href="{{ $docRoute }}" style="font-weight:600; color:var(--primary); text-decoration:none;">
+                                {{ $docNum }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
+                            </a>
+                            @else
+                            {{ $docNum }}
+                            @endif
+                        </td>
+                        <td style="padding:10px 12px;">{{ $app->requester->name ?? '-' }}</td>
+                        <td style="text-align:right; padding:10px 12px; white-space:nowrap; font-weight:600;">
+                            @if($isPr)
+                                <span style="color:var(--text-secondary); font-weight:400;">-</span>
+                            @elseif($app->amount > 0)
+                                Rp {{ number_format($app->amount, 0, ',', '.') }}
+                            @else
+                                <span style="color:var(--text-secondary); font-weight:400;">-</span>
+                            @endif
+                        </td>
+                        <td style="text-align:center; padding:10px 12px;">
+                            <span class="badge {{ $statusBadge }}">
+                                {{ $statusLabel }}
+                            </span>
+                        </td>
+                        <td style="padding:10px 12px; font-size:12.5px; color:var(--text-secondary); white-space:nowrap;">
+                            {{ $processDate ? $processDate->format('d/m/Y H:i') : '-' }}
+                        </td>
+                        <td style="padding:10px 12px; font-size:13px;">{{ $app->approver->name ?? '-' }}</td>
+                        <td style="padding:10px 12px; font-size:12.5px; color:var(--text-secondary); max-width:200px;">
+                            {{ $app->rejection_reason ?? '-' }}
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" style="text-align:center; padding:36px; color:var(--text-secondary);">
+                        <td colspan="9" style="text-align:center; padding:36px; color:var(--text-secondary);">
                             Belum ada riwayat approval.
                         </td>
                     </tr>
@@ -188,7 +246,7 @@
             </table>
         </div>
         @if($myApprovals->hasPages())
-        <div style="padding:16px 20px; border-top:1px solid var(--border);">
+        <div style="padding:14px 20px; border-top:1px solid var(--border);">
             {{ $myApprovals->links() }}
         </div>
         @endif

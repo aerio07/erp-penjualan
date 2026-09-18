@@ -9,16 +9,45 @@
     <!-- 1. ALERT BARS (Action Items & Early Warnings) -->
     <!-- ========================================================= -->
     <div class="flex flex-col gap-2">
-        {{-- PO Waiting Approval (Khusus Admin) --}}
-        @if(auth()->user()->isAdmin() && isset($alerts['po_waiting_approval']) && $alerts['po_waiting_approval'] > 0)
+        {{-- Dokumen Menunggu Approval (Khusus Admin) --}}
+        @if(auth()->user()->isAdmin() && isset($alerts['pending_approval']) && $alerts['pending_approval'] > 0)
         <div class="bg-[#FBEBD2] border-l-4 border-[#92640B] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2.5 text-[#92640B]">
-                <span class="material-symbols-outlined text-[18px]">warning</span>
-                <span class="font-medium text-xs sm:text-sm"><strong>{{ $alerts['po_waiting_approval'] }} Purchase Order</strong> menunggu approval limit otorisasi</span>
+                <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                <span class="font-medium text-xs sm:text-sm"><strong>{{ $alerts['pending_approval'] }} Dokumen</strong> (PR/PO/SO) menunggu approval otorisasi</span>
             </div>
             <a href="{{ route('approvals.index') }}" style="background-color: #03193c; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Review Approval &rarr;
             </a>
+        </div>
+        @endif
+
+        {{-- Dokumen Membutuhkan Revisi --}}
+        @if(isset($alerts['revised_documents']) && $alerts['revised_documents'] > 0)
+        <div class="bg-[#fffbeb] border-l-4 border-[#f59e0b] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2.5 text-[#b45309]">
+                <span class="material-symbols-outlined text-[18px]">warning</span>
+                <span class="font-medium text-xs sm:text-sm">
+                    <strong>Perlu Tindakan:</strong> Ada <strong>{{ $alerts['revised_documents'] }} Dokumen</strong> dikembalikan oleh approver untuk direvisi.
+                </span>
+            </div>
+            <div class="flex items-center gap-1.5">
+                @if(($alerts['revised_pr'] ?? 0) > 0)
+                    <a href="{{ route('purchase.requests.index') }}" style="background:#f59e0b; color:#ffffff;" class="px-2.5 py-1 rounded text-xs font-semibold shadow-sm whitespace-nowrap hover:opacity-90">
+                        PR ({{ $alerts['revised_pr'] }}) &rarr;
+                    </a>
+                @endif
+                @if(($alerts['revised_po'] ?? 0) > 0)
+                    <a href="{{ route('purchase.orders.index') }}" style="background:#f59e0b; color:#ffffff;" class="px-2.5 py-1 rounded text-xs font-semibold shadow-sm whitespace-nowrap hover:opacity-90">
+                        PO ({{ $alerts['revised_po'] }}) &rarr;
+                    </a>
+                @endif
+                @if(($alerts['revised_so'] ?? 0) > 0)
+                    <a href="{{ route('sales.orders.index') }}" style="background:#f59e0b; color:#ffffff;" class="px-2.5 py-1 rounded text-xs font-semibold shadow-sm whitespace-nowrap hover:opacity-90">
+                        SO ({{ $alerts['revised_so'] }}) &rarr;
+                    </a>
+                @endif
+            </div>
         </div>
         @endif
 

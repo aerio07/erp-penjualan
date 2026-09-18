@@ -28,7 +28,7 @@ class PurchaseOrderController extends Controller
 
     public function index(Request $request): View
     {
-        $query = PurchaseOrder::with(['supplier', 'user', 'items']);
+        $query = PurchaseOrder::with(['supplier', 'user', 'items', 'approvalRequests']);
 
         $query = $this->applySearch($query, $request, ['po_number', 'supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -208,7 +208,7 @@ class PurchaseOrderController extends Controller
         $order = $purchaseOrder;
         abort_if(!in_array($order->status, ['draft']), 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
 
-        $order->load(['items.product', 'purchaseRequest']);
+        $order->load(['items.product', 'purchaseRequest', 'approvalRequests.approver']);
         $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
         $products   = Product::where('is_active', true)->orderBy('name')->get();
 

@@ -85,9 +85,16 @@
                 <div style="font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
             </td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $order->status }}">
-                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                </span>
+                @php
+                    $isRevised = ($order->status === 'draft' && $order->approvalRequests->sortByDesc('id')->first()?->status === 'revised');
+                @endphp
+                @if($isRevised)
+                    <span class="badge badge-warning">Perlu Revisi</span>
+                @else
+                    <span class="badge badge-{{ $order->status }}">
+                        {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                    </span>
+                @endif
             </td>
             <td class="col-actions text-center">
                 <div style="display:flex; gap:6px; justify-content:center;">

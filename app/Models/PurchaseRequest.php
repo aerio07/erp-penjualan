@@ -85,6 +85,13 @@ class PurchaseRequest extends Model
 
     public function getStatusLabelAttribute(): string
     {
+        if ($this->status === 'draft') {
+            $latest = $this->approvalRequests->sortByDesc('id')->first();
+            if ($latest && $latest->status === 'revised') {
+                return 'Perlu Revisi';
+            }
+        }
+
         return match ($this->status) {
             'draft'            => 'Draft',
             'waiting_approval' => 'Menunggu Approval',
@@ -100,6 +107,13 @@ class PurchaseRequest extends Model
 
     public function getStatusBadgeAttribute(): string
     {
+        if ($this->status === 'draft') {
+            $latest = $this->approvalRequests->sortByDesc('id')->first();
+            if ($latest && $latest->status === 'revised') {
+                return 'badge-warning';
+            }
+        }
+
         return match ($this->status) {
             'draft'            => 'badge-secondary',
             'waiting_approval' => 'badge-warning',

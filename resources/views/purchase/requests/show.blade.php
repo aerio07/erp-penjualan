@@ -4,6 +4,10 @@
 
 @section('content')
 <div class="animate-in">
+    @php
+        $latestApproval = $purchase_request->approvalRequests->sortByDesc('id')->first();
+    @endphp
+
     {{-- Hidden forms for workflow actions --}}
     <form id="form-submit-pr" method="POST" action="{{ route('purchase.requests.submit', $purchase_request) }}" style="display:none;">
         @csrf @method('PATCH')
@@ -59,6 +63,30 @@
             </div>
         </x-slot:actions>
     </x-page-header>
+
+    {{-- Banner Status: Perlu Revisi (Draft dengan riwayat Revisi) --}}
+    @if($purchase_request->status === 'draft' && $latestApproval && $latestApproval->status === 'revised')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#92400e; font-size:15px;">
+                    Permintaan Revisi dari Approver ({{ $latestApproval->approver->name ?? 'Admin' }})
+                </div>
+                <div style="color:#78350f; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fffbeb; border:1px dashed #fcd34d; border-radius:8px;">
+                    <i class="fa-solid fa-comment-dots" style="margin-right:6px; color:#d97706;"></i>
+                    <strong>Catatan Revisi:</strong> {{ $latestApproval->rejection_reason ?: 'Harap periksa kembali detail pengajuan PR ini.' }}
+                </div>
+                <div style="color:#b45309; font-size:12.5px; margin-top:8px;">
+                    <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
+                    Silakan klik tombol <strong>"Edit PR"</strong> di atas untuk menyesuaikan item atau kuantiti, lalu klik <strong>"Ajukan Approval"</strong> untuk mengajukan ulang.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
     {{-- Banner Status: Ditolak (Rejected) --}}
     @if($purchase_request->status === 'rejected')

@@ -41,7 +41,7 @@ class PurchaseRequestController extends Controller
     {
         $status = $request->get('status', 'all');
 
-        $query = PurchaseRequest::with(['user', 'approver', 'items.product']);
+        $query = PurchaseRequest::with(['user', 'approver', 'items.product', 'approvalRequests']);
 
         if ($status !== 'all') {
             if ($status === 'confirmed') {
@@ -148,7 +148,7 @@ class PurchaseRequestController extends Controller
      */
     public function show(PurchaseRequest $purchase_request): View
     {
-        $purchase_request->load(['user', 'approver', 'items.product']);
+        $purchase_request->load(['user', 'approver', 'items.product', 'approvalRequests.approver']);
 
         return view('purchase.requests.show', compact('purchase_request'));
     }
@@ -163,7 +163,7 @@ class PurchaseRequestController extends Controller
                 ->with('error', 'Purchase Request yang sudah diajukan atau disetujui tidak dapat diedit.');
         }
 
-        $purchase_request->load(['items.product']);
+        $purchase_request->load(['items.product', 'approvalRequests.approver']);
 
         $products = Product::where('is_active', true)
             ->orderBy('name')
@@ -252,14 +252,10 @@ class PurchaseRequestController extends Controller
             'rejection_reason' => null,
         ]);
 
-        $estimatedAmount = (float) $purchase_request->items->sum(function ($item) {
-            return $item->qty * (float) ($item->product->purchase_price ?? 0);
-        });
-
         $this->approvalService->request(
             PurchaseRequest::class,
             $purchase_request->id,
-            $estimatedAmount,
+            0,
             "PR #{$purchase_request->pr_number} diajukan oleh " . ($purchase_request->user->name ?? 'User') . " (" . ($purchase_request->division ?? 'Umum') . ")."
         );
 

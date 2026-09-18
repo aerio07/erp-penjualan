@@ -103,7 +103,14 @@
             <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
             <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
             <td style="text-align:center;">
-                <x-status-badge :status="$order->status" />
+                @php
+                    $isRevised = ($order->status === 'draft' && $order->approvalRequests->sortByDesc('id')->first()?->status === 'revised');
+                @endphp
+                @if($isRevised)
+                    <span class="badge badge-warning">Perlu Revisi</span>
+                @else
+                    <x-status-badge :status="$order->status" />
+                @endif
             </td>
             <td style="text-align:center;">
                 @php

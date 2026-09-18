@@ -31,7 +31,7 @@ class SalesOrderController extends Controller
 
     public function index(Request $request): View
     {
-        $query = SalesOrder::with(['customer', 'user', 'items.reservations.warehouse']);
+        $query = SalesOrder::with(['customer', 'user', 'items.reservations.warehouse', 'approvalRequests']);
 
         $query = $this->applySearch($query, $request, ['so_number', 'customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'status');
@@ -157,7 +157,7 @@ class SalesOrderController extends Controller
         $order = $salesOrder;
         abort_if($order->status !== 'draft', 403, 'SO yang sudah dikonfirmasi tidak dapat diedit.');
 
-        $order->load(['items.product']);
+        $order->load(['items.product', 'approvalRequests.approver']);
         $customers = Customer::where('is_active', true)->orderBy('name')->get();
         $products  = Product::where('is_active', true)->orderBy('name')->get();
 

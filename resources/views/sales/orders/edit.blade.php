@@ -33,6 +33,19 @@
         </x-slot:action>
     </x-page-header>
 
+    @php
+        $latestApproval = $order->approvalRequests->sortByDesc('id')->first();
+    @endphp
+    @if($latestApproval && $latestApproval->status === 'revised')
+    <div class="alert alert-warning" style="margin-bottom:20px; display:flex; align-items:flex-start; gap:12px; padding:14px 18px; border-radius:8px; background:#fffdf7; border:1px solid #fcd34d; color:#92400e;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:18px; margin-top:2px; color:#d97706;"></i>
+        <div>
+            <strong>Catatan Permintaan Revisi dari Approver ({{ $latestApproval->approver->name ?? 'Admin' }}):</strong>
+            <div style="margin-top:4px;">{{ $latestApproval->rejection_reason ?: 'Harap periksa kembali detail pesanan ini.' }}</div>
+        </div>
+    </div>
+    @endif
+
     <form method="POST" action="{{ route('sales.orders.update', $order) }}" @submit="validateForm($event)" @keydown.enter="if ($event.target.tagName !== 'TEXTAREA') $event.preventDefault()">
         @csrf
         @method('PUT')

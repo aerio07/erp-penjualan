@@ -36,10 +36,10 @@ class ApprovalController extends Controller
         $perPage = (int) $request->get('per_page', 20);
         $pendingApprovals = (clone $query)->where('status', 'pending')->paginate($perPage, ['*'], 'pending_page')->withQueryString();
 
-        $myApprovals = ApprovalRequest::with(['requester', 'approvable'])
-            ->where('approver_id', auth()->id())
-            ->latest('created_at')
-            ->paginate(10, ['*'], 'my_page')
+        $myApprovals = ApprovalRequest::with(['requester', 'approvable', 'approver'])
+            ->whereIn('status', ['approved', 'rejected', 'revised'])
+            ->orderByRaw('COALESCE(approved_at, updated_at) DESC')
+            ->paginate(15, ['*'], 'history_page')
             ->withQueryString();
 
         return view('approvals.index', compact('pendingApprovals', 'myApprovals'));
@@ -120,6 +120,15 @@ class ApprovalController extends Controller
                     'status'           => 'draft',
                     'rejection_reason' => $request->revision_reason,
                 ]);
+            } elseif ($approvable instanceof PurchaseOrder) {
+                $approvable->update([
+                    'status'        => 'draft',
+                    'cancel_reason' => $request->revision_reason,
+                ]);
+                $approvable->procurementDemands()->update([
+                    'purchase_order_id' => null,
+                    'status'            => 'pending',
+                ]);
             } else {
                 $approvable->update([
                     'status'             => 'draft',
@@ -128,11 +137,6 @@ class ApprovalController extends Controller
 
                 if ($approvable instanceof SalesOrder) {
                     $this->stockService->releaseReservationsForSalesOrder($approvable);
-                } elseif ($approvable instanceof PurchaseOrder) {
-                    $approvable->procurementDemands()->update([
-                        'purchase_order_id' => null,
-                        'status'            => 'pending',
-                    ]);
                 }
             }
         }

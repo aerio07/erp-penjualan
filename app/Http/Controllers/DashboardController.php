@@ -218,7 +218,30 @@ class DashboardController extends Controller
             ->filter(fn($p) => $this->stockService->getQuarantineStockAvailable($p->id) > 0)
             ->count();
 
-        $poApprovalCount = ($role === 'admin') ? PurchaseOrder::where('status', 'waiting_approval')->count() : 0;
+        $pendingApprovalCount = ($role === 'admin') 
+            ? \App\Models\ApprovalRequest::where('status', 'pending')->count() 
+            : 0;
+
+        // Hitung dokumen yang dikembalikan untuk revisi oleh approver
+        $userId = auth()->id();
+        $isAdmin = ($role === 'admin');
+
+        $revisedPrCount = \App\Models\PurchaseRequest::where('status', 'draft')
+            ->when(!$isAdmin, fn($q) => $q->where('user_id', $userId))
+            ->whereHas('approvalRequests', fn($q) => $q->where('status', 'revised'))
+            ->count();
+
+        $revisedPoCount = \App\Models\PurchaseOrder::where('status', 'draft')
+            ->when(!$isAdmin, fn($q) => $q->where('user_id', $userId))
+            ->whereHas('approvalRequests', fn($q) => $q->where('status', 'revised'))
+            ->count();
+
+        $revisedSoCount = \App\Models\SalesOrder::where('status', 'draft')
+            ->when(!$isAdmin, fn($q) => $q->where('user_id', $userId))
+            ->whereHas('approvalRequests', fn($q) => $q->where('status', 'revised'))
+            ->count();
+
+        $totalRevisedCount = $revisedPrCount + $revisedPoCount + $revisedSoCount;
 
         $today = Carbon::today();
         $dueThreshold = $today->copy()->addDays(7);
@@ -240,7 +263,12 @@ class DashboardController extends Controller
             ->count();
 
         return [
-            'po_waiting_approval' => $poApprovalCount,
+            'pending_approval'    => $pendingApprovalCount,
+            'revised_documents'   => $totalRevisedCount,
+            'revised_pr'          => $revisedPrCount,
+            'revised_po'          => $revisedPoCount,
+            'revised_so'          => $revisedSoCount,
+            'po_waiting_approval' => $pendingApprovalCount,
             'due_receivables'     => $dueReceivablesCount,
             'due_payables'        => $duePayablesCount,
             'low_stock'           => $lowStockCount,

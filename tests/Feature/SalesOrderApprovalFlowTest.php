@@ -81,7 +81,7 @@ class SalesOrderApprovalFlowTest extends TestCase
 
         $response = $this->actingAs($this->sales)->patch(route('sales.orders.confirm', $so));
 
-        $response->assertSessionHas('info', "Sales Order #{$so->so_number} telah dikirim untuk approval.");
+        $response->assertSessionHas('info', "Sales Order #{$so->so_number} telah diajukan ke Menu Approval.");
 
         $so->refresh();
         $this->assertEquals('waiting_approval', $so->status);
