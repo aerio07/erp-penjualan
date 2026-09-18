@@ -185,7 +185,7 @@ class PurchasePaymentController extends Controller
         abort_if(!$payment->isPosted(), 403, 'PDF bukti pembayaran hanya dapat dicetak setelah status Posted.');
 
         $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'user']);
-        $safeNumber = 'PAY-VOUCHER-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT);
+        $safeNumber = $payment->voucher_number;
 
         return $this->streamPdf('pdf.purchase-payment', compact('payment'), $safeNumber);
     }

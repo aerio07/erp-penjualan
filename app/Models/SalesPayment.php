@@ -36,4 +36,24 @@ class SalesPayment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getVoucherTypeAttribute(): string
+    {
+        return $this->method === 'cash' ? 'BKM' : 'BBM';
+    }
+
+    public function getVoucherNumberAttribute(): string
+    {
+        return $this->voucher_type . '-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
+    }
+
+    public function getVoucherTitleAttribute(): string
+    {
+        return $this->method === 'cash' ? 'BUKTI KAS MASUK' : 'BUKTI BANK MASUK';
+    }
+
+    public function getVoucherLabelAttribute(): string
+    {
+        return $this->method === 'cash' ? 'No. Bukti Kas Masuk' : 'No. Bukti Bank Masuk';
+    }
 }

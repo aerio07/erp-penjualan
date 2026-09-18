@@ -185,7 +185,7 @@ class SalesPaymentController extends Controller
         abort_if(!$payment->isPosted(), 403, 'PDF bukti penerimaan pembayaran hanya dapat dicetak setelah status Posted.');
 
         $payment->load(['salesInvoice.salesOrder.customer', 'user']);
-        $safeNumber = 'REC-VOUCHER-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT);
+        $safeNumber = $payment->voucher_number;
 
         return $this->streamPdf('pdf.sales-payment', compact('payment'), $safeNumber);
     }

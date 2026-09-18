@@ -36,4 +36,24 @@ class PurchasePayment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getVoucherTypeAttribute(): string
+    {
+        return $this->method === 'cash' ? 'BKK' : 'BBK';
+    }
+
+    public function getVoucherNumberAttribute(): string
+    {
+        return $this->voucher_type . '-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
+    }
+
+    public function getVoucherTitleAttribute(): string
+    {
+        return $this->method === 'cash' ? 'BUKTI KAS KELUAR' : 'BUKTI BANK KELUAR';
+    }
+
+    public function getVoucherLabelAttribute(): string
+    {
+        return $this->method === 'cash' ? 'No. Bukti Kas Keluar' : 'No. Bukti Bank Keluar';
+    }
 }

@@ -1,8 +1,8 @@
 @extends('layouts.pdf')
 
-@section('title', 'Bukti Pengeluaran Kas - BKK-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT))
-@section('doc-title', 'BUKTI PENGELUARAN KAS / BANK')
-@section('doc-subtitle', 'Payment Voucher #: BKK-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT))
+@section('title', $payment->voucher_title . ' - ' . $payment->voucher_number)
+@section('doc-title', $payment->voucher_title)
+@section('doc-subtitle', 'Voucher #: ' . $payment->voucher_number)
 
 @section('content')
     {{-- SUPPLIER & PAYMENT DETAILS SECTION (Side by Side) --}}
@@ -36,9 +36,9 @@
                 <div class="section-heading">RINCIAN PEMBAYARAN</div>
                 <table class="details-table">
                     <tr>
-                        <td class="detail-label">No. Bukti Kas Keluar</td>
+                        <td class="detail-label">{{ $payment->voucher_label }}</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: bold; color: #111111;">BKK-{{ str_pad($payment->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td class="detail-value" style="font-weight: bold; color: #111111;">{{ $payment->voucher_number }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Tanggal Pembayaran</td>
@@ -50,6 +50,13 @@
                         <td class="detail-colon">:</td>
                         <td class="detail-value" style="font-weight: bold; text-transform: uppercase;">{{ $payment->method }}</td>
                     </tr>
+                    @if($payment->reference_number)
+                    <tr>
+                        <td class="detail-label">No. Ref / Transfer</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $payment->reference_number }}</td>
+                    </tr>
+                    @endif
                     <tr>
                         <td class="detail-label">Ref. Invoice Pembelian</td>
                         <td class="detail-colon">:</td>
@@ -63,7 +70,7 @@
                     <tr>
                         <td class="detail-label">Status Transaksi</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: 700; color: #111111;">POSTED (LUNAS/BERHASIL)</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">BERHASIL / LUNAS</td>
                     </tr>
                 </table>
             </td>
@@ -98,7 +105,7 @@
         </tbody>
         <tfoot>
             <tr class="grand-total-row">
-                <td colspan="4" style="text-align: right; font-weight: bold; padding: 6px 8px; text-transform: uppercase;">TOTAL KAS/BANK KELUAR:</td>
+                <td colspan="4" style="text-align: right; font-weight: bold; padding: 6px 8px; text-transform: uppercase;">TOTAL {{ $payment->method === 'cash' ? 'KAS' : 'BANK' }} KELUAR:</td>
                 <td style="text-align: right; font-weight: bold; padding: 6px 8px; font-size: 10pt; color: #111111;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
             </tr>
         </tfoot>
@@ -110,7 +117,7 @@
             <td style="width: 55%; vertical-align: top; padding-right: 20px;">
                 @if($payment->notes)
                     <div style="font-size: 8pt; font-weight: bold; color: #555555; text-transform: uppercase; margin-bottom: 3px;">CATATAN PEMBAYARAN:</div>
-                    <div style="font-size: 8.5pt; color: #333333; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 8px;">
+                    <div style="font-size: 8.5pt; color: #333333; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px; padding: 8px;">
                         {{ $payment->notes }}
                     </div>
                 @else

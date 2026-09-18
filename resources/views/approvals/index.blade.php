@@ -3,6 +3,45 @@
 @section('page-title', 'Approval')
 
 @section('content')
+<style>
+    /* Optimasi Tabel Approval agar muat 1 layar tanpa scroll horizontal dan tombol aksi tidak terpotong */
+    .approval-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        table-layout: auto !important;
+    }
+    .approval-table thead th {
+        padding: 9px 8px !important;
+        font-size: 0.71rem !important;
+        letter-spacing: 0.02em !important;
+        white-space: nowrap !important;
+    }
+    .approval-table tbody td {
+        padding: 8px 8px !important;
+        font-size: 0.83rem !important;
+        vertical-align: middle !important;
+    }
+    .approval-actions {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        white-space: nowrap !important;
+    }
+    .approval-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 5px 8px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        border-radius: 5px !important;
+        white-space: nowrap !important;
+        box-shadow: none !important;
+    }
+</style>
+
 <div class="animate-in">
     <x-page-header title="Approval" subtitle="Persetujuan dokumen Purchase Request, Purchase Order, dan Sales Order" />
 
@@ -22,17 +61,17 @@
             <h3 style="margin:0;"><i class="fa-solid fa-clock" style="color:var(--warning); margin-right:8px;"></i> Menunggu Persetujuan Anda</h3>
             <span class="badge badge-pending">{{ $pendingApprovals->total() }} pengajuan</span>
         </div>
-        <div class="table-responsive" style="overflow-x:hidden;">
-            <table class="erp-table" style="min-width:100% !important; table-layout:auto; width:100%;">
+        <div class="table-responsive" style="overflow-x:auto;">
+            <table class="erp-table approval-table">
                 <thead>
                     <tr>
                         <x-sortable-header column="request_number" title="No. Request" />
-                        <th>Tipe</th>
+                        <th style="width:45px; text-align:center;">Tipe</th>
                         <th>Dokumen / Ref</th>
                         <th>Pemohon</th>
                         <x-sortable-header column="amount" title="Nilai Transaksi" align="right" />
                         <x-sortable-header column="created_at" title="Tgl Pengajuan" />
-                        <th style="text-align:center; width:220px;">Aksi Approval</th>
+                        <th style="text-align:center; width:185px;">Aksi Approval</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,19 +99,19 @@
                         $isPr = ($app->approvable_type === 'App\Models\PurchaseRequest');
                     @endphp
                     <tr>
-                        <td style="font-weight:600; color:var(--primary); white-space:nowrap; padding:10px 12px;">{{ $app->request_number }}</td>
-                        <td style="padding:10px 12px;">
+                        <td style="font-weight:600; color:var(--primary); white-space:nowrap;">{{ $app->request_number }}</td>
+                        <td style="text-align:center;">
                             <span class="badge {{ $badgeClass }}" style="font-size:11px; padding:2px 6px;">
                                 {{ $docTypeLabel }}
                             </span>
                         </td>
-                        <td style="padding:10px 12px; white-space:nowrap;">
-                            <a href="{{ $docRoute }}" style="font-weight:700; font-size:13.5px; color:var(--primary); text-decoration:none;">
+                        <td style="white-space:nowrap;">
+                            <a href="{{ $docRoute }}" style="font-weight:700; font-size:13px; color:var(--primary); text-decoration:none;">
                                 {{ $docNum }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
                             </a>
                         </td>
-                        <td style="padding:10px 12px;">{{ $app->requester->name ?? '-' }}</td>
-                        <td style="text-align:right; font-weight:700; color:var(--primary); padding:10px 12px; white-space:nowrap;">
+                        <td>{{ $app->requester->name ?? '-' }}</td>
+                        <td style="text-align:right; font-weight:700; color:var(--primary); white-space:nowrap;">
                             @if($isPr)
                                 <span style="color:var(--text-secondary); font-weight:400;">-</span>
                             @elseif($app->amount > 0)
@@ -81,22 +120,22 @@
                                 <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">-</span>
                             @endif
                         </td>
-                        <td style="padding:10px 12px; white-space:nowrap; font-size:12.5px; color:var(--text-secondary);">
+                        <td style="white-space:nowrap; font-size:12.5px; color:var(--text-secondary);">
                             {{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}
                         </td>
-                        <td style="text-align:center; padding:10px 12px;">
-                            <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
+                        <td style="text-align:center; width:185px;">
+                            <div class="approval-actions">
                                 {{-- Form Setujui --}}
-                                <form id="approve-form-{{ $app->id }}" method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline;">
+                                <form id="approve-form-{{ $app->id }}" method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline; margin:0;">
                                     @csrf 
                                     @method('PATCH')
-                                    <button type="button" class="btn btn-success btn-sm" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ (!$isPr && $app->amount > 0) ? number_format($app->amount, 0, ',', '.') : '' }}')" style="padding:4px 8px; font-size:11.5px; border-radius:5px; font-weight:600; white-space:nowrap;">
+                                    <button type="button" class="btn btn-success approval-btn" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ (!$isPr && $app->amount > 0) ? number_format($app->amount, 0, ',', '.') : '' }}')">
                                         <i class="fa-solid fa-check"></i> Setujui
                                     </button>
                                 </form>
 
                                 {{-- Form Revisi --}}
-                                <button type="button" class="btn btn-warning btn-sm" onclick="reviseApproval({{ $app->id }}, '{{ $docNum }}')" style="padding:4px 8px; font-size:11.5px; border-radius:5px; font-weight:600; color:#78350f; background:#fde68a; border-color:#fcd34d; white-space:nowrap;">
+                                <button type="button" class="btn btn-warning approval-btn" onclick="reviseApproval({{ $app->id }}, '{{ $docNum }}')" style="color:#78350f; background:#fde68a; border-color:#fcd34d;">
                                     <i class="fa-solid fa-rotate-left"></i> Revisi
                                 </button>
 
@@ -107,7 +146,7 @@
                                 </form>
 
                                 {{-- Form Tolak --}}
-                                <button type="button" class="btn btn-danger btn-sm" onclick="rejectApproval({{ $app->id }}, '{{ $docNum }}')" style="padding:4px 8px; font-size:11.5px; border-radius:5px; font-weight:600; white-space:nowrap;">
+                                <button type="button" class="btn btn-danger approval-btn" onclick="rejectApproval({{ $app->id }}, '{{ $docNum }}')">
                                     <i class="fa-solid fa-ban"></i> Tolak
                                 </button>
 
@@ -143,16 +182,16 @@
             <h3 style="margin:0;"><i class="fa-solid fa-clock-rotate-left text-primary" style="margin-right:8px;"></i> Riwayat Approval</h3>
             <span class="badge badge-secondary">{{ $myApprovals->total() }} riwayat</span>
         </div>
-        <div class="table-responsive" style="overflow-x:hidden;">
-            <table class="erp-table" style="min-width:100% !important; table-layout:auto; width:100%;">
+        <div class="table-responsive" style="overflow-x:auto;">
+            <table class="erp-table approval-table">
                 <thead>
                     <tr>
                         <th>No. Request</th>
-                        <th>Tipe</th>
+                        <th style="width:45px; text-align:center;">Tipe</th>
                         <th>Dokumen / Ref</th>
                         <th>Pemohon</th>
                         <th style="text-align:right;">Nilai Transaksi</th>
-                        <th style="text-align:center;">Status</th>
+                        <th style="text-align:center; width:80px;">Status</th>
                         <th>Tgl Diproses</th>
                         <th>Diproses Oleh</th>
                         <th>Catatan / Alasan</th>
@@ -197,13 +236,13 @@
                         $processDate = $app->approved_at ?? $app->updated_at;
                     @endphp
                     <tr>
-                        <td style="font-weight:600; padding:10px 12px; white-space:nowrap;">{{ $app->request_number }}</td>
-                        <td style="padding:10px 12px;">
+                        <td style="font-weight:600; white-space:nowrap;">{{ $app->request_number }}</td>
+                        <td style="text-align:center;">
                             <span class="badge {{ $badgeClass }}" style="font-size:11px; padding:2px 6px;">
                                 {{ $typeLabel }}
                             </span>
                         </td>
-                        <td style="padding:10px 12px; white-space:nowrap;">
+                        <td style="white-space:nowrap;">
                             @if($docRoute !== '#')
                             <a href="{{ $docRoute }}" style="font-weight:600; color:var(--primary); text-decoration:none;">
                                 {{ $docNum }} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;"></i>
@@ -212,8 +251,8 @@
                             {{ $docNum }}
                             @endif
                         </td>
-                        <td style="padding:10px 12px;">{{ $app->requester->name ?? '-' }}</td>
-                        <td style="text-align:right; padding:10px 12px; white-space:nowrap; font-weight:600;">
+                        <td>{{ $app->requester->name ?? '-' }}</td>
+                        <td style="text-align:right; white-space:nowrap; font-weight:600;">
                             @if($isPr)
                                 <span style="color:var(--text-secondary); font-weight:400;">-</span>
                             @elseif($app->amount > 0)
@@ -222,16 +261,16 @@
                                 <span style="color:var(--text-secondary); font-weight:400;">-</span>
                             @endif
                         </td>
-                        <td style="text-align:center; padding:10px 12px;">
+                        <td style="text-align:center;">
                             <span class="badge {{ $statusBadge }}">
                                 {{ $statusLabel }}
                             </span>
                         </td>
-                        <td style="padding:10px 12px; font-size:12.5px; color:var(--text-secondary); white-space:nowrap;">
+                        <td style="font-size:12.5px; color:var(--text-secondary); white-space:nowrap;">
                             {{ $processDate ? $processDate->format('d/m/Y H:i') : '-' }}
                         </td>
-                        <td style="padding:10px 12px; font-size:13px;">{{ $app->approver->name ?? '-' }}</td>
-                        <td style="padding:10px 12px; font-size:12.5px; color:var(--text-secondary); max-width:200px;">
+                        <td style="font-size:13px;">{{ $app->approver->name ?? '-' }}</td>
+                        <td style="font-size:12.5px; color:var(--text-secondary); max-width:200px;">
                             {{ $app->rejection_reason ?? '-' }}
                         </td>
                     </tr>

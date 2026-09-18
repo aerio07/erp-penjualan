@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Detail Pembayaran Hutang - BKK-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT))
+@section('title', 'Detail Pembayaran Hutang - ' . $payment->voucher_number)
 @section('page-title', 'Detail Pembayaran Hutang')
 
 @section('content')
@@ -16,7 +16,7 @@
     @endif
 
     <x-detail-header 
-        :title="'Pembayaran Hutang #BKK-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT)" 
+        :title="'Pembayaran Hutang #' . $payment->voucher_number" 
         :subtitle="'Ref. Invoice: ' . ($payment->purchaseInvoice->invoice_number ?? '-') . ' · Supplier: ' . ($payment->purchaseInvoice->purchaseOrder->supplier->name ?? '-')"
         :status="$payment->status"
         :back-url="route('purchase.payments.index')"
