@@ -80,7 +80,19 @@
             <x-status-badge :status="$payment->status" />
         </div>
         <div class="card-body">
-            <div class="form-row form-row-3" style="margin-bottom:16px;">
+            <div class="form-row form-row-4" style="margin-bottom:16px;">
+                <div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">No. Pembayaran</div>
+                    <div style="font-weight:700; font-size:14.5px; color:var(--primary); font-family: 'Inter', monospace;">
+                        {{ $payment->payment_number ?? $payment->voucher_number }}
+                    </div>
+                    @if($payment->reference_number)
+                        <div style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+                            Ref: {{ $payment->reference_number }}
+                        </div>
+                    @endif
+                </div>
+
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Customer</div>
                     <div style="font-weight:600; font-size:14.5px; color:var(--text-primary);">

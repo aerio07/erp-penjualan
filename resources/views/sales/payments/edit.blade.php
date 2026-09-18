@@ -18,6 +18,17 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Form Edit Pembayaran Piutang</h3></div>
                 <div class="card-body">
+                    <div class="form-row form-row-2" style="margin-bottom:14px;">
+                        <div class="form-group">
+                            <label class="form-label">No. Pembayaran</label>
+                            <input type="text" class="form-control" value="{{ $payment->payment_number ?? $payment->voucher_number }}" readonly style="background:var(--bg-muted, #f1f5f9); color:var(--text-primary); font-weight:700;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tanggal Diterima <span style="color:var(--danger);">*</span></label>
+                            <input type="date" name="payment_date" value="{{ old('payment_date', $payment->payment_date ? $payment->payment_date->format('Y-m-d') : date('Y-m-d')) }}" class="form-control" required>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">Invoice Penjualan Terkait</label>
                         <div style="padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
@@ -31,48 +42,48 @@
                         </div>
                     </div>
 
-                    <div class="form-row form-row-3">
-                        <div class="form-group">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
-                                <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Diterima (Rp) <span style="color:var(--danger);">*</span></label>
-                                <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:10px; padding:1px 6px; height:20px; line-height:1;" title="Isi otomatis sisa piutang maksimal">
-                                    <i class="fa-solid fa-bolt"></i> Sisa Lunas
-                                </button>
-                            </div>
-                            <div style="position:relative;">
-                                <input type="text" 
-                                       inputmode="numeric"
-                                       name="amount" 
-                                       x-currency="amount" 
-                                       class="form-control format-currency" 
-                                       required 
-                                       placeholder="cth: 5.000.000">
-                            </div>
-                            <template x-if="amount && amount > maxAmount">
-                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Melebihi batas maksimal piutang!
-                                </div>
-                            </template>
-                            <template x-if="amount !== null && amount !== '' && amount <= 0">
-                                <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
-                                    <i class="fa-solid fa-circle-exclamation"></i> Nominal harus > 0!
-                                </div>
-                            </template>
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
+                            <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Diterima (Rp) <span style="color:var(--danger);">*</span></label>
+                            <button type="button" class="btn btn-secondary btn-sm" @click="payFull()" style="font-size:10px; padding:1px 6px; height:20px; line-height:1;" title="Isi otomatis sisa piutang maksimal">
+                                <i class="fa-solid fa-bolt"></i> Sisa Lunas
+                            </button>
                         </div>
+                        <div style="position:relative;">
+                            <input type="text" 
+                                   inputmode="numeric"
+                                   name="amount" 
+                                   x-currency="amount" 
+                                   class="form-control format-currency" 
+                                   required 
+                                   placeholder="cth: 5.000.000">
+                        </div>
+                        <template x-if="amount && amount > maxAmount">
+                            <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                <i class="fa-solid fa-circle-exclamation"></i> Melebihi batas maksimal piutang!
+                            </div>
+                        </template>
+                        <template x-if="amount !== null && amount !== '' && amount <= 0">
+                            <div style="color:var(--danger); font-size:11px; font-weight:600; margin-top:4px;">
+                                <i class="fa-solid fa-circle-exclamation"></i> Nominal harus > 0!
+                            </div>
+                        </template>
+                    </div>
 
+                    <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
                             <select name="method" class="form-control" required>
-                                <option value="transfer" {{ old('method', $payment->method) === 'transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                                <option value="cash" {{ old('method', $payment->method) === 'cash' ? 'selected' : '' }}>Kas / Tunai</option>
-                                <option value="giro" {{ old('method', $payment->method) === 'giro' ? 'selected' : '' }}>Giro</option>
-                                <option value="cek" {{ old('method', $payment->method) === 'cek' ? 'selected' : '' }}>Cek Bank</option>
+                                <option value="transfer" {{ old('method', $payment->method) === 'transfer' ? 'selected' : '' }}>Bank Transfer (BBM)</option>
+                                <option value="cash" {{ old('method', $payment->method) === 'cash' ? 'selected' : '' }}>Kas / Tunai (BKM)</option>
+                                <option value="giro" {{ old('method', $payment->method) === 'giro' ? 'selected' : '' }}>Giro (BBM)</option>
+                                <option value="cek" {{ old('method', $payment->method) === 'cek' ? 'selected' : '' }}>Cek Bank (BBM)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Tanggal Diterima <span style="color:var(--danger);">*</span></label>
-                            <input type="date" name="payment_date" value="{{ old('payment_date', $payment->payment_date ? $payment->payment_date->format('Y-m-d') : date('Y-m-d')) }}" class="form-control" required>
+                            <label class="form-label">No. Referensi / Bukti Transfer</label>
+                            <input type="text" name="reference_number" value="{{ old('reference_number', $payment->reference_number) }}" class="form-control" placeholder="cth: TRF-BCA-123456">
                         </div>
                     </div>
 

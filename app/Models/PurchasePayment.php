@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class PurchasePayment extends Model
 {
     protected $fillable = [
-        'purchase_invoice_id', 'user_id', 'amount', 'status',
+        'payment_number', 'purchase_invoice_id', 'user_id', 'amount', 'status',
         'payment_date', 'method', 'reference_number', 'notes',
     ];
 
@@ -16,6 +17,33 @@ class PurchasePayment extends Model
         'payment_date' => 'date',
         'amount' => 'decimal:2',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($payment) {
+            if (empty($payment->payment_number)) {
+                $payment->payment_number = static::generatePaymentNumber(
+                    $payment->method ?? 'transfer',
+                    $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null
+                );
+            }
+        });
+    }
+
+    public static function generatePaymentNumber(string $method = 'transfer', ?string $date = null): string
+    {
+        $prefix = ($method === 'cash') ? 'BKK' : 'BBK';
+        $dateFormatted = $date ? Carbon::parse($date)->format('d/m/Y') : date('d/m/Y');
+        $datePrefix = $prefix . '-' . $dateFormatted . '-';
+
+        $last = static::where('payment_number', 'like', $datePrefix . '%')
+            ->orderByDesc('id')
+            ->value('payment_number');
+
+        $seq = $last ? ((int) substr($last, strlen($datePrefix)) + 1) : 1;
+
+        return $datePrefix . str_pad($seq, 4, '0', STR_PAD_LEFT);
+    }
 
     public function isDraft(): bool
     {
@@ -44,7 +72,7 @@ class PurchasePayment extends Model
 
     public function getVoucherNumberAttribute(): string
     {
-        return $this->voucher_type . '-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
+        return $this->payment_number ?: ($this->voucher_type . '-' . str_pad($this->id, 5, '0', STR_PAD_LEFT));
     }
 
     public function getVoucherTitleAttribute(): string

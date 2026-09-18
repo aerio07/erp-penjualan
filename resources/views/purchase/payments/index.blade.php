@@ -47,9 +47,10 @@
     <x-data-table :paginator="$payments">
         <x-slot:head>
             <tr>
+                <x-sortable-header column="payment_number" title="No. Pembayaran" :isDefault="true" />
                 <th>No. Invoice</th>
                 <th>Supplier</th>
-                <x-sortable-header column="payment_date" title="Tgl Bayar" :isDefault="true" />
+                <x-sortable-header column="payment_date" title="Tgl Bayar" />
                 <x-sortable-header column="method" title="Metode" />
                 <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />
                 <x-sortable-header column="status" title="Status" align="center" />
@@ -61,8 +62,13 @@
         @forelse($payments as $p)
         <tr>
             <td>
+                <a href="{{ route('purchase.payments.show', $p) }}" style="color:var(--primary); font-weight:700; text-decoration:none;">
+                    {{ $p->payment_number ?? $p->voucher_number }}
+                </a>
+            </td>
+            <td>
                 @if($p->purchaseInvoice)
-                <a href="{{ route('purchase.invoices.show', $p->purchaseInvoice) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
+                <a href="{{ route('purchase.invoices.show', $p->purchaseInvoice) }}" style="color:var(--text-primary); font-weight:600; text-decoration:none;">
                     {{ $p->purchaseInvoice->invoice_number }}
                 </a>
                 @else
@@ -110,7 +116,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-money-check" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada riwayat pembayaran hutang yang sesuai filter
             </td>

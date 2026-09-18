@@ -46,6 +46,7 @@
     <x-data-table :paginator="$payments">
         <x-slot:head>
             <tr>
+                <x-sortable-header column="payment_number" title="No. Pembayaran" />
                 <th>No. Invoice</th>
                 <th>Customer</th>
                 <x-sortable-header column="payment_date" title="Tgl Bayar" :isDefault="true" />
@@ -59,6 +60,11 @@
 
         @forelse($payments as $p)
         <tr>
+            <td>
+                <a href="{{ route('sales.payments.show', $p) }}" style="color:var(--primary); font-weight:700; text-decoration:none; font-family: 'Inter', monospace;">
+                    {{ $p->voucher_number }}
+                </a>
+            </td>
             <td>
                 @if($p->salesInvoice)
                 <a href="{{ route('sales.invoices.show', $p->salesInvoice) }}" style="color:var(--primary); font-weight:600; text-decoration:none;">
@@ -106,7 +112,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-hand-holding-dollar" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada riwayat pembayaran piutang yang sesuai filter
             </td>

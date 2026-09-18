@@ -25,11 +25,11 @@ class SalesPaymentController extends Controller
     {
         $query = SalesPayment::with(['salesInvoice.salesOrder.customer', 'user']);
 
-        $query = $this->applySearch($query, $request, ['reference_number', 'salesInvoice.invoice_number', 'salesInvoice.salesOrder.customer.name', 'notes']);
+        $query = $this->applySearch($query, $request, ['payment_number', 'reference_number', 'salesInvoice.invoice_number', 'salesInvoice.salesOrder.customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'method');
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyDateRange($query, $request, 'payment_date');
-        $query = $this->applySort($query, $request, ['payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
+        $query = $this->applySort($query, $request, ['payment_number', 'payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $payments = $query->paginate($perPage)->withQueryString();
@@ -72,7 +72,10 @@ class SalesPaymentController extends Controller
                 return back()->with('error', "Jumlah penerimaan (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
             }
 
+            $paymentNumber = SalesPayment::generatePaymentNumber($request->method, $request->payment_date);
+
             SalesPayment::create([
+                'payment_number'   => $paymentNumber,
                 'sales_invoice_id' => $invoice->id,
                 'user_id'          => Auth::id(),
                 'amount'           => $request->amount,

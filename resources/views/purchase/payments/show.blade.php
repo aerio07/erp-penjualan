@@ -80,10 +80,22 @@
             <x-status-badge :status="$payment->status" />
         </div>
         <div class="card-body">
-            <div class="form-row form-row-3" style="margin-bottom:16px;">
+            <div class="form-row form-row-4" style="margin-bottom:16px;">
+                <div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">No. Pembayaran</div>
+                    <div style="font-weight:700; font-size:14.5px; color:var(--primary);">
+                        {{ $payment->payment_number ?? $payment->voucher_number }}
+                    </div>
+                    @if($payment->reference_number)
+                        <div style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">
+                            Ref: {{ $payment->reference_number }}
+                        </div>
+                    @endif
+                </div>
+
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Supplier</div>
-                    <div style="font-weight:600; font-size:14.5px; color:var(--text-primary);">
+                    <div style="font-weight:600; font-size:14px; color:var(--text-primary);">
                         {{ $payment->purchaseInvoice->purchaseOrder->supplier->name ?? '-' }}
                     </div>
                     @if($payment->purchaseInvoice->purchaseOrder->supplier?->phone)
@@ -97,7 +109,7 @@
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Metode Pembayaran</div>
                     <div>
                         <span class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:700;">
-                            <i class="fa-solid fa-credit-card" style="margin-right:4px;"></i> {{ strtoupper($payment->method) }}
+                            <i class="fa-solid fa-credit-card" style="margin-right:4px;"></i> {{ strtoupper($payment->method) }} ({{ $payment->voucher_type }})
                         </span>
                     </div>
                 </div>

@@ -306,4 +306,36 @@ class PurchasePaymentTest extends TestCase
         $invoice->refresh();
         $this->assertEquals('unpaid', $invoice->status);
     }
+
+    public function test_auto_generates_payment_number_bbk_for_bank_and_bkk_for_cash(): void
+    {
+        $date = now()->format('d/m/Y');
+
+        // 1. Bank transfer payment -> BBK
+        $invoice1 = $this->createUnpaidInvoice(500000);
+        $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+            'purchase_invoice_id' => $invoice1->id,
+            'amount'              => 200000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'transfer',
+        ]);
+        $payment1 = PurchasePayment::where('purchase_invoice_id', $invoice1->id)->first();
+        $this->assertNotNull($payment1->payment_number);
+        $this->assertStringStartsWith("BBK-{$date}-", $payment1->payment_number);
+        $this->assertEquals($payment1->payment_number, $payment1->voucher_number);
+
+        // 2. Cash payment -> BKK
+        $invoice2 = $this->createUnpaidInvoice(300000);
+        $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+            'purchase_invoice_id' => $invoice2->id,
+            'amount'              => 100000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'cash',
+        ]);
+        $payment2 = PurchasePayment::where('purchase_invoice_id', $invoice2->id)->first();
+        $this->assertNotNull($payment2->payment_number);
+        $this->assertStringStartsWith("BKK-{$date}-", $payment2->payment_number);
+        $this->assertEquals($payment2->payment_number, $payment2->voucher_number);
+    }
 }
+

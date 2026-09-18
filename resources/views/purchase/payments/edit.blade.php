@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', 'Edit Pembayaran Hutang - ' . ($payment->reference_number ?: 'Ref #' . $payment->id))
+@section('title', 'Edit Pembayaran Hutang - ' . ($payment->payment_number ?? $payment->voucher_number))
 @section('page-title', 'Edit Pembayaran Hutang Supplier')
 
 @section('content')
 <div class="animate-in" x-data="paymentEditForm()">
     <x-page-header 
-        :title="'Edit Pembayaran Hutang: ' . ($payment->reference_number ?: 'Ref #' . $payment->id)" 
+        :title="'Edit Pembayaran Hutang #' . ($payment->payment_number ?? $payment->voucher_number)" 
         subtitle="Perbarui nominal atau data transaksi pembayaran hutang supplier"
         :back-url="route('purchase.payments.index')"
     />
@@ -18,6 +18,17 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Form Edit Pembayaran</h3></div>
                 <div class="card-body">
+                    <div class="form-row form-row-2" style="margin-bottom:14px;">
+                        <div class="form-group">
+                            <label class="form-label">No. Pembayaran</label>
+                            <input type="text" class="form-control" value="{{ $payment->payment_number ?? $payment->voucher_number }}" readonly style="background:var(--bg-muted, #f1f5f9); color:var(--text-primary); font-weight:700;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tanggal Bayar <span style="color:var(--danger);">*</span></label>
+                            <input type="date" name="payment_date" value="{{ old('payment_date', $payment->payment_date ? $payment->payment_date->format('Y-m-d') : date('Y-m-d')) }}" class="form-control" required>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">Invoice Pembelian Terkait</label>
                         <div style="padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
@@ -31,7 +42,7 @@
                         </div>
                     </div>
 
-                    <div class="form-row form-row-3">
+                    <div class="form-row form-row-2">
                         <div class="form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
                                 <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
@@ -63,17 +74,17 @@
                         <div class="form-group">
                             <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
                             <select name="method" class="form-control" required>
-                                <option value="transfer" {{ old('method', $payment->method) === 'transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                                <option value="cash" {{ old('method', $payment->method) === 'cash' ? 'selected' : '' }}>Kas / Tunai</option>
-                                <option value="giro" {{ old('method', $payment->method) === 'giro' ? 'selected' : '' }}>Giro</option>
-                                <option value="cek" {{ old('method', $payment->method) === 'cek' ? 'selected' : '' }}>Cek Bank</option>
+                                <option value="transfer" {{ old('method', $payment->method) === 'transfer' ? 'selected' : '' }}>Bank Transfer (BBK)</option>
+                                <option value="cash" {{ old('method', $payment->method) === 'cash' ? 'selected' : '' }}>Kas / Tunai (BKK)</option>
+                                <option value="giro" {{ old('method', $payment->method) === 'giro' ? 'selected' : '' }}>Giro (BBK)</option>
+                                <option value="cek" {{ old('method', $payment->method) === 'cek' ? 'selected' : '' }}>Cek Bank (BBK)</option>
                             </select>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Tanggal Bayar <span style="color:var(--danger);">*</span></label>
-                            <input type="date" name="payment_date" value="{{ old('payment_date', $payment->payment_date ? $payment->payment_date->format('Y-m-d') : date('Y-m-d')) }}" class="form-control" required>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">No. Referensi / Bukti Transfer</label>
+                        <input type="text" name="reference_number" value="{{ old('reference_number', $payment->reference_number) }}" class="form-control" placeholder="cth: TRF-BCA-123456">
                     </div>
 
                     <div class="form-group">

@@ -25,11 +25,11 @@ class PurchasePaymentController extends Controller
     {
         $query = PurchasePayment::with(['purchaseInvoice.purchaseOrder.supplier', 'user']);
 
-        $query = $this->applySearch($query, $request, ['purchaseInvoice.invoice_number', 'purchaseInvoice.purchaseOrder.supplier.name', 'notes']);
+        $query = $this->applySearch($query, $request, ['payment_number', 'purchaseInvoice.invoice_number', 'purchaseInvoice.purchaseOrder.supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'method');
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyDateRange($query, $request, 'payment_date');
-        $query = $this->applySort($query, $request, ['payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
+        $query = $this->applySort($query, $request, ['payment_number', 'payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $payments = $query->paginate($perPage)->withQueryString();
@@ -43,9 +43,7 @@ class PurchasePaymentController extends Controller
         $unpaidInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->whereIn('status', ['unpaid', 'partial'])
             ->orderByDesc('id')
-            ->get()
-            ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
-            ->values();
+            ->get();
 
         return view('purchase.payments.create', compact('unpaidInvoices', 'selectedInvoiceId'));
     }
@@ -59,9 +57,12 @@ class PurchasePaymentController extends Controller
             'method'              => 'required|in:cash,transfer,giro,cek',
             'reference_number'    => 'nullable|string',
             'notes'               => 'nullable|string',
+            'action'              => 'nullable|in:draft,post',
         ]);
 
-        return DB::transaction(function () use ($request) {
+        $action = $request->input('action', 'draft');
+
+        return DB::transaction(function () use ($request, $action) {
             $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->purchase_invoice_id);
 
             if ($invoice->status === 'draft') {
@@ -72,16 +73,32 @@ class PurchasePaymentController extends Controller
                 return back()->with('error', "Jumlah pembayaran (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa hutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
             }
 
-            PurchasePayment::create([
+            $paymentNumber = PurchasePayment::generatePaymentNumber($request->method, $request->payment_date);
+
+            $payment = PurchasePayment::create([
+                'payment_number'      => $paymentNumber,
                 'purchase_invoice_id' => $invoice->id,
                 'user_id'             => Auth::id(),
                 'amount'              => $request->amount,
-                'status'              => 'draft',
+                'status'              => ($action === 'post') ? 'posted' : 'draft',
                 'payment_date'        => $request->payment_date,
                 'method'              => $request->method,
                 'reference_number'    => $request->reference_number,
                 'notes'               => $request->notes,
             ]);
+
+            if ($action === 'post') {
+                $invoice->unsetRelation('payments');
+                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
+                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+                $invoice->update(['status' => $status]);
+
+                $entry = $this->journalService->createFromPurchasePayment($payment);
+                $this->journalService->postEntry($entry);
+
+                return redirect()->route('purchase.payments.index')
+                    ->with('success', 'Pembayaran Hutang berhasil dicatat dan diposting ke Jurnal Akuntansi.');
+            }
 
             return redirect()->route('purchase.payments.index')
                 ->with('success', 'Draft Pembayaran Hutang berhasil disimpan. Silakan buka detail pembayaran untuk memposting.');

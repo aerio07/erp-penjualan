@@ -17,6 +17,18 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Form Pembayaran</h3></div>
                 <div class="card-body">
+                    <div class="form-row form-row-2" style="margin-bottom:14px;">
+                        <div class="form-group">
+                            <label class="form-label">No. Pembayaran</label>
+                            <input type="text" class="form-control" value="[ Otomatis oleh Sistem (BBK / BKK) ]" readonly style="background:var(--bg-muted, #f1f5f9); color:var(--text-secondary); font-weight:600;">
+                            <small style="color:var(--text-secondary); font-size:11px;">Nomor bukti otomatis dihasilkan sistem saat disimpan (Bank: BBK, Kas: BKK).</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tanggal Bayar <span style="color:var(--danger);">*</span></label>
+                            <input type="date" name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" class="form-control" required>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label">Invoice Pembelian <span style="color:var(--danger);">*</span></label>
                         <x-searchable-select 
@@ -29,7 +41,7 @@
                         />
                     </div>
 
-                    <div class="form-row form-row-3">
+                    <div class="form-row form-row-2">
                         <div class="form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
                                 <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
@@ -58,21 +70,22 @@
                                     <i class="fa-solid fa-circle-exclamation"></i> Harus > 0!
                                 </div>
                             </template>
-                        </div>
+                    </div>
 
+                    <div class="form-row form-row-2">
                         <div class="form-group">
                             <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
                             <select name="method" class="form-control" required>
-                                <option value="transfer">Bank Transfer</option>
-                                <option value="cash">Kas / Tunai</option>
-                                <option value="giro">Giro</option>
-                                <option value="cek">Cek Bank</option>
+                                <option value="transfer">Bank Transfer (BBK)</option>
+                                <option value="cash">Kas / Tunai (BKK)</option>
+                                <option value="giro">Giro (BBK)</option>
+                                <option value="cek">Cek Bank (BBK)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Tanggal Bayar <span style="color:var(--danger);">*</span></label>
-                            <input type="date" name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" class="form-control" required>
+                            <label class="form-label">No. Referensi / Bukti Transfer</label>
+                            <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="cth: TRF-BCA-123456">
                         </div>
                     </div>
 
