@@ -9,8 +9,8 @@
         :subtitle="'Ref PO: ' . ($invoice->purchaseOrder->po_number ?? '-') . ($invoice->goodsReceipt ? ' · Ref LPB: ' . $invoice->goodsReceipt->receipt_number : '')"
     >
         <x-slot:actions>
-            <a href="{{ route('purchase.invoices.show', $invoice) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Detail
+            <a href="{{ route('purchase.invoices.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -194,7 +194,7 @@
         </div>
 
         <x-form-actions 
-            :cancel-url="route('purchase.invoices.show', $invoice)" 
+            :cancel-url="route('purchase.invoices.index')" 
             submit-label="Simpan Perubahan Draft" 
         />
     </form>

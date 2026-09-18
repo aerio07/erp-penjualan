@@ -7,7 +7,7 @@
     <x-page-header 
         title="Edit Purchase Request: {{ $purchase_request->pr_number }}" 
         subtitle="Perbarui data pengajuan pengadaan barang"
-        :back-url="route('purchase.requests.show', $purchase_request)"
+        :back-url="route('purchase.requests.index')"
     />
 
     @if($purchase_request->status === 'rejected' && $purchase_request->rejection_reason)
@@ -231,7 +231,7 @@
 
         {{-- Form Actions --}}
         <x-form-actions 
-            :back-url="route('purchase.requests.show', $purchase_request)" 
+            :back-url="route('purchase.requests.index')" 
             submit-label="Simpan Perubahan" 
         />
     </form>

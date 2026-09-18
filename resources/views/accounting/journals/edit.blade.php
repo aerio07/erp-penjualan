@@ -7,7 +7,7 @@
     <x-page-header 
         :title="'Edit Jurnal: ' . $journal->entry_number" 
         subtitle="Edit rincian akun dan nominal jurnal umum draft"
-        :back-url="route('accounting.journals.show', $journal)"
+        :back-url="route('accounting.journals.index')"
     />
 
     @if(session('error'))
@@ -237,7 +237,7 @@
         </div>
 
         <x-form-actions 
-            :back-url="route('accounting.journals.show', $journal)" 
+            :back-url="route('accounting.journals.index')" 
             submit-label="Simpan Perubahan Jurnal" 
         />
     </form>

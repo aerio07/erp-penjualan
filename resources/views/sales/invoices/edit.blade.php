@@ -9,8 +9,8 @@
         :subtitle="'Ref SO: ' . ($invoice->salesOrder->so_number ?? '-') . ($invoice->delivery ? ' · Ref SJ: ' . $invoice->delivery->delivery_number : '')"
     >
         <x-slot:actions>
-            <a href="{{ route('sales.invoices.show', $invoice) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Kembali ke Detail
+            <a href="{{ route('sales.invoices.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -199,7 +199,7 @@
         </div>
 
         <x-form-actions 
-            :cancel-url="route('sales.invoices.show', $invoice)" 
+            :cancel-url="route('sales.invoices.index')" 
             submit-label="Simpan Perubahan Draft" 
         />
     </form>

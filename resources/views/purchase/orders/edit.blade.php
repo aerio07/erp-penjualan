@@ -25,7 +25,7 @@
     <x-page-header 
         :title="'Edit Purchase Order: ' . $order->po_number" 
         subtitle="Perbarui rincian Purchase Order yang berstatus Draft"
-        :back-url="route('purchase.orders.show', $order)"
+        :back-url="route('purchase.orders.index')"
     >
         <x-slot:action>
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary">
@@ -292,7 +292,7 @@
         </div>
 
         <x-form-actions 
-            :back-url="route('purchase.orders.show', $order)" 
+            :back-url="route('purchase.orders.index')" 
             submit-label="Perbarui Purchase Order" 
         />
     </form>

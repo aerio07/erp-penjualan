@@ -7,7 +7,7 @@
     <x-page-header 
         :title="'Edit Draft Transfer #' . $transfer->transfer_number" 
         subtitle="Perbarui rincian pemindahan persediaan antar gudang (status masih Draft)."
-        :back-url="route('inventory.transfers.show', $transfer)"
+        :back-url="route('inventory.transfers.index')"
     />
 
     @if($errors->any())
@@ -230,7 +230,7 @@
         </div>
 
         <x-form-actions 
-            :back-url="route('inventory.transfers.show', $transfer)" 
+            :back-url="route('inventory.transfers.index')" 
             submit-label="Simpan Perubahan Transfer" 
         />
     </form>

@@ -7,7 +7,7 @@
     <x-page-header 
         :title="'Edit Pembayaran Hutang: ' . ($payment->reference_number ?: 'Ref #' . $payment->id)" 
         subtitle="Perbarui nominal atau data transaksi pembayaran hutang supplier"
-        :back-url="route('purchase.payments.show', $payment)"
+        :back-url="route('purchase.payments.index')"
     />
 
     <form method="POST" action="{{ route('purchase.payments.update', $payment) }}" @submit="validateForm($event)">
@@ -152,7 +152,7 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-            <a href="{{ route('purchase.payments.show', $payment) }}" class="btn btn-secondary">
+            <a href="{{ route('purchase.payments.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
             <div>
