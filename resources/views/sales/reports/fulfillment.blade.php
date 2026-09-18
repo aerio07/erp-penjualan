@@ -155,7 +155,7 @@
                                 {{ $order->so_number }}
                             </div>
                             <div style="font-size: 11.5px; color: var(--text-secondary);">
-                                {{ $order->order_date ? $order->order_date->format('m/d/Y') : '-' }}
+                                {{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}
                             </div>
                         </td>
 
@@ -317,7 +317,7 @@
                                                         {{ $del->delivery_number }}
                                                     </a>
                                                 </td>
-                                                <td>{{ $del->delivery_date->format('m/d/Y') }}</td>
+                                                <td>{{ $del->delivery_date->format('d/m/Y') }}</td>
                                                 <td style="text-align: center;">{{ $del->items->count() }} item</td>
                                                 <td style="text-align: center;">
                                                     @if($del->is_invoiced)

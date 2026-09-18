@@ -73,7 +73,7 @@
                     <i class="fa-solid fa-warehouse"></i> {{ $receipt->warehouse_names }}
                 </span>
             </td>
-            <td>{{ $receipt->received_date ? $receipt->received_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $receipt->received_date ? $receipt->received_date->format('d/m/Y') : '-' }}</td>
             <td>
                 @if($receipt->is_invoiced && $receipt->purchaseInvoice)
                     <a href="{{ route('purchase.invoices.show', $receipt->purchaseInvoice) }}" class="badge badge-info" style="text-decoration:none;" title="Lihat Faktur Pembelian">

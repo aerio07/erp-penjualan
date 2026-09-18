@@ -72,11 +72,11 @@
             <td style="font-weight:500;">
                 <span style="color:var(--success);"><i class="fa-solid fa-warehouse"></i> {{ $trf->toWarehouse->name ?? '-' }}</span>
             </td>
-            <td>{{ $trf->transfer_date ? $trf->transfer_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $trf->transfer_date ? $trf->transfer_date->format('d/m/Y') : '-' }}</td>
             <td>
                 @if($trf->shippedBy)
                     <div>{{ $trf->shippedBy->name }}</div>
-                    <div style="font-size:11px; color:var(--text-secondary);">{{ $trf->shipped_at ? $trf->shipped_at->format('m/d/Y H:i') : '-' }}</div>
+                    <div style="font-size:11px; color:var(--text-secondary);">{{ $trf->shipped_at ? $trf->shipped_at->format('d/m/Y H:i') : '-' }}</div>
                 @else
                     <span style="color:var(--text-secondary);">-</span>
                 @endif
@@ -84,7 +84,7 @@
             <td>
                 @if($trf->receivedBy)
                     <div>{{ $trf->receivedBy->name }}</div>
-                    <div style="font-size:11px; color:var(--text-secondary);">{{ $trf->received_at ? $trf->received_at->format('m/d/Y H:i') : '-' }}</div>
+                    <div style="font-size:11px; color:var(--text-secondary);">{{ $trf->received_at ? $trf->received_at->format('d/m/Y H:i') : '-' }}</div>
                 @else
                     <span style="color:var(--text-secondary);">-</span>
                 @endif

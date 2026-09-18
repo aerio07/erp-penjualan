@@ -81,7 +81,7 @@
                                 {{ ucfirst($user->role) }}
                             </span>
                         </td>
-                        <td style="font-size:13px; color:var(--text-secondary);">{{ $user->created_at->format('m/d/Y') }}</td>
+                        <td style="font-size:13px; color:var(--text-secondary);">{{ $user->created_at->format('d/m/Y') }}</td>
                         <td style="text-align:center;">
                             @if($user->email_verified_at)
                             <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>

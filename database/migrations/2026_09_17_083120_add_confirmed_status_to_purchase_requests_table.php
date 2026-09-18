@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE purchase_requests MODIFY COLUMN status ENUM('draft', 'waiting_approval', 'approved', 'rejected', 'confirmed', 'ordered', 'cancelled') NOT NULL DEFAULT 'draft'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE purchase_requests MODIFY COLUMN status ENUM('draft', 'waiting_approval', 'approved', 'rejected', 'confirmed', 'ordered', 'cancelled') NOT NULL DEFAULT 'draft'");
+        }
         \Illuminate\Support\Facades\DB::table('purchase_requests')->where('status', 'ordered')->update(['status' => 'confirmed']);
     }
 
@@ -21,6 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         \Illuminate\Support\Facades\DB::table('purchase_requests')->where('status', 'confirmed')->update(['status' => 'ordered']);
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE purchase_requests MODIFY COLUMN status ENUM('draft', 'waiting_approval', 'approved', 'rejected', 'ordered', 'cancelled') NOT NULL DEFAULT 'draft'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE purchase_requests MODIFY COLUMN status ENUM('draft', 'waiting_approval', 'approved', 'rejected', 'ordered', 'cancelled') NOT NULL DEFAULT 'draft'");
+        }
     }
 };

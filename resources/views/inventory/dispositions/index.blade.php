@@ -62,7 +62,7 @@
             <td style="font-weight:700; color:var(--primary);">
                 {{ $disp->disposition_number }}
             </td>
-            <td>{{ $disp->disposed_at ? $disp->disposed_at->format('m/d/Y') : '-' }}</td>
+            <td>{{ $disp->disposed_at ? $disp->disposed_at->format('d/m/Y') : '-' }}</td>
             <td>
                 <div style="font-weight:600;">{{ $disp->product->name ?? '-' }}</div>
                 <div style="font-size:11px; color:var(--text-secondary);">SKU: {{ $disp->product->sku ?? '-' }}</div>

@@ -117,7 +117,7 @@
                 <div class="card-body">
                     <div style="font-size: 13px; color: #64748b; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 16px; font-family: 'Inter', sans-serif;">
                         <span>No. Entri: <strong style="font-family: 'Inter', monospace; color: #0e1b35;">{{ $fixedAsset->journalEntry->entry_number }}</strong></span>
-                        <span>Tanggal: <strong style="color: #0e1b35;">{{ $fixedAsset->journalEntry->entry_date->format('m/d/Y') }}</strong></span>
+                        <span>Tanggal: <strong style="color: #0e1b35;">{{ $fixedAsset->journalEntry->entry_date->format('d/m/Y') }}</strong></span>
                         <span>Status: <span class="badge" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 10px; text-transform: uppercase;">{{ $fixedAsset->journalEntry->status }}</span></span>
                     </div>
 

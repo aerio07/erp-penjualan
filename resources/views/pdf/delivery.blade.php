@@ -29,7 +29,7 @@
                     <tr>
                         <td class="detail-label">Tanggal Pengiriman</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value">{{ $delivery->delivery_date ? $delivery->delivery_date->format('m/d/Y') : '-' }}</td>
+                        <td class="detail-value">{{ $delivery->delivery_date ? $delivery->delivery_date->format('d/m/Y') : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="detail-label">Ref. Sales Order</td>

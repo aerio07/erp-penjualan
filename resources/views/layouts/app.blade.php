@@ -1640,7 +1640,7 @@
             });
         });
 
-        // Universal mm/dd/yyyy Date Input Display & Native Browser Calendar Enhancer
+        // Universal dd/mm/yyyy Date Input Display & Native Browser Calendar Enhancer
         window.initErpNativeDatePickers = function(root = document) {
             root.querySelectorAll('input[type="date"]:not(.erp-date-native-trigger)').forEach(function(rawInput) {
                 if (rawInput._erpDateEnhanced) return;
@@ -1658,12 +1658,12 @@
                 const origClasses = rawInput.className || 'form-control';
                 const origStyle = rawInput.getAttribute('style') || '';
 
-                // Hitung nilai tampilan visual mm/dd/yyyy
+                // Hitung nilai tampilan visual dd/mm/yyyy
                 let displayVal = '';
                 if (origVal && origVal.includes('-')) {
                     const parts = origVal.split('-');
                     if (parts.length === 3) {
-                        displayVal = `${parts[1]}/${parts[2]}/${parts[0]}`;
+                        displayVal = `${parts[2]}/${parts[1]}/${parts[0]}`;
                     }
                 }
 
@@ -1673,11 +1673,11 @@
                 const isFormCtrl = origClasses.includes('form-control');
                 wrap.style.cssText = 'position:relative; display:inline-flex; align-items:center; width:' + (rawInput.style.width || (isFormCtrl ? '100%' : 'auto')) + ';';
 
-                // Input teks yang terlihat dengan format mm/dd/yyyy
+                // Input teks yang terlihat dengan format dd/mm/yyyy
                 const displayInput = document.createElement('input');
                 displayInput.type = 'text';
                 displayInput.className = origClasses;
-                displayInput.placeholder = 'mm/dd/yyyy';
+                displayInput.placeholder = 'dd/mm/yyyy';
                 displayInput.value = displayVal;
                 displayInput.maxLength = 10;
                 displayInput.autocomplete = 'off';
@@ -1751,7 +1751,7 @@
                     if (this.value) {
                         const parts = this.value.split('-');
                         if (parts.length === 3) {
-                            displayInput.value = `${parts[1]}/${parts[2]}/${parts[0]}`;
+                            displayInput.value = `${parts[2]}/${parts[1]}/${parts[0]}`;
                             hiddenInput.value = this.value;
                             displayInput.dispatchEvent(new Event('input', { bubbles: true }));
                             displayInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1764,7 +1764,7 @@
                     displayInput.dispatchEvent(new Event('change', { bubbles: true }));
                 });
 
-                // Sinkronisasi: Saat pengguna mengetik manual ke kotak teks (input mask mm/dd/yyyy)
+                // Sinkronisasi: Saat pengguna mengetik manual ke kotak teks (input mask dd/mm/yyyy)
                 displayInput.addEventListener('input', function() {
                     let v = this.value.replace(/\D/g, '').slice(0, 8);
                     if (v.length >= 5) {
@@ -1775,10 +1775,10 @@
                     this.value = v;
 
                     if (v.length === 10) {
-                        const [m, d, y] = v.split('/');
-                        const month = parseInt(m, 10);
+                        const [d, m, y] = v.split('/');
                         const day = parseInt(d, 10);
-                        if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && y.length === 4) {
+                        const month = parseInt(m, 10);
+                        if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && y.length === 4) {
                             const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
                             hiddenInput.value = iso;
                             nativeTrigger.value = iso;

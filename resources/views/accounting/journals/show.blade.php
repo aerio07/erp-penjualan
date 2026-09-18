@@ -9,7 +9,7 @@
         :back-url="route('accounting.journals.index')"
         :badge-text="ucfirst($journal->status)"
         :badge-class="'badge-' . ($journal->status === 'posted' ? 'posted' : 'draft')"
-        :subtitle="'Tanggal: ' . $journal->entry_date->format('m/d/Y')"
+        :subtitle="'Tanggal: ' . $journal->entry_date->format('d/m/Y')"
     >
         <x-slot:actions>
             @if($journal->status === 'draft')
@@ -47,12 +47,12 @@
                 </div>
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Dibuat Oleh</div>
-                    <div style="font-weight:600;">{{ $journal->creator->name ?? '-' }} ({{ $journal->created_at->format('m/d/Y H:i') }})</div>
+                    <div style="font-weight:600;">{{ $journal->creator->name ?? '-' }} ({{ $journal->created_at->format('d/m/Y H:i') }})</div>
                 </div>
                 @if($journal->posted_at)
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Diposting Oleh</div>
-                    <div style="font-weight:600; color:var(--success);">{{ $journal->poster->name ?? '-' }} ({{ $journal->posted_at->format('m/d/Y H:i') }})</div>
+                    <div style="font-weight:600; color:var(--success);">{{ $journal->poster->name ?? '-' }} ({{ $journal->posted_at->format('d/m/Y H:i') }})</div>
                 </div>
                 @endif
             </div>

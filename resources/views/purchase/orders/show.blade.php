@@ -20,7 +20,7 @@
 
     <x-detail-header 
         :title="$order->po_number" 
-        :subtitle="$order->supplier->name . ' · ' . $order->order_date->format('m/d/Y')"
+        :subtitle="$order->supplier->name . ' · ' . $order->order_date->format('d/m/Y')"
         :status="$order->status"
     >
         <x-slot:actions>
@@ -93,7 +93,7 @@
                 </div>
                 <div style="margin-top:8px; font-size:12.5px; color:#92400e;">
                     <i class="fa-solid fa-clock" style="margin-right:4px;"></i>
-                    Diminta pada {{ $latestApproval->updated_at->format('m/d/Y H:i') }}
+                    Diminta pada {{ $latestApproval->updated_at->format('d/m/Y H:i') }}
                 </div>
             </div>
         </div>
@@ -155,15 +155,15 @@
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Dibuat Oleh</div>
                         <div style="font-weight:600;">{{ $order->user->name }}</div>
-                        <div style="font-size:13px; color:var(--text-secondary);">{{ $order->created_at->format('m/d/Y H:i') }}</div>
+                        <div style="font-size:13px; color:var(--text-secondary);">{{ $order->created_at->format('d/m/Y H:i') }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal PO</div>
-                        <div style="font-weight:600;">{{ $order->order_date->format('m/d/Y') }}</div>
+                        <div style="font-weight:600;">{{ $order->order_date->format('d/m/Y') }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Expected Delivery</div>
-                        <div style="font-weight:600;">{{ $order->expected_date ? $order->expected_date->format('m/d/Y') : '-' }}</div>
+                        <div style="font-weight:600;">{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</div>
                     </div>
                     @if($order->purchaseRequest)
                     <div style="grid-column: span 2;">
@@ -238,7 +238,7 @@
                     @foreach($order->goodsReceipts as $grn)
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
                         <a href="{{ route('purchase.goods-receipts.show', $grn) }}" style="font-size:13px; color:#4c1d95; text-decoration:none; font-weight:500;">
-                            <i class="fa-solid fa-file-lines"></i> {{ $grn->receipt_number }} · {{ $grn->received_date->format('m/d/Y') }}
+                            <i class="fa-solid fa-file-lines"></i> {{ $grn->receipt_number }} · {{ $grn->received_date->format('d/m/Y') }}
                         </a>
                         @if($grn->is_invoiced)
                             <span class="badge badge-done" style="font-size:10px; padding:2px 8px;">Sudah Diinvoice</span>
@@ -339,8 +339,8 @@
                                 <div style="font-size:11px; color:var(--text-secondary);">Inv Sup: {{ $inv->supplier_invoice_number }}</div>
                             @endif
                         </td>
-                        <td>{{ $inv->invoice_date->format('m/d/Y') }}</td>
-                        <td>{{ $inv->due_date->format('m/d/Y') }}</td>
+                        <td>{{ $inv->invoice_date->format('d/m/Y') }}</td>
+                        <td>{{ $inv->due_date->format('d/m/Y') }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
                         <td style="text-align:center;"><span class="badge badge-{{ $inv->status }}">{{ ucfirst($inv->status) }}</span></td>
                     </tr>

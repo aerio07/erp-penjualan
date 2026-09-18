@@ -70,7 +70,7 @@
                 @endif
             </td>
             <td style="font-weight:500;">{{ $p->purchaseInvoice->purchaseOrder->supplier->name ?? '-' }}</td>
-            <td>{{ $p->payment_date ? $p->payment_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $p->payment_date ? $p->payment_date->format('d/m/Y') : '-' }}</td>
             <td>
                 <span class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:600;">
                     {{ strtoupper($p->method) }}

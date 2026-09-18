@@ -46,7 +46,7 @@
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Diterima</div>
-                        <div style="font-weight:600;">{{ $goodsReceipt->received_date ? $goodsReceipt->received_date->format('m/d/Y') : '-' }}</div>
+                        <div style="font-weight:600;">{{ $goodsReceipt->received_date ? $goodsReceipt->received_date->format('d/m/Y') : '-' }}</div>
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Diterima Oleh</div>

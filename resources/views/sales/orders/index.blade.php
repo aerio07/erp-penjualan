@@ -100,7 +100,7 @@
                 </div>
             </td>
             <td>{{ $order->customer->name ?? '-' }}</td>
-            <td>{{ $order->order_date ? $order->order_date->format('m/d/Y') : '-' }}</td>
+            <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
             <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
             <td style="text-align:center;">
                 <x-status-badge :status="$order->status" />

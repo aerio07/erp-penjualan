@@ -4,7 +4,7 @@
     'label' => null,
     'value' => null,
     'required' => false,
-    'placeholder' => 'mm/dd/yyyy',
+    'placeholder' => 'dd/mm/yyyy',
     'min' => null,
     'max' => null,
     'hint' => null,

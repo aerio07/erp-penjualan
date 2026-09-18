@@ -105,7 +105,7 @@
                 <div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Pembayaran</div>
                     <div style="font-weight:600; font-size:14px; color:var(--text-primary);">
-                        {{ $payment->payment_date ? $payment->payment_date->format('m/d/Y') : '-' }}
+                        {{ $payment->payment_date ? $payment->payment_date->format('d/m/Y') : '-' }}
                     </div>
                 </div>
             </div>

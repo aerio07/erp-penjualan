@@ -180,7 +180,7 @@
                 @endif
             </td>
             <td style="font-size: 13px; color: #475569;">
-                {{ $asset->purchase_date ? $asset->purchase_date->format('m/d/Y') : '-' }}
+                {{ $asset->purchase_date ? $asset->purchase_date->format('d/m/Y') : '-' }}
             </td>
             <td style="text-align:right; font-family: 'Inter', monospace; font-weight: 700; color: #0e1b35;">
                 Rp {{ number_format($asset->purchase_cost, 0, ',', '.') }}
