@@ -199,7 +199,7 @@
                         });
                     @endphp
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">Subtotal Item</span>
+                        <span style="color:var(--text-secondary);">Subtotal Item (Sebelum Diskon)</span>
                         <span>Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</span>
                     </div>
                     @if($itemDiscountSum > 0)

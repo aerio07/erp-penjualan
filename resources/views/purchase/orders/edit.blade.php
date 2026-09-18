@@ -104,7 +104,7 @@
                 <div class="card-body">
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
-                            <span style="color:var(--text-secondary);">Subtotal Item</span>
+                            <span style="color:var(--text-secondary);">Subtotal Item (Sebelum Diskon)</span>
                             <span style="font-weight:600;" x-text="'Rp ' + formatNum(grossSubtotal)"></span>
                         </div>
                         <template x-if="totalItemDiscount > 0">
