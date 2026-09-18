@@ -84,7 +84,6 @@
                     <thead>
                         <tr>
                             <th>Produk</th>
-                            <th style="text-align:center; width:120px;">Jenis Barang</th>
                             <th style="text-align:center; width:95px;">Sisa GRN</th>
                             <th style="text-align:center; width:100px; color:#15803d;">Stok Fisik</th>
                             <th style="text-align:center; width:120px; color:#c2410c;">Batas Sisa Hutang</th>
@@ -103,9 +102,6 @@
                                     <input type="hidden" :name="`items[${idx}][goods_receipt_item_id]`" :value="item.id">
                                     <input type="hidden" :name="`items[${idx}][product_id]`" :value="item.product.id">
                                     <input type="hidden" :name="`items[${idx}][source_type]`" :value="item.source_type">
-                                </td>
-                                <td style="text-align:center;">
-                                    <span class="badge" :class="item.source_type === 'accepted' ? 'badge-done' : 'badge-cancelled'" x-text="item.source_label"></span>
                                 </td>
                                 <td style="text-align:center; font-weight:600;" x-text="item.qty_grn_available + ' ' + item.product.unit"></td>
                                 <td style="text-align:center; font-weight:600; color:#15803d;" x-text="item.source_type === 'accepted' ? item.physical_available + ' ' + item.product.unit : '-'"></td>
