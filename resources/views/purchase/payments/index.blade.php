@@ -29,13 +29,13 @@
     </div>
     @endif
 
-    <x-list-filter-bar :action="route('purchase.payments.index')" placeholder="Cari Ref / Cek, No. Invoice, Supplier..." :showDateFilter="true">
-        <select name="status" class="form-control filter-select">
+    <x-list-filter-bar :action="route('purchase.payments.index')" placeholder="Cari No. Invoice, Supplier, Catatan..." :showDateFilter="true">
+        <select name="status" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">Semua Status</option>
             <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="posted" {{ request('status') === 'posted' ? 'selected' : '' }}>Posted</option>
         </select>
-        <select name="method" class="form-control filter-select">
+        <select name="method" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">Semua Metode</option>
             <option value="transfer" {{ request('method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
             <option value="cash" {{ request('method') === 'cash' ? 'selected' : '' }}>Tunai / Cash</option>
@@ -51,7 +51,6 @@
                 <th>Supplier</th>
                 <x-sortable-header column="payment_date" title="Tgl Bayar" :isDefault="true" />
                 <x-sortable-header column="method" title="Metode" />
-                <th>No. Ref / Cek</th>
                 <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />
                 <x-sortable-header column="status" title="Status" align="center" />
                 <th>Dicatat Oleh</th>
@@ -70,34 +69,30 @@
                 -
                 @endif
             </td>
-            <td>{{ $p->purchaseInvoice->purchaseOrder->supplier->name ?? '-' }}</td>
+            <td style="font-weight:500;">{{ $p->purchaseInvoice->purchaseOrder->supplier->name ?? '-' }}</td>
             <td>{{ $p->payment_date ? $p->payment_date->format('m/d/Y') : '-' }}</td>
-            <td><span class="badge badge-confirmed">{{ strtoupper($p->method) }}</span></td>
-            <td>{{ $p->reference_number ?? '-' }}</td>
+            <td>
+                <span class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:600;">
+                    {{ strtoupper($p->method) }}
+                </span>
+            </td>
             <td style="text-align:right; font-weight:600; color:var(--success); font-family: 'Inter', monospace;">
                 Rp {{ number_format($p->amount, 0, ',', '.') }}
             </td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $p->status === 'posted' ? 'posted' : 'draft' }}">
-                    {{ ucfirst($p->status) }}
-                </span>
+                <x-status-badge :status="$p->status" />
             </td>
             <td>{{ $p->user->name ?? '-' }}</td>
             <td class="col-actions text-center">
-                <div style="display:flex; gap:4px; justify-content:center;">
+                <div style="display:flex; gap:4px; justify-content:center; align-items:center;">
                     <a href="{{ route('purchase.payments.show', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
+
                     @if($p->status === 'draft')
-                    <a href="{{ route('purchase.payments.edit', $p) }}" class="btn btn-warning btn-sm btn-icon" title="Edit Draft">
+                    <a href="{{ route('purchase.payments.edit', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit Draft" style="color:var(--primary);">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
-                    <form method="POST" action="{{ route('purchase.payments.post', $p) }}" style="display:inline;" onsubmit="return confirm('Posting pembayaran ini?')">
-                        @csrf
-                        <button type="submit" class="btn btn-success btn-sm btn-icon" title="Posting Pembayaran">
-                            <i class="fa-solid fa-check"></i>
-                        </button>
-                    </form>
                     <form method="POST" action="{{ route('purchase.payments.destroy', $p) }}" style="display:inline;" onsubmit="return confirm('Hapus draft pembayaran ini?')">
                         @csrf
                         @method('DELETE')
@@ -105,13 +100,17 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </form>
+                    @elseif($p->status === 'posted')
+                    <a href="{{ route('pdf.purchase-payment', $p) }}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Cetak Bukti Pembayaran (PDF)">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </a>
                     @endif
                 </div>
             </td>
         </tr>
         @empty
         <tr>
-            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-money-check" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada riwayat pembayaran hutang yang sesuai filter
             </td>

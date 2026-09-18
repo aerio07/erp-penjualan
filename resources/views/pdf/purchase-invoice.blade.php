@@ -136,14 +136,14 @@
             @endif
             @if($invoice->total_paid > 0)
             <tr>
-                <td class="tot-label" style="color: #059669;">Sudah Dibayar:</td>
-                <td class="tot-value" style="color: #059669;">Rp {{ number_format($invoice->total_paid, 0, ',', '.') }}</td>
+                <td class="tot-label" style="color: #111111;">Sudah Dibayar:</td>
+                <td class="tot-value" style="color: #111111;">Rp {{ number_format($invoice->total_paid, 0, ',', '.') }}</td>
             </tr>
             @endif
             @if($invoice->outstanding_amount != $invoice->effective_total_amount)
             <tr style="font-weight: 700;">
-                <td class="tot-label" style="color: #dc2626;">Sisa Hutang:</td>
-                <td class="tot-value" style="color: #dc2626;">Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }}</td>
+                <td class="tot-label" style="color: #111111;">Sisa Hutang:</td>
+                <td class="tot-value" style="color: #111111;">Rp {{ number_format($invoice->outstanding_amount, 0, ',', '.') }}</td>
             </tr>
             @endif
         </table>

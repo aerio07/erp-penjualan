@@ -13,10 +13,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 use App\Traits\HasListFilters;
+use App\Traits\ExportsPdfDocument;
 
 class PurchasePaymentController extends Controller
 {
-    use HasListFilters;
+    use HasListFilters, ExportsPdfDocument;
 
     public function __construct(private JournalService $journalService) {}
 
@@ -24,7 +25,7 @@ class PurchasePaymentController extends Controller
     {
         $query = PurchasePayment::with(['purchaseInvoice.purchaseOrder.supplier', 'user']);
 
-        $query = $this->applySearch($query, $request, ['reference_number', 'purchaseInvoice.invoice_number', 'purchaseInvoice.purchaseOrder.supplier.name', 'notes']);
+        $query = $this->applySearch($query, $request, ['purchaseInvoice.invoice_number', 'purchaseInvoice.purchaseOrder.supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'method');
         $query = $this->applyFilter($query, $request, 'status');
         $query = $this->applyDateRange($query, $request, 'payment_date');
@@ -58,12 +59,9 @@ class PurchasePaymentController extends Controller
             'method'              => 'required|in:cash,transfer,giro,cek',
             'reference_number'    => 'nullable|string',
             'notes'               => 'nullable|string',
-            'action'              => 'nullable|in:draft,post',
         ]);
 
-        $action = $request->input('action', 'post');
-
-        return DB::transaction(function () use ($request, $action) {
+        return DB::transaction(function () use ($request) {
             $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->purchase_invoice_id);
 
             if ($invoice->status === 'draft') {
@@ -74,34 +72,19 @@ class PurchasePaymentController extends Controller
                 return back()->with('error', "Jumlah pembayaran (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa hutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
             }
 
-            $payment = PurchasePayment::create([
+            PurchasePayment::create([
                 'purchase_invoice_id' => $invoice->id,
                 'user_id'             => Auth::id(),
                 'amount'              => $request->amount,
-                'status'              => ($action === 'post') ? 'posted' : 'draft',
+                'status'              => 'draft',
                 'payment_date'        => $request->payment_date,
                 'method'              => $request->method,
                 'reference_number'    => $request->reference_number,
                 'notes'               => $request->notes,
             ]);
 
-            if ($action === 'post') {
-                // Update status invoice berdasarkan total pembayaran terposting
-                $invoice->unsetRelation('payments');
-                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
-                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
-                $invoice->update(['status' => $status]);
-
-                // Jurnal Otomatis (Hutang Usaha -> Kas/Bank)
-                $entry = $this->journalService->createFromPurchasePayment($payment);
-                $this->journalService->postEntry($entry);
-
-                return redirect()->route('purchase.payments.index')
-                    ->with('success', 'Pembayaran Hutang berhasil dicatat dan diposting ke Jurnal Akuntansi.');
-            }
-
             return redirect()->route('purchase.payments.index')
-                ->with('success', 'Draft Pembayaran Hutang berhasil disimpan. Silakan posting pembayaran jika sudah final.');
+                ->with('success', 'Draft Pembayaran Hutang berhasil disimpan. Silakan buka detail pembayaran untuk memposting.');
         });
     }
 
@@ -135,12 +118,9 @@ class PurchasePaymentController extends Controller
             'method'           => 'required|in:cash,transfer,giro,cek',
             'reference_number' => 'nullable|string',
             'notes'            => 'nullable|string',
-            'action'           => 'nullable|in:update,post',
         ]);
 
-        $action = $request->input('action', 'update');
-
-        return DB::transaction(function () use ($request, $payment, $action) {
+        return DB::transaction(function () use ($request, $payment) {
             $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($payment->purchase_invoice_id);
 
             $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
@@ -152,27 +132,11 @@ class PurchasePaymentController extends Controller
 
             $payment->update([
                 'amount'           => $request->amount,
-                'status'           => ($action === 'post') ? 'posted' : 'draft',
                 'payment_date'     => $request->payment_date,
                 'method'           => $request->method,
                 'reference_number' => $request->reference_number,
                 'notes'            => $request->notes,
             ]);
-
-            if ($action === 'post') {
-                // Update status invoice
-                $invoice->unsetRelation('payments');
-                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
-                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
-                $invoice->update(['status' => $status]);
-
-                // Posting Jurnal Otomatis Akuntansi
-                $entry = $this->journalService->createFromPurchasePayment($payment);
-                $this->journalService->postEntry($entry);
-
-                return redirect()->route('purchase.payments.show', $payment)
-                    ->with('success', 'Pembayaran Hutang berhasil diperbarui dan diposting.');
-            }
 
             return redirect()->route('purchase.payments.show', $payment)
                 ->with('success', 'Draft Pembayaran Hutang berhasil diperbarui.');
@@ -201,7 +165,8 @@ class PurchasePaymentController extends Controller
             $entry = $this->journalService->createFromPurchasePayment($payment);
             $this->journalService->postEntry($entry);
 
-            return back()->with('success', 'Pembayaran Hutang berhasil diposting dan Jurnal Akuntansi otomatis tercatat.');
+            return redirect()->route('purchase.payments.show', $payment)
+                ->with('success', 'Pembayaran Hutang berhasil diposting dan Jurnal Akuntansi otomatis tercatat.');
         });
     }
 
@@ -213,5 +178,15 @@ class PurchasePaymentController extends Controller
 
         return redirect()->route('purchase.payments.index')
             ->with('success', 'Draft Pembayaran Hutang berhasil dihapus.');
+    }
+
+    public function exportPdf(PurchasePayment $payment)
+    {
+        abort_if(!$payment->isPosted(), 403, 'PDF bukti pembayaran hanya dapat dicetak setelah status Posted.');
+
+        $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'user']);
+        $safeNumber = 'PAY-VOUCHER-' . str_pad($payment->id, 5, '0', STR_PAD_LEFT);
+
+        return $this->streamPdf('pdf.purchase-payment', compact('payment'), $safeNumber);
     }
 }

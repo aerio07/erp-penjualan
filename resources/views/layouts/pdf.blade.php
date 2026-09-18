@@ -176,7 +176,7 @@
             width: 50%;
         }
         .tot-discount {
-            color: #dc2626;
+            color: #111111;
         }
         .total-final td {
             border-top: 1.5px solid #222222;
@@ -261,6 +261,11 @@
         @yield('header')
     @else
         <div class="doc-header">
+            @if(extension_loaded('gd') && file_exists(public_path('assets/FlashSuitePro - black.png')))
+                <div style="margin-bottom: 6px;">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('assets/FlashSuitePro - black.png'))) }}" style="height: 22px; max-width: 180px;" alt="FlashSuite Pro">
+                </div>
+            @endif
             <div class="doc-title">@yield('doc-title')</div>
             <div class="doc-subtitle">@yield('doc-subtitle')</div>
         </div>

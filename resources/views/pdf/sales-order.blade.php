@@ -89,9 +89,9 @@
                             <span style="font-size: 7.5pt; color: #777;">({{ $item->product->sku }})</span>
                         @endif
                         @if(($item->discount_percent ?? 0) > 0)
-                            <div style="font-size: 7pt; color: #dc2626;">Diskon: {{ $item->discount_percent }}%</div>
+                            <div style="font-size: 7pt; color: #444444;">Diskon: {{ $item->discount_percent }}%</div>
                         @elseif(($item->discount_amount ?? 0) > 0)
-                            <div style="font-size: 7pt; color: #dc2626;">Diskon: Rp {{ number_format($item->discount_amount, 0, ',', '.') }}</div>
+                            <div style="font-size: 7pt; color: #444444;">Diskon: Rp {{ number_format($item->discount_amount, 0, ',', '.') }}</div>
                         @endif
                     </td>
                     <td class="text-center">

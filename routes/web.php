@@ -254,6 +254,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('delivery/{delivery}', [DeliveryController::class, 'exportPdf'])->name('delivery');
         Route::get('sales-order/{sales_order}', [SalesOrderController::class, 'exportPdf'])->name('sales-order');
         Route::get('sales-invoice/{invoice}', [SalesInvoiceController::class, 'exportPdf'])->name('sales-invoice');
+        Route::get('purchase-payment/{payment}', [PurchasePaymentController::class, 'exportPdf'])->name('purchase-payment');
     });
 });
 

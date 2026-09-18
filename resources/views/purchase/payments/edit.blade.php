@@ -31,7 +31,7 @@
                         </div>
                     </div>
 
-                    <div class="form-row form-row-4">
+                    <div class="form-row form-row-3">
                         <div class="form-group">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.375rem;">
                                 <label class="form-label" style="margin-bottom:0; width:auto;">Nominal Bayar (Rp) <span style="color:var(--danger);">*</span></label>
@@ -73,11 +73,6 @@
                         <div class="form-group">
                             <label class="form-label">Tanggal Bayar <span style="color:var(--danger);">*</span></label>
                             <input type="date" name="payment_date" value="{{ old('payment_date', $payment->payment_date ? $payment->payment_date->format('Y-m-d') : date('Y-m-d')) }}" class="form-control" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">No. Referensi / Bukti</label>
-                            <input type="text" name="reference_number" value="{{ old('reference_number', $payment->reference_number) }}" class="form-control" placeholder="TRF-BCA-98124">
                         </div>
                     </div>
 
@@ -160,12 +155,9 @@
             <a href="{{ route('purchase.payments.show', $payment) }}" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
-            <div style="display:flex; gap:10px;">
-                <button type="submit" name="action" value="update" class="btn btn-success">
-                    <i class="fa-solid fa-floppy-disk"></i> Update Draft
-                </button>
-                <button type="submit" name="action" value="post" class="btn btn-primary" onclick="return confirm('Posting pembayaran ini sekarang? Jurnal akuntansi akan otomatis dicatat dan pembayaran yang sudah diposting tidak dapat diubah lagi.')">
-                    <i class="fa-solid fa-paper-plane"></i> Simpan & Posting
+            <div>
+                <button type="submit" class="btn btn-primary" style="padding: 9px 20px; font-weight: 600;">
+                    <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
                 </button>
             </div>
         </div>
@@ -193,13 +185,27 @@ function paymentEditForm() {
         },
 
         validateForm(e) {
+            const showMsg = (msg) => {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian',
+                        text: msg,
+                        confirmButtonColor: '#03193c',
+                        confirmButtonText: 'Mengerti'
+                    });
+                } else {
+                    alert(msg);
+                }
+            };
+
             if (!this.amount || this.amount <= 0) {
-                alert('Ketik nominal pembayaran yang valid (> 0).');
+                showMsg('Ketik nominal pembayaran yang valid (> 0).');
                 e.preventDefault();
                 return false;
             }
             if (this.amount > this.maxAmount) {
-                alert('Nominal pembayaran melebihi batas sisa hutang (Maks: Rp ' + this.formatNum(this.maxAmount) + ').');
+                showMsg('Nominal pembayaran melebihi batas sisa hutang (Maks: Rp ' + this.formatNum(this.maxAmount) + ').');
                 e.preventDefault();
                 return false;
             }
