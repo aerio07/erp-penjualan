@@ -105,7 +105,7 @@
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
                             <span style="color:var(--text-secondary);">Subtotal Item</span>
-                            <span style="font-weight:600;" x-text="'Rp ' + formatNum(subtotal)"></span>
+                            <span style="font-weight:600;" x-text="'Rp ' + formatNum(grossSubtotal)"></span>
                         </div>
                         <template x-if="totalItemDiscount > 0">
                             <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--danger);">
@@ -124,7 +124,7 @@
                                    placeholder="0">
                             <template x-if="isDiscountInvalid">
                                 <div style="font-size:11px; color:var(--danger); margin-top:4px; font-weight:600;">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(subtotal)"></span>)
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Diskon melebihi subtotal (Maks: Rp <span x-text="formatNum(netSubtotal)"></span>)
                                 </div>
                             </template>
                             @error('discount_amount')
@@ -339,17 +339,24 @@ function poForm() {
             this.recalc();
         },
 
+        rowGross(row) {
+            return (Number(row.qty) || 0) * (Number(row.price) || 0);
+        },
+        rowDiscount(row) {
+            return this.rowGross(row) * ((Number(row.discount) || 0) / 100);
+        },
         rowSubtotal(row) {
-            const base = (row.qty || 0) * (row.price || 0);
-            return base - (base * ((row.discount || 0) / 100));
+            return this.rowGross(row) - this.rowDiscount(row);
         },
 
-        get isDiscountInvalid() { return this.discountHeader > this.subtotal; },
+        get grossSubtotal() { return this.rows.reduce((s, r) => s + this.rowGross(r), 0); },
+        get totalItemDiscount() { return this.rows.reduce((s, r) => s + this.rowDiscount(r), 0); },
+        get netSubtotal() { return this.grossSubtotal - this.totalItemDiscount; },
+        get subtotal() { return this.grossSubtotal; },
+        get isDiscountInvalid() { return (Number(this.discountHeader) || 0) > this.netSubtotal; },
         get hasOverPrice() { return this.rows.some(r => r.refPrice > 0 && r.price > r.refPrice); },
-        get totalItemDiscount() { return this.rows.reduce((s, r) => s + ((Number(r.qty) || 0) * (Number(r.price) || 0) * ((Number(r.discount) || 0) / 100)), 0); },
-        get subtotal() { return this.rows.reduce((s, r) => s + this.rowSubtotal(r), 0); },
-        get taxableAmount() { return Math.max(0, this.subtotal - (this.discountHeader || 0)); },
-        get taxAmount() { return this.taxableAmount * ((this.taxRate || 0) / 100); },
+        get taxableAmount() { return Math.max(0, this.netSubtotal - (Number(this.discountHeader) || 0)); },
+        get taxAmount() { return this.taxableAmount * ((Number(this.taxRate) || 0) / 100); },
         get total() { return this.taxableAmount + this.taxAmount; },
 
         recalc() { /* Alpine handles reactivity */ },
