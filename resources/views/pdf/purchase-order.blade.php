@@ -81,13 +81,13 @@
             <thead>
                 <tr>
                     <th class="text-center" style="width: 4%;">#</th>
-                    <th class="text-left" style="width: 16%;">Kode Produk</th>
-                    <th class="text-left" style="width: 32%;">Deskripsi Barang</th>
-                    <th class="text-center" style="width: 8%;">Qty</th>
-                    <th class="text-center" style="width: 8%;">Satuan</th>
-                    <th class="text-right" style="width: 14%;">Harga Satuan</th>
-                    <th class="text-center" style="width: 8%;">Diskon</th>
-                    <th class="text-right" style="width: 10%;">Total</th>
+                    <th class="text-left" style="width: 14%;">Kode Produk</th>
+                    <th class="text-left" style="width: 27%;">Deskripsi Barang</th>
+                    <th class="text-center" style="width: 6%;">Qty</th>
+                    <th class="text-center" style="width: 7%;">Satuan</th>
+                    <th class="text-right" style="width: 16%;">Harga Satuan</th>
+                    <th class="text-center" style="width: 9%;">Diskon</th>
+                    <th class="text-right" style="width: 17%;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -106,17 +106,17 @@
                     <td class="text-center" style="color: #444;">
                         {{ $item->product->unit ?? 'Pcs' }}
                     </td>
-                    <td class="text-right">
+                    <td class="text-right" style="white-space: nowrap;">
                         Rp {{ number_format($item->unit_price ?? 0, 0, ',', '.') }}
                     </td>
-                    <td class="text-center">
+                    <td class="text-center" style="white-space: nowrap;">
                         @if(($item->discount_percent ?? 0) > 0)
                             <span style="font-weight: 600;">{{ $item->discount_percent }}%</span>
                         @else
                             <span style="color: #888;">-</span>
                         @endif
                     </td>
-                    <td class="text-right" style="font-weight: 600;">
+                    <td class="text-right" style="font-weight: 600; white-space: nowrap;">
                         Rp {{ number_format($item->subtotal ?? 0, 0, ',', '.') }}
                     </td>
                 </tr>
