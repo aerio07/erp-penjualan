@@ -112,12 +112,12 @@ class ApprovalController extends Controller
 
         $this->approvalService->revise($approval, $request->revision_reason);
 
-        // Ubah status dokumen terkait kembali ke draft untuk direvisi
+        // Ubah status dokumen terkait untuk direvisi
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
             if ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
-                    'status'           => 'draft',
+                    'status'           => 'revised',
                     'rejection_reason' => $request->revision_reason,
                 ]);
             } elseif ($approvable instanceof PurchaseOrder) {

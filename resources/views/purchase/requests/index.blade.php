@@ -6,7 +6,7 @@
 <div class="animate-in">
     <x-page-header 
         title="Purchase Request" 
-        subtitle="Daftar pengajuan pengadaan barang dari divisi internal sebelum diterbitkan Purchase Order (PO)"
+        subtitle="Daftar pengajuan pengadaan barang dari seluruh divisi internal perusahaan"
     >
         <x-slot:actions>
             <a href="{{ route('purchase.requests.create') }}" class="btn btn-primary">
@@ -20,6 +20,7 @@
         <select name="status" class="form-control filter-select">
             <option value="all" {{ $status === 'all' ? 'selected' : '' }}>Semua Status</option>
             <option value="draft" {{ $status === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="revised" {{ $status === 'revised' ? 'selected' : '' }}>Revisi</option>
             <option value="waiting_approval" {{ $status === 'waiting_approval' ? 'selected' : '' }}>Menunggu Approval</option>
             <option value="confirmed" {{ in_array($status, ['confirmed', 'approved']) ? 'selected' : '' }}>Confirmed (Siap PO)</option>
             <option value="done" {{ in_array($status, ['done', 'ordered']) ? 'selected' : '' }}>Done (Sudah di-PO)</option>
@@ -35,7 +36,7 @@
                 <th>Pemohon & Divisi</th>
                 <th>Tanggal PR</th>
                 <th>Tgl Dibutuhkan</th>
-                <th style="text-align:center;">Jumlah Item</th>
+                <th>Catatan</th>
                 <th style="text-align:center;">Status</th>
                 <th class="text-center col-actions">Aksi</th>
             </tr>
@@ -56,12 +57,14 @@
             </td>
             <td>{{ $pr->request_date ? $pr->request_date->format('d/m/Y') : '-' }}</td>
             <td>
-                <span style="font-weight:600; {{ $pr->required_date && $pr->required_date->isPast() && in_array($pr->status, ['draft','waiting_approval']) ? 'color:var(--danger);' : '' }}">
+                <span style="font-weight:600; {{ $pr->required_date && $pr->required_date->isPast() && in_array($pr->status, ['draft','revised','waiting_approval']) ? 'color:var(--danger);' : '' }}">
                     {{ $pr->required_date ? $pr->required_date->format('d/m/Y') : '-' }}
                 </span>
             </td>
-            <td style="text-align:center; font-weight:600;">
-                {{ $pr->items->count() }} Item
+            <td>
+                <div style="font-size:13px; color:var(--text-secondary); max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ $pr->notes }}">
+                    {{ $pr->notes ?: '-' }}
+                </div>
             </td>
             <td style="text-align:center;">
                 <span class="badge {{ $pr->status_badge }}">
@@ -80,11 +83,13 @@
                     </a>
                     @endif
 
-                    @if(in_array($pr->status, ['draft', 'rejected']))
+                    @if(in_array($pr->status, ['draft', 'revised', 'rejected']))
                     <a href="{{ route('purchase.requests.edit', $pr) }}" class="btn btn-sm btn-secondary" title="Edit PR">
                         <i class="fa-solid fa-pen"></i>
                     </a>
+                    @endif
 
+                    @if(in_array($pr->status, ['draft', 'revised']))
                     <button type="button" class="btn btn-sm btn-danger" title="Hapus"
                         data-confirm-delete="delete-pr-{{ $pr->id }}"
                         data-name="Purchase Request {{ $pr->pr_number }}"

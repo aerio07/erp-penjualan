@@ -226,9 +226,14 @@ class DashboardController extends Controller
         $userId = auth()->id();
         $isAdmin = ($role === 'admin');
 
-        $revisedPrCount = \App\Models\PurchaseRequest::where('status', 'draft')
+        $revisedPrCount = \App\Models\PurchaseRequest::where(function ($q) {
+                $q->where('status', 'revised')
+                  ->orWhere(function ($sub) {
+                      $sub->where('status', 'draft')
+                          ->whereHas('approvalRequests', fn($a) => $a->where('status', 'revised'));
+                  });
+            })
             ->when(!$isAdmin, fn($q) => $q->where('user_id', $userId))
-            ->whereHas('approvalRequests', fn($q) => $q->where('status', 'revised'))
             ->count();
 
         $revisedPoCount = \App\Models\PurchaseOrder::where('status', 'draft')

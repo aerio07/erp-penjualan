@@ -88,12 +88,13 @@ class PurchaseRequest extends Model
         if ($this->status === 'draft') {
             $latest = $this->approvalRequests->sortByDesc('id')->first();
             if ($latest && $latest->status === 'revised') {
-                return 'Perlu Revisi';
+                return 'Revisi';
             }
         }
 
         return match ($this->status) {
             'draft'            => 'Draft',
+            'revised'          => 'Revisi',
             'waiting_approval' => 'Menunggu Approval',
             'confirmed'        => 'Confirmed',
             'approved'         => 'Confirmed',
@@ -116,6 +117,7 @@ class PurchaseRequest extends Model
 
         return match ($this->status) {
             'draft'            => 'badge-secondary',
+            'revised'          => 'badge-warning',
             'waiting_approval' => 'badge-warning',
             'confirmed'        => 'badge-info',
             'approved'         => 'badge-info',
