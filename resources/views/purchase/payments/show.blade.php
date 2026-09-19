@@ -106,11 +106,16 @@
                 </div>
 
                 <div>
-                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Metode Pembayaran</div>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tipe & Metode Pembayaran</div>
                     <div>
                         <span class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:700;">
                             <i class="fa-solid fa-credit-card" style="margin-right:4px;"></i> {{ strtoupper($payment->method) }} ({{ $payment->voucher_type }})
                         </span>
+                        @if($payment->chartOfAccount)
+                            <div style="margin-top:4px; font-size:12px; font-weight:600; color:#0f172a;">
+                                <i class="fa-solid fa-wallet" style="color:var(--primary); margin-right:3px;"></i> [{{ $payment->chartOfAccount->code }}] {{ $payment->chartOfAccount->name }}
+                            </div>
+                        @endif
                     </div>
                 </div>
 

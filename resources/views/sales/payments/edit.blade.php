@@ -72,19 +72,46 @@
 
                     <div class="form-row form-row-2">
                         <div class="form-group">
-                            <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
-                            <select name="method" class="form-control" required>
-                                <option value="transfer" {{ old('method', $payment->method) === 'transfer' ? 'selected' : '' }}>Bank Transfer (BBM)</option>
-                                <option value="cash" {{ old('method', $payment->method) === 'cash' ? 'selected' : '' }}>Kas / Tunai (BKM)</option>
-                                <option value="giro" {{ old('method', $payment->method) === 'giro' ? 'selected' : '' }}>Giro (BBM)</option>
-                                <option value="cek" {{ old('method', $payment->method) === 'cek' ? 'selected' : '' }}>Cek Bank (BBM)</option>
+                            <label class="form-label">Tipe Pembayaran <span style="color:var(--danger);">*</span></label>
+                            <select name="payment_type" x-model="paymentType" @change="onPaymentTypeChange()" class="form-control" required>
+                                <option value="bank">Bank (BBM)</option>
+                                <option value="kas">Kas (BKM)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">No. Referensi / Bukti Transfer</label>
-                            <input type="text" name="reference_number" value="{{ old('reference_number', $payment->reference_number) }}" class="form-control" placeholder="cth: TRF-BCA-123456">
+                            <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
+                            <select name="method" x-model="method" class="form-control" required>
+                                <option value="transfer" x-show="paymentType === 'bank'">Bank Transfer (BBM)</option>
+                                <option value="giro" x-show="paymentType === 'bank'">Giro (BBM)</option>
+                                <option value="cek" x-show="paymentType === 'bank'">Cek Bank (BBM)</option>
+                                <option value="cash" x-show="paymentType === 'kas'">Kas / Tunai (BKM)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Akun Kas / Bank (COA) <span style="color:var(--danger);">*</span></label>
+                        <x-searchable-select 
+                            name="chart_of_account_id" 
+                            :options="$coas->map(fn($c) => [
+                                'id' => $c->id, 
+                                'name' => '[' . $c->code . '] ' . $c->name . ($c->is_cash_bank ? ' (Kas & Bank)' : ''), 
+                                'subtext' => $c->code
+                            ])" 
+                            :value="old('chart_of_account_id', $payment->chart_of_account_id)" 
+                            placeholder="-- Pilih Akun Kas / Bank (COA) --" 
+                            search-placeholder="Ketik kode atau nama akun COA..." 
+                            required 
+                        />
+                        <small style="color:var(--text-secondary); font-size:11.5px; display:block; margin-top:4px;">
+                            Akun COA ini akan didebitkan pada Jurnal Penerimaan Kas/Bank otomatis.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">No. Referensi / Bukti Transfer</label>
+                        <input type="text" name="reference_number" value="{{ old('reference_number', $payment->reference_number) }}" class="form-control" placeholder="cth: TRF-BCA-123456">
                     </div>
 
                     <div class="form-group">
@@ -180,11 +207,41 @@
 <script>
 const maxAmountVal = {{ (float) $maxAllowed }};
 const initialAmount = {{ (float) old('amount', $payment->amount) }};
+const coasData = @json($coas);
+const defaultKasCoa = coasData.find(c => c.name.toLowerCase().includes('kas') || c.code === '1-1100');
+const defaultBankCoa = coasData.find(c => c.name.toLowerCase().includes('bank') && c.code !== '1-1100') || coasData.find(c => c.code === '1-1110');
 
 function paymentEditForm() {
     return {
         amount: initialAmount,
         maxAmount: maxAmountVal,
+        paymentType: "{{ old('payment_type', $payment->payment_type ?? ($payment->method === 'cash' ? 'kas' : 'bank')) }}",
+        method: "{{ old('method', $payment->method) }}",
+        selectedCoaId: "{{ old('chart_of_account_id', $payment->chart_of_account_id ?? '') }}",
+
+        init() {
+            this.$nextTick(() => {
+                if (this.selectedCoaId) {
+                    window.dispatchEvent(new CustomEvent('set-selected', { detail: { targetName: 'chart_of_account_id', value: this.selectedCoaId } }));
+                }
+            });
+        },
+
+        onPaymentTypeChange() {
+            if (this.paymentType === 'kas') {
+                this.method = 'cash';
+                if (defaultKasCoa) {
+                    this.selectedCoaId = defaultKasCoa.id;
+                    window.dispatchEvent(new CustomEvent('set-selected', { detail: { targetName: 'chart_of_account_id', value: defaultKasCoa.id } }));
+                }
+            } else {
+                if (this.method === 'cash') this.method = 'transfer';
+                if (defaultBankCoa) {
+                    this.selectedCoaId = defaultBankCoa.id;
+                    window.dispatchEvent(new CustomEvent('set-selected', { detail: { targetName: 'chart_of_account_id', value: defaultBankCoa.id } }));
+                }
+            }
+        },
 
         payFull() {
             this.amount = this.maxAmount;

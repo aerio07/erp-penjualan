@@ -9,8 +9,8 @@ use Illuminate\Support\Carbon;
 class SalesPayment extends Model
 {
     protected $fillable = [
-        'payment_number', 'sales_invoice_id', 'user_id', 'amount', 'status',
-        'payment_date', 'method', 'reference_number', 'notes',
+        'payment_number', 'sales_invoice_id', 'chart_of_account_id', 'user_id', 'amount', 'status',
+        'payment_date', 'payment_type', 'method', 'reference_number', 'notes',
     ];
 
     protected $casts = [
@@ -24,15 +24,17 @@ class SalesPayment extends Model
             if (empty($payment->payment_number)) {
                 $payment->payment_number = static::generatePaymentNumber(
                     $payment->method ?? 'transfer',
-                    $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null
+                    $payment->payment_date ? $payment->payment_date->format('Y-m-d') : null,
+                    $payment->payment_type ?? null
                 );
             }
         });
     }
 
-    public static function generatePaymentNumber(string $method = 'transfer', ?string $date = null): string
+    public static function generatePaymentNumber(string $method = 'transfer', ?string $date = null, ?string $paymentType = null): string
     {
-        $prefix = ($method === 'cash') ? 'BKM' : 'BBM';
+        $isKas = ($paymentType === 'kas') || ($method === 'cash');
+        $prefix = $isKas ? 'BKM' : 'BBM';
         $dateFormatted = $date ? Carbon::parse($date)->format('d/m/Y') : date('d/m/Y');
         $datePrefix = $prefix . '-' . $dateFormatted . '-';
 
@@ -60,6 +62,11 @@ class SalesPayment extends Model
         return $this->belongsTo(SalesInvoice::class);
     }
 
+    public function chartOfAccount(): BelongsTo
+    {
+        return $this->belongsTo(ChartOfAccount::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -67,7 +74,7 @@ class SalesPayment extends Model
 
     public function getVoucherTypeAttribute(): string
     {
-        return $this->method === 'cash' ? 'BKM' : 'BBM';
+        return ($this->payment_type === 'kas' || $this->method === 'cash') ? 'BKM' : 'BBM';
     }
 
     public function getVoucherNumberAttribute(): string
@@ -77,11 +84,11 @@ class SalesPayment extends Model
 
     public function getVoucherTitleAttribute(): string
     {
-        return $this->method === 'cash' ? 'BUKTI KAS MASUK' : 'BUKTI BANK MASUK';
+        return ($this->payment_type === 'kas' || $this->method === 'cash') ? 'BUKTI KAS MASUK' : 'BUKTI BANK MASUK';
     }
 
     public function getVoucherLabelAttribute(): string
     {
-        return $this->method === 'cash' ? 'No. Bukti Kas Masuk' : 'No. Bukti Bank Masuk';
+        return ($this->payment_type === 'kas' || $this->method === 'cash') ? 'No. Bukti Kas Masuk' : 'No. Bukti Bank Masuk';
     }
 }

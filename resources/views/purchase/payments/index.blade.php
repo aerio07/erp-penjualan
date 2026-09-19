@@ -35,6 +35,19 @@
             <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="posted" {{ request('status') === 'posted' ? 'selected' : '' }}>Posted</option>
         </select>
+        <select name="payment_type" class="form-control filter-select" onchange="this.form.submit()">
+            <option value="">Semua Tipe</option>
+            <option value="bank" {{ request('payment_type') === 'bank' ? 'selected' : '' }}>Bank (BBK)</option>
+            <option value="kas" {{ request('payment_type') === 'kas' ? 'selected' : '' }}>Kas (BKK)</option>
+        </select>
+        <select name="chart_of_account_id" class="form-control filter-select" onchange="this.form.submit()">
+            <option value="">Semua Akun COA</option>
+            @foreach($coas as $c)
+                <option value="{{ $c->id }}" {{ request('chart_of_account_id') == $c->id ? 'selected' : '' }}>
+                    [{{ $c->code }}] {{ $c->name }}
+                </option>
+            @endforeach
+        </select>
         <select name="method" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">Semua Metode</option>
             <option value="transfer" {{ request('method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
@@ -51,6 +64,7 @@
                 <th>No. Invoice</th>
                 <th>Supplier</th>
                 <x-sortable-header column="payment_date" title="Tgl Bayar" />
+                <th>Akun Kas/Bank (COA)</th>
                 <x-sortable-header column="method" title="Metode" />
                 <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />
                 <x-sortable-header column="status" title="Status" align="center" />
@@ -77,6 +91,18 @@
             </td>
             <td style="font-weight:500;">{{ $p->purchaseInvoice->purchaseOrder->supplier->name ?? '-' }}</td>
             <td>{{ $p->payment_date ? $p->payment_date->format('d/m/Y') : '-' }}</td>
+            <td>
+                @if($p->chartOfAccount)
+                    <div style="font-weight:600; font-size:12.5px; color:#0f172a;">
+                        [{{ $p->chartOfAccount->code }}]
+                    </div>
+                    <div style="font-size:11.5px; color:var(--text-secondary);">
+                        {{ $p->chartOfAccount->name }}
+                    </div>
+                @else
+                    <span style="color:var(--text-secondary); font-size:12px;">-</span>
+                @endif
+            </td>
             <td>
                 <span class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-weight:600;">
                     {{ strtoupper($p->method) }}
@@ -116,7 +142,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-money-check" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada riwayat pembayaran hutang yang sesuai filter
             </td>

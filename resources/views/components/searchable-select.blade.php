@@ -129,6 +129,7 @@
     style="position: relative; width: 100%;"
     @click.outside="open = false"
     @keydown.escape.window="open = false"
+    @set-selected.window="if ($event.detail && $event.detail.targetName === '{{ $name }}') { const match = options.find(o => String(o.value) === String($event.detail.value)); if (match) selectOption(match); }"
 >
     {{-- Native input for reliable HTML5 constraint validation & tooltip --}}
     <input 

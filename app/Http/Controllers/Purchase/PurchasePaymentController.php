@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChartOfAccount;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchasePayment;
 use App\Services\JournalService;
@@ -23,18 +24,28 @@ class PurchasePaymentController extends Controller
 
     public function index(Request $request): View
     {
-        $query = PurchasePayment::with(['purchaseInvoice.purchaseOrder.supplier', 'user']);
+        $query = PurchasePayment::with(['purchaseInvoice.purchaseOrder.supplier', 'user', 'chartOfAccount']);
 
         $query = $this->applySearch($query, $request, ['payment_number', 'purchaseInvoice.invoice_number', 'purchaseInvoice.purchaseOrder.supplier.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'method');
         $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyFilter($query, $request, 'payment_type');
+        $query = $this->applyFilter($query, $request, 'chart_of_account_id');
         $query = $this->applyDateRange($query, $request, 'payment_date');
         $query = $this->applySort($query, $request, ['payment_number', 'payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $payments = $query->paginate($perPage)->withQueryString();
 
-        return view('purchase.payments.index', compact('payments'));
+        $coas = ChartOfAccount::where('is_active', true)
+            ->where(function ($q) {
+                $q->where('is_cash_bank', true)
+                  ->orWhere('code', 'like', '1-11%');
+            })
+            ->orderBy('code')
+            ->get();
+
+        return view('purchase.payments.index', compact('payments', 'coas'));
     }
 
     public function create(Request $request): View
@@ -45,13 +56,20 @@ class PurchasePaymentController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        return view('purchase.payments.create', compact('unpaidInvoices', 'selectedInvoiceId'));
+        $coas = ChartOfAccount::where('is_active', true)
+            ->orderByDesc('is_cash_bank')
+            ->orderBy('code')
+            ->get();
+
+        return view('purchase.payments.create', compact('unpaidInvoices', 'selectedInvoiceId', 'coas'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'purchase_invoice_id' => 'required|exists:purchase_invoices,id',
+            'chart_of_account_id' => 'required|exists:chart_of_accounts,id',
+            'payment_type'        => 'required|in:kas,bank',
             'amount'              => 'required|numeric|min:1',
             'payment_date'        => 'required|date',
             'method'              => 'required|in:cash,transfer,giro,cek',
@@ -73,15 +91,17 @@ class PurchasePaymentController extends Controller
                 return back()->with('error', "Jumlah pembayaran (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa hutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
             }
 
-            $paymentNumber = PurchasePayment::generatePaymentNumber($request->method, $request->payment_date);
+            $paymentNumber = PurchasePayment::generatePaymentNumber($request->method, $request->payment_date, $request->payment_type);
 
             $payment = PurchasePayment::create([
                 'payment_number'      => $paymentNumber,
                 'purchase_invoice_id' => $invoice->id,
+                'chart_of_account_id' => $request->chart_of_account_id,
                 'user_id'             => Auth::id(),
                 'amount'              => $request->amount,
                 'status'              => ($action === 'post') ? 'posted' : 'draft',
                 'payment_date'        => $request->payment_date,
+                'payment_type'        => $request->payment_type,
                 'method'              => $request->method,
                 'reference_number'    => $request->reference_number,
                 'notes'               => $request->notes,
@@ -107,7 +127,7 @@ class PurchasePaymentController extends Controller
 
     public function show(PurchasePayment $payment): View
     {
-        $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'user']);
+        $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'user', 'chartOfAccount']);
 
         return view('purchase.payments.show', compact('payment'));
     }
@@ -116,13 +136,18 @@ class PurchasePaymentController extends Controller
     {
         abort_if($payment->isPosted(), 403, 'Pembayaran yang sudah diposting tidak dapat diedit.');
 
-        $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'purchaseInvoice.payments']);
+        $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'purchaseInvoice.payments', 'chartOfAccount']);
         $invoice = $payment->purchaseInvoice;
 
         $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
         $maxAllowed = max(0, $invoice->effective_total_amount - $otherPaid);
 
-        return view('purchase.payments.edit', compact('payment', 'invoice', 'maxAllowed', 'otherPaid'));
+        $coas = ChartOfAccount::where('is_active', true)
+            ->orderByDesc('is_cash_bank')
+            ->orderBy('code')
+            ->get();
+
+        return view('purchase.payments.edit', compact('payment', 'invoice', 'maxAllowed', 'otherPaid', 'coas'));
     }
 
     public function update(Request $request, PurchasePayment $payment): RedirectResponse
@@ -130,11 +155,13 @@ class PurchasePaymentController extends Controller
         abort_if($payment->isPosted(), 403, 'Pembayaran yang sudah diposting tidak dapat diubah.');
 
         $request->validate([
-            'amount'           => 'required|numeric|min:1',
-            'payment_date'     => 'required|date',
-            'method'           => 'required|in:cash,transfer,giro,cek',
-            'reference_number' => 'nullable|string',
-            'notes'            => 'nullable|string',
+            'chart_of_account_id' => 'required|exists:chart_of_accounts,id',
+            'payment_type'        => 'required|in:kas,bank',
+            'amount'              => 'required|numeric|min:1',
+            'payment_date'        => 'required|date',
+            'method'              => 'required|in:cash,transfer,giro,cek',
+            'reference_number'    => 'nullable|string',
+            'notes'               => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($request, $payment) {
@@ -148,15 +175,17 @@ class PurchasePaymentController extends Controller
             }
 
             $payment->update([
-                'amount'           => $request->amount,
-                'payment_date'     => $request->payment_date,
-                'method'           => $request->method,
-                'reference_number' => $request->reference_number,
-                'notes'            => $request->notes,
+                'chart_of_account_id' => $request->chart_of_account_id,
+                'payment_type'        => $request->payment_type,
+                'amount'              => $request->amount,
+                'payment_date'        => $request->payment_date,
+                'method'              => $request->method,
+                'reference_number'    => $request->reference_number,
+                'notes'               => $request->notes,
             ]);
 
-            return redirect()->route('purchase.payments.show', $payment)
-                ->with('success', 'Draft Pembayaran Hutang berhasil diperbarui.');
+            return redirect()->route('purchase.payments.index')
+                ->with('success', 'Draft Pembayaran Hutang #' . $payment->payment_number . ' berhasil diperbarui.');
         });
     }
 

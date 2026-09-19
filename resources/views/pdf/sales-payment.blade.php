@@ -82,8 +82,15 @@
                     <tr>
                         <td class="detail-label">Metode Pembayaran</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: bold; text-transform: uppercase;">{{ $payment->method }}</td>
+                        <td class="detail-value" style="font-weight: bold; text-transform: uppercase;">{{ $payment->method }} ({{ $payment->voucher_type }})</td>
                     </tr>
+                    @if($payment->chartOfAccount)
+                    <tr>
+                        <td class="detail-label">Akun Kas/Bank (COA)</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">[{{ $payment->chartOfAccount->code }}] {{ $payment->chartOfAccount->name }}</td>
+                    </tr>
+                    @endif
                     @if(!empty(trim($payment->reference_number ?? '')))
                     <tr>
                         <td class="detail-label">No. Ref / Transfer</td>

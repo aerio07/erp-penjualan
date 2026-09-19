@@ -73,19 +73,46 @@
 
                     <div class="form-row form-row-2">
                         <div class="form-group">
-                            <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
-                            <select name="method" class="form-control" required>
-                                <option value="transfer">Bank Transfer (BBM)</option>
-                                <option value="cash">Kas / Tunai (BKM)</option>
-                                <option value="giro">Giro (BBM)</option>
-                                <option value="cek">Cek Bank (BBM)</option>
+                            <label class="form-label">Tipe Pembayaran <span style="color:var(--danger);">*</span></label>
+                            <select name="payment_type" x-model="paymentType" @change="onPaymentTypeChange()" class="form-control" required>
+                                <option value="bank">Bank (BBM)</option>
+                                <option value="kas">Kas (BKM)</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">No. Referensi / Bukti Transfer</label>
-                            <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="cth: TRF-BCA-123456">
+                            <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
+                            <select name="method" x-model="method" class="form-control" required>
+                                <option value="transfer" x-show="paymentType === 'bank'">Bank Transfer (BBM)</option>
+                                <option value="giro" x-show="paymentType === 'bank'">Giro (BBM)</option>
+                                <option value="cek" x-show="paymentType === 'bank'">Cek Bank (BBM)</option>
+                                <option value="cash" x-show="paymentType === 'kas'">Kas / Tunai (BKM)</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Akun Kas / Bank (COA) <span style="color:var(--danger);">*</span></label>
+                        <x-searchable-select 
+                            name="chart_of_account_id" 
+                            :options="$coas->map(fn($c) => [
+                                'id' => $c->id, 
+                                'name' => '[' . $c->code . '] ' . $c->name . ($c->is_cash_bank ? ' (Kas & Bank)' : ''), 
+                                'subtext' => $c->code
+                            ])" 
+                            :value="old('chart_of_account_id', '')" 
+                            placeholder="-- Pilih Akun Kas / Bank (COA) --" 
+                            search-placeholder="Ketik kode atau nama akun COA..." 
+                            required 
+                        />
+                        <small style="color:var(--text-secondary); font-size:11.5px; display:block; margin-top:4px;">
+                            Akun COA ini akan didebitkan pada Jurnal Penerimaan Kas/Bank otomatis.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">No. Referensi / Bukti Transfer</label>
+                        <input type="text" name="reference_number" value="{{ old('reference_number') }}" class="form-control" placeholder="cth: TRF-BCA-123456">
                     </div>
 
                     <div class="form-group">
@@ -140,29 +167,17 @@
                                 <span :style="simulatedRemaining <= 0 && amount > 0 ? 'color:var(--success); font-weight:700; font-size:16px;' : 'color:var(--danger); font-weight:700; font-size:15px;'" x-text="'Rp ' + formatNum(simulatedRemaining)"></span>
                             </div>
 
-                            <div style="margin-top:6px;">
-                                <template x-if="!amount || amount <= 0">
-                                    <span class="badge badge-unpaid" style="font-size:12px; padding:6px 12px; display:inline-block;">
-                                        Ketik nominal yang diterima dari customer
-                                    </span>
-                                </template>
-                                <template x-if="amount > 0 && amount < maxAmount">
-                                    <span class="badge badge-pending" style="font-size:12px; padding:6px 12px; display:inline-block;">
-                                        <i class="fa-solid fa-clock-rotate-left"></i> Status: Cicilan (Sisa Piutang Rp <span x-text="formatNum(simulatedRemaining)"></span>)
-                                    </span>
-                                </template>
-                                <template x-if="amount >= maxAmount && amount > 0">
-                                    <span class="badge badge-done" style="font-size:12px; padding:6px 12px; display:inline-block;">
-                                        <i class="fa-solid fa-circle-check"></i> Status: Lunas Penuh (Sisa Piutang Rp 0)
-                                    </span>
-                                </template>
-                            </div>
+                            <template x-if="simulatedRemaining <= 0 && amount > 0">
+                                <span class="badge badge-success" style="align-self:center; margin-top:8px; padding:6px 14px; font-size:12.5px;">
+                                    <i class="fa-solid fa-circle-check"></i> Status Tagihan: Lunas Penuh
+                                </span>
+                            </template>
                         </div>
                     </template>
                     <template x-if="!selectedInvoice">
-                        <div style="text-align:center; padding:24px 0; color:var(--text-secondary); font-size:13px;">
-                            <i class="fa-solid fa-receipt" style="font-size:28px; margin-bottom:8px; display:block; opacity:0.4;"></i>
-                            Pilih Invoice Penjualan terlebih dahulu
+                        <div style="color:var(--text-secondary); font-size:13px; text-align:center; padding:30px 0;">
+                            <i class="fa-solid fa-receipt" style="font-size:32px; display:block; margin-bottom:8px; opacity:0.3;"></i>
+                            Pilih invoice penjualan untuk melihat ringkasan sisa piutang.
                         </div>
                     </template>
                 </div>
@@ -187,16 +202,45 @@
 <script>
 const invoices = @json($unpaidInvoices->keyBy('id'));
 const initialInvoiceId = "{{ $selectedInvoiceId ?? '' }}";
+const coasData = @json($coas);
+const defaultKasCoa = coasData.find(c => c.name.toLowerCase().includes('kas') || c.code === '1-1100');
+const defaultBankCoa = coasData.find(c => c.name.toLowerCase().includes('bank') && c.code !== '1-1100') || coasData.find(c => c.code === '1-1110');
 
 function paymentForm() {
     return {
         selectedInvoiceId: initialInvoiceId,
         selectedInvoice: null,
         amount: null,
+        paymentType: "{{ old('payment_type', 'bank') }}",
+        method: "{{ old('method', 'transfer') }}",
+        selectedCoaId: "{{ old('chart_of_account_id', '') }}" || (defaultBankCoa ? defaultBankCoa.id : ''),
 
         init() {
             if (this.selectedInvoiceId) {
                 this.onInvoiceChange();
+            }
+            this.$nextTick(() => {
+                if (this.selectedCoaId) {
+                    window.dispatchEvent(new CustomEvent('set-selected', { detail: { targetName: 'chart_of_account_id', value: this.selectedCoaId } }));
+                } else {
+                    this.onPaymentTypeChange();
+                }
+            });
+        },
+
+        onPaymentTypeChange() {
+            if (this.paymentType === 'kas') {
+                this.method = 'cash';
+                if (defaultKasCoa) {
+                    this.selectedCoaId = defaultKasCoa.id;
+                    window.dispatchEvent(new CustomEvent('set-selected', { detail: { targetName: 'chart_of_account_id', value: defaultKasCoa.id } }));
+                }
+            } else {
+                if (this.method === 'cash') this.method = 'transfer';
+                if (defaultBankCoa) {
+                    this.selectedCoaId = defaultBankCoa.id;
+                    window.dispatchEvent(new CustomEvent('set-selected', { detail: { targetName: 'chart_of_account_id', value: defaultBankCoa.id } }));
+                }
             }
         },
 

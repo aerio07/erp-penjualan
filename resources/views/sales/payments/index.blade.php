@@ -28,13 +28,26 @@
     </div>
     @endif
 
-    <x-list-filter-bar :action="route('sales.payments.index')" placeholder="Cari No. Invoice, Customer..." :showDateFilter="true">
-        <select name="status" class="form-control filter-select">
+    <x-list-filter-bar :action="route('sales.payments.index')" placeholder="Cari No. Invoice, Customer, Catatan..." :showDateFilter="true">
+        <select name="status" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">Semua Status</option>
             <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
             <option value="posted" {{ request('status') === 'posted' ? 'selected' : '' }}>Posted</option>
         </select>
-        <select name="method" class="form-control filter-select">
+        <select name="payment_type" class="form-control filter-select" onchange="this.form.submit()">
+            <option value="">Semua Tipe</option>
+            <option value="bank" {{ request('payment_type') === 'bank' ? 'selected' : '' }}>Bank (BBM)</option>
+            <option value="kas" {{ request('payment_type') === 'kas' ? 'selected' : '' }}>Kas (BKM)</option>
+        </select>
+        <select name="chart_of_account_id" class="form-control filter-select" onchange="this.form.submit()">
+            <option value="">Semua Akun COA</option>
+            @foreach($coas as $c)
+                <option value="{{ $c->id }}" {{ request('chart_of_account_id') == $c->id ? 'selected' : '' }}>
+                    [{{ $c->code }}] {{ $c->name }}
+                </option>
+            @endforeach
+        </select>
+        <select name="method" class="form-control filter-select" onchange="this.form.submit()">
             <option value="">Semua Metode</option>
             <option value="transfer" {{ request('method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
             <option value="cash" {{ request('method') === 'cash' ? 'selected' : '' }}>Tunai / Cash</option>
@@ -50,6 +63,7 @@
                 <th>No. Invoice</th>
                 <th>Customer</th>
                 <x-sortable-header column="payment_date" title="Tgl Bayar" :isDefault="true" />
+                <th style="min-width:180px;">Akun Kas/Bank (COA)</th>
                 <x-sortable-header column="method" title="Metode" />
                 <x-sortable-header column="amount" title="Jumlah Dibayar" align="right" />
                 <x-sortable-header column="status" title="Status" align="center" />
@@ -76,6 +90,16 @@
             </td>
             <td>{{ $p->salesInvoice->salesOrder->customer->name ?? '-' }}</td>
             <td>{{ $p->payment_date ? $p->payment_date->format('d/m/Y') : '-' }}</td>
+            <td>
+                @if($p->chartOfAccount)
+                    <span style="font-size:12px; font-weight:600; color:var(--primary); display:inline-flex; align-items:center; gap:4px;">
+                        <i class="fa-solid fa-book-bookmark" style="font-size:11px; opacity:0.7;"></i>
+                        [{{ $p->chartOfAccount->code }}] {{ $p->chartOfAccount->name }}
+                    </span>
+                @else
+                    <span style="color:var(--text-secondary); font-size:12px;">-</span>
+                @endif
+            </td>
             <td><span class="badge badge-confirmed">{{ strtoupper($p->method) }}</span></td>
             <td style="text-align:right; font-weight:600; color:var(--success); font-family: 'Inter', monospace;">
                 Rp {{ number_format($p->amount, 0, ',', '.') }}

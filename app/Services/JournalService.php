@@ -73,7 +73,8 @@ class JournalService
         }
 
         $hutang = $this->findAccount('2-1100');
-        $kas    = $this->findAccount('1-1100'); // Kas / Bank
+        $kasAccountId = $payment->chart_of_account_id ?? $this->findAccount('1-1100')->id;
+        $isKas = ($payment->payment_type === 'kas' || $payment->method === 'cash');
 
         return $this->createEntry(
             date: $payment->payment_date->toDateString(),
@@ -81,8 +82,8 @@ class JournalService
             referenceType: PurchasePayment::class,
             referenceId: $payment->id,
             lines: [
-                ['account_id' => $hutang->id, 'debit' => $payment->amount, 'credit' => 0,              'description' => 'Pelunasan Hutang'],
-                ['account_id' => $kas->id,    'debit' => 0,                'credit' => $payment->amount, 'description' => 'Kas Keluar'],
+                ['account_id' => $hutang->id,   'debit' => $payment->amount, 'credit' => 0,              'description' => 'Pelunasan Hutang'],
+                ['account_id' => $kasAccountId, 'debit' => 0,                'credit' => $payment->amount, 'description' => $isKas ? 'Kas Keluar' : 'Bank Keluar'],
             ]
         );
     }
@@ -103,11 +104,12 @@ class JournalService
 
         $payment->loadMissing(['purchaseInvoice']);
         $hutang = $this->findAccount('2-1100');
-        $kas    = $this->findAccount('1-1100'); // Kas / Bank
+        $kasAccountId = $payment->chart_of_account_id ?? $this->findAccount('1-1100')->id;
+        $isKas = ($payment->payment_type === 'kas' || $payment->method === 'cash');
 
         app(AccountingPeriodService::class)->assertDateNotLocked(Carbon::parse($payment->payment_date));
 
-        return DB::transaction(function () use ($existing, $payment, $hutang, $kas) {
+        return DB::transaction(function () use ($existing, $payment, $hutang, $kasAccountId, $isKas) {
             $existing->update([
                 'entry_date'  => $payment->payment_date->toDateString(),
                 'description' => "Pembayaran Hutang #{$payment->purchaseInvoice->invoice_number}",
@@ -128,10 +130,10 @@ class JournalService
 
             JournalLine::create([
                 'journal_entry_id'    => $existing->id,
-                'chart_of_account_id' => $kas->id,
+                'chart_of_account_id' => $kasAccountId,
                 'debit'               => 0,
                 'credit'              => $payment->amount,
-                'description'         => 'Kas Keluar',
+                'description'         => $isKas ? 'Kas Keluar' : 'Bank Keluar',
             ]);
 
             return $existing->fresh(['lines.chartOfAccount']);
@@ -188,8 +190,9 @@ class JournalService
             return $existing;
         }
 
-        $kas     = $this->findAccount('1-1100');
+        $kasId = $payment->chart_of_account_id ?? $this->findAccount('1-1100')->id;
         $piutang = $this->findAccount('1-1200');
+        $kasDesc = ($payment->payment_type === 'bank' || $payment->method !== 'cash') ? 'Bank Masuk' : 'Kas Masuk';
 
         return $this->createEntry(
             date: $payment->payment_date->toDateString(),
@@ -197,7 +200,7 @@ class JournalService
             referenceType: SalesPayment::class,
             referenceId: $payment->id,
             lines: [
-                ['account_id' => $kas->id,     'debit' => $payment->amount, 'credit' => 0,               'description' => 'Kas Masuk'],
+                ['account_id' => $kasId,       'debit' => $payment->amount, 'credit' => 0,               'description' => $kasDesc],
                 ['account_id' => $piutang->id, 'debit' => 0,                'credit' => $payment->amount, 'description' => 'Pelunasan Piutang'],
             ]
         );
@@ -218,12 +221,13 @@ class JournalService
         }
 
         $payment->loadMissing(['salesInvoice']);
-        $kas     = $this->findAccount('1-1100');
+        $kasId = $payment->chart_of_account_id ?? $this->findAccount('1-1100')->id;
         $piutang = $this->findAccount('1-1200');
+        $kasDesc = ($payment->payment_type === 'bank' || $payment->method !== 'cash') ? 'Bank Masuk' : 'Kas Masuk';
 
         app(AccountingPeriodService::class)->assertDateNotLocked(Carbon::parse($payment->payment_date));
 
-        return DB::transaction(function () use ($existing, $payment, $kas, $piutang) {
+        return DB::transaction(function () use ($existing, $payment, $kasId, $piutang, $kasDesc) {
             $existing->update([
                 'entry_date'  => $payment->payment_date->toDateString(),
                 'description' => "Penerimaan Pembayaran #{$payment->salesInvoice->invoice_number}",
@@ -236,10 +240,10 @@ class JournalService
 
             JournalLine::create([
                 'journal_entry_id'    => $existing->id,
-                'chart_of_account_id' => $kas->id,
+                'chart_of_account_id' => $kasId,
                 'debit'               => $payment->amount,
                 'credit'              => 0,
-                'description'         => 'Kas Masuk',
+                'description'         => $kasDesc,
             ]);
 
             JournalLine::create([

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
+use App\Models\ChartOfAccount;
 use App\Models\SalesInvoice;
 use App\Models\SalesPayment;
 use App\Services\JournalService;
@@ -23,18 +24,28 @@ class SalesPaymentController extends Controller
 
     public function index(Request $request): View
     {
-        $query = SalesPayment::with(['salesInvoice.salesOrder.customer', 'user']);
+        $query = SalesPayment::with(['salesInvoice.salesOrder.customer', 'user', 'chartOfAccount']);
 
         $query = $this->applySearch($query, $request, ['payment_number', 'reference_number', 'salesInvoice.invoice_number', 'salesInvoice.salesOrder.customer.name', 'notes']);
         $query = $this->applyFilter($query, $request, 'method');
         $query = $this->applyFilter($query, $request, 'status');
+        $query = $this->applyFilter($query, $request, 'payment_type');
+        $query = $this->applyFilter($query, $request, 'chart_of_account_id');
         $query = $this->applyDateRange($query, $request, 'payment_date');
         $query = $this->applySort($query, $request, ['payment_number', 'payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
 
         $perPage = (int) $request->get('per_page', 20);
         $payments = $query->paginate($perPage)->withQueryString();
 
-        return view('sales.payments.index', compact('payments'));
+        $coas = ChartOfAccount::where('is_active', true)
+            ->where(function ($q) {
+                $q->where('is_cash_bank', true)
+                  ->orWhere('code', 'like', '1-11%');
+            })
+            ->orderBy('code')
+            ->get();
+
+        return view('sales.payments.index', compact('payments', 'coas'));
     }
 
     public function create(Request $request): View
@@ -47,18 +58,25 @@ class SalesPaymentController extends Controller
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
             ->values();
 
-        return view('sales.payments.create', compact('unpaidInvoices', 'selectedInvoiceId'));
+        $coas = ChartOfAccount::where('is_active', true)
+            ->orderByDesc('is_cash_bank')
+            ->orderBy('code')
+            ->get();
+
+        return view('sales.payments.create', compact('unpaidInvoices', 'selectedInvoiceId', 'coas'));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'sales_invoice_id' => 'required|exists:sales_invoices,id',
-            'amount'           => 'required|numeric|min:1',
-            'payment_date'     => 'required|date',
-            'method'           => 'required|in:cash,transfer,giro,cek',
-            'reference_number' => 'nullable|string',
-            'notes'            => 'nullable|string',
+            'sales_invoice_id'    => 'required|exists:sales_invoices,id',
+            'chart_of_account_id' => 'required|exists:chart_of_accounts,id',
+            'payment_type'        => 'required|in:kas,bank',
+            'amount'              => 'required|numeric|min:1',
+            'payment_date'        => 'required|date',
+            'method'              => 'required|in:cash,transfer,giro,cek',
+            'reference_number'    => 'nullable|string',
+            'notes'               => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -72,18 +90,20 @@ class SalesPaymentController extends Controller
                 return back()->with('error', "Jumlah penerimaan (Rp " . number_format($request->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").")->withInput();
             }
 
-            $paymentNumber = SalesPayment::generatePaymentNumber($request->method, $request->payment_date);
+            $paymentNumber = SalesPayment::generatePaymentNumber($request->method, $request->payment_date, $request->payment_type);
 
             SalesPayment::create([
-                'payment_number'   => $paymentNumber,
-                'sales_invoice_id' => $invoice->id,
-                'user_id'          => Auth::id(),
-                'amount'           => $request->amount,
-                'status'           => 'draft',
-                'payment_date'     => $request->payment_date,
-                'method'           => $request->method,
-                'reference_number' => $request->reference_number,
-                'notes'            => $request->notes,
+                'payment_number'      => $paymentNumber,
+                'sales_invoice_id'    => $invoice->id,
+                'chart_of_account_id' => $request->chart_of_account_id,
+                'user_id'             => Auth::id(),
+                'amount'              => $request->amount,
+                'status'              => 'draft',
+                'payment_date'        => $request->payment_date,
+                'payment_type'        => $request->payment_type,
+                'method'              => $request->method,
+                'reference_number'    => $request->reference_number,
+                'notes'               => $request->notes,
             ]);
 
             return redirect()->route('sales.payments.index')
@@ -93,7 +113,7 @@ class SalesPaymentController extends Controller
 
     public function show(SalesPayment $payment): View
     {
-        $payment->load(['salesInvoice.salesOrder.customer', 'user']);
+        $payment->load(['salesInvoice.salesOrder.customer', 'user', 'chartOfAccount']);
 
         return view('sales.payments.show', compact('payment'));
     }
@@ -102,13 +122,18 @@ class SalesPaymentController extends Controller
     {
         abort_if($payment->isPosted(), 403, 'Penerimaan piutang yang sudah diposting tidak dapat diedit.');
 
-        $payment->load(['salesInvoice.salesOrder.customer', 'salesInvoice.payments']);
+        $payment->load(['salesInvoice.salesOrder.customer', 'salesInvoice.payments', 'chartOfAccount']);
         $invoice = $payment->salesInvoice;
 
         $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
         $maxAllowed = max(0, $invoice->effective_total_amount - $otherPaid);
 
-        return view('sales.payments.edit', compact('payment', 'invoice', 'maxAllowed', 'otherPaid'));
+        $coas = ChartOfAccount::where('is_active', true)
+            ->orderByDesc('is_cash_bank')
+            ->orderBy('code')
+            ->get();
+
+        return view('sales.payments.edit', compact('payment', 'invoice', 'maxAllowed', 'otherPaid', 'coas'));
     }
 
     public function update(Request $request, SalesPayment $payment): RedirectResponse
@@ -116,11 +141,13 @@ class SalesPaymentController extends Controller
         abort_if($payment->isPosted(), 403, 'Penerimaan piutang yang sudah diposting tidak dapat diubah.');
 
         $request->validate([
-            'amount'           => 'required|numeric|min:1',
-            'payment_date'     => 'required|date',
-            'method'           => 'required|in:cash,transfer,giro,cek',
-            'reference_number' => 'nullable|string',
-            'notes'            => 'nullable|string',
+            'chart_of_account_id' => 'required|exists:chart_of_accounts,id',
+            'payment_type'        => 'required|in:kas,bank',
+            'amount'              => 'required|numeric|min:1',
+            'payment_date'        => 'required|date',
+            'method'              => 'required|in:cash,transfer,giro,cek',
+            'reference_number'    => 'nullable|string',
+            'notes'               => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($request, $payment) {
@@ -134,14 +161,16 @@ class SalesPaymentController extends Controller
             }
 
             $payment->update([
-                'amount'           => $request->amount,
-                'payment_date'     => $request->payment_date,
-                'method'           => $request->method,
-                'reference_number' => $request->reference_number,
-                'notes'            => $request->notes,
+                'chart_of_account_id' => $request->chart_of_account_id,
+                'payment_type'        => $request->payment_type,
+                'amount'              => $request->amount,
+                'payment_date'        => $request->payment_date,
+                'method'              => $request->method,
+                'reference_number'    => $request->reference_number,
+                'notes'               => $request->notes,
             ]);
 
-            return redirect()->route('sales.payments.show', $payment)
+            return redirect()->route('sales.payments.index')
                 ->with('success', 'Draft Penerimaan Piutang berhasil diperbarui.');
         });
     }
