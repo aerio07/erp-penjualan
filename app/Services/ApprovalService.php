@@ -85,6 +85,7 @@ class ApprovalService
             'purchase_request' => true,
             'purchase_order'   => true,
             'sales_order'      => true,
+            'goods_receipt'    => true,
             default            => false,
         };
     }

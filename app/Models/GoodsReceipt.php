@@ -5,19 +5,60 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class GoodsReceipt extends Model
 {
     protected $fillable = [
         'receipt_number', 'purchase_order_id', 'warehouse_id',
-        'user_id', 'qc_status', 'is_invoiced', 'purchase_invoice_id',
-        'received_date', 'notes',
+        'user_id', 'qc_status', 'status', 'is_invoiced', 'purchase_invoice_id',
+        'received_date', 'notes', 'approved_by', 'approved_at', 'rejection_reason',
+        'auto_generate_invoice', 'supplier_invoice_number', 'invoice_date', 'due_date', 'invoice_tax_rate',
     ];
 
     protected $casts = [
-        'received_date' => 'date',
-        'is_invoiced' => 'boolean',
+        'received_date'         => 'date',
+        'is_invoiced'           => 'boolean',
+        'approved_at'           => 'datetime',
+        'auto_generate_invoice' => 'boolean',
+        'invoice_date'          => 'date',
+        'due_date'              => 'date',
+        'invoice_tax_rate'      => 'decimal:2',
     ];
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function approvalRequests(): MorphMany
+    {
+        return $this->morphMany(ApprovalRequest::class, 'approvable');
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->status) {
+            'draft'            => 'Draft',
+            'waiting_approval' => 'Menunggu Approval',
+            'confirmed'        => 'Disetujui',
+            'rejected'         => 'Ditolak',
+            'revised'          => 'Perlu Revisi',
+            default            => ucfirst($this->status ?? 'Draft'),
+        };
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return match($this->status) {
+            'draft'            => 'badge-pending',
+            'waiting_approval' => 'badge-warning',
+            'confirmed'        => 'badge-done',
+            'rejected'         => 'badge-cancelled',
+            'revised'          => 'badge-warning',
+            default            => 'badge-secondary',
+        };
+    }
 
     public function purchaseOrder(): BelongsTo
     {

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalRequest;
+use App\Models\GoodsReceipt;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\SalesOrder;
+use App\Http\Controllers\Purchase\GoodsReceiptController;
 use App\Services\ApprovalService;
 use App\Services\StockService;
 use Illuminate\Http\RedirectResponse;
@@ -52,7 +54,9 @@ class ApprovalController extends Controller
         // Update status dokumen terkait
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            if ($approvable instanceof PurchaseRequest) {
+            if ($approvable instanceof GoodsReceipt) {
+                app(GoodsReceiptController::class)->processApproval($approvable, auth()->id());
+            } elseif ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
                     'status'      => 'confirmed',
                     'approved_by' => auth()->id(),
@@ -79,7 +83,14 @@ class ApprovalController extends Controller
         // Ubah status dokumen terkait menjadi cancelled / rejected
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            if ($approvable instanceof PurchaseRequest) {
+            if ($approvable instanceof GoodsReceipt) {
+                $approvable->update([
+                    'status'           => 'rejected',
+                    'rejection_reason' => $request->rejection_reason,
+                    'approved_by'      => auth()->id(),
+                    'approved_at'      => now(),
+                ]);
+            } elseif ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
                     'status'           => 'rejected',
                     'rejection_reason' => $request->rejection_reason,
@@ -115,7 +126,12 @@ class ApprovalController extends Controller
         // Ubah status dokumen terkait untuk direvisi
         $approvable = $approval->approvable;
         if ($approvable && method_exists($approvable, 'update')) {
-            if ($approvable instanceof PurchaseRequest) {
+            if ($approvable instanceof GoodsReceipt) {
+                $approvable->update([
+                    'status'           => 'revised',
+                    'rejection_reason' => $request->revision_reason,
+                ]);
+            } elseif ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
                     'status'           => 'revised',
                     'rejection_reason' => $request->revision_reason,

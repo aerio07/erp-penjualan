@@ -15,6 +15,15 @@
     </x-page-header>
 
     <x-list-filter-bar :action="route('purchase.goods-receipts.index')" placeholder="Cari No Penerimaan, No. PO, Supplier..." :showDateFilter="true">
+        <select name="status" class="form-control filter-select">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="waiting_approval" {{ request('status') === 'waiting_approval' ? 'selected' : '' }}>Menunggu Approval</option>
+            <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>Disetujui</option>
+            <option value="revised" {{ request('status') === 'revised' ? 'selected' : '' }}>Perlu Revisi</option>
+            <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
+        </select>
+
         <select name="is_invoiced" class="form-control filter-select">
             <option value="">Semua Status Faktur</option>
             <option value="0" {{ request('is_invoiced') === '0' ? 'selected' : '' }}>Siap Ditagih</option>
@@ -43,8 +52,9 @@
                 <x-sortable-header column="receipt_number" title="No Penerimaan" />
                 <th>No. PO</th>
                 <th>Supplier</th>
-                <th>Gudang Tujuan</th>
+                <th>Gudang Penerimaan</th>
                 <x-sortable-header column="received_date" title="Tgl Terima" :isDefault="true" />
+                <x-sortable-header column="status" title="Status" />
                 <th>Status Faktur</th>
                 <th>Diterima Oleh</th>
                 <th class="text-center col-actions">Aksi</th>
@@ -70,19 +80,28 @@
             <td>{{ $receipt->purchaseOrder->supplier->name ?? '-' }}</td>
             <td>
                 <span class="badge badge-confirmed">
-                    <i class="fa-solid fa-warehouse"></i> {{ $receipt->warehouse_names }}
+                    <i class="fa-solid fa-warehouse"></i> {{ $receipt->warehouse->name ?? $receipt->warehouse_names }}
                 </span>
             </td>
             <td>{{ $receipt->received_date ? $receipt->received_date->format('d/m/Y') : '-' }}</td>
             <td>
-                @if($receipt->is_invoiced && $receipt->purchaseInvoice)
-                    <a href="{{ route('purchase.invoices.show', $receipt->purchaseInvoice) }}" class="badge badge-info" style="text-decoration:none;" title="Lihat Faktur Pembelian">
-                        <i class="fa-solid fa-file-invoice-dollar"></i> Invoiced
-                    </a>
+                <span class="badge {{ $receipt->status_badge }}">
+                    {{ $receipt->status_label }}
+                </span>
+            </td>
+            <td>
+                @if($receipt->status === 'confirmed')
+                    @if($receipt->is_invoiced && $receipt->purchaseInvoice)
+                        <a href="{{ route('purchase.invoices.show', $receipt->purchaseInvoice) }}" class="badge badge-info" style="text-decoration:none;" title="Lihat Faktur Pembelian">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> Invoiced
+                        </a>
+                    @else
+                        <a href="{{ route('purchase.invoices.create', ['po_id' => $receipt->purchase_order_id, 'grn_id' => $receipt->id]) }}" class="badge badge-pending" style="text-decoration:none;" title="Klik untuk terbitkan tagihan supplier">
+                            <i class="fa-solid fa-plus"></i> Siap Ditagih
+                        </a>
+                    @endif
                 @else
-                    <a href="{{ route('purchase.invoices.create', ['po_id' => $receipt->purchase_order_id, 'grn_id' => $receipt->id]) }}" class="badge badge-pending" style="text-decoration:none;" title="Klik untuk terbitkan tagihan supplier">
-                        <i class="fa-solid fa-plus"></i> Siap Ditagih
-                    </a>
+                    <span style="color:var(--text-secondary); font-size:12px;">-</span>
                 @endif
             </td>
             <td>{{ $receipt->user->name ?? '-' }}</td>
@@ -91,12 +110,33 @@
                     <a href="{{ route('purchase.goods-receipts.show', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
+                    @if(in_array($receipt->status, ['draft', 'revised']))
+                    <a href="{{ route('purchase.goods-receipts.edit', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                    <button type="button" class="btn btn-danger btn-sm btn-icon" 
+                        data-confirm-swal="delete-grn-{{ $receipt->id }}"
+                        data-swal-title="Hapus Draft Penerimaan?"
+                        data-swal-html="Hapus draft penerimaan <strong>{{ $receipt->receipt_number }}</strong>? Tindakan ini tidak dapat dibatalkan."
+                        data-swal-icon="warning"
+                        data-swal-icon-color="#ef4444"
+                        data-swal-btn-text="Ya, Hapus"
+                        data-swal-btn-icon="fa-solid fa-trash"
+                        data-swal-btn-class="btn btn-danger"
+                        title="Hapus Draft">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <form id="delete-grn-{{ $receipt->id }}" method="POST" action="{{ route('purchase.goods-receipts.destroy', $receipt) }}" style="display:none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    @endif
                 </div>
             </td>
         </tr>
         @empty
         <tr>
-            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-boxes-stacked" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada catatan penerimaan barang yang sesuai filter
             </td>

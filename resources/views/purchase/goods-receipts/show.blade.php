@@ -4,32 +4,150 @@
 
 @section('content')
 <div class="animate-in">
+    <form id="form-submit-grn" method="POST" action="{{ route('purchase.goods-receipts.submit', $goodsReceipt) }}" style="display:none;">
+        @csrf
+    </form>
+
     <x-detail-header 
         :title="$goodsReceipt->receipt_number" 
         :subtitle="'Penerimaan untuk PO: ' . ($goodsReceipt->purchaseOrder->po_number ?? '-')"
-        status="done"
+        :status="$goodsReceipt->status ?? 'draft'"
         :back-url="route('purchase.goods-receipts.index')"
     >
         <x-slot:actions>
-            @if(!$goodsReceipt->is_invoiced)
-            <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary">
-                <i class="fa-solid fa-file-invoice-dollar"></i> Lempar ke Invoice / Buat Tagihan
+            @if(in_array($goodsReceipt->status, ['draft', 'revised', 'rejected']))
+            <a href="{{ route('purchase.goods-receipts.edit', $goodsReceipt) }}" class="btn btn-secondary">
+                <i class="fa-solid fa-pen"></i> Edit Penerimaan
+            </a>
+
+            <button type="button" class="btn btn-primary"
+                data-confirm-swal="form-submit-grn"
+                data-swal-title="Ajukan Approval"
+                data-swal-html="Ajukan Penerimaan Barang <strong>{{ $goodsReceipt->receipt_number }}</strong> untuk persetujuan (approval)?<br><span style='font-size:12.5px; color:#64748b;'>Dokumen akan dikirim ke Menu Approval. Stok akan dicatat setelah disetujui.</span>"
+                data-swal-icon="question"
+                data-swal-icon-color="#2563eb"
+                data-swal-btn-text="Ya, Ajukan Approval"
+                data-swal-btn-icon="fa-solid fa-paper-plane"
+                data-swal-btn-class="btn btn-primary"
+            >
+                <i class="fa-solid fa-paper-plane"></i> Ajukan Approval
+            </button>
+            @endif
+
+            @if($goodsReceipt->status === 'waiting_approval' && auth()->user()->isAdmin())
+            <a href="{{ route('approvals.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-stamp"></i> Buka Menu Approval
             </a>
             @endif
 
-            @if($goodsReceipt->items->sum('qty_rejected') > 0 || $goodsReceipt->items->sum('qty_received') > 0)
-            <a href="{{ route('purchase.returns.create', ['grn_id' => $goodsReceipt->id]) }}" class="btn btn-warning">
-                <i class="fa-solid fa-rotate-left"></i> Buat Retur Pembelian
-            </a>
+            @if($goodsReceipt->status === 'confirmed')
+                @if(!$goodsReceipt->is_invoiced)
+                <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Lempar ke Invoice / Buat Tagihan
+                </a>
+                @endif
+
+                @if($goodsReceipt->items->sum('qty_rejected') > 0 || $goodsReceipt->items->sum('qty_received') > 0)
+                <a href="{{ route('purchase.returns.create', ['grn_id' => $goodsReceipt->id]) }}" class="btn btn-warning">
+                    <i class="fa-solid fa-rotate-left"></i> Buat Retur Pembelian
+                </a>
+                @endif
             @endif
         </x-slot:actions>
     </x-detail-header>
 
+    {{-- Banner Status: Perlu Revisi --}}
+    @if($goodsReceipt->status === 'revised')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#92400e; font-size:15px;">
+                    Permintaan Revisi dari Approver
+                </div>
+                <div style="color:#78350f; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fffbeb; border:1px dashed #fcd34d; border-radius:8px;">
+                    <i class="fa-solid fa-comment-dots" style="margin-right:6px; color:#d97706;"></i>
+                    <strong>Catatan Revisi:</strong> {{ $goodsReceipt->rejection_reason ?: 'Harap periksa kembali detail penerimaan barang ini.' }}
+                </div>
+                <div style="color:#b45309; font-size:12.5px; margin-top:8px;">
+                    <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
+                    Silakan klik tombol <strong>"Edit Penerimaan"</strong> di atas untuk menyesuaikan kuantiti fisik atau barang rusak, lalu klik <strong>"Ajukan Approval"</strong> untuk mengajukan ulang.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Banner Status: Ditolak (Rejected) --}}
+    @if($goodsReceipt->status === 'rejected')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fef2f2; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#991b1b; font-size:15px;">
+                    Dokumen Penerimaan Ditolak oleh Approver
+                </div>
+                <div style="color:#7f1d1d; font-size:13.5px; margin-top:6px; padding:10px 14px; background:#fef2f2; border:1px dashed #fca5a5; border-radius:8px;">
+                    <i class="fa-solid fa-comment-dots" style="margin-right:6px; color:#dc2626;"></i>
+                    <strong>Alasan Penolakan:</strong> {{ $goodsReceipt->rejection_reason ?: 'Penerimaan barang ini ditolak.' }}
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Banner Status: Waiting Approval --}}
+    @if($goodsReceipt->status === 'waiting_approval')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #3b82f6; background: #eff6ff;">
+        <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:center;">
+            <div style="width:40px; height:40px; border-radius:10px; background:#dbeafe; color:#1d4ed8; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#1e40af; font-size:15px;">
+                    Menunggu Persetujuan (Approval)
+                </div>
+                <div style="color:#1e3a8a; font-size:13px; margin-top:2px;">
+                    Dokumen telah diajukan dan sedang menunggu persetujuan dari Approver. Stok gudang akan otomatis bertambah setelah disetujui.
+                </div>
+            </div>
+            @if(auth()->user()->isAdmin())
+            <a href="{{ route('approvals.index') }}" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-stamp"></i> Proses di Menu Approval
+            </a>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- Banner Status: Draft --}}
+    @if($goodsReceipt->status === 'draft')
+    <div class="card" style="margin-bottom:20px; border-left: 4px solid #64748b; background: #f8fafc;">
+        <div class="card-body" style="padding:14px 20px; display:flex; gap:14px; align-items:center;">
+            <div style="width:36px; height:36px; border-radius:8px; background:#e2e8f0; color:#475569; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">
+                <i class="fa-solid fa-file-lines"></i>
+            </div>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#334155; font-size:14px;">
+                    Status Dokumen: Draft
+                </div>
+                <div style="color:#64748b; font-size:12.5px; margin-top:2px;">
+                    Dokumen ini masih berupa draft. Stok gudang belum diperbarui. Klik <strong>"Ajukan Approval"</strong> jika data fisik sudah benar dan siap disetujui.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-3" style="margin-bottom:20px;">
         <div class="card" style="grid-column:span 2;">
-            <div class="card-header">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>Informasi Penerimaan</h3>
-                <span class="badge badge-done">Passed QC</span>
+                <span class="badge {{ $goodsReceipt->status_badge }}">{{ $goodsReceipt->status_label }}</span>
             </div>
             <div class="card-body">
                 <div class="form-row form-row-2">
@@ -39,9 +157,9 @@
                         <div style="font-size:13px; color:var(--text-secondary);">{{ $goodsReceipt->purchaseOrder->supplier->phone ?? '' }}</div>
                     </div>
                     <div>
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Gudang Penyimpanan</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Gudang Penerimaan</div>
                         <div style="font-weight:600; color:var(--primary);">
-                            <i class="fa-solid fa-warehouse"></i> {{ $goodsReceipt->warehouse_names }}
+                            <i class="fa-solid fa-warehouse"></i> {{ $goodsReceipt->warehouse->name ?? $goodsReceipt->warehouse_names }}
                         </div>
                     </div>
                     <div>
@@ -53,6 +171,13 @@
                         <div style="font-weight:600;">{{ $goodsReceipt->user->name ?? '-' }}</div>
                     </div>
                 </div>
+
+                @if($goodsReceipt->approvedBy)
+                <div style="margin-top:16px; padding:10px 14px; background:#ecfdf5; border-radius:8px; font-size:13px; color:#065f46; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-circle-check" style="color:#059669;"></i>
+                    <span>Disetujui oleh <strong>{{ $goodsReceipt->approvedBy->name }}</strong> pada {{ $goodsReceipt->approved_at?->format('d/m/Y H:i') }}</span>
+                </div>
+                @endif
 
                 @if($goodsReceipt->notes)
                 <div style="margin-top:16px; padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; color:var(--text-secondary);">
@@ -120,14 +245,14 @@
                             </span>
                         </div>
                     </div>
-                    @elseif(!$goodsReceipt->is_invoiced)
+                    @elseif(!$goodsReceipt->is_invoiced && $goodsReceipt->status === 'confirmed')
                     <hr style="border:none; border-top:1px solid var(--border); margin:0;">
                     <div style="padding:12px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0;">
                         <div style="font-size:12px; font-weight:600; color:#166534; margin-bottom:4px;">
                             <i class="fa-solid fa-circle-check"></i> Siap Diterbitkan Invoice
                         </div>
                         <p style="font-size:12px; color:var(--text-secondary); margin:0 0 10px 0;">
-                            Barang telah masuk gudang. Anda dapat langsung menerbitkan faktur tagihan supplier sekarang.
+                            Barang telah disetujui dan masuk gudang. Anda dapat menerbitkan faktur tagihan supplier sekarang.
                         </p>
                         <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
                             <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice Pembelian
@@ -141,14 +266,13 @@
 
     {{-- Item Table --}}
     <div class="card">
-        <div class="card-header"><h3>Detail Item Diterima & Alokasi Gudang</h3></div>
+        <div class="card-header"><h3>Detail Item Diterima</h3></div>
         <div class="table-responsive">
             <table class="erp-table">
                 <thead>
                     <tr>
-                        <th style="width:40px;">#</th>
+                        <th style="width:40px; text-align:center;">#</th>
                         <th>Produk</th>
-                        <th>Gudang Tujuan</th>
                         <th style="text-align:center;">Qty Baik (Stok Masuk)</th>
                         <th style="text-align:center;">Qty Rusak (Reject)</th>
                         <th style="text-align:right;">Harga Acuan HPP</th>
@@ -159,15 +283,10 @@
                 <tbody>
                     @foreach($goodsReceipt->items as $idx => $item)
                     <tr>
-                        <td>{{ $idx + 1 }}</td>
+                        <td style="text-align:center;">{{ $idx + 1 }}</td>
                         <td>
                             <div style="font-weight:600;">{{ $item->purchaseOrderItem->product->name ?? '-' }}</div>
                             <div style="font-size:12px; color:var(--text-secondary);">{{ $item->purchaseOrderItem->product->sku ?? '-' }}</div>
-                        </td>
-                        <td>
-                            <span class="badge badge-confirmed">
-                                <i class="fa-solid fa-warehouse"></i> {{ $item->warehouse->name ?? '-' }}
-                            </span>
                         </td>
                         <td style="text-align:center; font-weight:600; color:var(--success);">
                             {{ $item->qty_received }} {{ $item->purchaseOrderItem->product->unit ?? 'pcs' }}

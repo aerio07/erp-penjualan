@@ -112,7 +112,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     Route::middleware('role:admin,gudang')->prefix('purchase')->name('purchase.')->group(function () {
-        Route::resource('goods-receipts', GoodsReceiptController::class)->only(['index', 'create', 'store', 'show']);
+        Route::post('goods-receipts/{goods_receipt}/submit', [GoodsReceiptController::class, 'submit'])->name('goods-receipts.submit');
+        Route::resource('goods-receipts', GoodsReceiptController::class);
     });
 
     Route::middleware('role:admin,finance')->prefix('purchase')->name('purchase.')->group(function () {

@@ -51,6 +51,7 @@
             <option value="">Semua Dokumen</option>
             <option value="App\Models\PurchaseRequest" {{ request('approvable_type') === 'App\Models\PurchaseRequest' ? 'selected' : '' }}>Purchase Request</option>
             <option value="App\Models\PurchaseOrder" {{ request('approvable_type') === 'App\Models\PurchaseOrder' ? 'selected' : '' }}>Purchase Order</option>
+            <option value="App\Models\GoodsReceipt" {{ request('approvable_type') === 'App\Models\GoodsReceipt' ? 'selected' : '' }}>Penerimaan Barang (LPB)</option>
             <option value="App\Models\SalesOrder" {{ request('approvable_type') === 'App\Models\SalesOrder' ? 'selected' : '' }}>Sales Order</option>
         </select>
     </x-list-filter-bar>
@@ -78,7 +79,7 @@
                     @forelse($pendingApprovals as $app)
                     @php
                         $doc = $app->approvable;
-                        $docNum = $doc->po_number ?? $doc->so_number ?? $doc->pr_number ?? '#'.$app->approvable_id;
+                        $docNum = $doc->receipt_number ?? $doc->po_number ?? $doc->so_number ?? $doc->pr_number ?? '#'.$app->approvable_id;
                         $docRoute = '#';
                         $docTypeLabel = 'Dokumen';
                         $badgeClass = 'badge-confirmed';
@@ -91,6 +92,10 @@
                             $docRoute = route('purchase.orders.show', $app->approvable_id);
                             $docTypeLabel = 'PO';
                             $badgeClass = 'badge-confirmed';
+                        } elseif ($app->approvable_type === 'App\Models\GoodsReceipt') {
+                            $docRoute = route('purchase.goods-receipts.show', $app->approvable_id);
+                            $docTypeLabel = 'LPB';
+                            $badgeClass = 'badge-primary';
                         } elseif ($app->approvable_type === 'App\Models\SalesOrder') {
                             $docRoute = route('sales.orders.show', $app->approvable_id);
                             $docTypeLabel = 'SO';
@@ -201,7 +206,7 @@
                     @forelse($myApprovals as $app)
                     @php
                         $doc = $app->approvable;
-                        $docNum = $doc->po_number ?? $doc->so_number ?? $doc->pr_number ?? ($app->approvable_id ? '#'.$app->approvable_id : '-');
+                        $docNum = $doc->receipt_number ?? $doc->po_number ?? $doc->so_number ?? $doc->pr_number ?? ($app->approvable_id ? '#'.$app->approvable_id : '-');
                         $docRoute = '#';
                         $typeLabel = 'Dokumen';
                         $badgeClass = 'badge-confirmed';
@@ -214,6 +219,10 @@
                             $docRoute = $app->approvable_id ? route('purchase.orders.show', $app->approvable_id) : '#';
                             $typeLabel = 'PO';
                             $badgeClass = 'badge-confirmed';
+                        } elseif ($app->approvable_type === 'App\Models\GoodsReceipt') {
+                            $docRoute = $app->approvable_id ? route('purchase.goods-receipts.show', $app->approvable_id) : '#';
+                            $typeLabel = 'LPB';
+                            $badgeClass = 'badge-primary';
                         } elseif ($app->approvable_type === 'App\Models\SalesOrder') {
                             $docRoute = $app->approvable_id ? route('sales.orders.show', $app->approvable_id) : '#';
                             $typeLabel = 'SO';
