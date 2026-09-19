@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Catat Penerimaan Barang')
-@section('page-title', 'Catat Penerimaan Barang (GRN)')
+@section('page-title', 'Catat Penerimaan Barang')
 
 @section('content')
 <div class="animate-in" x-data="grnForm()">
     <x-page-header 
-        title="Catat Penerimaan Barang (GRN)" 
+        title="Catat Penerimaan Barang" 
         subtitle="Input total barang fisik yang datang dari supplier dan jumlah yang rusak. Qty kondisi baik yang masuk stok akan dihitung otomatis."
         :back-url="route('purchase.goods-receipts.index')"
     />

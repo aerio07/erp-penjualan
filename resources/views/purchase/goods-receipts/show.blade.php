@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Detail GRN - ' . $goodsReceipt->receipt_number)
-@section('page-title', 'Detail Penerimaan Barang (GRN)')
+@section('title', 'Detail Penerimaan Barang - ' . $goodsReceipt->receipt_number)
+@section('page-title', 'Detail Penerimaan Barang')
 
 @section('content')
 <div class="animate-in">

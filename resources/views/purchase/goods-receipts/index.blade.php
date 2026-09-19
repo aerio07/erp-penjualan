@@ -14,7 +14,7 @@
         </x-slot:actions>
     </x-page-header>
 
-    <x-list-filter-bar :action="route('purchase.goods-receipts.index')" placeholder="Cari GRN, No. PO, Supplier..." :showDateFilter="true">
+    <x-list-filter-bar :action="route('purchase.goods-receipts.index')" placeholder="Cari No Penerimaan, No. PO, Supplier..." :showDateFilter="true">
         <select name="is_invoiced" class="form-control filter-select">
             <option value="">Semua Status Faktur</option>
             <option value="0" {{ request('is_invoiced') === '0' ? 'selected' : '' }}>Siap Ditagih</option>
@@ -40,7 +40,7 @@
     <x-data-table :paginator="$receipts">
         <x-slot:head>
             <tr>
-                <x-sortable-header column="receipt_number" title="No. GRN" />
+                <x-sortable-header column="receipt_number" title="No Penerimaan" />
                 <th>No. PO</th>
                 <th>Supplier</th>
                 <th>Gudang Tujuan</th>
