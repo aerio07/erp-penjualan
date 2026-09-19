@@ -49,7 +49,6 @@
                 <th>Supplier</th>
                 <x-sortable-header column="order_date" title="Tanggal" :isDefault="true" />
                 <x-sortable-header column="expected_date" title="Estimasi Kirim" />
-                <th style="text-align:right;">Diskon</th>
                 <x-sortable-header column="total_amount" title="Total" align="right" />
                 <x-sortable-header column="status" title="Status" align="center" />
                 <th class="text-center col-actions">Aksi</th>
@@ -66,21 +65,6 @@
             <td>{{ $order->supplier->name ?? '-' }}</td>
             <td>{{ $order->order_date ? $order->order_date->format('d/m/Y') : '-' }}</td>
             <td>{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
-            <td style="text-align:right;">
-                @php
-                    $itemDiscountTotal = $order->items->sum(function($item) {
-                        return ($item->qty_ordered * $item->unit_price) * (($item->discount_percent ?? 0) / 100);
-                    });
-                    $totalDiscount = ($order->discount_amount ?? 0) + $itemDiscountTotal;
-                @endphp
-                @if($totalDiscount > 0)
-                    <span style="font-weight:600; color:var(--danger); font-size:13px;" title="Diskon Item + Header">
-                        -Rp {{ number_format($totalDiscount, 0, ',', '.') }}
-                    </span>
-                @else
-                    <span style="color:var(--text-secondary); font-size:13px;">-</span>
-                @endif
-            </td>
             <td style="text-align:right;">
                 <div style="font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
             </td>
@@ -122,7 +106,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-inbox" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada Purchase Order yang sesuai filter
             </td>

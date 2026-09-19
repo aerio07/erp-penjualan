@@ -154,11 +154,7 @@
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3>Item Purchase Order</h3>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    @if($order->purchase_request_id)
-                    <span class="badge" style="background: #e0e7ff; color: #3730a3; font-size: 11.5px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-lock"></i> Qty Terkunci Mengikuti PR
-                    </span>
-                    @else
+                    @if(!$order->purchase_request_id)
                     <button type="button" class="btn btn-primary btn-sm" @click="addRow()">
                         <i class="fa-solid fa-plus"></i> Tambah Item
                     </button>
@@ -181,6 +177,18 @@
                         <template x-for="(row, idx) in rows" :key="idx">
                             <tr>
                                 <td style="vertical-align: top !important;">
+                                    @if($order->purchase_request_id)
+                                    {{-- Produk dari PR: tampilkan sebagai teks statis, tidak bisa diganti --}}
+                                    <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
+                                    <div 
+                                        class="form-control"
+                                        style="display: flex !important; align-items: center !important; min-height: 38px !important; height: 38px !important; background: #f8fafc; cursor: default; padding: 0 0.75rem !important; border-radius: 0.5rem; color: #334155; font-weight: 600;"
+                                    >
+                                        <span x-text="products[row.product_id] ? (products[row.product_id].name + ' (' + products[row.product_id].sku + ')') : '-'"
+                                              style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                                        ></span>
+                                    </div>
+                                    @else
                                     <div style="position: relative; width: 100%;" x-data="{ openProd: false, prodSearch: '' }" @click.outside="openProd = false" @keydown.escape.window="openProd = false">
                                         <input type="hidden" :name="`items[${idx}][product_id]`" :value="row.product_id" required>
                                         
@@ -246,6 +254,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @endif
                                 </td>
                                 <td style="vertical-align: top !important;">
                                     <input 
