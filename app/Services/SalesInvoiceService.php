@@ -55,7 +55,7 @@ class SalesInvoiceService
 
         $termDays = $so->customer?->payment_term_days ?? 30;
         $dueDate = $data['due_date'] ?? \Carbon\Carbon::parse($invoiceDate)->addDays($termDays)->toDateString();
-        $notes = $data['notes'] ?? ("Auto-generated from Surat Jalan #" . $delivery->delivery_number);
+        $notes = !empty(trim($data['notes'] ?? '')) ? trim($data['notes']) : null;
 
         $subtotalDelivery = 0;
         $cogs = 0;

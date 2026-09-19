@@ -290,7 +290,7 @@ class SalesInvoiceController extends Controller
 
                 $this->salesInvoiceService->postInvoice($invoice);
 
-                return redirect()->route('sales.invoices.show', $invoice)
+                return redirect()->route('sales.invoices.index')
                     ->with('success', "Invoice Penjualan #{$invoice->invoice_number} berhasil diposting dan Jurnal Akuntansi otomatis diterbitkan.");
             });
         } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {

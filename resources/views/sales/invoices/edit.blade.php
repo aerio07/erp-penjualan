@@ -136,7 +136,7 @@
                         rows="3" 
                         class="form-control @error('notes') is-invalid @enderror"
                         placeholder="Catatan internal atau keterangan tambahan mengenai faktur ini..."
-                    >{{ old('notes', $invoice->notes) }}</textarea>
+                    >{{ old('notes', (!empty($invoice->notes) && !str_starts_with($invoice->notes, 'Auto-generated') ? $invoice->notes : '')) }}</textarea>
                     @error('notes')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

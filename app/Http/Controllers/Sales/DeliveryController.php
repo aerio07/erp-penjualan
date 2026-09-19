@@ -232,7 +232,7 @@ class DeliveryController extends Controller
                     'invoice_date' => $invDate,
                     'due_date'     => $calcDueDate,
                     'tax_rate'     => $request->filled('invoice_tax_rate') ? (float) $request->invoice_tax_rate : (float) ($so->tax_rate ?? 0),
-                    'notes'        => $request->notes ?? ("Auto-generated dari Surat Jalan #{$deliveryNumber}"),
+                    'notes'        => !empty(trim($request->notes ?? '')) ? trim($request->notes) : null,
                 ], asDraft: false);
 
                 return redirect()->route('sales.deliveries.index')
