@@ -210,8 +210,8 @@
 @section('signatures')
     @include('pdf.partials.signatures', [
         'cols' => [
-            ['label' => 'Dibuat Oleh:', 'name' => auth()->user()?->name ?? 'Bagian Billing', 'role' => 'Billing Staff'],
-            ['label' => 'Mengetahui:', 'name' => 'Manager Keuangan', 'role' => 'Finance & Accounting'],
+            ['label' => 'Dibuat Oleh:', 'name' => auth()->user()?->name ?? 'Bagian Billing', 'role' => 'Staff Penagihan'],
+            ['label' => 'Mengetahui:', 'name' => 'Manager Keuangan', 'role' => 'Keuangan & Akuntansi'],
             ['label' => 'Diterima Oleh:', 'name' => $invoice->salesOrder->customer->name ?? 'Customer', 'role' => 'Customer / Penerima'],
         ]
     ])

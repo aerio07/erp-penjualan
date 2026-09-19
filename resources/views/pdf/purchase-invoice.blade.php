@@ -179,8 +179,8 @@
 @section('signatures')
     @include('pdf.partials.signatures', [
         'cols' => [
-            ['label' => 'Dibuat Oleh:', 'name' => auth()->user()?->name ?? 'Bagian Pembelian', 'role' => 'Purchasing Staff'],
-            ['label' => 'Menyetujui:', 'name' => 'Manager Keuangan', 'role' => 'Finance & Accounting'],
+            ['label' => 'Dibuat Oleh:', 'name' => auth()->user()?->name ?? 'Bagian Pembelian', 'role' => 'Staff Pembelian'],
+            ['label' => 'Menyetujui:', 'name' => 'Manager Keuangan', 'role' => 'Keuangan & Akuntansi'],
             ['label' => 'Pihak Supplier:', 'name' => $invoice->purchaseOrder->supplier->name ?? 'Supplier', 'role' => 'Supplier / Penagih'],
         ]
     ])

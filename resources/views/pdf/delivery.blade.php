@@ -115,7 +115,7 @@
         'cols' => [
             ['label' => 'Diterima Oleh:', 'name' => $delivery->recipient_name ?? $delivery->salesOrder->customer->name ?? 'Customer', 'role' => 'Penerima / Customer'],
             ['label' => 'Pengemudi / Kurir:', 'name' => '( ................................ )', 'role' => 'Ekspedisi / Pengantar'],
-            ['label' => 'Petugas Gudang:', 'name' => $delivery->user->name ?? 'Kepala Gudang', 'role' => 'Warehouse Staff'],
+            ['label' => 'Petugas Gudang:', 'name' => $delivery->user->name ?? 'Kepala Gudang', 'role' => 'Staff Gudang'],
         ]
     ])
 @endsection

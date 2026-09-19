@@ -168,14 +168,14 @@
                     </tr>
                     <tr>
                         <td style="border-bottom: 1px solid #333333; font-weight: bold;">
-                            {{ $payment->user->name ?? 'Staff Finance' }}
+                            {{ $payment->user->name ?? 'Staff Keuangan' }}
                         </td>
                         <td style="border-bottom: 1px solid #333333; font-weight: bold;">
-                            Finance Manager
+                            Manajer Keuangan
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-size: 7pt; color: #666666; padding-top: 2px;">Finance & Kasir</td>
+                        <td style="font-size: 7pt; color: #666666; padding-top: 2px;">Keuangan & Kasir</td>
                         <td style="font-size: 7pt; color: #666666; padding-top: 2px;">Otorisasi Kas/Bank</td>
                     </tr>
                 </table>

@@ -31,13 +31,13 @@
                 <div class="party-name">{{ $order->supplier->name ?? '-' }}</div>
                 <div class="party-info">
                     @if(!empty($order->supplier->contact_person))
-                        Attn: {{ $order->supplier->contact_person }}<br>
+                        U/p: {{ $order->supplier->contact_person }}<br>
                     @endif
                     @if(!empty($order->supplier->address))
                         {{ $order->supplier->address }}<br>
                     @endif
                     @if(!empty($order->supplier->phone))
-                        Phone: {{ $order->supplier->phone }}<br>
+                        Telp: {{ $order->supplier->phone }}<br>
                     @endif
                     @if(!empty($order->supplier->email))
                         Email: {{ $order->supplier->email }}<br>
@@ -45,15 +45,15 @@
                 </div>
             </td>
             <td style="width: 48%; vertical-align: top;">
-                <div class="section-heading">ORDER DETAILS</div>
+                <div class="section-heading">RINCIAN PESANAN</div>
                 <table class="details-table">
                     <tr>
-                        <td class="detail-label">Date</td>
+                        <td class="detail-label">Tanggal</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
                     </tr>
                     <tr>
-                        <td class="detail-label">Expected Delivery</td>
+                        <td class="detail-label">Estimasi Pengiriman</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->expected_date ? $order->expected_date->format('d/m/Y') : '-' }}</td>
                     </tr>
@@ -65,7 +65,7 @@
                     </tr>
                     @endif
                     <tr>
-                        <td class="detail-label">Purchasing Staff</td>
+                        <td class="detail-label">Staff Pembelian</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
                     </tr>
@@ -76,7 +76,7 @@
 
     {{-- ITEMS SECTION --}}
     <div class="items-section">
-        <div class="section-heading">ITEMS ORDERED</div>
+        <div class="section-heading">DAFTAR BARANG DIPESAN</div>
         <table class="items-table">
             <thead>
                 <tr>
@@ -134,7 +134,7 @@
         <tr>
             <td style="width: 50%; vertical-align: top;">
                 @if($order->notes)
-                    <div class="section-heading">NOTES</div>
+                    <div class="section-heading">CATATAN</div>
                     <div style="font-size: 8pt; color: #555; line-height: 1.4; padding-right: 20px;">
                         {{ $order->notes }}
                     </div>
@@ -173,7 +173,7 @@
 
     {{-- TERMS & CONDITIONS --}}
     <div class="terms-section">
-        <div class="section-heading">TERMS & CONDITIONS</div>
+        <div class="section-heading">SYARAT & KETENTUAN</div>
         <div class="terms-content">
             Faktur (Invoice) dan Surat Jalan wajib mencantumkan nomor Purchase Order ini. Barang yang dikirim harus sesuai spesifikasi yang tertera. Terima kasih atas kerja sama Anda.
         </div>

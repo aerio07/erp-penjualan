@@ -23,17 +23,17 @@
     <table class="parties-table">
         <tr>
             <td style="width: 52%; vertical-align: top; padding-right: 15px;">
-                <div class="section-heading">BILL TO / CUSTOMER</div>
+                <div class="section-heading">PELANGGAN / CUSTOMER</div>
                 <div class="party-name">{{ $order->customer->name ?? '-' }}</div>
                 <div class="party-info">
                     @if(!empty($order->customer->contact_person))
-                        Attn: {{ $order->customer->contact_person }}<br>
+                        U/p: {{ $order->customer->contact_person }}<br>
                     @endif
                     @if(!empty($order->customer->address))
                         {{ $order->customer->address }}<br>
                     @endif
                     @if(!empty($order->customer->phone))
-                        Phone: {{ $order->customer->phone }}<br>
+                        Telp: {{ $order->customer->phone }}<br>
                     @endif
                     @if(!empty($order->customer->email))
                         Email: {{ $order->customer->email }}<br>
@@ -41,25 +41,25 @@
                 </div>
             </td>
             <td style="width: 48%; vertical-align: top;">
-                <div class="section-heading">ORDER DETAILS</div>
+                <div class="section-heading">RINCIAN PESANAN</div>
                 <table class="details-table">
                     <tr>
-                        <td class="detail-label">Date</td>
+                        <td class="detail-label">Tanggal</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->order_date ? $order->order_date->format('d/m/Y') : date('d/m/Y') }}</td>
                     </tr>
                     <tr>
-                        <td class="detail-label">Expected Delivery</td>
+                        <td class="detail-label">Estimasi Pengiriman</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</td>
                     </tr>
                     <tr>
-                        <td class="detail-label">Channel</td>
+                        <td class="detail-label">Saluran Penjualan</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ ucfirst($order->channel ?? 'offline') }}</td>
                     </tr>
                     <tr>
-                        <td class="detail-label">Sales Representative</td>
+                        <td class="detail-label">Tenaga Penjual</td>
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
                     </tr>
@@ -89,13 +89,13 @@
 
     {{-- ITEMS SECTION --}}
     <div class="items-section">
-        <div class="section-heading">ITEMS ORDERED</div>
+        <div class="section-heading">DAFTAR BARANG DIPESAN</div>
         <table class="items-table">
             <thead>
                 <tr>
-                    <th class="text-left" style="width: 44%;">Description</th>
-                    <th class="text-center" style="width: 14%;">Quantity</th>
-                    <th class="text-right" style="width: 21%;">Unit Price</th>
+                    <th class="text-left" style="width: 44%;">Deskripsi Barang</th>
+                    <th class="text-center" style="width: 14%;">Jumlah</th>
+                    <th class="text-right" style="width: 21%;">Harga Satuan</th>
                     <th class="text-right" style="width: 21%;">Total</th>
                 </tr>
             </thead>
@@ -140,7 +140,7 @@
         <tr>
             <td style="width: 55%; vertical-align: top;">
                 @if($order->notes)
-                    <div class="section-heading">NOTES</div>
+                    <div class="section-heading">CATATAN</div>
                     <div style="font-size: 8pt; color: #555; line-height: 1.4; padding-right: 20px;">
                         {{ $order->notes }}
                     </div>
@@ -191,7 +191,7 @@
 
     {{-- TERMS & CONDITIONS --}}
     <div class="terms-section">
-        <div class="section-heading">TERMS & CONDITIONS</div>
+        <div class="section-heading">SYARAT & KETENTUAN</div>
         <div class="terms-content">
             Barang yang dipesan akan disiapkan dan dikirim sesuai tanggal target pengiriman. Pembayaran resmi ditujukan ke rekening perusahaan yang tertera pada Invoice. Terima kasih atas pesanan Anda.
         </div>

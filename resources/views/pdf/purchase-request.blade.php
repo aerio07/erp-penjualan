@@ -23,7 +23,7 @@
                 </div>
             </td>
             <td style="width: 48%; vertical-align: top;">
-                <div class="section-heading">REQUEST DETAILS</div>
+                <div class="section-heading">RINCIAN PERMINTAAN</div>
                 <table class="details-table">
                     <tr>
                         <td class="detail-label">Tanggal Pengajuan</td>
@@ -120,7 +120,7 @@
     @include('pdf.partials.signatures', [
         'cols' => [
             ['label' => 'Diajukan Oleh', 'name' => $purchase_request->user->name ?? 'Pemohon', 'role' => 'Pemohon / Staff'],
-            ['label' => 'Mengetahui', 'name' => 'Kepala Divisi ' . ($purchase_request->division ?? ''), 'role' => 'Head of Department'],
+            ['label' => 'Mengetahui', 'name' => 'Kepala Divisi ' . ($purchase_request->division ?? ''), 'role' => 'Kepala Departemen'],
             ['label' => 'Disetujui Oleh', 'name' => $approverName ?: 'Manajemen / Purchasing', 'role' => 'Approval / Purchasing'],
         ]
     ])
