@@ -4,6 +4,54 @@
 @section('doc-title', $payment->voucher_title)
 @section('doc-subtitle', $payment->voucher_number)
 
+@section('extra_css')
+<style>
+    @page {
+        size: a5 portrait;
+        margin: 12mm 18mm 12mm 18mm;
+    }
+    body {
+        padding: 0 10px !important;
+        font-size: 8pt;
+        line-height: 1.35;
+    }
+    .doc-header {
+        margin-bottom: 8px;
+    }
+    .doc-title {
+        font-size: 15pt;
+        margin-bottom: 2px;
+    }
+    .doc-subtitle {
+        font-size: 8.5pt;
+    }
+    .header-divider {
+        margin: 8px 0 12px 0;
+    }
+    .parties-table {
+        margin-bottom: 12px;
+    }
+    .section-heading {
+        font-size: 7.5pt;
+        margin-bottom: 4px;
+    }
+    .party-name {
+        font-size: 9pt;
+    }
+    .party-info, .details-table td {
+        font-size: 8pt;
+    }
+    .items-table thead th {
+        font-size: 7.5pt;
+        padding: 5px 6px;
+    }
+    .items-table tbody td {
+        font-size: 8pt;
+        padding: 6px 6px;
+    }
+</style>
+@endsection
+
 @section('content')
     {{-- SUPPLIER & PAYMENT DETAILS SECTION (Side by Side) --}}
     <table class="parties-table">
@@ -58,7 +106,7 @@
     </table>
 
     {{-- PAYMENT ALLOCATION TABLE --}}
-    <div class="section-heading" style="margin-top: 15px; margin-bottom: 6px;">ALOKASI PEMBAYARAN HUTANG:</div>
+    <div class="section-heading" style="margin-top: 12px; margin-bottom: 6px;">ALOKASI PEMBAYARAN HUTANG:</div>
     <table class="items-table">
         <thead>
             <tr>
@@ -76,10 +124,10 @@
                 <td>
                     <span class="item-name">{{ $payment->purchaseInvoice->invoice_number ?? '-' }}</span>
                     @if($payment->purchaseInvoice->supplier_invoice_number)
-                        <br><span style="font-size: 8pt; color: #555555;">(No. Faktur Vendor: {{ $payment->purchaseInvoice->supplier_invoice_number }})</span>
+                        <br><span style="font-size: 7.5pt; color: #555555;">(No. Faktur Vendor: {{ $payment->purchaseInvoice->supplier_invoice_number }})</span>
                     @endif
                     @if($payment->purchaseInvoice->purchaseOrder?->po_number)
-                        <br><span style="font-size: 8pt; color: #555555;">(Ref. PO: {{ $payment->purchaseInvoice->purchaseOrder->po_number }})</span>
+                        <br><span style="font-size: 7.5pt; color: #555555;">(Ref. PO: {{ $payment->purchaseInvoice->purchaseOrder->po_number }})</span>
                     @endif
                 </td>
                 <td style="text-align: center;">{{ $payment->purchaseInvoice->invoice_date ? $payment->purchaseInvoice->invoice_date->format('d/m/Y') : '-' }}</td>
@@ -89,37 +137,37 @@
             </tr>
         </tbody>
         <tfoot>
+            <tr class="grand-total-row">
+                <td colspan="5" style="text-align: right; font-weight: bold; padding: 6px 8px; text-transform: uppercase; border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e2e8f0;">TOTAL:</td>
+                <td style="text-align: right; font-weight: bold; padding: 6px 8px; font-size: 9.5pt; color: #111111; border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e2e8f0;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
+            </tr>
             <tr style="background: #f8fafc;">
-                <td colspan="6" style="padding: 7px 10px; font-size: 8.5pt; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                <td colspan="6" style="padding: 6px 10px; font-size: 8pt; border-bottom: 1px solid #e2e8f0;">
                     <span style="font-weight: bold; color: #333333;">Terbilang:</span>
                     <span style="font-style: italic; color: #0f172a; font-weight: 600;"># {{ terbilang($payment->amount) }} #</span>
                 </td>
-            </tr>
-            <tr class="grand-total-row">
-                <td colspan="5" style="text-align: right; font-weight: bold; padding: 6px 8px; text-transform: uppercase;">TOTAL:</td>
-                <td style="text-align: right; font-weight: bold; padding: 6px 8px; font-size: 10pt; color: #111111;">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
             </tr>
         </tfoot>
     </table>
 
     {{-- NOTES & SIGNATURES --}}
-    <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+    <table style="width: 100%; margin-top: 16px; border-collapse: collapse;">
         <tr>
-            <td style="width: 55%; vertical-align: top; padding-right: 20px;">
+            <td style="width: 52%; vertical-align: top; padding-right: 15px;">
                 @if(!empty(trim($payment->notes ?? '')))
-                    <div style="font-size: 8pt; font-weight: bold; color: #555555; text-transform: uppercase; margin-bottom: 3px;">CATATAN PEMBAYARAN:</div>
-                    <div style="font-size: 8.5pt; color: #333333; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px; padding: 8px;">
+                    <div style="font-size: 7.5pt; font-weight: bold; color: #555555; text-transform: uppercase; margin-bottom: 3px;">CATATAN PEMBAYARAN:</div>
+                    <div style="font-size: 8pt; color: #333333; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px; padding: 6px 8px;">
                         {{ $payment->notes }}
                     </div>
                 @endif
             </td>
-            <td style="width: 45%; vertical-align: top;">
-                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 8.5pt;">
+            <td style="width: 48%; vertical-align: top;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 8pt;">
                     <tr>
-                        <td style="width: 50%; padding-bottom: 50px;">
+                        <td style="width: 50%; padding-bottom: 45px;">
                             Dibuat Oleh,<br><br>
                         </td>
-                        <td style="width: 50%; padding-bottom: 50px;">
+                        <td style="width: 50%; padding-bottom: 45px;">
                             Disetujui / Dibayarkan,<br><br>
                         </td>
                     </tr>
@@ -132,8 +180,8 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="font-size: 7.5pt; color: #666666; padding-top: 2px;">Finance & Accounting</td>
-                        <td style="font-size: 7.5pt; color: #666666; padding-top: 2px;">Otorisasi Kas/Bank</td>
+                        <td style="font-size: 7pt; color: #666666; padding-top: 2px;">Finance & Accounting</td>
+                        <td style="font-size: 7pt; color: #666666; padding-top: 2px;">Otorisasi Kas/Bank</td>
                     </tr>
                 </table>
             </td>
