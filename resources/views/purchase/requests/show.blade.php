@@ -21,10 +21,6 @@
         <x-slot:actions>
             <div style="display:flex; gap:8px; align-items:center;">
                 @if(in_array($purchase_request->status, ['draft', 'revised', 'rejected']))
-                <a href="{{ route('purchase.requests.edit', $purchase_request) }}" class="btn btn-secondary">
-                    <i class="fa-solid fa-pen"></i> Edit PR
-                </a>
-
                 <button type="button" class="btn btn-primary"
                     data-confirm-swal="form-submit-pr"
                     data-swal-title="Ajukan Purchase Request"
@@ -80,7 +76,7 @@
                 </div>
                 <div style="color:#b45309; font-size:12.5px; margin-top:8px;">
                     <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
-                    Silakan klik tombol <strong>"Edit PR"</strong> di atas untuk menyesuaikan item atau kuantiti, lalu klik <strong>"Ajukan Approval"</strong> untuk mengajukan ulang.
+                    Silakan perbaiki data di halaman daftar Purchase Request, lalu klik <strong>"Ajukan Approval"</strong> untuk mengajukan ulang.
                 </div>
             </div>
         </div>
@@ -106,7 +102,7 @@
                 @endif
                 <div style="color:#991b1b; font-size:12.5px; margin-top:8px;">
                     <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
-                    Ditolak oleh: {{ $purchase_request->approver->name ?? 'Approver' }} pada {{ $purchase_request->approved_at?->format('d/m/Y H:i') }} | Dokumen ini ditolak oleh reviewer. Silakan perbaiki data melalui tombol <strong>Edit PR</strong> di atas lalu ajukan kembali.
+                    Ditolak oleh: {{ $purchase_request->approver->name ?? 'Approver' }} pada {{ $purchase_request->approved_at?->format('d/m/Y H:i') }} | Dokumen ini ditolak oleh reviewer. Silakan perbaiki data di halaman daftar Purchase Request lalu ajukan kembali.
                 </div>
             </div>
         </div>

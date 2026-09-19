@@ -33,9 +33,6 @@
                 @endif
             </form>
 
-            <a href="{{ route('master.categories.edit', $category) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Ubah
-            </a>
 
             <button type="button" data-confirm-delete="del-cat-show" data-name="{{ $category->name }} ({{ $category->code }})" class="btn btn-danger" title="Hapus Kategori">
                 <i class="fa-solid fa-trash"></i> Hapus
@@ -126,9 +123,7 @@
                                 <a href="{{ route('master.products.show', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
-                                <a href="{{ route('master.products.edit', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
+
                             </div>
                         </td>
                     </tr>

@@ -13,9 +13,6 @@
     >
         <x-slot:actions>
             @if($transfer->status === 'draft')
-                <a href="{{ route('inventory.transfers.edit', $transfer) }}" class="btn btn-secondary">
-                    <i class="fa-solid fa-pen-to-square"></i> Edit Transfer
-                </a>
                 <form method="POST" action="{{ route('inventory.transfers.ship', $transfer) }}" style="display:inline;">
                     @csrf @method('PATCH')
                     <button type="submit" class="btn btn-primary" onclick="return confirm('Posting / Kirim transfer barang ini? Stok gudang asal akan langsung dikurangi.')">

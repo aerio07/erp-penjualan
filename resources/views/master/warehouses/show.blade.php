@@ -31,9 +31,7 @@
                 @endif
             </form>
 
-            <a href="{{ route('master.warehouses.edit', $warehouse) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Ubah
-            </a>
+
 
             <button type="button" data-confirm-delete="del-wh-show" data-name="{{ $warehouse->name }} ({{ $warehouse->code }})" class="btn btn-danger" title="Hapus Gudang">
                 <i class="fa-solid fa-trash"></i> Hapus

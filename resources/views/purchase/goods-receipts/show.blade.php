@@ -16,9 +16,6 @@
     >
         <x-slot:actions>
             @if(in_array($goodsReceipt->status, ['draft', 'revised', 'rejected']))
-            <a href="{{ route('purchase.goods-receipts.edit', $goodsReceipt) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Edit Penerimaan
-            </a>
 
             <button type="button" class="btn btn-primary"
                 data-confirm-swal="form-submit-grn"
@@ -73,7 +70,7 @@
                 </div>
                 <div style="color:#b45309; font-size:12.5px; margin-top:8px;">
                     <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
-                    Silakan klik tombol <strong>"Edit Penerimaan"</strong> di atas untuk menyesuaikan kuantiti fisik atau barang rusak, lalu klik <strong>"Ajukan Approval"</strong> untuk mengajukan ulang.
+                    Silakan perbaiki data di halaman daftar Penerimaan Barang, lalu klik <strong>"Ajukan Approval"</strong> untuk mengajukan ulang.
                 </div>
             </div>
         </div>

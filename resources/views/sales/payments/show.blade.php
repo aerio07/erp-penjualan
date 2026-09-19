@@ -23,9 +23,6 @@
     >
         <x-slot:actions>
             @if($payment->status === 'draft')
-                <a href="{{ route('sales.payments.edit', $payment) }}" class="btn btn-secondary">
-                    <i class="fa-solid fa-pen-to-square"></i> Edit Draft
-                </a>
                 
                 <button type="button" class="btn btn-primary"
                     data-confirm-swal="form-post-payment"

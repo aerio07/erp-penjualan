@@ -13,9 +13,6 @@
     >
         <x-slot:actions>
             @if($journal->status === 'draft')
-            <a href="{{ route('accounting.journals.edit', $journal) }}" class="btn btn-warning">
-                <i class="fa-solid fa-pen-to-square"></i> Edit Jurnal
-            </a>
             <form method="POST" action="{{ route('accounting.journals.post', $journal) }}" style="display:inline;" onsubmit="return confirm('Posting jurnal ini? Jurnal yang diposting akan mempengaruhi buku besar dan laporan keuangan.')">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-success">

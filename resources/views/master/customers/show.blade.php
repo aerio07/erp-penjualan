@@ -37,9 +37,7 @@
                 @endif
             </form>
 
-            <a href="{{ route('master.customers.edit', $customer) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Ubah
-            </a>
+
 
             <button type="button" data-confirm-delete="del-cust-show" data-name="{{ $customer->name }} ({{ $customer->code }})" class="btn btn-danger" title="Hapus Customer">
                 <i class="fa-solid fa-trash"></i> Hapus

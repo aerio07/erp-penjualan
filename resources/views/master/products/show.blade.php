@@ -54,9 +54,7 @@
                 @endif
             </form>
 
-            <a href="{{ route('master.products.edit', $product) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Ubah
-            </a>
+
 
             <button type="button" data-confirm-delete="delete-product-show" data-name="{{ $product->name }} ({{ $product->sku }})" class="btn btn-danger" title="Hapus Produk">
                 <i class="fa-solid fa-trash"></i> Hapus

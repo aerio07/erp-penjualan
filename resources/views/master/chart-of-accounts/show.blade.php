@@ -69,9 +69,6 @@
                 @endif
             </form>
 
-            <a href="{{ route('master.chart-of-accounts.edit', $chartOfAccount) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Ubah
-            </a>
 
             <button type="button" data-confirm-delete="del-coa-show" data-name="{{ $chartOfAccount->name }} ({{ $chartOfAccount->code }})" class="btn btn-danger" title="Hapus Akun">
                 <i class="fa-solid fa-trash"></i> Hapus
@@ -174,9 +171,7 @@
                             <a href="{{ route('master.chart-of-accounts.show', $child) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
-                            <a href="{{ route('master.chart-of-accounts.edit', $child) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
+
                         </td>
                     </tr>
                     @endforeach

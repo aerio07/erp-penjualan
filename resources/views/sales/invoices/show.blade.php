@@ -11,11 +11,7 @@
         :back-url="route('sales.invoices.index')"
     >
         <x-slot:actions>
-            @if($invoice->status === 'draft')
-                <a href="{{ route('sales.invoices.edit', $invoice) }}" class="btn btn-secondary">
-                    <i class="fa-solid fa-pen"></i> Ubah
-                </a>
-            @endif
+
 
             @if(in_array($invoice->status, ['unpaid', 'partial', 'paid']))
             <a href="{{ route('pdf.sales-invoice', $invoice) }}" class="btn btn-secondary" target="_blank">
