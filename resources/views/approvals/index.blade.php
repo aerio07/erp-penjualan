@@ -121,7 +121,7 @@
                             @endif
                         </td>
                         <td style="white-space:nowrap; font-size:12.5px; color:var(--text-secondary);">
-                            {{ $app->created_at ? $app->created_at->format('d/m/Y H:i') : '-' }}
+                            {{ $app->created_at ? $app->created_at->format('d/m/Y') : '-' }}
                         </td>
                         <td style="text-align:center; width:185px;">
                             <div class="approval-actions">

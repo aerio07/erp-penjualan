@@ -55,11 +55,10 @@
                 <a href="{{ route('pdf.purchase-request', $purchase_request) }}" class="btn btn-secondary" target="_blank">
                     <i class="fa-solid fa-file-pdf"></i> PDF
                 </a>
-                @endif
-
                 <button type="button" class="btn btn-secondary" onclick="window.print()">
                     <i class="fa-solid fa-print"></i> Cetak
                 </button>
+                @endif
             </div>
         </x-slot:actions>
     </x-page-header>

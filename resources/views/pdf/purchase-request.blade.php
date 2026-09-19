@@ -65,14 +65,12 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th class="text-center" style="width: 4%;">#</th>
-                    <th class="text-left" style="width: 15%;">Kode Produk</th>
-                    <th class="text-left" style="width: 31%;">Deskripsi Barang</th>
-                    <th class="text-center" style="width: 11%;">Qty Diminta</th>
-                    <th class="text-center" style="width: 11%;">Qty di-PO</th>
-                    <th class="text-center" style="width: 9%;">Sisa</th>
-                    <th class="text-center" style="width: 8%;">Satuan</th>
-                    <th class="text-left" style="width: 11%;">Catatan Item</th>
+                    <th class="text-center" style="width: 5%;">#</th>
+                    <th class="text-left" style="width: 18%;">Kode Produk</th>
+                    <th class="text-left" style="width: 37%;">Deskripsi Barang</th>
+                    <th class="text-center" style="width: 12%;">Qty Diminta</th>
+                    <th class="text-center" style="width: 10%;">Satuan</th>
+                    <th class="text-left" style="width: 18%;">Catatan Item</th>
                 </tr>
             </thead>
             <tbody>
@@ -88,12 +86,6 @@
                     <td class="text-center" style="font-weight: 600;">
                         {{ number_format($item->qty ?? 0) }}
                     </td>
-                    <td class="text-center">
-                        {{ number_format($item->qty_ordered ?? 0) }}
-                    </td>
-                    <td class="text-center" style="font-weight: 600;">
-                        {{ number_format($item->qty_remaining ?? 0) }}
-                    </td>
                     <td class="text-center" style="color: #444;">
                         {{ $item->product->unit ?? 'Pcs' }}
                     </td>
@@ -103,7 +95,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
+                    <td colspan="6" class="text-center" style="padding: 15px; color: #888;">Tidak ada item.</td>
                 </tr>
                 @endforelse
             </tbody>
