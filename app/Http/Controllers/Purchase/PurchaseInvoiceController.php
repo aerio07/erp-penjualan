@@ -278,7 +278,7 @@ class PurchaseInvoiceController extends Controller
 
                 $this->purchaseInvoiceService->postInvoice($invoice);
 
-                return redirect()->route('purchase.invoices.show', $invoice)
+                return redirect()->route('purchase.invoices.index')
                     ->with('success', "Invoice Pembelian #{$invoice->invoice_number} berhasil diposting dan Jurnal Akuntansi otomatis diterbitkan.");
             });
         } catch (\InvalidArgumentException|\App\Exceptions\PeriodClosedException $e) {

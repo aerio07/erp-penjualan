@@ -150,13 +150,26 @@
         <div style="clear: both;"></div>
     </div>
 
+    {{-- TERBILANG SECTION --}}
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 7px 10px; margin-bottom: 14px; font-size: 8.5pt;">
+        <span style="font-weight: bold; color: #333333;">Terbilang:</span>
+        <span style="font-style: italic; color: #0f172a; font-weight: 600;"># {{ terbilang($invoice->effective_total_amount) }} #</span>
+    </div>
+
+    {{-- CATATAN HEADER --}}
+    @if(!empty(trim($invoice->notes ?? '')) && !str_starts_with($invoice->notes, 'Auto-generated dari LPB'))
+    <div style="margin-bottom: 14px;">
+        <div class="section-heading">CATATAN:</div>
+        <div style="font-size: 8.5pt; color: #333333; background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 4px; padding: 7px 10px; line-height: 1.4;">
+            {{ $invoice->notes }}
+        </div>
+    </div>
+    @endif
+
     {{-- TERMS & CONDITIONS --}}
     <div class="terms-section">
-        <div class="section-heading">CATATAN & KETENTUAN:</div>
+        <div class="section-heading">KETENTUAN:</div>
         <div class="terms-content">
-            @if($invoice->notes)
-                <p style="margin-bottom: 3px;"><strong>Catatan:</strong> {{ $invoice->notes }}</p>
-            @endif
             <p>1. Dokumen invoice ini merupakan bukti kewajiban tagihan resmi atas barang/jasa yang telah diterima sesuai PO & LPB terkait.</p>
             <p>2. Jadwal pembayaran akan diproses oleh tim Finance sesuai tanggal jatuh tempo yang tertera.</p>
         </div>

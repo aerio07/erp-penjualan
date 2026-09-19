@@ -253,7 +253,7 @@ class GoodsReceiptController extends Controller
                     'invoice_date'            => $request->invoice_date ?? $request->received_date,
                     'due_date'                => $request->due_date ?? ($request->invoice_date ?? $request->received_date),
                     'tax_rate'                => $request->filled('invoice_tax_rate') ? (float) $request->invoice_tax_rate : (float) ($po->tax_rate ?? 0),
-                    'notes'                   => $request->notes ?? ("Auto-generated dari LPB #{$grnNumber}"),
+                    'notes'                   => !empty(trim($request->notes ?? '')) ? trim($request->notes) : null,
                 ], asDraft: false);
                 $invoiceNumber = $invoice->invoice_number;
             }

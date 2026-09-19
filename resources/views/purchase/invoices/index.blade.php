@@ -88,12 +88,8 @@
                     </div>
                 @endif
             </td>
-            <td style="text-align:right; font-weight:600; color:{{ $inv->status === 'draft' ? 'var(--text-secondary)' : ($inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)') }};">
-                @if($inv->status === 'draft')
-                    <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">(Draft)</span>
-                @else
-                    Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
-                @endif
+            <td style="text-align:right; font-weight:600; color:{{ $inv->outstanding_amount > 0 ? 'var(--danger)' : 'var(--success)' }};">
+                Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
             </td>
             <td style="text-align:center;">
                 <x-status-badge :status="$inv->status" />

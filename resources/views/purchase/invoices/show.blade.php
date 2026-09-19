@@ -53,7 +53,7 @@
                     </div>
                 </div>
 
-                @if($invoice->notes)
+                @if($invoice->notes && !str_starts_with($invoice->notes, 'Auto-generated dari LPB'))
                 <div style="margin-top:16px; padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; color:var(--text-secondary);">
                     <i class="fa-solid fa-note-sticky" style="margin-right:6px;"></i> {{ $invoice->notes }}
                 </div>

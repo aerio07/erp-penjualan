@@ -88,15 +88,17 @@
                                 <div style="font-size:12px; color:var(--text-secondary);">Supplier</div>
                                 <div style="font-weight:600;" x-text="selectedPoData ? selectedPoData.supplier.name : '-'"></div>
                             </div>
-                            <div>
-                                <div style="font-size:12px; color:var(--text-secondary);">LPB Sumber</div>
-                                <div style="font-weight:600; color:var(--primary);" x-text="selectedGrn.receipt_number"></div>
-                            </div>
                             <hr style="border:none; border-top:1px solid var(--border);">
                             <div style="display:flex; justify-content:space-between;">
                                 <span style="color:var(--text-secondary);">Subtotal Item LPB</span>
-                                <span style="font-weight:600;" x-text="'Rp ' + formatNum(rawSubtotal)"></span>
+                                <span style="font-weight:600;" x-text="'Rp ' + formatNum(grossSubtotal)"></span>
                             </div>
+                            <template x-if="itemDiscountTotal > 0">
+                                <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                                    <span>Diskon Item</span>
+                                    <span style="font-weight:600;" x-text="'- Rp ' + formatNum(itemDiscountTotal)"></span>
+                                </div>
+                            </template>
                             <template x-if="proratedDiscount > 0">
                                 <div style="display:flex; justify-content:space-between; color:var(--danger);">
                                     <span>Prorasi Diskon Header PO</span>
@@ -322,6 +324,14 @@ function invForm() {
 
         get rawSubtotal() {
             return this.grnItems.reduce((s, it) => s + it.line_subtotal, 0);
+        },
+
+        get grossSubtotal() {
+            return this.grnItems.reduce((s, it) => s + (it.qty_invoiced * it.unit_price), 0);
+        },
+
+        get itemDiscountTotal() {
+            return this.grnItems.reduce((s, it) => s + (it.qty_invoiced * it.unit_price * (it.discount_percent / 100)), 0);
         },
 
         get isLastGrn() {

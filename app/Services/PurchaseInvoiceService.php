@@ -50,7 +50,7 @@ class PurchaseInvoiceService
 
         $termDays = $po->supplier?->payment_term_days ?? 30;
         $dueDate = $data['due_date'] ?? \Carbon\Carbon::parse($invoiceDate)->addDays($termDays)->toDateString();
-        $notes = $data['notes'] ?? ("Auto-generated dari LPB #" . $grn->receipt_number);
+        $notes = !empty(trim($data['notes'] ?? '')) ? trim($data['notes']) : null;
         $supplierInvoiceNumber = $data['supplier_invoice_number'] ?? null;
 
         $subtotalGrn = 0;

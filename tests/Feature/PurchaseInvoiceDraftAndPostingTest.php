@@ -356,7 +356,7 @@ class PurchaseInvoiceDraftAndPostingTest extends TestCase
 
         // Klik Posting Jurnal
         $postResponse = $this->actingAs($this->admin)->post(route('purchase.invoices.post', $invoice));
-        $postResponse->assertRedirect(route('purchase.invoices.show', $invoice));
+        $postResponse->assertRedirect(route('purchase.invoices.index'));
 
         $invoice->refresh();
         $this->assertEquals('unpaid', $invoice->status);
