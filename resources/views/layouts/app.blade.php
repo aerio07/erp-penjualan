@@ -251,7 +251,26 @@
             max-width: 16px !important;
             height: 16px !important;
         }
-        ::-webkit-scrollbar { display: none; }
+        /* Custom Modern Scrollbars (Global & Tables) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #94a3b8;
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
 
         /* Global Layout Components Overrides */
         .page-header {
@@ -664,7 +683,9 @@
             color: #0e1b35 !important;
         }
 
-        .table-responsive {
+        .table-responsive,
+        .overflow-x-auto,
+        [class*="table-responsive"] {
             overflow-x: auto !important;
             border-radius: 0.625rem !important;
             border: 1px solid #E2E8F0 !important;
@@ -673,19 +694,57 @@
             margin-bottom: 1.25rem !important;
             width: 100% !important;
             position: relative !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin !important;
+            scrollbar-color: #94a3b8 #f1f5f9 !important;
         }
+
+        /* High-visibility horizontal scrollbar at bottom of tables and forms */
+        .table-responsive::-webkit-scrollbar,
+        .overflow-x-auto::-webkit-scrollbar,
+        [class*="table-responsive"]::-webkit-scrollbar,
+        .data-table-card > .table-responsive::-webkit-scrollbar {
+            height: 10px !important;
+            width: 10px !important;
+            display: block !important;
+        }
+
+        .table-responsive::-webkit-scrollbar-track,
+        .overflow-x-auto::-webkit-scrollbar-track,
+        [class*="table-responsive"]::-webkit-scrollbar-track,
+        .data-table-card > .table-responsive::-webkit-scrollbar-track {
+            background: #f8fafc !important;
+            border-top: 1px solid #e2e8f0 !important;
+            border-radius: 0 0 6px 6px !important;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb,
+        .overflow-x-auto::-webkit-scrollbar-thumb,
+        [class*="table-responsive"]::-webkit-scrollbar-thumb,
+        .data-table-card > .table-responsive::-webkit-scrollbar-thumb {
+            background-color: #94a3b8 !important;
+            border-radius: 6px !important;
+            border: 2px solid #f8fafc !important;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover,
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover,
+        [class*="table-responsive"]::-webkit-scrollbar-thumb:hover,
+        .data-table-card > .table-responsive::-webkit-scrollbar-thumb:hover {
+            background-color: #64748b !important;
+        }
+
         .table-responsive[style*="overflow: visible"],
         .table-responsive[style*="overflow:visible"],
         .table-responsive.overflow-visible,
         .table-has-dropdowns {
-            overflow: visible !important;
-            overflow-x: visible !important;
-            overflow-y: visible !important;
+            overflow-x: auto !important;
         }
+
         .erp-table {
             width: 100% !important;
             border-collapse: collapse !important;
-            min-width: 750px !important;
+            min-width: 800px !important;
             text-align: left !important;
         }
         .erp-table thead {

@@ -145,7 +145,7 @@
                 <h3>Rincian Item Ditagih (Dari LPB)</h3>
             </div>
             <div class="table-responsive">
-                <table class="erp-table">
+                <table class="erp-table" style="min-width: 800px;">
                     <thead>
                         <tr>
                             <th>Produk</th>

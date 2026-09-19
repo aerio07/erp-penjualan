@@ -161,8 +161,8 @@
                     @endif
                 </div>
             </div>
-            <div class="table-responsive" style="overflow: visible; min-height: 180px;">
-                <table class="erp-table">
+            <div class="table-responsive" style="min-height: 180px;">
+                <table class="erp-table" style="min-width: 850px;">
                     <thead>
                         <tr>
                             <th style="min-width: 260px;">Produk</th>

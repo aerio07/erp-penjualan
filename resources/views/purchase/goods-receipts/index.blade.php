@@ -46,7 +46,7 @@
         </select>
     </x-list-filter-bar>
 
-    <x-data-table :paginator="$receipts">
+    <x-data-table :paginator="$receipts" tableStyle="min-width: 950px;">
         <x-slot:head>
             <tr>
                 <x-sortable-header column="receipt_number" title="No Penerimaan" />

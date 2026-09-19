@@ -3,12 +3,13 @@
     'paginator' => null,
     'showFooter' => true,
     'tableClass' => 'erp-table',
+    'tableStyle' => '',
     'responsiveClass' => '',
 ])
 
 <div class="card data-table-card" style="padding: 0; overflow: hidden; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
     <div class="table-responsive {{ $responsiveClass }}" style="border: none; border-radius: 0; box-shadow: none; margin-bottom: 0;">
-        <table class="{{ $tableClass }}" style="margin-bottom: 0;">
+        <table class="{{ $tableClass }}" style="margin-bottom: 0; {{ $tableStyle }}">
             @if(isset($head) && !empty(trim($head)))
                 <thead>
                     {{ $head }}

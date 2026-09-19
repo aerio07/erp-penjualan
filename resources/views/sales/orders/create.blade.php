@@ -173,8 +173,8 @@
                     padding-bottom: 0.65rem !important;
                 }
             </style>
-            <div class="table-responsive" style="overflow: visible; min-height: 180px;">
-                <table class="erp-table item-form-table">
+            <div class="table-responsive" style="min-height: 250px;">
+                <table class="erp-table item-form-table" style="min-width: 850px;">
                     <thead>
                         <tr>
                             <th style="min-width: 260px;">Produk</th>

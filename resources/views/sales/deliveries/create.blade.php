@@ -78,7 +78,7 @@
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="erp-table">
+                <table class="erp-table" style="min-width: 850px;">
                     <thead>
                         <tr>
                             <th>Produk</th>

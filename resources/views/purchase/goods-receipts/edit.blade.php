@@ -102,7 +102,7 @@
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="erp-table">
+                <table class="erp-table" style="min-width: 1050px;">
                     <thead>
                         <tr>
                             <th style="min-width:180px;">Produk</th>

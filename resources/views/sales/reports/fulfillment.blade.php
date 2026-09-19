@@ -108,7 +108,7 @@
     {{-- Tabel Monitoring Fulfillment --}}
     <div class="card" style="padding: 0; overflow: hidden;">
         <div class="table-responsive">
-            <table class="erp-table" style="margin: 0; width: 100%;">
+            <table class="erp-table" style="margin: 0; width: 100%; min-width: 1100px;">
                 <thead>
                     <tr>
                         <th style="width: 32px; text-align: center;"></th>

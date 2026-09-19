@@ -45,7 +45,7 @@
         </select>
     </x-list-filter-bar>
 
-    <x-data-table :paginator="$movements">
+    <x-data-table :paginator="$movements" tableStyle="min-width: 850px;">
         <x-slot:head>
             <tr>
                 <x-sortable-header column="movement_date" title="Tgl Mutasi" />

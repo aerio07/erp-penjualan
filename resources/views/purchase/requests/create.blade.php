@@ -85,8 +85,8 @@
                 </button>
             </div>
 
-            <div class="table-responsive" style="overflow: visible; width: 100%;">
-                <table class="erp-table" style="table-layout: fixed; width: 100%;">
+            <div class="table-responsive" style="min-height: 280px; width: 100%;">
+                <table class="erp-table" style="table-layout: fixed; width: 100%; min-width: 950px;">
                     <thead>
                         <tr>
                             <th style="width:4%; text-align:center;">No</th>

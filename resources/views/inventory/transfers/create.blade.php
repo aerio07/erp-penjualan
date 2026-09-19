@@ -81,8 +81,8 @@
                     <i class="fa-solid fa-plus"></i> Tambah Item
                 </button>
             </div>
-            <div class="table-responsive" style="overflow: visible; min-height: 180px;">
-                <table class="erp-table">
+            <div class="table-responsive" style="min-height: 250px;">
+                <table class="erp-table" style="min-width: 800px;">
                     <thead>
                         <tr>
                             <th style="min-width: 320px;">Produk (Kode & Nama)</th>
