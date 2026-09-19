@@ -63,6 +63,9 @@ class SalesOrderController extends Controller
             'channel'                => 'nullable|in:online,offline',
             'order_date'             => 'required|date',
             'expected_delivery_date' => 'nullable|date|after_or_equal:order_date',
+            'driver_name'            => 'nullable|string|max:255',
+            'vehicle_number'         => 'nullable|string|max:100',
+            'expedition'             => 'nullable|string|max:255',
             'tax_rate'               => 'required|numeric|min:0|max:100',
             'discount_amount'        => 'nullable|numeric|min:0',
             'notes'                  => 'nullable|string',
@@ -104,6 +107,9 @@ class SalesOrderController extends Controller
                 'fulfillment_status'     => 'pending',
                 'order_date'             => $request->order_date,
                 'expected_delivery_date' => $request->expected_delivery_date,
+                'driver_name'            => $request->driver_name,
+                'vehicle_number'         => $request->vehicle_number,
+                'expedition'             => $request->expedition,
                 'discount_amount'        => $discountHeader,
                 'tax_rate'               => $request->tax_rate,
                 'tax_amount'             => $taxAmount,
@@ -174,6 +180,9 @@ class SalesOrderController extends Controller
             'channel'                => 'nullable|in:online,offline',
             'order_date'             => 'required|date',
             'expected_delivery_date' => 'nullable|date|after_or_equal:order_date',
+            'driver_name'            => 'nullable|string|max:255',
+            'vehicle_number'         => 'nullable|string|max:100',
+            'expedition'             => 'nullable|string|max:255',
             'tax_rate'               => 'required|numeric|min:0|max:100',
             'discount_amount'        => 'nullable|numeric|min:0',
             'notes'                  => 'nullable|string',
@@ -213,6 +222,9 @@ class SalesOrderController extends Controller
                 'channel'                => $request->input('channel', $order->channel ?? 'offline'),
                 'order_date'             => $request->order_date,
                 'expected_delivery_date' => $request->expected_delivery_date,
+                'driver_name'            => $request->driver_name,
+                'vehicle_number'         => $request->vehicle_number,
+                'expedition'             => $request->expedition,
                 'discount_amount'        => $discountHeader,
                 'tax_rate'               => $request->tax_rate,
                 'tax_amount'             => $taxAmount,
@@ -237,8 +249,8 @@ class SalesOrderController extends Controller
             }
         });
 
-        return redirect()->route('sales.orders.show', $order)
-            ->with('success', 'Sales Order berhasil diperbarui.');
+        return redirect()->route('sales.orders.index')
+            ->with('success', 'Sales Order #' . $order->so_number . ' berhasil diperbarui.');
     }
 
     public function destroy(SalesOrder $salesOrder): RedirectResponse

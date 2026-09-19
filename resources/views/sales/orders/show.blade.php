@@ -43,20 +43,6 @@
                 >
                     <i class="fa-solid fa-check"></i> Konfirmasi SO Sekarang
                 </button>
-            @elseif($order->status === 'waiting_approval')
-                @if($isAdmin)
-                <button type="button" class="btn btn-danger" onclick="confirmRejectSO()">
-                    <i class="fa-solid fa-ban"></i> Tolak SO
-                </button>
-
-                <button type="button" class="btn btn-warning" onclick="confirmReviseSO()" style="color:#78350f; background:#fde68a; border-color:#fcd34d;">
-                    <i class="fa-solid fa-rotate-left"></i> Minta Revisi
-                </button>
-
-                <button type="button" class="btn btn-success" onclick="confirmApproveSO()">
-                    <i class="fa-solid fa-check"></i> Setujui SO (Approve)
-                </button>
-                @endif
             @elseif($order->status === 'confirmed')
                 @if($canCreateDel)
                 <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
@@ -79,19 +65,13 @@
             {{-- Divider --}}
             @if(
                 $order->status === 'draft' || 
-                ($order->status === 'waiting_approval' && $isAdmin) || 
                 ($order->status === 'confirmed' && $canCreateDel) || 
                 ($order->status === 'partially_delivered' && ($canCreateDel || $hasUninvoicedDel))
             )
             <div style="width: 1px; height: 26px; background: #cbd5e1; margin: 0 4px;"></div>
             @endif
 
-            {{-- Utilities (Kanan): Kembali & PDF (dan Ubah jika draft) --}}
-            @if($order->status === 'draft')
-            <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary">
-                <i class="fa-solid fa-pen"></i> Ubah
-            </a>
-            @endif
+            {{-- Utilities (Kanan): Kembali & PDF --}}
 
             <a href="{{ route('sales.orders.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-arrow-left"></i> Kembali
@@ -122,7 +102,7 @@
                 </div>
                 <div style="color:#b45309; font-size:12.5px; margin-top:8px;">
                     <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
-                    Silakan klik tombol <strong>"Ubah"</strong> di kanan atas untuk menyesuaikan produk/kuantiti/harga/diskon, lalu klik <strong>"Konfirmasi SO Sekarang"</strong> untuk mengajukan ulang.
+                    Silakan edit pesanan melalui daftar Sales Order, lalu klik <strong>"Konfirmasi SO Sekarang"</strong> untuk mengajukan ulang.
                 </div>
             </div>
         </div>
@@ -212,6 +192,14 @@
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Target Pengiriman</div>
                         <div style="font-weight:600;">{{ $order->expected_delivery_date ? $order->expected_delivery_date->format('d/m/Y') : '-' }}</div>
                     </div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Ekspedisi / Pengiriman</div>
+                        <div style="font-weight:600;">{{ $order->expedition ?? '-' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Sopir & Kendaraan</div>
+                        <div style="font-weight:600;">{{ $order->driver_name ?? '-' }} @if($order->vehicle_number) ({{ $order->vehicle_number }}) @endif</div>
+                    </div>
                 </div>
 
                 @if($order->notes)
@@ -223,40 +211,37 @@
         </div>
 
         <div class="card">
-            <div class="card-header"><h3>Total Tagihan</h3></div>
+            <div class="card-header">
+                <h3><i class="fa-solid fa-receipt text-primary"></i> Ringkasan & Total</h3>
+            </div>
             <div class="card-body">
                 @php
                     $grossSubtotal = $order->items->sum(fn($it) => $it->qty_ordered * $it->unit_price);
                     $itemDiscountSum = $order->items->sum(fn($it) => ($it->qty_ordered * $it->unit_price) * (($it->discount_percent ?? 0) / 100));
-                    $netSubtotal = $order->items->sum('subtotal');
+                    $netSubtotal = $grossSubtotal - $itemDiscountSum;
+                    $taxableAmount = max(0, $netSubtotal - ($order->discount_amount ?? 0));
                 @endphp
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">Subtotal Bruto</span>
-                        <span>Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</span>
+                        <span style="color:var(--text-secondary);">Subtotal Item (Sebelum Diskon)</span>
+                        <span style="font-weight:600;">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</span>
                     </div>
                     @if($itemDiscountSum > 0)
                     <div style="display:flex; justify-content:space-between; color:var(--danger); font-size:13.5px;">
-                        <span>Diskon Item</span>
-                        <span>- Rp {{ number_format($itemDiscountSum, 0, ',', '.') }}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-weight:600; border-top:1px dashed var(--border); padding-top:4px;">
-                        <span style="color:var(--text-secondary);">Subtotal Bersih</span>
-                        <span>Rp {{ number_format($netSubtotal, 0, ',', '.') }}</span>
+                        <span>Total Diskon Item</span>
+                        <span style="font-weight:600;">- Rp {{ number_format($itemDiscountSum, 0, ',', '.') }}</span>
                     </div>
                     @endif
-                    @if($order->discount_amount > 0)
+                    @if(($order->discount_amount ?? 0) > 0)
                     <div style="display:flex; justify-content:space-between; color:var(--danger); font-size:13.5px;">
                         <span>Diskon Header</span>
-                        <span>- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                        <span style="font-weight:600;">- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
                     </div>
                     @endif
-                    @if($itemDiscountSum > 0 || $order->discount_amount > 0)
-                    <div style="display:flex; justify-content:space-between; font-weight:600; color:#b91c1c; font-size:13px; background:#fef2f2; border:1px solid #fecaca; padding:4px 8px; border-radius:6px;">
-                        <span>Total Seluruh Diskon</span>
-                        <span>- Rp {{ number_format($itemDiscountSum + $order->discount_amount, 0, ',', '.') }}</span>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-secondary);">Setelah Diskon</span>
+                        <span>Rp {{ number_format($taxableAmount, 0, ',', '.') }}</span>
                     </div>
-                    @endif
                     <div style="display:flex; justify-content:space-between;">
                         <span style="color:var(--text-secondary);">PPN ({{ $order->tax_rate }}%)</span>
                         <span>Rp {{ number_format($order->tax_amount, 0, ',', '.') }}</span>
@@ -339,14 +324,12 @@
     </div>
     @endif
 
-    {{-- Item Table: Mode Draft / Approval vs Mode Confirmed / Fulfillment --}}
-    @if($isDraftOrApproval)
-    {{-- Tampilan Sederhana & Fokus Komersial untuk Draft / Waiting Approval --}}
+    {{-- Item Table --}}
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-            <h3><i class="fa-solid fa-cart-flatbed" style="color:var(--primary); margin-right:8px;"></i> Rincian Produk Pesanan</h3>
+            <h3><i class="fa-solid fa-cart-flatbed" style="color:var(--primary); margin-right:8px;"></i> Item Pesanan</h3>
             <span class="badge badge-{{ $order->status }}" style="font-size:11px; padding:4px 10px;">
-                {{ $order->status === 'draft' ? 'Draft' : 'Menunggu Approval' }}
+                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
             </span>
         </div>
         <div class="table-responsive">
@@ -357,7 +340,7 @@
                         <th>Produk</th>
                         <th style="text-align:center; width:130px;">Qty Pesan</th>
                         <th style="text-align:right; width:160px;">Harga Satuan</th>
-                        <th style="text-align:center; width:110px;">Diskon</th>
+                        <th style="text-align:center; width:130px;">Diskon</th>
                         <th style="text-align:right; width:170px;">Subtotal</th>
                     </tr>
                 </thead>
@@ -375,92 +358,13 @@
                         <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                         <td style="text-align:center;">
                             @if($item->discount_percent > 0)
-                                <span class="badge badge-pending" style="font-size:11px;">{{ $item->discount_percent }}%</span>
-                            @else
-                                <span style="color:var(--text-secondary);">-</span>
-                            @endif
-                        </td>
-                        <td style="text-align:right;">
-                            @if($item->discount_percent > 0)
-                                <div style="font-size:11px; color:#94a3b8; text-decoration:line-through;">Rp {{ number_format($item->qty_ordered * $item->unit_price, 0, ',', '.') }}</div>
-                            @endif
-                            <div style="font-weight:700; color:var(--primary);">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer" style="background:#f8fafc; padding:10px 16px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-secondary); display:flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-circle-info" style="color:var(--primary);"></i>
-            <span>Alokasi stok fisik gudang dan Surat Jalan pengiriman akan diproses setelah pesanan ini disetujui / dikonfirmasi (Confirmed).</span>
-        </div>
-    </div>
-    @else
-    {{-- Tampilan Lengkap Tracking Logistik & Fulfillment untuk SO yang sudah Confirmed / Berjalan --}}
-    <div class="card" style="margin-bottom:20px;">
-        <div class="card-header"><h3><i class="fa-solid fa-truck-ramp-box" style="color:var(--primary); margin-right:8px;"></i> Item Pesanan & Status Pengiriman (Fulfillment)</h3></div>
-        <div class="table-responsive">
-            <table class="erp-table">
-                <thead>
-                    <tr>
-                        <th>Produk</th>
-                        <th style="text-align:center;">Qty Pesan</th>
-                        <th style="text-align:center; background:rgba(37, 99, 235, 0.06); width:180px;">Reserved (Siap Kirim)</th>
-                        <th style="text-align:center; background:rgba(220, 38, 38, 0.06); width:150px;">Backorder (Kurang)</th>
-                        <th style="text-align:center;">Qty Terkirim</th>
-                        <th style="text-align:center;">Sisa Kirim</th>
-                        <th style="text-align:center; background:rgba(16, 185, 129, 0.06);">Sisa Unbilled</th>
-                        <th style="text-align:right;">Harga Satuan</th>
-                        <th style="text-align:center;">Diskon</th>
-                        <th style="text-align:right;">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($order->items as $item)
-                    <tr>
-                        <td>
-                            <div style="font-weight:600;">{{ $item->product->name }}</div>
-                            <div style="font-size:12px; color:var(--text-secondary);">{{ $item->product->sku }}</div>
-                        </td>
-                        <td style="text-align:center; font-weight:600;">{{ $item->qty_ordered }} {{ $item->product->unit }}</td>
-                        <td style="text-align:center; background:rgba(37, 99, 235, 0.03);">
-                            <div style="font-weight:700; color:#2563eb; font-size:14px;">
-                                {{ $item->qty_reserved }}
-                            </div>
-                            {{-- Tag Lokasi Gudang --}}
-                            @foreach($item->reservations->where('status', 'active') as $res)
-                                @php $activeRes = max(0, $res->qty_reserved - $res->qty_delivered); @endphp
-                                @if($activeRes > 0)
-                                    <div style="font-size:10.5px; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; padding:2px 6px; margin-top:3px; display:inline-block; font-weight:600;">
-                                        <i class="fa-solid fa-warehouse"></i> {{ $res->warehouse->name ?? 'Gudang' }}: {{ $activeRes }}
-                                    </div>
-                                @endif
-                            @endforeach
-                        </td>
-                        <td style="text-align:center; background:rgba(220, 38, 38, 0.03);">
-                            <div style="font-weight:700; color:#dc2626; font-size:14px;">
-                                {{ $item->qty_demanded }}
-                            </div>
-                            @if($item->qty_demanded > 0)
-                                <div style="font-size:10.5px; color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:4px; padding:2px 6px; margin-top:3px; display:inline-block; font-weight:600;">
-                                    <i class="fa-solid fa-clock"></i> Menunggu PO
+                                @php
+                                    $itemDiscRp = ($item->qty_ordered * $item->unit_price) * ($item->discount_percent / 100);
+                                @endphp
+                                <span style="font-weight:600;">{{ $item->discount_percent }}%</span>
+                                <div style="font-size:11px; color:var(--danger); margin-top:2px; font-weight:600;">
+                                    -Rp {{ number_format($itemDiscRp, 0, ',', '.') }}
                                 </div>
-                            @endif
-                        </td>
-                        <td style="text-align:center; color:var(--success); font-weight:600;">{{ $item->qty_delivered }}</td>
-                        <td style="text-align:center;">
-                            <span style="{{ $item->qty_remaining > 0 ? 'color:var(--warning); font-weight:600;' : 'color:var(--success);' }}">
-                                {{ $item->qty_remaining }}
-                            </span>
-                        </td>
-                        <td style="text-align:center; background:rgba(16, 185, 129, 0.03);">
-                            <span class="badge badge-done">{{ $item->qty_unbilled }}</span>
-                        </td>
-                        <td style="text-align:right;">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                        <td style="text-align:center;">
-                            @if($item->discount_percent > 0)
-                                <span class="badge badge-pending" style="font-size:11px;">{{ $item->discount_percent }}%</span>
                             @else
                                 <span style="color:var(--text-secondary);">-</span>
                             @endif
@@ -477,9 +381,6 @@
             </table>
         </div>
     </div>
-    @endif
-
-
 
     {{-- Hidden Action Forms for Workflow Submission --}}
     @if($order->status === 'draft')
@@ -490,115 +391,5 @@
         @csrf @method('PATCH')
     </form>
     @endif
-
-    @if($isAdmin && $order->status === 'waiting_approval')
-    <form id="form-approve-so" method="POST" action="{{ route('sales.orders.approve', $order) }}" style="display:none;">
-        @csrf 
-        @method('PATCH')
-    </form>
-
-    <form id="form-revise-so" method="POST" action="{{ route('sales.orders.revise', $order) }}" style="display:none;">
-        @csrf 
-        @method('PATCH')
-        <input type="hidden" name="revision_reason" id="so-revision-reason" value="">
-    </form>
-
-    <form id="form-reject-so" method="POST" action="{{ route('sales.orders.reject', $order) }}" style="display:none;">
-        @csrf 
-        @method('PATCH')
-        <input type="hidden" name="rejection_reason" id="so-rejection-reason" value="">
-    </form>
-    @endif
 </div>
 @endsection
-
-@push('scripts')
-<script>
-function confirmApproveSO() {
-    Swal.fire({
-        title: 'Setujui Sales Order',
-        html: `Apakah Anda yakin ingin menyetujui Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status SO akan dikonfirmasi dan sistem akan langsung mengalokasikan stok barang di gudang.</span>`,
-        icon: 'question',
-        iconColor: '#16a34a',
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-check" style="margin-right:6px;"></i> Ya, Setujui SO',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('form-approve-so').submit();
-        }
-    });
-}
-
-function confirmReviseSO() {
-    Swal.fire({
-        title: 'Minta Revisi Sales Order',
-        html: `<div style="font-size:13px; color:#64748b; margin-bottom:8px;">Sales Order <strong>{{ $order->so_number }}</strong> akan dikembalikan ke status <strong>Draft</strong> agar tim sales dapat mengedit data pesanan.</div>`,
-        icon: 'warning',
-        iconColor: '#f59e0b',
-        input: 'textarea',
-        inputLabel: 'Catatan / Alasan Revisi (Wajib)',
-        inputPlaceholder: 'Tuliskan catatan detail bagian mana yang harus diperbaiki (contoh: kurangi diskon jadi 5%, sesuaikan harga produk)...',
-        inputAttributes: { 'aria-label': 'Catatan Revisi' },
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-rotate-left" style="margin-right:6px;"></i> Kirim Permintaan Revisi',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-warning',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false,
-        inputValidator: (value) => {
-            if (!value || !value.trim()) {
-                return 'Catatan revisi wajib diisi agar sales mengetahui apa yang perlu diperbaiki!';
-            }
-            if (value.trim().length < 3) {
-                return 'Catatan revisi minimal 3 karakter!';
-            }
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('so-revision-reason').value = result.value.trim();
-            document.getElementById('form-revise-so').submit();
-        }
-    });
-}
-
-function confirmRejectSO() {
-    Swal.fire({
-        title: 'Tolak Sales Order',
-        html: `Apakah Anda yakin ingin menolak Sales Order <strong>{{ $order->so_number }}</strong>?<br><span style="font-size:12.5px; color:#64748b;">Status SO akan diubah menjadi <strong>Dibatalkan (Cancelled)</strong> dan seluruh alokasi stok dibatalkan.</span>`,
-        icon: 'error',
-        iconColor: '#dc2626',
-        input: 'textarea',
-        inputLabel: 'Alasan Penolakan (Opsional)',
-        inputPlaceholder: 'Tuliskan alasan penolakan dokumen...',
-        inputAttributes: { 'aria-label': 'Alasan Penolakan' },
-        showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-ban" style="margin-right:6px;"></i> Ya, Tolak Dokumen',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        customClass: {
-            popup: 'erp-swal-modal',
-            confirmButton: 'btn btn-danger',
-            cancelButton: 'btn btn-secondary'
-        },
-        buttonsStyling: false
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('so-rejection-reason').value = (result.value || '').trim();
-            document.getElementById('form-reject-so').submit();
-        }
-    });
-}
-</script>
-@endpush

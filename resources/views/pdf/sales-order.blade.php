@@ -63,6 +63,25 @@
                         <td class="detail-colon">:</td>
                         <td class="detail-value">{{ $order->user->name ?? '-' }}</td>
                     </tr>
+                    @if(!empty($order->expedition))
+                    <tr>
+                        <td class="detail-label">Ekspedisi</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">{{ $order->expedition }}</td>
+                    </tr>
+                    @endif
+                    @if(!empty($order->driver_name) || !empty($order->vehicle_number))
+                    <tr>
+                        <td class="detail-label">Sopir & Kendaraan</td>
+                        <td class="detail-colon">:</td>
+                        <td class="detail-value">
+                            {{ $order->driver_name ?? '-' }}
+                            @if(!empty($order->vehicle_number))
+                                ({{ $order->vehicle_number }})
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
                 </table>
             </td>
         </tr>
@@ -89,9 +108,12 @@
                             <span style="font-size: 7.5pt; color: #777;">({{ $item->product->sku }})</span>
                         @endif
                         @if(($item->discount_percent ?? 0) > 0)
-                            <div style="font-size: 7pt; color: #444444;">Diskon: {{ $item->discount_percent }}%</div>
+                            @php
+                                $itemDiscNominal = (($item->qty_ordered ?? 0) * ($item->unit_price ?? 0)) * (($item->discount_percent ?? 0) / 100);
+                            @endphp
+                            <div style="font-size: 7.5pt; color: #dc2626;">Diskon: {{ $item->discount_percent }}% (-Rp {{ number_format($itemDiscNominal, 0, ',', '.') }})</div>
                         @elseif(($item->discount_amount ?? 0) > 0)
-                            <div style="font-size: 7pt; color: #444444;">Diskon: Rp {{ number_format($item->discount_amount, 0, ',', '.') }}</div>
+                            <div style="font-size: 7.5pt; color: #dc2626;">Diskon: -Rp {{ number_format($item->discount_amount, 0, ',', '.') }}</div>
                         @endif
                     </td>
                     <td class="text-center">
@@ -127,12 +149,12 @@
             <td style="width: 45%; vertical-align: top;">
                 <table style="width: 100%;">
                     <tr>
-                        <td class="tot-label">Subtotal:</td>
+                        <td class="tot-label">Subtotal Item:</td>
                         <td class="tot-value">Rp {{ number_format($grossSubtotal, 0, ',', '.') }}</td>
                     </tr>
                     @if($pdfItemDiscount > 0)
                     <tr>
-                        <td class="tot-label tot-discount">Diskon Item:</td>
+                        <td class="tot-label tot-discount">Total Diskon Item:</td>
                         <td class="tot-value tot-discount">- Rp {{ number_format($pdfItemDiscount, 0, ',', '.') }}</td>
                     </tr>
                     @endif
@@ -142,8 +164,14 @@
                         <td class="tot-value tot-discount">- Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</td>
                     </tr>
                     @endif
+                    @if($pdfItemDiscount > 0 || ($order->discount_amount ?? 0) > 0)
                     <tr>
-                        <td class="tot-label">Tax ({{ $order->tax_rate ?? 0 }}%):</td>
+                        <td class="tot-label" style="color: #475569;">Setelah Diskon:</td>
+                        <td class="tot-value" style="color: #475569;">Rp {{ number_format(max(0, $grossSubtotal - $pdfItemDiscount - ($order->discount_amount ?? 0)), 0, ',', '.') }}</td>
+                    </tr>
+                    @endif
+                    <tr>
+                        <td class="tot-label">PPN ({{ $order->tax_rate ?? 0 }}%):</td>
                         <td class="tot-value">Rp {{ number_format($order->tax_amount ?? 0, 0, ',', '.') }}</td>
                     </tr>
                     <tr class="total-final">
@@ -154,6 +182,12 @@
             </td>
         </tr>
     </table>
+
+    {{-- TERBILANG SECTION --}}
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 7px 10px; margin-top: 10px; margin-bottom: 14px; font-size: 8.5pt;">
+        <span style="font-weight: bold; color: #333333;">Terbilang:</span>
+        <span style="font-style: italic; color: #0f172a; font-weight: 600;"># {{ terbilang($order->total_amount) }} #</span>
+    </div>
 
     {{-- TERMS & CONDITIONS --}}
     <div class="terms-section">

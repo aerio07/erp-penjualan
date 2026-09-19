@@ -14,6 +14,7 @@ class SalesOrder extends Model
         'so_number', 'customer_id', 'channel', 'user_id', 'status',
         'fulfillment_status', 'order_date', 'expected_delivery_date',
         'discount_amount', 'tax_rate', 'tax_amount', 'total_amount', 'notes',
+        'driver_name', 'vehicle_number', 'expedition',
     ];
 
     protected $casts = [

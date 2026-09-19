@@ -112,33 +112,46 @@
                             <input type="number" name="tax_rate" x-model.number="taxRate" class="form-control" step="0.01" min="0" max="100">
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-row form-row-3" style="margin-top: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Ekspedisi / Pengiriman</label>
+                            <input type="text" name="expedition" value="{{ old('expedition', $order->expedition) }}" class="form-control" placeholder="Contoh: JNE, J&T, Internal, dll.">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nama Sopir / Pengemudi</label>
+                            <input type="text" name="driver_name" value="{{ old('driver_name', $order->driver_name) }}" class="form-control" placeholder="Nama sopir...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Kendaraan / No. Polisi</label>
+                            <input type="text" name="vehicle_number" value="{{ old('vehicle_number', $order->vehicle_number) }}" class="form-control" placeholder="Contoh: B 1234 CD...">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
                         <label class="form-label">Catatan</label>
                         <textarea name="notes" class="form-control" rows="1">{{ old('notes', $order->notes) }}</textarea>
                     </div>
                 </div>
             </div>
 
+            {{-- Kolom Kanan: Ringkasan & Total (Sama seperti PO) --}}
             <div class="card">
-                <div class="card-header"><h3>Ringkasan</h3></div>
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-receipt text-primary"></i> Ringkasan & Total</h3>
+                </div>
                 <div class="card-body">
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
-                            <span style="color:var(--text-secondary);">Subtotal Bruto</span>
+                            <span style="color:var(--text-secondary);">Subtotal Item (Sebelum Diskon)</span>
                             <span style="font-weight:600;" x-text="'Rp ' + formatNum(grossSubtotal)"></span>
                         </div>
                         <template x-if="itemDiscountTotal > 0">
-                            <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--danger);">
-                                <span>Diskon Item</span>
+                            <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--danger);">
+                                <span>Total Diskon Item</span>
                                 <span style="font-weight:600;" x-text="'- Rp ' + formatNum(itemDiscountTotal)"></span>
                             </div>
                         </template>
-                        <div style="display:flex; justify-content:space-between; font-size:14px;" :style="itemDiscountTotal > 0 ? 'border-top:1px dashed #e2e8f0; padding-top:6px;' : ''">
-                            <span style="color:var(--text-secondary); font-weight:600;">Subtotal Bersih</span>
-                            <span style="font-weight:700;" x-text="'Rp ' + formatNum(subtotal)"></span>
-                        </div>
                         <div>
-                            <label class="form-label">Diskon Header / Tambahan (Rp)</label>
+                            <label class="form-label">Diskon Header (Rp)</label>
                             <input type="text" 
                                    inputmode="numeric" 
                                    name="discount_amount" 
@@ -155,12 +168,6 @@
                                 <div class="invalid-feedback" style="display:block;">{{ $message }}</div>
                             @enderror
                         </div>
-                        <template x-if="itemDiscountTotal > 0 || discountHeader > 0">
-                            <div style="display:flex; justify-content:space-between; font-size:13px; background:#fef2f2; border:1px solid #fecaca; padding:6px 10px; border-radius:6px; color:#b91c1c; font-weight:600;">
-                                <span>Total Seluruh Diskon</span>
-                                <span x-text="'- Rp ' + formatNum(itemDiscountTotal + (Number(discountHeader) || 0))"></span>
-                            </div>
-                        </template>
                         <div style="display:flex; justify-content:space-between; font-size:14px;">
                             <span style="color:var(--text-secondary);">Setelah Diskon</span>
                             <span x-text="'Rp ' + formatNum(taxableAmount)"></span>
@@ -169,7 +176,7 @@
                             <span style="color:var(--text-secondary);">PPN (<span x-text="taxRate"></span>%)</span>
                             <span x-text="'Rp ' + formatNum(taxAmount)"></span>
                         </div>
-                        <hr style="border:none; border-top:1px solid var(--border); margin:0;">
+                        <hr style="border:none; border-top:1px solid var(--border);">
                         <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:700;">
                             <span>Total</span>
                             <span style="color:var(--primary);" x-text="'Rp ' + formatNum(total)"></span>
@@ -296,14 +303,18 @@
                                             min="1" required style="height: 38px;">
                                  </td>
                                  <td style="vertical-align: top !important;">
-                                     <input type="number" 
+                                     <input type="text" 
+                                            inputmode="numeric" 
                                             :name="`items[${idx}][unit_price]`" 
-                                            x-model.number="row.price" 
-                                            @input="hppWarningConfirmed = false"
-                                            @keydown.enter.prevent="$event.target.blur()"
+                                            :value="window.formatRupiah ? window.formatRupiah(row.price) : row.price" 
+                                            @input="row.price = window.unformatRupiah ? window.unformatRupiah($event.target.value) : (parseInt($event.target.value) || 0); if(window.applyMaskWithCursor) window.applyMaskWithCursor($event.target); hppWarningConfirmed = false;" 
+                                            @focus="$event.target.select()" 
+                                            @blur="if(window.formatRupiah) $event.target.value = window.formatRupiah(row.price)" 
+                                            class="form-control format-currency" 
                                             :class="[row.product_id && isBelowHpp(row) ? 'input-price-danger' : '', 'form-control']"
                                             style="height: 38px;"
-                                            min="0" step="100" placeholder="0" required>
+                                            placeholder="0" 
+                                            required>
                                      <template x-if="row.product_id && isBelowHpp(row)">
                                          <div class="price-badge price-badge--danger">
                                              <i class="fa-solid fa-triangle-exclamation"></i>
@@ -327,16 +338,14 @@
                                             class="form-control" 
                                             min="0" max="100" step="0.1"
                                             style="height: 38px;">
+                                     <div style="font-size:11px; color:var(--danger); margin-top:3px; font-weight:500;" 
+                                          x-show="row.discount > 0" 
+                                          x-text="'-Rp ' + formatNum((row.qty || 0) * (row.price || 0) * ((row.discount || 0) / 100))">
+                                     </div>
                                  </td>
-                                 <td style="vertical-align: top !important; text-align:right;">
-                                     <div style="min-height: 38px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
-                                         <template x-if="row.discount > 0">
-                                             <span style="font-size:11px; color:#94a3b8; text-decoration:line-through;" x-text="'Rp ' + formatNum(row.qty * row.price)"></span>
-                                         </template>
-                                         <span style="font-weight:700; color:#0e1b35;" x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
-                                         <template x-if="row.discount > 0">
-                                             <span style="font-size:10.5px; color:#b91c1c; font-weight:600;" x-text="'Hemat Rp ' + formatNum((row.qty * row.price) * (row.discount / 100))"></span>
-                                         </template>
+                                 <td style="vertical-align: top !important; text-align:right; font-weight:600;">
+                                     <div style="height: 38px; display: flex; align-items: center; justify-content: flex-end;">
+                                         <span x-text="'Rp ' + formatNum(rowSubtotal(row))"></span>
                                      </div>
                                  </td>
                                  <td style="vertical-align: top !important; text-align:center;">
