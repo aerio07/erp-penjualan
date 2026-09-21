@@ -98,6 +98,24 @@ class JournalEntryTest extends TestCase
         $this->assertTrue($entry->isBalanced());
     }
 
+    public function test_can_create_balanced_journal_with_formatted_currency_values(): void
+    {
+        $response = $this->actingAs($this->user)->post(route('accounting.journals.store'), [
+            'entry_date' => '2026-09-17',
+            'description' => 'Jurnal dengan nominal terformat',
+            'lines' => [
+                ['chart_of_account_id' => $this->expenseAcc->id, 'debit' => '1.500.000', 'credit' => '0'],
+                ['chart_of_account_id' => $this->cashAcc->id, 'debit' => '0', 'credit' => '1.500.000'],
+            ],
+        ]);
+
+        $response->assertRedirect();
+
+        $entry = JournalEntry::where('description', 'Jurnal dengan nominal terformat')->firstOrFail();
+        $this->assertEquals(1500000, $entry->total_debit);
+        $this->assertEquals(1500000, $entry->total_credit);
+    }
+
     public function test_cannot_create_unbalanced_journal_entry(): void
     {
         $response = $this->actingAs($this->user)->from(route('accounting.journals.create'))->post(route('accounting.journals.store'), [

@@ -48,8 +48,8 @@ class JournalEntryController extends Controller
         $totalCredit = 0;
 
         foreach ($lines as $i => $line) {
-            $lines[$i]['debit'] = isset($line['debit']) && $line['debit'] !== '' ? (float)$line['debit'] : 0;
-            $lines[$i]['credit'] = isset($line['credit']) && $line['credit'] !== '' ? (float)$line['credit'] : 0;
+            $lines[$i]['debit'] = $this->parseAmount($line['debit'] ?? 0);
+            $lines[$i]['credit'] = $this->parseAmount($line['credit'] ?? 0);
             $totalDebit += $lines[$i]['debit'];
             $totalCredit += $lines[$i]['credit'];
         }
@@ -129,8 +129,8 @@ class JournalEntryController extends Controller
         $totalCredit = 0;
 
         foreach ($lines as $i => $line) {
-            $lines[$i]['debit'] = isset($line['debit']) && $line['debit'] !== '' ? (float)$line['debit'] : 0;
-            $lines[$i]['credit'] = isset($line['credit']) && $line['credit'] !== '' ? (float)$line['credit'] : 0;
+            $lines[$i]['debit'] = $this->parseAmount($line['debit'] ?? 0);
+            $lines[$i]['credit'] = $this->parseAmount($line['credit'] ?? 0);
             $totalDebit += $lines[$i]['debit'];
             $totalCredit += $lines[$i]['credit'];
         }
@@ -205,5 +205,27 @@ class JournalEntryController extends Controller
     private function generateNumber(): string
     {
         return $this->journalService->generateEntryNumber();
+    }
+
+    /**
+     * Normalisasi nominal dari input currency Indonesia, misalnya 1.000.000.
+     * Input dari browser dapat berupa string terformat, bukan angka mentah.
+     */
+    private function parseAmount(mixed $value): float
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        $value = preg_replace('/[^0-9,.-]/', '', (string) $value);
+
+        if (str_contains($value, ',')) {
+            $value = str_replace('.', '', $value);
+            $value = str_replace(',', '.', $value);
+        } else {
+            $value = str_replace('.', '', $value);
+        }
+
+        return max(0, (float) $value);
     }
 }
