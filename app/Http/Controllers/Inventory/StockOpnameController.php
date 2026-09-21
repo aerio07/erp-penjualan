@@ -36,7 +36,7 @@ class StockOpnameController extends Controller
         $query = $this->applyDateRange($query, $request, 'opname_date');
         $query = $this->applySort($query, $request, ['opname_number', 'opname_date', 'status', 'created_at'], 'opname_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $opnames    = $query->paginate($perPage)->withQueryString();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 

@@ -43,7 +43,7 @@ class DeliveryController extends Controller
         $query = $this->applyDateRange($query, $request, 'delivery_date');
         $query = $this->applySort($query, $request, ['delivery_number', 'delivery_date', 'status', 'condition_status', 'created_at'], 'delivery_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $deliveries = $query->paginate($perPage)->withQueryString();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 

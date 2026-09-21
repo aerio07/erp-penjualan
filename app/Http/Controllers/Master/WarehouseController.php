@@ -26,7 +26,7 @@ class WarehouseController extends Controller
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applySort($query, $request, ['code', 'name', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $warehouses = $query->paginate($perPage)->withQueryString();
 
         return view('master.warehouses.index', compact('warehouses'));

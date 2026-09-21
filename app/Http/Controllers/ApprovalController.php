@@ -39,13 +39,13 @@ class ApprovalController extends Controller
         $query = $this->applyDateRange($query, $request, 'created_at');
         $query = $this->applySort($query, $request, ['request_number', 'amount', 'status', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $pendingApprovals = (clone $query)->where('status', 'pending')->paginate($perPage, ['*'], 'pending_page')->withQueryString();
 
         $myApprovals = ApprovalRequest::with(['requester', 'approvable', 'approver'])
             ->whereIn('status', ['approved', 'rejected', 'revised'])
             ->orderByRaw('COALESCE(approved_at, updated_at) DESC')
-            ->paginate(15, ['*'], 'history_page')
+            ->paginate(10, ['*'], 'history_page')
             ->withQueryString();
 
         return view('approvals.index', compact('pendingApprovals', 'myApprovals'));

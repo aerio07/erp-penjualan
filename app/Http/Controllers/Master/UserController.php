@@ -24,7 +24,7 @@ class UserController extends Controller
         $query = $this->applyFilter($query, $request, 'role');
         $query = $this->applySort($query, $request, ['name', 'email', 'role', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $users = $query->paginate($perPage)->withQueryString();
 
         return view('master.users.index', compact('users', 'roleCounts'));

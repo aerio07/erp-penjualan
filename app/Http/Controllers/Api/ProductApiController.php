@@ -15,7 +15,7 @@ class ProductApiController extends Controller
      * Query params:
      *   - q           : search by nama / SKU
      *   - category_id : filter kategori
-     *   - per_page    : jumlah per halaman (default 20)
+     *   - per_page    : jumlah per halaman (default 10)
      */
     public function index(Request $request)
     {
@@ -34,7 +34,7 @@ class ProductApiController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $products = $query->orderBy('name')->paginate($perPage);
 
         return response()->json([

@@ -38,7 +38,7 @@ class StockDispositionController extends Controller
         $query = $this->applyDateRange($query, $request, 'disposed_at');
         $query = $this->applySort($query, $request, ['disposition_number', 'disposed_at', 'qty', 'resolution_type', 'created_at'], 'disposed_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $dispositions = $query->paginate($perPage)->withQueryString();
         $products     = Product::where('is_active', true)->orderBy('name')->get();
         $warehouses   = Warehouse::where('is_active', true)->orderBy('name')->get();
