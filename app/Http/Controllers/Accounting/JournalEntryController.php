@@ -29,7 +29,7 @@ class JournalEntryController extends Controller
         $query = $this->applyDateRange($query, $request, 'entry_date');
         $query = $this->applySort($query, $request, ['entry_number', 'entry_date', 'status', 'created_at'], 'entry_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $entries = $query->paginate($perPage)->withQueryString();
 
         return view('accounting.journals.index', compact('entries'));

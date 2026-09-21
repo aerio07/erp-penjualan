@@ -63,7 +63,7 @@ class FixedAssetController extends Controller
                 ->get(),
         ];
 
-        $perPage = $request->integer('per_page', 15);
+        $perPage = $request->integer('per_page', 10);
         $assets = $query->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
 
         return view('accounting.fixed-assets.index', compact('assets', 'categories', 'summary'));
