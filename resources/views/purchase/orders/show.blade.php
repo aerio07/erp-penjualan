@@ -50,7 +50,7 @@
                 <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
                     <i class="fa-solid fa-ban"></i> Batalkan PO
                 </button>
-            @elseif($order->canReceiveGoods())
+            @elseif($order->status->canReceiveGoods())
                 <a href="{{ route('purchase.goods-receipts.create', ['po_id' => $order->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-truck-ramp-box"></i> Terima Barang
                 </a>
@@ -60,7 +60,7 @@
             @if(
                 $order->isDraft() ||
                 $order->isWaitingApproval() ||
-                $order->canReceiveGoods()
+                $order->status->canReceiveGoods()
             )
             <div style="width:1px; height:28px; background:var(--border); margin:0 4px;"></div>
             @endif

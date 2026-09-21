@@ -182,13 +182,15 @@ class CashFlowForecastAndUpcomingTest extends TestCase
             'invoiced_qty' => 10,
         ]);
 
-        // Invoice Pembelian Rp 50.000.000 jatuh tempo 10 hari lagi
+        // Invoice Pembelian Rp 50.000.000 jatuh tempo di bulan berjalan.
+        // Jangan memakai today + 10 hari karena test akan gagal saat tanggal
+        // sekarang berada di akhir bulan dan tanggal jatuh tempo masuk bulan berikutnya.
         $pi = PurchaseInvoice::create([
             'invoice_number' => 'PI-FC-01',
             'purchase_order_id' => $po->id,
             'goods_receipt_id' => $gr->id,
             'invoice_date' => $today->toDateString(),
-            'due_date' => $today->copy()->addDays(10)->toDateString(),
+            'due_date' => $today->copy()->endOfMonth()->subDay()->toDateString(),
             'amount' => 50000000,
             'tax_amount' => 0,
             'total_amount' => 50000000,
