@@ -113,7 +113,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->restrictOnDelete()->comment('finance yang input');
             $table->decimal('amount', 15, 2);
             $table->date('payment_date');
-            $table->enum('method', ['transfer', 'cash', 'giro', 'cek'])->default('transfer');
+            $table->enum('method', ['transfer', 'cash', 'cek'])->default('transfer');
             $table->string('reference_number')->nullable()->comment('nomor transfer/bukti bayar');
             $table->text('notes')->nullable();
             $table->timestamps();

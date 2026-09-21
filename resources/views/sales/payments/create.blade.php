@@ -84,7 +84,6 @@
                             <label class="form-label">Metode Pembayaran <span style="color:var(--danger);">*</span></label>
                             <select name="method" x-model="method" class="form-control" required>
                                 <option value="transfer" x-show="paymentType === 'bank'">Bank Transfer (BBM)</option>
-                                <option value="giro" x-show="paymentType === 'bank'">Giro (BBM)</option>
                                 <option value="cek" x-show="paymentType === 'bank'">Cek Bank (BBM)</option>
                                 <option value="cash" x-show="paymentType === 'kas'">Kas / Tunai (BKM)</option>
                             </select>

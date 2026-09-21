@@ -74,7 +74,7 @@ class SalesPaymentController extends Controller
             'payment_type'        => 'required|in:kas,bank',
             'amount'              => 'required|numeric|min:1',
             'payment_date'        => 'required|date',
-            'method'              => 'required|in:cash,transfer,giro,cek',
+            'method'              => 'required|in:cash,transfer,cek',
             'reference_number'    => 'nullable|string',
             'notes'               => 'nullable|string',
         ]);
@@ -145,7 +145,7 @@ class SalesPaymentController extends Controller
             'payment_type'        => 'required|in:kas,bank',
             'amount'              => 'required|numeric|min:1',
             'payment_date'        => 'required|date',
-            'method'              => 'required|in:cash,transfer,giro,cek',
+            'method'              => 'required|in:cash,transfer,cek',
             'reference_number'    => 'nullable|string',
             'notes'               => 'nullable|string',
         ]);

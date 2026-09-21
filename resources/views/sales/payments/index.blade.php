@@ -51,7 +51,6 @@
             <option value="">Semua Metode</option>
             <option value="transfer" {{ request('method') === 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
             <option value="cash" {{ request('method') === 'cash' ? 'selected' : '' }}>Tunai / Cash</option>
-            <option value="giro" {{ request('method') === 'giro' ? 'selected' : '' }}>Giro</option>
             <option value="cek" {{ request('method') === 'cek' ? 'selected' : '' }}>Cek</option>
         </select>
     </x-list-filter-bar>

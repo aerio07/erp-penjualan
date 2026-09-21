@@ -146,9 +146,12 @@ class PurchasePaymentTest extends TestCase
     public function test_can_store_payment_as_draft_without_posting(): void
     {
         $invoice = $this->createUnpaidInvoice(1000000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         $response = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'amount'              => 500000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'transfer',
@@ -178,9 +181,12 @@ class PurchasePaymentTest extends TestCase
     public function test_can_update_draft_payment(): void
     {
         $invoice = $this->createUnpaidInvoice(1000000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         $payment = PurchasePayment::create([
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'user_id'             => $this->finance->id,
             'amount'              => 300000,
             'status'              => 'draft',
@@ -190,6 +196,8 @@ class PurchasePaymentTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->finance)->put(route('purchase.payments.update', $payment), [
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'kas',
             'amount'              => 450000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'cash',
@@ -197,7 +205,7 @@ class PurchasePaymentTest extends TestCase
             'action'              => 'update',
         ]);
 
-        $response->assertRedirect(route('purchase.payments.show', $payment));
+        $response->assertRedirect(route('purchase.payments.index'));
         $payment->refresh();
         $this->assertEquals(450000, $payment->amount);
         $this->assertEquals('draft', $payment->status);
@@ -207,9 +215,12 @@ class PurchasePaymentTest extends TestCase
     public function test_can_post_draft_payment(): void
     {
         $invoice = $this->createUnpaidInvoice(1000000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         $payment = PurchasePayment::create([
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'user_id'             => $this->finance->id,
             'amount'              => 400000,
             'status'              => 'draft',
@@ -239,9 +250,12 @@ class PurchasePaymentTest extends TestCase
     public function test_cannot_edit_or_update_posted_payment(): void
     {
         $invoice = $this->createUnpaidInvoice(1000000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         $payment = PurchasePayment::create([
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'user_id'             => $this->finance->id,
             'amount'              => 400000,
             'status'              => 'posted',
@@ -255,6 +269,8 @@ class PurchasePaymentTest extends TestCase
 
         // Attempting to update posted payment returns 403
         $responseUpdate = $this->actingAs($this->finance)->put(route('purchase.payments.update', $payment), [
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'kas',
             'amount'              => 500000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'cash',
@@ -269,9 +285,12 @@ class PurchasePaymentTest extends TestCase
     public function test_can_record_and_post_payment_immediately(): void
     {
         $invoice = $this->createUnpaidInvoice(1000000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         $response = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'amount'              => 1000000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'transfer',
@@ -292,9 +311,12 @@ class PurchasePaymentTest extends TestCase
     public function test_cannot_overpay_more_than_outstanding_amount(): void
     {
         $invoice = $this->createUnpaidInvoice(500000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         $response = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'amount'              => 600000, // Exceeds 500.000
             'payment_date'        => now()->toDateString(),
             'method'              => 'transfer',
@@ -310,16 +332,20 @@ class PurchasePaymentTest extends TestCase
     public function test_auto_generates_payment_number_bbk_for_bank_and_bkk_for_cash(): void
     {
         $date = now()->format('d/m/Y');
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
 
         // 1. Bank transfer payment -> BBK
         $invoice1 = $this->createUnpaidInvoice(500000);
         $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice1->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
             'amount'              => 200000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'transfer',
         ]);
         $payment1 = PurchasePayment::where('purchase_invoice_id', $invoice1->id)->first();
+        $this->assertNotNull($payment1);
         $this->assertNotNull($payment1->payment_number);
         $this->assertStringStartsWith("BBK-{$date}-", $payment1->payment_number);
         $this->assertEquals($payment1->payment_number, $payment1->voucher_number);
@@ -328,14 +354,37 @@ class PurchasePaymentTest extends TestCase
         $invoice2 = $this->createUnpaidInvoice(300000);
         $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice2->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'kas',
             'amount'              => 100000,
             'payment_date'        => now()->toDateString(),
             'method'              => 'cash',
         ]);
         $payment2 = PurchasePayment::where('purchase_invoice_id', $invoice2->id)->first();
+        $this->assertNotNull($payment2);
         $this->assertNotNull($payment2->payment_number);
         $this->assertStringStartsWith("BKK-{$date}-", $payment2->payment_number);
         $this->assertEquals($payment2->payment_number, $payment2->voucher_number);
+    }
+
+    public function test_cannot_store_purchase_payment_with_giro_method(): void
+    {
+        $invoice = $this->createUnpaidInvoice(1000000);
+        $coa = ChartOfAccount::where('code', '1-1100')->first();
+
+        $response = $this->actingAs($this->finance)->post(route('purchase.payments.store'), [
+            'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $coa->id,
+            'payment_type'        => 'bank',
+            'amount'              => 500000,
+            'payment_date'        => now()->toDateString(),
+            'method'              => 'giro',
+        ]);
+
+        $response->assertSessionHasErrors('method');
+        $this->assertDatabaseMissing('purchase_payments', [
+            'purchase_invoice_id' => $invoice->id,
+        ]);
     }
 }
 
