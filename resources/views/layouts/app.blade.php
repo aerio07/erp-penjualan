@@ -840,6 +840,87 @@
             border-bottom-right-radius: 0.625rem !important;
         }
 
+        /* Numbered ERP Pagination (1, 2, 3...) */
+        .erp-pagination-container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-end !important;
+        }
+        .erp-pagination-list {
+            display: inline-flex !important;
+            align-items: center !important;
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            gap: 4px !important;
+            flex-wrap: wrap !important;
+        }
+        .erp-page-item {
+            display: inline-block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .erp-page-link {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 34px !important;
+            height: 34px !important;
+            padding: 0 10px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            font-family: 'Inter', sans-serif !important;
+            color: #334155 !important;
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 6px !important;
+            text-decoration: none !important;
+            transition: all 0.15s ease !important;
+            cursor: pointer !important;
+            user-select: none !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        }
+        .erp-page-link:hover {
+            background: #f1f5f9 !important;
+            color: #03193c !important;
+            border-color: #94a3b8 !important;
+            text-decoration: none !important;
+            transform: translateY(-1px) !important;
+        }
+        .erp-page-item.active .erp-page-link,
+        .erp-page-link.number-btn.active {
+            background-color: #03193c !important;
+            background-image: linear-gradient(180deg, #182e56 0%, #03193c 100%) !important;
+            color: #ffffff !important;
+            border-color: #03193c !important;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 4px rgba(3, 25, 60, 0.25) !important;
+            cursor: default !important;
+            transform: none !important;
+        }
+        .erp-page-item.disabled .erp-page-link {
+            background: #f8fafc !important;
+            color: #94a3b8 !important;
+            border-color: #e2e8f0 !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .erp-page-link.dots {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            cursor: default !important;
+            color: #64748b !important;
+            font-weight: 700 !important;
+            min-width: 24px !important;
+            padding: 0 !important;
+        }
+        .erp-page-link i {
+            font-size: 11px !important;
+        }
+
         /* Buttons & Tactile Feedback */
         .btn, button.btn, a.btn {
             display: inline-flex !important;

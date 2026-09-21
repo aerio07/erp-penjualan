@@ -34,7 +34,7 @@ class SalesPaymentController extends Controller
         $query = $this->applyDateRange($query, $request, 'payment_date');
         $query = $this->applySort($query, $request, ['payment_number', 'payment_date', 'amount', 'status', 'method', 'created_at'], 'payment_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $payments = $query->paginate($perPage)->withQueryString();
 
         $coas = ChartOfAccount::where('is_active', true)

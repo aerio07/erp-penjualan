@@ -90,10 +90,10 @@
 
                 <span class="perpage-label">Tampil:</span>
                 <select name="per_page" onchange="this.form.submit()" class="form-control perpage-select">
-                    <option value="10" {{ request('per_page', 20) == 10 ? 'selected' : '' }}>10</option>
-                    <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20</option>
-                    <option value="50" {{ request('per_page', 20) == 50 ? 'selected' : '' }}>50</option>
-                    <option value="100" {{ request('per_page', 20) == 100 ? 'selected' : '' }}>100</option>
+                    <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+                    <option value="20" {{ request('per_page', 10) == 20 ? 'selected' : '' }}>20</option>
+                    <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
+                    <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100</option>
                 </select>
             </div>
             @endif

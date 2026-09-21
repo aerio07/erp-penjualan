@@ -76,11 +76,8 @@
 
     <!-- Tabel Daftar Produk dalam Kategori Ini -->
     <div class="card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="card-header">
             <h3><i class="fa-solid fa-boxes-stacked" style="color:var(--primary); margin-right:8px;"></i> Daftar Produk dalam Kategori "{{ $category->name }}"</h3>
-            <a href="{{ route('master.products.create') }}" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-plus"></i> Tambah Produk Baru
-            </a>
         </div>
         <div class="table-responsive">
             <table class="erp-table">

@@ -39,5 +39,8 @@ class AppServiceProvider extends ServiceProvider
         \Carbon\Carbon::macro('toAppDateTime', function () {
             return $this->format('d/m/Y H:i');
         });
+
+        \Illuminate\Pagination\Paginator::defaultView('vendor.pagination.custom');
+        \Illuminate\Pagination\Paginator::defaultSimpleView('vendor.pagination.custom');
     }
 }
