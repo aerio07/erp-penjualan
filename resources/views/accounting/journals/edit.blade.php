@@ -244,28 +244,38 @@
 </div>
 @endsection
 
+@php
+    $rawAccounts = $accounts->map(function ($account) {
+        return [
+            'id' => $account->id,
+            'code' => $account->code,
+            'name' => $account->name,
+            'type' => ucfirst($account->type),
+            'label' => $account->code . ' - ' . $account->name . ' (' . ucfirst($account->type) . ')',
+        ];
+    })->values();
+
+    $initialLines = $journal->lines->map(function ($line) {
+        return [
+            'chart_of_account_id' => $line->chart_of_account_id,
+            'description' => $line->description ?? '',
+            'debit' => (float) $line->debit,
+            'credit' => (float) $line->credit,
+        ];
+    })->values();
+@endphp
+
 @push('scripts')
 <script>
 function journalEditForm() {
-    const rawAccounts = @json($accounts->map(fn($a) => [
-        'id' => $a->id,
-        'code' => $a->code,
-        'name' => $a->name,
-        'type' => ucfirst($a->type),
-        'label' => $a->code . ' - ' . $a->name . ' (' . ucfirst($a->type) . ')'
-    ]));
+    const rawAccounts = @json($rawAccounts);
 
     const accountsMap = {};
     rawAccounts.forEach(a => {
         accountsMap[a.id] = a;
     });
 
-    const initialLines = @json($journal->lines->map(fn($l) => [
-        'chart_of_account_id' => $l->chart_of_account_id,
-        'description' => $l->description ?? '',
-        'debit' => (float)$l->debit,
-        'credit' => (float)$l->credit,
-    ]));
+    const initialLines = @json($initialLines);
 
     if (initialLines.length < 2) {
         while (initialLines.length < 2) {
@@ -322,6 +332,11 @@ function journalEditForm() {
                 e.preventDefault();
                 return false;
             }
+
+            // Kirim angka mentah, bukan tampilan berformat seperti 1.500.000.
+            e.target.querySelectorAll('.format-currency').forEach(input => {
+                input.value = window.unformatRupiah(input.value);
+            });
             return true;
         },
 

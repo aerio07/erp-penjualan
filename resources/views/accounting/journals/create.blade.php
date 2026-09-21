@@ -240,16 +240,22 @@
 </div>
 @endsection
 
+@php
+    $rawAccounts = $accounts->map(function ($account) {
+        return [
+            'id' => $account->id,
+            'code' => $account->code,
+            'name' => $account->name,
+            'type' => ucfirst($account->type),
+            'label' => $account->code . ' - ' . $account->name . ' (' . ucfirst($account->type) . ')',
+        ];
+    })->values();
+@endphp
+
 @push('scripts')
 <script>
 function journalForm() {
-    const rawAccounts = @json($accounts->map(fn($a) => [
-        'id' => $a->id,
-        'code' => $a->code,
-        'name' => $a->name,
-        'type' => ucfirst($a->type),
-        'label' => $a->code . ' - ' . $a->name . ' (' . ucfirst($a->type) . ')'
-    ]));
+    const rawAccounts = @json($rawAccounts);
 
     const accountsMap = {};
     rawAccounts.forEach(a => {
@@ -309,6 +315,11 @@ function journalForm() {
                 e.preventDefault();
                 return false;
             }
+
+            // Kirim angka mentah, bukan tampilan berformat seperti 1.500.000.
+            e.target.querySelectorAll('.format-currency').forEach(input => {
+                input.value = window.unformatRupiah(input.value);
+            });
             return true;
         },
 
