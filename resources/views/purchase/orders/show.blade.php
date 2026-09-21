@@ -340,7 +340,7 @@
                         <td>{{ $inv->invoice_date->format('d/m/Y') }}</td>
                         <td>{{ $inv->due_date->format('d/m/Y') }}</td>
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($inv->total_amount, 0, ',', '.') }}</td>
-                        <td style="text-align:center;"><span class="badge badge-{{ $inv->status }}">{{ ucfirst($inv->status) }}</span></td>
+                        <td style="text-align:center;"><span class="badge {{ $inv->status_badge }}">{{ $inv->status_label }}</span></td>
                     </tr>
                     @endforeach
                 </tbody>

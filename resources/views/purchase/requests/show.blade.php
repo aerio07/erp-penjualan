@@ -195,7 +195,7 @@
                     @foreach($purchase_request->purchaseOrders as $po)
                     <a href="{{ route('purchase.orders.show', $po) }}" class="btn btn-sm btn-secondary" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; text-decoration:none;">
                         <span><i class="fa-solid fa-file-invoice"></i> {{ $po->po_number }}</span>
-                        <span class="badge badge-success" style="font-size:10px;">{{ ucfirst($po->status) }}</span>
+                        <span class="badge {{ $po->status_badge }}" style="font-size:10px;">{{ $po->status_label }}</span>
                     </a>
                     @endforeach
                 </div>
