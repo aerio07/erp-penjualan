@@ -78,7 +78,7 @@ class SalesReportController extends Controller
         // Default sort: order_date desc
         $query = $this->applySort($query, $request, ['order_date', 'so_number', 'total_amount', 'created_at'], 'order_date', 'desc');
 
-        $orders = $query->paginate($request->get('per_page', 20))->withQueryString();
+        $orders = $query->paginate($request->get('per_page', 10))->withQueryString();
 
         // Mutasi & Dekorasi data untuk kebutuhan UI
         $orders->getCollection()->transform(function ($order) {
@@ -209,7 +209,7 @@ class SalesReportController extends Controller
             });
         }
 
-        $perPage = $request->integer('per_page', 20);
+        $perPage = $request->integer('per_page', 10);
         $products = $query->orderByDesc('total_amount')->paginate($perPage)->withQueryString();
 
         $products->getCollection()->transform(function ($p) {

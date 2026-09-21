@@ -46,7 +46,7 @@ class GoodsReceiptController extends Controller
         $query = $this->applyDateRange($query, $request, 'received_date');
         $query = $this->applySort($query, $request, ['receipt_number', 'received_date', 'status', 'qc_status', 'created_at'], 'received_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $receipts   = $query->paginate($perPage)->withQueryString();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 

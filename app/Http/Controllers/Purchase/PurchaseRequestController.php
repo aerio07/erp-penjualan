@@ -57,7 +57,8 @@ class PurchaseRequestController extends Controller
         $query = $this->applySearch($query, $request, ['pr_number', 'division', 'notes', 'user.name']);
         $query = $this->applyDateRange($query, $request, 'request_date');
 
-        $purchaseRequests = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        $perPage = (int) $request->get('per_page', 10);
+        $purchaseRequests = $query->orderBy('created_at', 'desc')->paginate($perPage)->withQueryString();
 
         return view('purchase.requests.index', compact('purchaseRequests', 'status'));
     }

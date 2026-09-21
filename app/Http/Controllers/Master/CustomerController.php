@@ -27,7 +27,7 @@ class CustomerController extends Controller
         $query = $this->applyFilter($query, $request, 'sales_person_id');
         $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'credit_limit', 'payment_term', 'tax_type', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $customers = $query->paginate($perPage)->withQueryString();
         $salesUsers = User::where('role', 'sales')->orderBy('name')->get();
 

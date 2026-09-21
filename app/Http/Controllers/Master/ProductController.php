@@ -34,7 +34,7 @@ class ProductController extends Controller
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applySort($query, $request, ['sku', 'name', 'category', 'purchase_price', 'sell_price', 'min_stock', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $products   = $query->paginate($perPage)->withQueryString();
         $categories = ProductCategory::orderBy('name')->get();
 

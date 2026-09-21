@@ -43,7 +43,7 @@ class SalesReturnController extends Controller
         $query = $this->applyDateRange($query, $request, 'return_date');
         $query = $this->applySort($query, $request, ['return_number', 'return_date', 'status', 'created_at'], 'return_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $returns   = $query->paginate($perPage)->withQueryString();
         $customers = Customer::where('is_active', true)->orderBy('name')->get();
 

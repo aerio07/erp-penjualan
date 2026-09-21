@@ -44,7 +44,7 @@ class PurchaseInvoiceController extends Controller
         $query = $this->applyDateRange($query, $request, 'invoice_date');
         $query = $this->applySort($query, $request, ['invoice_number', 'invoice_date', 'due_date', 'total_amount', 'status', 'created_at'], 'invoice_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $invoices  = $query->paginate($perPage)->withQueryString();
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 

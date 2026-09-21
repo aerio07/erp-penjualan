@@ -38,7 +38,7 @@ class PurchaseOrderController extends Controller
         $query = $this->applyDateRange($query, $request, 'order_date');
         $query = $this->applySort($query, $request, ['po_number', 'order_date', 'expected_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 15);
+        $perPage = (int) $request->get('per_page', 10);
         $orders = $query->paginate($perPage)->withQueryString();
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 

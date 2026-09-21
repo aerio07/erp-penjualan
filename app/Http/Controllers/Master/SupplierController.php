@@ -24,7 +24,7 @@ class SupplierController extends Controller
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applySort($query, $request, ['code', 'name', 'contact_person', 'payment_term', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $suppliers = $query->paginate($perPage)->withQueryString();
 
         return view('master.suppliers.index', compact('suppliers'));

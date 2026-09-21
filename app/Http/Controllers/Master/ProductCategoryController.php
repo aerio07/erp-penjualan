@@ -23,7 +23,7 @@ class ProductCategoryController extends Controller
         $query = $this->applyFilter($query, $request, 'is_active');
         $query = $this->applySort($query, $request, ['code', 'name', 'products_count', 'created_at'], 'created_at', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $categories = $query->paginate($perPage)->withQueryString();
 
         return view('master.categories.index', compact('categories'));

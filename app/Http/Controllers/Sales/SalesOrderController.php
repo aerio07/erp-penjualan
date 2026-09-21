@@ -42,7 +42,7 @@ class SalesOrderController extends Controller
         $query = $this->applyDateRange($query, $request, 'order_date');
         $query = $this->applySort($query, $request, ['so_number', 'order_date', 'total_amount', 'status', 'created_at'], 'order_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 15);
+        $perPage = (int) $request->get('per_page', 10);
         $orders = $query->paginate($perPage)->withQueryString();
         $customers = Customer::where('is_active', true)->orderBy('name')->get();
 
