@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\PurchaseOrderStatus;
 use App\Models\GoodsReceipt;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
@@ -118,7 +120,7 @@ class PurchaseInvoiceService
 
         $isLastInvoiceForPo = ($otherUninvoicedGrnsCount === 0) && (
             $poFullyReceived ||
-            in_array($po->status, ['done', 'completed']) ||
+            $po->status === PurchaseOrderStatus::Done ||
             round($subtotalGrn + $totalInvoicedSubtotal, 2) >= round($totalOrderSubtotal, 2)
         );
 
@@ -217,11 +219,11 @@ class PurchaseInvoiceService
      */
     public function postInvoice(PurchaseInvoice $invoice): PurchaseInvoice
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             throw new InvalidArgumentException("Hanya invoice berstatus Draft yang dapat diposting.");
         }
 
-        $invoice->update(['status' => 'unpaid']);
+        $invoice->update(['status' => PurchaseInvoiceStatus::Unpaid]);
 
         $entry = $this->journalService->createFromPurchaseInvoice($invoice);
         $this->journalService->postEntry($entry);

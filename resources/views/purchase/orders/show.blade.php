@@ -25,7 +25,7 @@
     >
         <x-slot:actions>
             {{-- Workflow buttons (left) --}}
-            @if($order->status === 'draft')
+            @if($order->isDraft())
             <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
                 <i class="fa-solid fa-ban"></i> Batalkan PO
             </button>
@@ -41,7 +41,7 @@
             >
                 <i class="fa-solid fa-check"></i> Konfirmasi PO
             </button>
-            @elseif($order->status === 'waiting_approval')
+            @elseif($order->isWaitingApproval())
                 @if($isAdmin)
                 <a href="{{ route('approvals.index') }}" class="btn btn-secondary">
                     <i class="fa-solid fa-stamp"></i> Buka Menu Approval
@@ -50,7 +50,7 @@
                 <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
                     <i class="fa-solid fa-ban"></i> Batalkan PO
                 </button>
-            @elseif(in_array($order->status, ['confirmed', 'partial_received']))
+            @elseif($order->canReceiveGoods())
                 <a href="{{ route('purchase.goods-receipts.create', ['po_id' => $order->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-truck-ramp-box"></i> Terima Barang
                 </a>
@@ -58,9 +58,9 @@
 
             {{-- Divider --}}
             @if(
-                $order->status === 'draft' ||
-                $order->status === 'waiting_approval' ||
-                in_array($order->status, ['confirmed', 'partial_received'])
+                $order->isDraft() ||
+                $order->isWaitingApproval() ||
+                $order->canReceiveGoods()
             )
             <div style="width:1px; height:28px; background:var(--border); margin:0 4px;"></div>
             @endif
@@ -68,14 +68,14 @@
             {{-- Utility / Nav buttons (right) --}}
             
             <a href="{{ route('purchase.orders.index') }}" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Kembali</a>
-            @if(in_array($order->status, ['confirmed', 'partially_received', 'done']))
+            @if(in_array($order->status, [\App\Enums\PurchaseOrderStatus::Confirmed, \App\Enums\PurchaseOrderStatus::PartiallyReceived, \App\Enums\PurchaseOrderStatus::Done]))
             <a href="{{ route('pdf.purchase-order', $order) }}" class="btn btn-secondary" target="_blank"><i class="fa-solid fa-file-pdf"></i> PDF</a>
             @endif
         </x-slot:actions>
     </x-detail-header>
 
     {{-- Banner: Permintaan Revisi dari Approver --}}
-    @if($order->status === 'draft' && $latestApproval && $latestApproval->status === 'revised')
+    @if($order->isDraft() && $latestApproval && $latestApproval->status === 'revised')
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -99,7 +99,7 @@
     @endif
 
     {{-- Banner Status: Dibatalkan (Cancelled) --}}
-    @if($order->status === 'cancelled')
+    @if($order->isCancelled())
     @php
         $reasonText = $order->cancel_reason ?: ($latestApproval->rejection_reason ?? null);
         if (!$reasonText && $order->notes && preg_match('/\[Alasan (?:Pembatalan|Penolakan)\]:\s*(.+)/', $order->notes, $matches)) {
@@ -141,7 +141,7 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header">
                 <h3>Informasi Purchase Order</h3>
-                <span class="badge badge-{{ $order->status }}">{{ ucfirst(str_replace('_',' ',$order->status)) }}</span>
+                <x-status-badge :status="$order->status" />
             </div>
             <div class="card-body">
                 <div class="form-row form-row-2">

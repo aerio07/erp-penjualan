@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Purchase;
 
+use App\Enums\PaymentStatus;
+use App\Enums\PurchaseInvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ChartOfAccount;
 use App\Models\PurchaseInvoice;
@@ -52,7 +54,7 @@ class PurchasePaymentController extends Controller
     {
         $selectedInvoiceId = $request->query('invoice_id');
         $unpaidInvoices = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
-            ->whereIn('status', ['unpaid', 'partial'])
+            ->whereIn('status', [PurchaseInvoiceStatus::Unpaid->value, PurchaseInvoiceStatus::Partial->value])
             ->orderByDesc('id')
             ->get();
 
@@ -83,7 +85,7 @@ class PurchasePaymentController extends Controller
         return DB::transaction(function () use ($request, $action) {
             $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->purchase_invoice_id);
 
-            if ($invoice->status === 'draft') {
+            if ($invoice->isDraft()) {
                 return back()->with('error', "Invoice masih berstatus Draft dan belum diposting. Pembayaran tidak dapat diproses.")->withInput();
             }
 
@@ -99,7 +101,7 @@ class PurchasePaymentController extends Controller
                 'chart_of_account_id' => $request->chart_of_account_id,
                 'user_id'             => Auth::id(),
                 'amount'              => $request->amount,
-                'status'              => ($action === 'post') ? 'posted' : 'draft',
+                'status'              => ($action === 'post') ? PaymentStatus::Posted : PaymentStatus::Draft,
                 'payment_date'        => $request->payment_date,
                 'payment_type'        => $request->payment_type,
                 'method'              => $request->method,
@@ -109,8 +111,8 @@ class PurchasePaymentController extends Controller
 
             if ($action === 'post') {
                 $invoice->unsetRelation('payments');
-                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
-                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+                $newTotalPaid = (float) $invoice->payments()->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
+                $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? PurchaseInvoiceStatus::Paid : ($newTotalPaid > 0 ? PurchaseInvoiceStatus::Partial : PurchaseInvoiceStatus::Unpaid);
                 $invoice->update(['status' => $status]);
 
                 $entry = $this->journalService->createFromPurchasePayment($payment);
@@ -139,7 +141,7 @@ class PurchasePaymentController extends Controller
         $payment->load(['purchaseInvoice.purchaseOrder.supplier', 'purchaseInvoice.payments', 'chartOfAccount']);
         $invoice = $payment->purchaseInvoice;
 
-        $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
+        $otherPaid = (float) $invoice->payments->filter(fn($p) => $p->id !== $payment->id && $p->status !== PaymentStatus::Draft)->sum('amount');
         $maxAllowed = max(0, $invoice->effective_total_amount - $otherPaid);
 
         $coas = ChartOfAccount::where('is_active', true)
@@ -167,7 +169,7 @@ class PurchasePaymentController extends Controller
         return DB::transaction(function () use ($request, $payment) {
             $invoice = PurchaseInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($payment->purchase_invoice_id);
 
-            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
+            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
             $maxAllowed = $invoice->effective_total_amount - $otherPaid;
 
             if ($request->amount > $maxAllowed + 0.01) {
@@ -200,11 +202,11 @@ class PurchasePaymentController extends Controller
                 return back()->with('error', "Jumlah pembayaran (Rp " . number_format($payment->amount, 0, ',', '.') . ") melebihi sisa hutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").");
             }
 
-            $payment->update(['status' => 'posted']);
+            $payment->update(['status' => PaymentStatus::Posted]);
 
             $invoice->unsetRelation('payments');
-            $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
-            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+            $newTotalPaid = (float) $invoice->payments()->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
+            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? PurchaseInvoiceStatus::Paid : ($newTotalPaid > 0 ? PurchaseInvoiceStatus::Partial : PurchaseInvoiceStatus::Unpaid);
             $invoice->update(['status' => $status]);
 
             // Jurnal Otomatis

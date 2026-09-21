@@ -58,7 +58,7 @@
                     <tr>
                         <td class="detail-label">Status Pembayaran</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $invoice->status)) }}</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper($invoice->status_label) }}</td>
                     </tr>
                 </table>
             </td>

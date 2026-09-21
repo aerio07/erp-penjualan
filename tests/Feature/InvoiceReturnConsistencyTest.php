@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\SalesInvoiceStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -126,7 +128,7 @@ class InvoiceReturnConsistencyTest extends TestCase
         $this->assertEquals(400, $invoice->total_reversed_amount);
         $this->assertEquals(600, $invoice->effective_total_amount);
         $this->assertEquals(600, $invoice->outstanding_amount);
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(SalesInvoiceStatus::Unpaid, $invoice->status);
 
         $report = $this->actingAs($this->admin)->get(route('accounting.reports.receivables'));
         $report->assertOk();
@@ -196,7 +198,7 @@ class InvoiceReturnConsistencyTest extends TestCase
         $this->assertEquals(240, $invoice->total_reversed_amount);
         $this->assertEquals(360, $invoice->effective_total_amount);
         $this->assertEquals(360, $invoice->outstanding_amount);
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Unpaid, $invoice->status);
 
         $report = $this->actingAs($this->admin)->get(route('accounting.reports.payables'));
         $report->assertOk();

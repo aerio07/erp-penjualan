@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PurchaseInvoiceStatus;
 use App\Models\GoodsReceipt;
 use App\Models\JournalEntry;
 use App\Models\Product;
@@ -93,6 +94,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('purchase.goods-receipts.store'), [
                 'purchase_order_id'       => $po->id,
+                'warehouse_id'            => $this->warehouse->id,
                 'received_date'           => '2026-09-02',
                 'auto_generate_invoice'   => '1',
                 'supplier_invoice_number' => 'INV-SUPP-9988',
@@ -115,9 +117,10 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $response->assertRedirect(route('purchase.goods-receipts.index'));
         $response->assertSessionHas('success');
 
-        // Pastikan GRN tersimpan dan ditandai is_invoiced = true
+        // Pastikan GRN tersimpan dan disetujui
         $grn = GoodsReceipt::where('purchase_order_id', $po->id)->first();
         $this->assertNotNull($grn);
+        $this->submitAndApproveGoodsReceipt($grn);
         $this->assertTrue((bool) $grn->is_invoiced);
         $this->assertNotNull($grn->purchase_invoice_id);
 
@@ -130,7 +133,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $this->assertEquals(500000, (float) $invoice->amount);
         $this->assertEquals(55000, (float) $invoice->tax_amount);
         $this->assertEquals(555000, (float) $invoice->total_amount);
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Unpaid, $invoice->status);
 
         // Pastikan Jurnal otomatis terposting
         $journal = JournalEntry::where('reference_type', PurchaseInvoice::class)
@@ -149,6 +152,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post(route('purchase.goods-receipts.store'), [
                 'purchase_order_id'     => $po->id,
+                'warehouse_id'          => $this->warehouse->id,
                 'received_date'         => '2026-09-02',
                 'auto_generate_invoice' => '0',
                 'items' => [
@@ -167,6 +171,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $response->assertRedirect(route('purchase.goods-receipts.index'));
         $grn = GoodsReceipt::where('purchase_order_id', $po->id)->first();
         $this->assertNotNull($grn);
+        $this->submitAndApproveGoodsReceipt($grn);
         $this->assertFalse((bool) $grn->is_invoiced);
         $this->assertNull($grn->purchase_invoice_id);
 
@@ -196,6 +201,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $this->actingAs($this->admin)
             ->post(route('purchase.goods-receipts.store'), [
                 'purchase_order_id'     => $po->id,
+                'warehouse_id'          => $this->warehouse->id,
                 'received_date'         => '2026-09-02',
                 'auto_generate_invoice' => '1',
                 'items' => [
@@ -212,6 +218,8 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
             ]);
 
         $grn = GoodsReceipt::where('purchase_order_id', $po->id)->first();
+        $this->assertNotNull($grn);
+        $this->submitAndApproveGoodsReceipt($grn);
         $this->assertTrue((bool) $grn->is_invoiced);
         $countBefore = PurchaseInvoice::count();
 

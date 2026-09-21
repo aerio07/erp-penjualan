@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesOrderStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -83,7 +84,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
         ]);
 
         $this->confirmAndApproveSalesOrder($so);
-        $this->assertEquals('confirmed', $so->status);
+        $this->assertEquals(SalesOrderStatus::Confirmed, $so->status);
         $this->assertEquals('backorder', $so->fulfillment_status);
         $this->assertFalse($so->canCreateDelivery());
 
@@ -131,7 +132,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
         ]);
 
         $this->confirmAndApproveSalesOrder($so);
-        $this->assertEquals('confirmed', $so->status);
+        $this->assertEquals(SalesOrderStatus::Confirmed, $so->status);
         $this->assertEquals('partially_available', $so->fulfillment_status);
         $this->assertTrue($so->canCreateDelivery());
         $this->assertTrue($so->canCreatePartialDelivery());
@@ -197,6 +198,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
         // 3. Goods Receipt arrives at warehouse
         $this->actingAs($this->admin)->post(route('purchase.goods-receipts.store'), [
             'purchase_order_id' => $po->id,
+            'warehouse_id' => $this->warehouse->id,
             'received_date' => now()->toDateString(),
             'items' => [
                 [
@@ -207,6 +209,9 @@ class OrderFulfillmentAndDemandTest extends TestCase
                 ],
             ],
         ]);
+
+        $grn = GoodsReceipt::latest('id')->first();
+        $this->submitAndApproveGoodsReceipt($grn);
 
         // 4. Verify targeted fulfillment
         $demand = ProcurementDemand::where('sales_order_id', $so->id)->first();
@@ -268,7 +273,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
         ]);
 
         $so->refresh();
-        $this->assertEquals('done', $so->status);
+        $this->assertEquals(SalesOrderStatus::Done, $so->status);
         $this->assertEquals('delivered', $so->fulfillment_status);
 
         // Reservation is fulfilled
@@ -335,7 +340,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
 
         // 2. Customer 1 cancels SO-1
         $this->actingAs($this->admin)->patch(route('sales.orders.cancel', $so1));
-        $this->assertEquals('cancelled', $so1->refresh()->status);
+        $this->assertEquals(SalesOrderStatus::Cancelled, $so1->refresh()->status);
 
         // 3. SO-2 automatically receives the released 10 pcs reservation and becomes ready_to_ship!
         $so2->refresh();
@@ -399,7 +404,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
 
         // SO should be partially_delivered
         $so->refresh();
-        $this->assertEquals('partially_delivered', $so->status);
+        $this->assertEquals(SalesOrderStatus::PartiallyDelivered, $so->status);
         $this->assertEquals('partially_delivered', $so->fulfillment_status);
 
         // 3. Add remaining 6 units and deliver remaining 6 units
@@ -433,7 +438,7 @@ class OrderFulfillmentAndDemandTest extends TestCase
 
         // SO should be done & delivered
         $so->refresh();
-        $this->assertEquals('done', $so->status);
+        $this->assertEquals(SalesOrderStatus::Done, $so->status);
         $this->assertEquals('delivered', $so->fulfillment_status);
     }
 

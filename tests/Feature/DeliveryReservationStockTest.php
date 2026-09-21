@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesOrderStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\GoodsReceipt;
@@ -325,7 +326,7 @@ class DeliveryReservationStockTest extends TestCase
         // Cancel SO 1
         $this->actingAs($this->admin)->patch(route('sales.orders.cancel', $so1));
         $so1->refresh();
-        $this->assertEquals('cancelled', $so1->status);
+        $this->assertEquals(SalesOrderStatus::Cancelled, $so1->status);
 
         // Released stock automatically fulfills SO 2's demand and creates reservation
         $so2->refresh();
@@ -470,6 +471,7 @@ class DeliveryReservationStockTest extends TestCase
         // Receive via Goods Receipt
         $this->actingAs($this->admin)->post(route('purchase.goods-receipts.store'), [
             'purchase_order_id' => $po->id,
+            'warehouse_id'      => $this->warehouse->id,
             'received_date'     => now()->toDateString(),
             'items' => [
                 [
@@ -480,6 +482,9 @@ class DeliveryReservationStockTest extends TestCase
                 ],
             ],
         ]);
+
+        $grn = GoodsReceipt::latest('id')->first();
+        $this->submitAndApproveGoodsReceipt($grn);
 
         // 4. Verify SO upgraded to ready_to_ship and active reservation created
         $so->refresh();

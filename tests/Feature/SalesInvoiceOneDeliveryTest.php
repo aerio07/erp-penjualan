@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesReturnStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -629,12 +630,12 @@ class SalesInvoiceOneDeliveryTest extends TestCase
         // Konfirmasi penerimaan fisik retur di gudang (PATCH route)
         $this->actingAs($this->admin)->patch(route('sales.returns.receive', $return));
         $return->refresh();
-        $this->assertEquals('received', $return->status);
+        $this->assertEquals(SalesReturnStatus::Received, $return->status);
 
         // Selesaikan retur (complete) -> memicu createFromSalesReturn() & refreshAffectedInvoiceStatuses()
         $this->actingAs($this->admin)->patch(route('sales.returns.complete', $return));
         $return->refresh();
-        $this->assertEquals('completed', $return->status);
+        $this->assertEquals(SalesReturnStatus::Completed, $return->status);
 
         // 1. Verifikasi reversed_qty pada SalesInvoiceItem bertambah tepat menjadi 4
         $invItem->refresh();

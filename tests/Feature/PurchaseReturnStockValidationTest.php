@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\GoodsReceiptStatus;
+use App\Enums\PurchaseReturnStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -89,7 +91,7 @@ class PurchaseReturnStockValidationTest extends TestCase
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
             'received_date' => now()->toDateString(),
-            'status' => 'received',
+            'status' => GoodsReceiptStatus::Confirmed,
         ]);
         $grnItem = GoodsReceiptItem::create([
             'goods_receipt_id' => $grn->id,
@@ -196,7 +198,7 @@ class PurchaseReturnStockValidationTest extends TestCase
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
             'received_date' => now()->toDateString(),
-            'status' => 'received',
+            'status' => GoodsReceiptStatus::Confirmed,
         ]);
         $grnItem = GoodsReceiptItem::create([
             'goods_receipt_id' => $grn->id,
@@ -286,11 +288,11 @@ class PurchaseReturnStockValidationTest extends TestCase
         $this->assertEquals(1, PurchaseReturn::count());
 
         $return = PurchaseReturn::first();
-        $this->assertEquals('draft', $return->status);
+        $this->assertEquals(PurchaseReturnStatus::Draft, $return->status);
 
         // 5. Complete the return -> Stock drops from 4 to 0 (never negative)
         $this->actingAs($this->admin)->patch(route('purchase.returns.complete', $return));
-        $this->assertEquals('completed', $return->refresh()->status);
+        $this->assertEquals(PurchaseReturnStatus::Completed, $return->refresh()->status);
         $this->assertEquals(0, $stockService->getOnHandStock($this->product->id, $this->warehouse->id));
     }
 }

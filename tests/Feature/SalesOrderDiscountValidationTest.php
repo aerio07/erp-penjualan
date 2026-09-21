@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesOrderStatus;
 use App\Models\ApprovalRequest;
 use App\Models\Customer;
 use App\Models\Product;
@@ -184,7 +185,7 @@ class SalesOrderDiscountValidationTest extends TestCase
         $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('cancelled', $so->status);
+        $this->assertEquals(SalesOrderStatus::Cancelled, $so->status);
 
         $approval->refresh();
         $this->assertEquals('rejected', $approval->status);

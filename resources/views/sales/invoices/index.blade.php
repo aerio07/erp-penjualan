@@ -96,9 +96,9 @@
             <td class="col-actions text-center">
                 <x-table-actions 
                     :show-url="route('sales.invoices.show', $inv)"
-                    :edit-url="$inv->status === 'draft' ? route('sales.invoices.edit', $inv) : null"
-                    :pdf-url="in_array($inv->status, ['unpaid', 'partial', 'paid']) ? route('pdf.sales-invoice', $inv) : null"
-                    :delete-url="$inv->status === 'draft' ? route('sales.invoices.destroy', $inv) : null"
+                    :edit-url="$inv->isDraft() ? route('sales.invoices.edit', $inv) : null"
+                    :pdf-url="$inv->isPosted() ? route('pdf.sales-invoice', $inv) : null"
+                    :delete-url="$inv->isDraft() ? route('sales.invoices.destroy', $inv) : null"
                     delete-confirm="Yakin ingin menghapus draft invoice ini? Dokumen Surat Jalan terkait akan otomatis dilepaskan."
                 />
             </td>

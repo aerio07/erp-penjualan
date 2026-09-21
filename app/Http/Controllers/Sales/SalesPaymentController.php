@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\PaymentStatus;
+use App\Enums\SalesInvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ChartOfAccount;
 use App\Models\SalesInvoice;
@@ -52,7 +54,7 @@ class SalesPaymentController extends Controller
     {
         $selectedInvoiceId = $request->query('invoice_id');
         $unpaidInvoices = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
-            ->whereIn('status', ['unpaid', 'partial'])
+            ->whereIn('status', [SalesInvoiceStatus::Unpaid->value, SalesInvoiceStatus::Partial->value])
             ->orderByDesc('id')
             ->get()
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0)
@@ -82,7 +84,7 @@ class SalesPaymentController extends Controller
         return DB::transaction(function () use ($request) {
             $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($request->sales_invoice_id);
 
-            if ($invoice->status === 'draft') {
+            if ($invoice->isDraft()) {
                 return back()->with('error', 'Invoice masih berstatus Draft dan belum diposting. Pembayaran piutang tidak dapat dicatat.')->withInput();
             }
 
@@ -98,7 +100,7 @@ class SalesPaymentController extends Controller
                 'chart_of_account_id' => $request->chart_of_account_id,
                 'user_id'             => Auth::id(),
                 'amount'              => $request->amount,
-                'status'              => 'draft',
+                'status'              => PaymentStatus::Draft,
                 'payment_date'        => $request->payment_date,
                 'payment_type'        => $request->payment_type,
                 'method'              => $request->method,
@@ -125,7 +127,7 @@ class SalesPaymentController extends Controller
         $payment->load(['salesInvoice.salesOrder.customer', 'salesInvoice.payments', 'chartOfAccount']);
         $invoice = $payment->salesInvoice;
 
-        $otherPaid = $invoice->payments->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
+        $otherPaid = (float) $invoice->payments->filter(fn($p) => $p->id !== $payment->id && $p->status !== PaymentStatus::Draft)->sum('amount');
         $maxAllowed = max(0, $invoice->effective_total_amount - $otherPaid);
 
         $coas = ChartOfAccount::where('is_active', true)
@@ -153,7 +155,7 @@ class SalesPaymentController extends Controller
         return DB::transaction(function () use ($request, $payment) {
             $invoice = SalesInvoice::with(['payments', 'items'])->lockForUpdate()->findOrFail($payment->sales_invoice_id);
 
-            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->where('status', '!=', 'draft')->sum('amount');
+            $otherPaid = $invoice->payments()->where('id', '!=', $payment->id)->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
             $maxAllowed = $invoice->effective_total_amount - $otherPaid;
 
             if ($request->amount > $maxAllowed + 0.01) {
@@ -186,11 +188,11 @@ class SalesPaymentController extends Controller
                 return back()->with('error', "Jumlah penerimaan (Rp " . number_format($payment->amount, 0, ',', '.') . ") melebihi sisa piutang (Rp " . number_format($invoice->outstanding_amount, 0, ',', '.') . ").");
             }
 
-            $payment->update(['status' => 'posted']);
+            $payment->update(['status' => PaymentStatus::Posted]);
 
             $invoice->unsetRelation('payments');
-            $newTotalPaid = (float) $invoice->payments()->where('status', '!=', 'draft')->sum('amount');
-            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? 'paid' : ($newTotalPaid > 0 ? 'partial' : 'unpaid');
+            $newTotalPaid = (float) $invoice->payments()->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
+            $status = ($newTotalPaid >= $invoice->effective_total_amount - 0.01) ? SalesInvoiceStatus::Paid : ($newTotalPaid > 0 ? SalesInvoiceStatus::Partial : SalesInvoiceStatus::Unpaid);
             $invoice->update(['status' => $status]);
 
             // Jurnal Otomatis

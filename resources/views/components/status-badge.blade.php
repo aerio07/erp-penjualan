@@ -1,7 +1,9 @@
 @props(['status' => 'draft', 'label' => null])
 
 @php
-    $s = strtolower(trim((string) $status));
+    $rawStatus = $status instanceof \BackedEnum ? $status->value : (string) $status;
+    $s = strtolower(trim($rawStatus));
+    $enumLabel = ($status instanceof \BackedEnum && method_exists($status, 'label')) ? $status->label() : null;
     
     // Mapping warna & kelas Tailwind per status enum
     $badgeClasses = match($s) {
@@ -14,7 +16,7 @@
             'bg-status-active-bg text-status-active-text border border-status-active-text/20',
         
         // Pending / Warning (Oranye / Amber)
-        'waiting_approval', 'pending', 'partially_received', 'partially_delivered', 'partial', 'in_progress', 'sold_as_reject', 'return_out' => 
+        'waiting_approval', 'pending', 'partially_received', 'partially_delivered', 'partial', 'in_progress', 'sold_as_reject', 'return_out', 'revised' => 
             'bg-status-pending-bg text-status-pending-text border border-status-pending-text/30',
         
         // Danger / Cancelled / Rejected / Damage (Merah / Rose)
@@ -39,7 +41,7 @@
     };
 
     // Formatted label jika tidak di-override
-    $displayLabel = $label ?? match($s) {
+    $displayLabel = $label ?? $enumLabel ?? match($s) {
         'waiting_approval' => 'WAITING APPROVAL',
         'partially_received' => 'PARTIAL RECV',
         'partially_delivered' => 'PARTIAL DELIV',

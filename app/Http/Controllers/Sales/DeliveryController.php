@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\DeliveryStatus;
+use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -52,7 +54,7 @@ class DeliveryController extends Controller
     {
         $selectedSoId = old('sales_order_id', $request->query('so_id'));
         $confirmedSos = SalesOrder::with(['customer', 'items.product', 'items.reservations'])
-            ->whereIn('status', ['confirmed', 'partially_delivered'])
+            ->whereIn('status', [SalesOrderStatus::Confirmed->value, SalesOrderStatus::PartiallyDelivered->value])
             ->orderByDesc('id')
             ->get();
 
@@ -154,7 +156,7 @@ class DeliveryController extends Controller
             $deliveryNumber = $this->generateNumber();
 
             $isAutoInvoice = $request->boolean('auto_generate_invoice');
-            $status = $isAutoInvoice ? 'delivered' : 'in_transit';
+            $status = $isAutoInvoice ? DeliveryStatus::Delivered : DeliveryStatus::InTransit;
             $receivedDate = $isAutoInvoice ? ($request->received_date ?? $request->delivery_date) : null;
             $receiptNotes = $isAutoInvoice ? ($request->receipt_notes ?? 'Dikonfirmasi langsung saat pembuatan Surat Jalan') : null;
 
@@ -219,7 +221,7 @@ class DeliveryController extends Controller
             }
 
             $so->update([
-                'status' => $allDone ? 'done' : 'partially_delivered'
+                'status' => $allDone ? SalesOrderStatus::Done : SalesOrderStatus::PartiallyDelivered
             ]);
 
             if ($isAutoInvoice) {
@@ -246,11 +248,11 @@ class DeliveryController extends Controller
 
     public function confirmReceipt(Request $request, Delivery $delivery): RedirectResponse
     {
-        if ($delivery->status === 'delivered') {
+        if ($delivery->status === DeliveryStatus::Delivered) {
             return back()->with('error', 'Surat Jalan ini sudah pernah dikonfirmasi diterima.');
         }
 
-        if ($delivery->status === 'cancelled') {
+        if ($delivery->status === DeliveryStatus::Cancelled) {
             return back()->with('error', 'Surat Jalan yang dibatalkan tidak dapat dikonfirmasi.');
         }
 
@@ -267,7 +269,7 @@ class DeliveryController extends Controller
             $delivery->lockForUpdate();
 
             $delivery->update([
-                'status'         => 'delivered',
+                'status'         => DeliveryStatus::Delivered,
                 'received_date'  => $request->received_date,
                 'recipient_name' => $request->filled('recipient_name') ? $request->recipient_name : $delivery->recipient_name,
                 'receipt_notes'  => $request->receipt_notes,
@@ -302,7 +304,7 @@ class DeliveryController extends Controller
 
     public function exportPdf(Delivery $delivery)
     {
-        abort_if(!in_array($delivery->status, ['in_transit', 'delivered']), 403, 'PDF tidak dapat dicetak untuk Surat Jalan yang dibatalkan.');
+        abort_if(!in_array($delivery->status, [DeliveryStatus::InTransit, DeliveryStatus::Delivered]), 403, 'PDF tidak dapat dicetak untuk Surat Jalan yang dibatalkan.');
 
         $delivery->load(['salesOrder.customer', 'warehouse', 'user', 'items.salesOrderItem.product']);
         $safeNumber = str_replace(['/', '\\'], '-', $delivery->delivery_number);

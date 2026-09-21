@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DeliveryStatus;
+use App\Enums\SalesInvoiceStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -130,7 +132,7 @@ class DeliveryToInvoiceFlowTest extends TestCase
         // Pastikan Delivery tercatat dengan status delivered dan received_date tersimpan
         $delivery = Delivery::where('sales_order_id', $so->id)->first();
         $this->assertNotNull($delivery);
-        $this->assertEquals('delivered', $delivery->status);
+        $this->assertEquals(DeliveryStatus::Delivered, $delivery->status);
         $this->assertEquals('2026-09-01', $delivery->delivery_date->toDateString());
         $this->assertEquals('2026-09-02', $delivery->received_date->toDateString());
         $this->assertTrue((bool) $delivery->is_invoiced);
@@ -144,7 +146,7 @@ class DeliveryToInvoiceFlowTest extends TestCase
         $this->assertEquals(750000, (float) $invoice->amount);
         $this->assertEquals(82500, (float) $invoice->tax_amount);
         $this->assertEquals(832500, (float) $invoice->total_amount);
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(SalesInvoiceStatus::Unpaid, $invoice->status);
 
         // Pastikan Jurnal otomatis terposting
         $journal = JournalEntry::where('reference_type', SalesInvoice::class)
@@ -177,7 +179,7 @@ class DeliveryToInvoiceFlowTest extends TestCase
         $response->assertRedirect(route('sales.deliveries.index'));
         $delivery = Delivery::where('sales_order_id', $so->id)->first();
         $this->assertNotNull($delivery);
-        $this->assertEquals('in_transit', $delivery->status);
+        $this->assertEquals(DeliveryStatus::InTransit, $delivery->status);
         $this->assertNull($delivery->received_date);
         $this->assertFalse((bool) $delivery->is_invoiced);
         $this->assertNull($delivery->sales_invoice_id);
@@ -215,7 +217,7 @@ class DeliveryToInvoiceFlowTest extends TestCase
             ]);
 
         $delivery = Delivery::where('sales_order_id', $so->id)->first();
-        $this->assertEquals('in_transit', $delivery->status);
+        $this->assertEquals(DeliveryStatus::InTransit, $delivery->status);
 
         // Konfirmasi penerimaan tanpa auto-invoice
         $confirmResponse = $this->actingAs($this->admin)
@@ -227,7 +229,7 @@ class DeliveryToInvoiceFlowTest extends TestCase
 
         $confirmResponse->assertSessionHas('success');
         $delivery->refresh();
-        $this->assertEquals('delivered', $delivery->status);
+        $this->assertEquals(DeliveryStatus::Delivered, $delivery->status);
         $this->assertEquals('2026-09-04', $delivery->received_date->toDateString());
         $this->assertEquals('Bpk. Ahmad Gudang', $delivery->recipient_name);
         $this->assertFalse((bool) $delivery->is_invoiced);
@@ -278,7 +280,7 @@ class DeliveryToInvoiceFlowTest extends TestCase
 
         $confirmResponse->assertSessionHas('success');
         $delivery->refresh();
-        $this->assertEquals('delivered', $delivery->status);
+        $this->assertEquals(DeliveryStatus::Delivered, $delivery->status);
         $this->assertEquals('2026-09-05', $delivery->received_date->toDateString());
         $this->assertTrue((bool) $delivery->is_invoiced);
         $this->assertNotNull($delivery->sales_invoice_id);

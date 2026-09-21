@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentStatus;
+use App\Enums\SalesInvoiceStatus;
 use App\Models\ChartOfAccount;
 use App\Models\Customer;
 use App\Models\Delivery;
@@ -27,6 +29,7 @@ class SalesPaymentTest extends TestCase
     private Customer $customer;
     private Warehouse $warehouse;
     private Product $product;
+    private ChartOfAccount $cashAccount;
 
     protected function setUp(): void
     {
@@ -61,7 +64,7 @@ class SalesPaymentTest extends TestCase
             ['code' => '1-1200'],
             ['name' => 'Piutang Usaha', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true]
         );
-        ChartOfAccount::firstOrCreate(
+        $this->cashAccount = ChartOfAccount::firstOrCreate(
             ['code' => '1-1100'],
             ['name' => 'Kas & Bank', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true]
         );
@@ -157,11 +160,11 @@ class SalesPaymentTest extends TestCase
         $response->assertRedirect(route('sales.payments.index'));
         $payment = SalesPayment::where('sales_invoice_id', $invoice->id)->first();
         $this->assertNotNull($payment);
-        $this->assertEquals('draft', $payment->status);
+        $this->assertEquals(PaymentStatus::Draft, $payment->status);
         $this->assertTrue($payment->isDraft());
 
         $invoice->refresh();
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(SalesInvoiceStatus::Unpaid, $invoice->status);
         $this->assertEquals(1500000, $invoice->outstanding_amount);
 
         $this->assertDatabaseMissing('journal_entries', [
@@ -198,7 +201,7 @@ class SalesPaymentTest extends TestCase
         $response->assertRedirect(route('sales.payments.index'));
         $payment->refresh();
         $this->assertEquals(600000, $payment->amount);
-        $this->assertEquals('draft', $payment->status);
+        $this->assertEquals(PaymentStatus::Draft, $payment->status);
     }
 
     public function test_can_post_draft_sales_payment(): void
@@ -221,11 +224,11 @@ class SalesPaymentTest extends TestCase
 
         $response->assertRedirect();
         $payment->refresh();
-        $this->assertEquals('posted', $payment->status);
+        $this->assertEquals(PaymentStatus::Posted, $payment->status);
         $this->assertTrue($payment->isPosted());
 
         $invoice->refresh();
-        $this->assertEquals('partial', $invoice->status);
+        $this->assertEquals(SalesInvoiceStatus::Partial, $invoice->status);
         $this->assertEquals(900000, $invoice->outstanding_amount);
 
         $this->assertDatabaseHas('journal_entries', [
@@ -325,4 +328,3 @@ class SalesPaymentTest extends TestCase
         ]);
     }
 }
-

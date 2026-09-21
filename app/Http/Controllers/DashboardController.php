@@ -219,7 +219,8 @@ class DashboardController extends Controller
             ->count();
 
         $pendingApprovalCount = ($role === 'admin') 
-            ? \App\Models\ApprovalRequest::where('status', 'pending')->count() 
+            ? (\App\Models\ApprovalRequest::where('status', 'pending')->count()
+               + PurchaseOrder::where('status', \App\Enums\PurchaseOrderStatus::WaitingApproval)->whereDoesntHave('approvalRequests', fn($q) => $q->where('status', 'pending'))->count()) 
             : 0;
 
         // Hitung dokumen yang dikembalikan untuk revisi oleh approver

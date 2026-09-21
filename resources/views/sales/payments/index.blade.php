@@ -104,9 +104,7 @@
                 Rp {{ number_format($p->amount, 0, ',', '.') }}
             </td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $p->status === 'posted' ? 'posted' : 'draft' }}">
-                    {{ ucfirst($p->status) }}
-                </span>
+                <x-status-badge :status="$p->status" />
             </td>
             <td>{{ $p->user->name ?? '-' }}</td>
             <td class="col-actions text-center">
@@ -114,7 +112,7 @@
                     <a href="{{ route('sales.payments.show', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if($p->status === 'draft')
+                    @if($p->isDraft())
                     <a href="{{ route('sales.payments.edit', $p) }}" class="btn btn-warning btn-sm btn-icon" title="Edit Draft">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
@@ -125,7 +123,7 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </form>
-                    @elseif($p->status === 'posted')
+                    @elseif($p->isPosted())
                     <a href="{{ route('pdf.sales-payment', $p) }}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Cetak Bukti Penerimaan (PDF)">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>

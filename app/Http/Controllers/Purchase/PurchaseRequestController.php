@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Purchase;
 
+use App\Enums\PurchaseRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
@@ -45,9 +46,9 @@ class PurchaseRequestController extends Controller
 
         if ($status !== 'all') {
             if ($status === 'confirmed') {
-                $query->whereIn('status', ['confirmed', 'approved']);
+                $query->where('status', PurchaseRequestStatus::Confirmed->value);
             } elseif ($status === 'done') {
-                $query->whereIn('status', ['done', 'ordered']);
+                $query->where('status', PurchaseRequestStatus::Done->value);
             } else {
                 $query->where('status', $status);
             }
@@ -124,7 +125,7 @@ class PurchaseRequestController extends Controller
                 'request_date'  => $request->request_date,
                 'required_date' => $request->required_date,
                 'expired_date'  => $request->expired_date,
-                'status'        => $status,
+                'status'        => PurchaseRequestStatus::Draft,
                 'notes'         => $request->notes,
             ]);
 
@@ -158,7 +159,11 @@ class PurchaseRequestController extends Controller
      */
     public function edit(PurchaseRequest $purchase_request): View|RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'revised', 'rejected'])) {
+        if (!in_array($purchase_request->status, [
+            PurchaseRequestStatus::Draft,
+            PurchaseRequestStatus::Revised,
+            PurchaseRequestStatus::Rejected,
+        ])) {
             return redirect()->route('purchase.requests.show', $purchase_request)
                 ->with('error', 'Purchase Request yang sudah diajukan atau disetujui tidak dapat diedit.');
         }
@@ -189,7 +194,11 @@ class PurchaseRequestController extends Controller
      */
     public function update(Request $request, PurchaseRequest $purchase_request): RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'revised', 'rejected'])) {
+        if (!in_array($purchase_request->status, [
+            PurchaseRequestStatus::Draft,
+            PurchaseRequestStatus::Revised,
+            PurchaseRequestStatus::Rejected,
+        ])) {
             return redirect()->route('purchase.requests.show', $purchase_request)
                 ->with('error', 'Purchase Request tidak dapat diedit pada status ini.');
         }
@@ -241,14 +250,18 @@ class PurchaseRequestController extends Controller
      */
     public function submit(PurchaseRequest $purchase_request): RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'revised', 'rejected'])) {
+        if (!in_array($purchase_request->status, [
+            PurchaseRequestStatus::Draft,
+            PurchaseRequestStatus::Revised,
+            PurchaseRequestStatus::Rejected,
+        ])) {
             return back()->with('error', 'Hanya dokumen berstatus Draft, Revisi, atau Ditolak yang dapat diajukan untuk approval.');
         }
 
         $purchase_request->load(['items.product', 'user']);
 
         $purchase_request->update([
-            'status'           => 'waiting_approval',
+            'status'           => PurchaseRequestStatus::WaitingApproval,
             'rejection_reason' => null,
         ]);
 
@@ -268,7 +281,10 @@ class PurchaseRequestController extends Controller
      */
     public function destroy(PurchaseRequest $purchase_request): RedirectResponse
     {
-        if (!in_array($purchase_request->status, ['draft', 'revised'])) {
+        if (!in_array($purchase_request->status, [
+            PurchaseRequestStatus::Draft,
+            PurchaseRequestStatus::Revised,
+        ])) {
             return back()->with('error', 'Hanya Purchase Request berstatus Draft atau Revisi yang dapat dihapus.');
         }
 
@@ -282,7 +298,7 @@ class PurchaseRequestController extends Controller
      */
     public function approve(PurchaseRequest $purchase_request): RedirectResponse
     {
-        if ($purchase_request->status !== 'waiting_approval') {
+        if ($purchase_request->status !== PurchaseRequestStatus::WaitingApproval) {
             return back()->with('error', 'Hanya PR yang sedang menunggu approval yang dapat disetujui.');
         }
 
@@ -292,7 +308,7 @@ class PurchaseRequestController extends Controller
         }
 
         $purchase_request->update([
-            'status'      => 'confirmed',
+            'status'      => PurchaseRequestStatus::Confirmed,
             'approved_by' => auth()->id(),
             'approved_at' => now(),
         ]);
@@ -305,7 +321,7 @@ class PurchaseRequestController extends Controller
      */
     public function revise(Request $request, PurchaseRequest $purchase_request): RedirectResponse
     {
-        if ($purchase_request->status !== 'waiting_approval') {
+        if ($purchase_request->status !== PurchaseRequestStatus::WaitingApproval) {
             return back()->with('error', 'Hanya PR yang sedang menunggu approval yang dapat diminta revisi.');
         }
 
@@ -319,7 +335,7 @@ class PurchaseRequestController extends Controller
         }
 
         $purchase_request->update([
-            'status'           => 'revised',
+            'status'           => PurchaseRequestStatus::Revised,
             'rejection_reason' => $request->revision_reason,
             'approved_by'      => auth()->id(),
             'approved_at'      => now(),
@@ -333,7 +349,7 @@ class PurchaseRequestController extends Controller
      */
     public function reject(Request $request, PurchaseRequest $purchase_request): RedirectResponse
     {
-        if ($purchase_request->status !== 'waiting_approval') {
+        if ($purchase_request->status !== PurchaseRequestStatus::WaitingApproval) {
             return back()->with('error', 'Hanya PR yang sedang menunggu approval yang dapat ditolak.');
         }
 
@@ -347,7 +363,7 @@ class PurchaseRequestController extends Controller
         }
 
         $purchase_request->update([
-            'status'           => 'rejected',
+            'status'           => PurchaseRequestStatus::Rejected,
             'rejection_reason' => $request->rejection_reason,
             'approved_by'      => auth()->id(),
             'approved_at'      => now(),
@@ -391,7 +407,10 @@ class PurchaseRequestController extends Controller
      */
     public function exportPdf(PurchaseRequest $purchase_request)
     {
-        abort_if(!in_array($purchase_request->status, ['confirmed', 'done', 'approved', 'ordered']), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
+        abort_if(!in_array($purchase_request->status, [
+            PurchaseRequestStatus::Confirmed,
+            PurchaseRequestStatus::Done,
+        ]), 403, 'PDF hanya dapat diunduh setelah Purchase Request disetujui atau diproses ke PO.');
 
         $purchase_request->load([
             'user',

@@ -14,7 +14,7 @@
         $latestApproval = $purchase_request->approvalRequests->sortByDesc('id')->first();
     @endphp
 
-    @if($purchase_request->status === 'revised' || ($latestApproval && $latestApproval->status === 'revised'))
+    @if($purchase_request->isRevised() || ($latestApproval && $latestApproval->status === 'revised'))
     <div class="alert alert-warning" style="margin-bottom:20px; display:flex; align-items:flex-start; gap:12px; padding:14px 18px; border-radius:8px; background:#fffdf7; border:1px solid #fcd34d; color:#92400e;">
         <i class="fa-solid fa-triangle-exclamation" style="font-size:18px; margin-top:2px; color:#d97706;"></i>
         <div>
@@ -24,7 +24,7 @@
     </div>
     @endif
 
-    @if($purchase_request->status === 'rejected' && $purchase_request->rejection_reason)
+    @if($purchase_request->isRejected() && $purchase_request->rejection_reason)
     <div class="alert alert-danger" style="margin-bottom:20px; display:flex; align-items:flex-start; gap:12px; padding:14px 18px; border-radius:8px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c;">
         <i class="fa-solid fa-triangle-exclamation" style="font-size:18px; margin-top:2px;"></i>
         <div>

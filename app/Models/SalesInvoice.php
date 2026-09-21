@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentStatus;
+use App\Enums\SalesInvoiceStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +25,7 @@ class SalesInvoice extends Model
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'status' => SalesInvoiceStatus::class,
     ];
 
     public function salesOrder(): BelongsTo
@@ -48,10 +51,10 @@ class SalesInvoice extends Model
     public function getTotalPaidAttribute(): float
     {
         if ($this->relationLoaded('payments')) {
-            return (float) $this->payments->where('status', '!=', 'draft')->sum('amount');
+            return (float) $this->payments->filter(fn($p) => $p->status !== PaymentStatus::Draft)->sum('amount');
         }
 
-        return (float) $this->payments()->where('status', '!=', 'draft')->sum('amount');
+        return (float) $this->payments()->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
     }
 
     public function getTotalReversedAmountAttribute(): float
@@ -105,11 +108,31 @@ class SalesInvoice extends Model
 
     public function isDraft(): bool
     {
-        return $this->status === 'draft';
+        return $this->status->isDraft();
     }
 
     public function isPosted(): bool
     {
-        return in_array($this->status, ['unpaid', 'partial', 'paid']);
+        return $this->status->isPosted();
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status instanceof SalesInvoiceStatus ? $this->status->label() : (string) $this->status;
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return $this->status instanceof SalesInvoiceStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->status_badge;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === SalesInvoiceStatus::Paid;
     }
 }

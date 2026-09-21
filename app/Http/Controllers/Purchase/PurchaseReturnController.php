@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Purchase;
 
+use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\PurchaseReturnStatus;
 use App\Http\Controllers\Controller;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
@@ -136,7 +138,7 @@ class PurchaseReturnController extends Controller
         $invoice = $grn->purchaseInvoice ?? PurchaseInvoice::with(['items', 'payments'])->where('goods_receipt_id', $grn->id)->first();
 
         // Tolak retur jika invoice LPB masih berstatus Draft
-        if ($invoice && $invoice->status === 'draft') {
+        if ($invoice && $invoice->isDraft()) {
             $msg = "LPB terkait masih memiliki Invoice Pembelian berstatus Draft ({$invoice->invoice_number}). Silakan hapus draft invoice atau posting invoice terlebih dahulu sebelum mengajukan retur.";
             return back()->with('error', $msg)->withErrors(['items' => $msg])->withInput();
         }
@@ -233,7 +235,7 @@ class PurchaseReturnController extends Controller
                 'supplier_id'      => $grn->purchaseOrder->supplier_id,
                 'return_date'      => $request->return_date,
                 'reason'           => $request->reason,
-                'status'           => 'draft',
+                'status'           => PurchaseReturnStatus::Draft,
                 'notes'            => $request->notes,
             ]);
 
@@ -267,7 +269,7 @@ class PurchaseReturnController extends Controller
     {
         return DB::transaction(function () use ($return) {
             $return = PurchaseReturn::with(['goodsReceipt', 'items.product', 'items.goodsReceiptItem'])->lockForUpdate()->findOrFail($return->id);
-            abort_if($return->status !== 'draft', 403, 'Hanya retur draft yang dapat dikirim.');
+            abort_if($return->status !== PurchaseReturnStatus::Draft, 403, 'Hanya retur draft yang dapat dikirim.');
 
             $grn = $return->goodsReceipt;
             foreach ($return->items as $item) {
@@ -280,7 +282,7 @@ class PurchaseReturnController extends Controller
                 }
             }
 
-            $return->update(['status' => 'sent']);
+            $return->update(['status' => PurchaseReturnStatus::Sent]);
 
             return back()->with('success', 'Retur Pembelian berhasil ditandai sudah dikirim ke supplier.');
         });
@@ -290,7 +292,7 @@ class PurchaseReturnController extends Controller
     {
         return DB::transaction(function () use ($return) {
             $return = PurchaseReturn::with(['goodsReceipt', 'items.product', 'items.goodsReceiptItem'])->lockForUpdate()->findOrFail($return->id);
-            abort_if($return->status === 'completed', 403, 'Retur sudah selesai.');
+            abort_if($return->status === PurchaseReturnStatus::Completed, 403, 'Retur sudah selesai.');
 
             $grn = $return->goodsReceipt;
 
@@ -329,7 +331,7 @@ class PurchaseReturnController extends Controller
                 $this->journalService->postEntry($entry);
             }
 
-            $return->update(['status' => 'completed']);
+            $return->update(['status' => PurchaseReturnStatus::Completed]);
             $this->refreshAffectedInvoiceStatuses($return);
 
             return back()->with('success', 'Retur Pembelian berhasil diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
@@ -345,7 +347,7 @@ class PurchaseReturnController extends Controller
         }
 
         PurchaseInvoice::with(['items', 'payments'])
-            ->where('status', '!=', 'draft')
+            ->where('status', '!=', PurchaseInvoiceStatus::Draft->value)
             ->whereHas('items', fn($query) => $query->whereIn('goods_receipt_item_id', $grnItemIds))
             ->get()
             ->each(function (PurchaseInvoice $invoice) {
@@ -353,13 +355,13 @@ class PurchaseReturnController extends Controller
             });
     }
 
-    private function statusFromOutstanding(PurchaseInvoice $invoice): string
+    private function statusFromOutstanding(PurchaseInvoice $invoice): PurchaseInvoiceStatus
     {
         if ($invoice->outstanding_amount <= 0.01) {
-            return 'paid';
+            return PurchaseInvoiceStatus::Paid;
         }
 
-        return $invoice->total_paid > 0 ? 'partial' : 'unpaid';
+        return $invoice->total_paid > 0 ? PurchaseInvoiceStatus::Partial : PurchaseInvoiceStatus::Unpaid;
     }
 
     private function generateNumber(): string

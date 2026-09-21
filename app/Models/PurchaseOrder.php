@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PurchaseOrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +24,7 @@ class PurchaseOrder extends Model
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'status' => PurchaseOrderStatus::class,
     ];
 
     public function purchaseRequest(): BelongsTo
@@ -88,5 +90,40 @@ class PurchaseOrder extends Model
     public function returns(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
     {
         return $this->hasManyThrough(PurchaseReturn::class, GoodsReceipt::class, 'purchase_order_id', 'goods_receipt_id');
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status instanceof PurchaseOrderStatus ? $this->status->label() : (string) $this->status;
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return $this->status instanceof PurchaseOrderStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->status_badge;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === PurchaseOrderStatus::Draft;
+    }
+
+    public function isWaitingApproval(): bool
+    {
+        return $this->status === PurchaseOrderStatus::WaitingApproval;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === PurchaseOrderStatus::Confirmed;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === PurchaseOrderStatus::Cancelled;
     }
 }

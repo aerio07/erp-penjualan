@@ -5,7 +5,7 @@
 @section('content')
 <div class="animate-in">
     {{-- Hidden Form for Post --}}
-    @if($payment->status === 'draft')
+    @if($payment->isDraft())
     <form id="form-post-payment" method="POST" action="{{ route('purchase.payments.post', $payment) }}" style="display:none;">
         @csrf
     </form>
@@ -22,7 +22,7 @@
         :back-url="route('purchase.payments.index')"
     >
         <x-slot:actions>
-            @if($payment->status === 'draft')
+            @if($payment->isDraft())
                 
                 <button type="button" class="btn btn-primary"
                     data-confirm-swal="form-post-payment"
@@ -48,7 +48,7 @@
                 >
                     <i class="fa-solid fa-trash"></i> Hapus Draft
                 </button>
-            @elseif($payment->status === 'posted')
+            @elseif($payment->isPosted())
                 {{-- Tombol Printout PDF: Hanya Muncul Setelah Status POSTED --}}
                 <a href="{{ route('pdf.purchase-payment', $payment) }}" target="_blank" class="btn btn-secondary">
                     <i class="fa-solid fa-file-pdf"></i> PDF

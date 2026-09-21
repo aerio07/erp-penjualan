@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\DeliveryStatus;
+use App\Enums\SalesInvoiceStatus;
+use App\Enums\SalesOrderStatus;
 use App\Models\Delivery;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
@@ -30,7 +33,7 @@ class SalesInvoiceService
             throw new InvalidArgumentException("Surat Jalan #{$delivery->delivery_number} sudah pernah digunakan untuk invoice lain.");
         }
 
-        if ($delivery->status !== 'delivered') {
+        if ($delivery->status !== DeliveryStatus::Delivered) {
             throw new InvalidArgumentException("Surat Jalan #{$delivery->delivery_number} belum berstatus diterima (Delivered). Invoice tidak dapat diterbitkan sebelum barang sampai/diterima.");
         }
 
@@ -127,7 +130,7 @@ class SalesInvoiceService
 
         $isLastInvoiceForSo = ($otherUninvoicedDeliveriesCount === 0) && (
             $soFullyDelivered ||
-            in_array($so->status, ['done', 'completed']) ||
+            $so->status === SalesOrderStatus::Done ||
             round($subtotalDelivery + $totalInvoicedSubtotal, 2) >= round($totalOrderSubtotal, 2)
         );
 
@@ -229,7 +232,7 @@ class SalesInvoiceService
      */
     public function postInvoice(SalesInvoice $invoice): SalesInvoice
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             throw new InvalidArgumentException("Hanya invoice berstatus Draft yang dapat diposting.");
         }
 
@@ -239,7 +242,7 @@ class SalesInvoiceService
 
         $cogs = (float) $invoice->items->sum('cogs_amount');
 
-        $invoice->update(['status' => 'unpaid']);
+        $invoice->update(['status' => SalesInvoiceStatus::Unpaid]);
 
         $entry = $this->journalService->createFromSalesInvoice($invoice, $cogs);
         $this->journalService->postEntry($entry);

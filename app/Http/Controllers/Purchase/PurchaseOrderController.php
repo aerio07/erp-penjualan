@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Purchase;
 
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
@@ -78,6 +80,7 @@ class PurchaseOrderController extends Controller
             'tax_rate'              => 'required|numeric|min:0|max:100',
             'discount_amount'       => 'nullable|numeric|min:0',
             'notes'                 => 'nullable|string',
+            'ship_to'               => 'nullable|string',
             'items'                 => 'required|array|min:1',
             'items.*.product_id'    => 'required|exists:products,id',
             'items.*.qty_ordered'   => 'required|integer|min:1',
@@ -94,7 +97,7 @@ class PurchaseOrderController extends Controller
 
         // Validasi status PR harus sudah disetujui (Approved)
         $pr = \App\Models\PurchaseRequest::with('items')->findOrFail($request->purchase_request_id);
-        if (!in_array($pr->status, ['confirmed', 'approved', 'done', 'ordered'])) {
+        if (!$pr->status->isApprovedForPo()) {
             return back()
                 ->withErrors([
                     'purchase_request_id' => 'Purchase Request #' . $pr->pr_number . ' belum disetujui (Confirmed). PO hanya dapat dibuat dari PR yang telah dikonfirmasi.'
@@ -139,7 +142,7 @@ class PurchaseOrderController extends Controller
                 'supplier_id'         => $request->supplier_id,
                 'purchase_request_id' => $request->purchase_request_id,
                 'user_id'             => Auth::id(),
-                'status'              => 'draft',
+                'status'              => PurchaseOrderStatus::Draft,
                 'order_date'          => $request->order_date,
                 'expected_date'       => $request->expected_date,
                 'discount_amount'     => $discountHeader,
@@ -147,6 +150,7 @@ class PurchaseOrderController extends Controller
                 'tax_amount'          => $taxAmount,
                 'total_amount'        => $totalAmount,
                 'notes'               => $request->notes,
+                'ship_to'             => $request->ship_to,
             ]);
 
             foreach ($items as $item) {
@@ -176,7 +180,7 @@ class PurchaseOrderController extends Controller
                         }
                     }
                     $allFulfilled = $pr->fresh()->items->every(fn($it) => $it->qty_ordered >= $it->qty);
-                    $pr->update(['status' => $allFulfilled ? 'done' : 'confirmed']);
+                    $pr->update(['status' => $allFulfilled ? PurchaseRequestStatus::Done : PurchaseRequestStatus::Confirmed]);
                 }
             }
 
@@ -206,7 +210,7 @@ class PurchaseOrderController extends Controller
     public function edit(PurchaseOrder $purchaseOrder): View
     {
         $order = $purchaseOrder;
-        abort_if(!in_array($order->status, ['draft']), 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
+        abort_if($order->status !== PurchaseOrderStatus::Draft, 403, 'PO yang sudah dikonfirmasi tidak dapat diedit.');
 
         $order->load(['items.product', 'purchaseRequest', 'approvalRequests.approver']);
         $suppliers  = Supplier::where('is_active', true)->orderBy('name')->get();
@@ -220,7 +224,7 @@ class PurchaseOrderController extends Controller
         $this->sanitizeOrderInputs($request);
 
         $order = $purchaseOrder;
-        abort_if($order->status !== 'draft', 403);
+        abort_if($order->status !== PurchaseOrderStatus::Draft, 403);
 
         // Reuse store validation logic
         $request->validate([
@@ -230,6 +234,7 @@ class PurchaseOrderController extends Controller
             'tax_rate'       => 'required|numeric|min:0|max:100',
             'discount_amount'=> 'nullable|numeric|min:0',
             'notes'          => 'nullable|string',
+            'ship_to'        => 'nullable|string',
             'items'          => 'required|array|min:1',
             'items.*.product_id'   => 'required|exists:products,id',
             'items.*.qty_ordered'  => 'required|integer|min:1',
@@ -288,6 +293,7 @@ class PurchaseOrderController extends Controller
                 'tax_amount'     => $taxAmount,
                 'total_amount'   => $totalAmount,
                 'notes'          => $request->notes,
+                'ship_to'        => $request->ship_to,
             ]);
 
             foreach ($items as $item) {
@@ -314,7 +320,7 @@ class PurchaseOrderController extends Controller
     public function destroy(PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $order = $purchaseOrder;
-        abort_if($order->status !== 'draft', 403, 'Hanya PO berstatus draft yang dapat dihapus.');
+        abort_if($order->status !== PurchaseOrderStatus::Draft, 403, 'Hanya PO berstatus draft yang dapat dihapus.');
 
         // Reset linked procurement demands if any
         $order->procurementDemands()->update([
@@ -331,9 +337,9 @@ class PurchaseOrderController extends Controller
     public function confirm(PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $order = $purchaseOrder;
-        abort_if($order->status !== 'draft', 403);
+        abort_if($order->status !== PurchaseOrderStatus::Draft, 403);
 
-        $order->update(['status' => 'waiting_approval']);
+        $order->update(['status' => PurchaseOrderStatus::WaitingApproval]);
         $this->approvalService->request(
             PurchaseOrder::class,
             $order->id,
@@ -348,14 +354,14 @@ class PurchaseOrderController extends Controller
     public function approve(PurchaseOrder $purchaseOrder): RedirectResponse
     {
         abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menyetujui Purchase Order.');
-        abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
+        abort_if($purchaseOrder->status !== PurchaseOrderStatus::WaitingApproval, 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
 
         $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
         if ($approval) {
             $this->approvalService->approve($approval);
         }
 
-        $purchaseOrder->update(['status' => 'confirmed']);
+        $purchaseOrder->update(['status' => PurchaseOrderStatus::Confirmed]);
 
         return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil disetujui (Approved) dan siap diteruskan ke supplier.");
     }
@@ -363,7 +369,7 @@ class PurchaseOrderController extends Controller
     public function revise(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat meminta revisi Purchase Order.');
-        abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
+        abort_if($purchaseOrder->status !== PurchaseOrderStatus::WaitingApproval, 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
 
         $request->validate([
             'revision_reason' => 'required|string|min:3',
@@ -377,7 +383,7 @@ class PurchaseOrderController extends Controller
             $this->approvalService->revise($approval, $request->revision_reason);
         }
 
-        $purchaseOrder->update(['status' => 'draft']);
+        $purchaseOrder->update(['status' => PurchaseOrderStatus::Draft]);
 
         return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil dikembalikan ke status Draft untuk direvisi.");
     }
@@ -385,7 +391,7 @@ class PurchaseOrderController extends Controller
     public function reject(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menolak Purchase Order.');
-        abort_if($purchaseOrder->status !== 'waiting_approval', 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
+        abort_if($purchaseOrder->status !== PurchaseOrderStatus::WaitingApproval, 403, 'Purchase Order tidak dalam status menunggu persetujuan.');
 
         $request->validate([
             'rejection_reason' => 'required|string|min:3|max:500',
@@ -418,11 +424,11 @@ class PurchaseOrderController extends Controller
                         $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
                     }
                 }
-                $pr->update(['status' => 'confirmed']);
+                $pr->update(['status' => PurchaseRequestStatus::Confirmed]);
             }
         }
 
-        $updateData = ['status' => 'cancelled'];
+        $updateData = ['status' => PurchaseOrderStatus::Cancelled];
         if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
             $updateData['cancel_reason'] = $reason;
         } else {
@@ -438,7 +444,7 @@ class PurchaseOrderController extends Controller
     public function cancel(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $order = $purchaseOrder;
-        abort_if(!in_array($order->status, ['draft', 'waiting_approval']), 403, 'Purchase Order yang sudah dikonfirmasi tidak dapat dibatalkan.');
+        abort_if(!in_array($order->status, [PurchaseOrderStatus::Draft, PurchaseOrderStatus::WaitingApproval]), 403, 'Purchase Order yang sudah dikonfirmasi tidak dapat dibatalkan.');
 
         $request->validate([
             'cancel_reason' => 'required|string|min:3|max:500',
@@ -473,11 +479,11 @@ class PurchaseOrderController extends Controller
                     }
                 }
                 // Kembalikan status PR ke confirmed agar siap dibuatkan PO baru
-                $pr->update(['status' => 'confirmed']);
+                $pr->update(['status' => PurchaseRequestStatus::Confirmed]);
             }
         }
 
-        $updateData = ['status' => 'cancelled'];
+        $updateData = ['status' => PurchaseOrderStatus::Cancelled];
         if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
             $updateData['cancel_reason'] = $reason;
         } else {
@@ -491,7 +497,11 @@ class PurchaseOrderController extends Controller
 
     public function exportPdf(PurchaseOrder $purchaseOrder)
     {
-        abort_if(!in_array($purchaseOrder->status, ['confirmed', 'partially_received', 'done']), 403, 'PDF hanya dapat diunduh setelah Purchase Order disetujui.');
+        abort_if(!in_array($purchaseOrder->status, [
+            PurchaseOrderStatus::Confirmed,
+            PurchaseOrderStatus::PartiallyReceived,
+            PurchaseOrderStatus::Done,
+        ]), 403, 'PDF hanya dapat diunduh setelah Purchase Order disetujui.');
 
         $order = $purchaseOrder;
         $order->load(['supplier', 'warehouse', 'user', 'items.product', 'approvalRequests.approver']);

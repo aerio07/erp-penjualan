@@ -90,7 +90,7 @@
                 </span>
             </td>
             <td>
-                @if($receipt->status === 'confirmed')
+                @if($receipt->isConfirmed())
                     @if($receipt->is_invoiced && $receipt->purchaseInvoice)
                         <a href="{{ route('purchase.invoices.show', $receipt->purchaseInvoice) }}" class="badge badge-info" style="text-decoration:none;" title="Lihat Faktur Pembelian">
                             <i class="fa-solid fa-file-invoice-dollar"></i> Invoiced
@@ -110,7 +110,7 @@
                     <a href="{{ route('purchase.goods-receipts.show', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if(in_array($receipt->status, ['draft', 'revised']))
+                    @if($receipt->isDraft() || $receipt->isRevised())
                     <a href="{{ route('purchase.goods-receipts.edit', $receipt) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                         <i class="fa-solid fa-pen"></i>
                     </a>

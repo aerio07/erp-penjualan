@@ -104,7 +104,7 @@
             <td style="text-align:right; font-weight:600;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
             <td style="text-align:center;">
                 @php
-                    $isRevised = ($order->status === 'draft' && $order->approvalRequests->sortByDesc('id')->first()?->status === 'revised');
+                    $isRevised = ($order->isDraft() && $order->approvalRequests->sortByDesc('id')->first()?->status === 'revised');
                 @endphp
                 @if($isRevised)
                     <span class="badge badge-warning">Perlu Revisi</span>
@@ -150,7 +150,7 @@
                     <a href="{{ route('sales.orders.show', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if($order->status === 'draft')
+                    @if($order->isDraft())
                     <a href="{{ route('sales.orders.edit', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                         <i class="fa-solid fa-pen"></i>
                     </a>
@@ -161,7 +161,7 @@
                         @csrf @method('DELETE')
                     </form>
                     @endif
-                    @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']))
+                    @if(in_array($order->status, [\App\Enums\SalesOrderStatus::Confirmed, \App\Enums\SalesOrderStatus::PartiallyDelivered, \App\Enums\SalesOrderStatus::Done]))
                     <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>

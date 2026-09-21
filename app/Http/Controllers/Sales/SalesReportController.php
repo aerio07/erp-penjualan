@@ -40,7 +40,7 @@ class SalesReportController extends Controller
             ->selectRaw('(SELECT COALESCE(SUM(sii.qty_invoiced), 0) FROM sales_invoice_items sii JOIN sales_invoices si ON si.id = sii.sales_invoice_id WHERE si.sales_order_id = sales_orders.id) as qty_invoiced_sum')
             ->selectRaw('(SELECT COALESCE(SUM(sii.reversed_qty), 0) FROM sales_invoice_items sii JOIN sales_invoices si ON si.id = sii.sales_invoice_id WHERE si.sales_order_id = sales_orders.id) as qty_reversed_sum')
             ->selectRaw('(SELECT COALESCE(SUM(si.total_amount), 0) FROM sales_invoices si WHERE si.sales_order_id = sales_orders.id) as total_invoice_sum')
-            ->selectRaw('(SELECT COALESCE(SUM(CASE WHEN sii.qty_invoiced > 0 THEN ((sii.subtotal + sii.tax_amount) / sii.qty_invoiced) * LEAST(sii.reversed_qty, sii.qty_invoiced) ELSE 0 END), 0) FROM sales_invoice_items sii JOIN sales_invoices si ON si.id = sii.sales_invoice_id WHERE si.sales_order_id = sales_orders.id) as total_reversed_amount_sum')
+            ->selectRaw('(SELECT COALESCE(SUM(CASE WHEN sii.qty_invoiced > 0 THEN ((sii.subtotal + sii.tax_amount) / sii.qty_invoiced) * (CASE WHEN sii.reversed_qty < sii.qty_invoiced THEN sii.reversed_qty ELSE sii.qty_invoiced END) ELSE 0 END), 0) FROM sales_invoice_items sii JOIN sales_invoices si ON si.id = sii.sales_invoice_id WHERE si.sales_order_id = sales_orders.id) as total_reversed_amount_sum')
             ->selectRaw('(SELECT COALESCE(SUM(sp.amount), 0) FROM sales_payments sp JOIN sales_invoices si ON si.id = sp.sales_invoice_id WHERE si.sales_order_id = sales_orders.id) as total_paid_sum');
 
         // Filter: customer_id, status, rentang tanggal

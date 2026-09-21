@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Purchase;
 
+use App\Enums\GoodsReceiptStatus;
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseReturnStatus;
 use App\Http\Controllers\Controller;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
@@ -85,7 +88,7 @@ class GoodsReceiptController extends Controller
 
         return DB::transaction(function () use ($request) {
             $po = PurchaseOrder::with(['items.product', 'items.goodsReceiptItems'])->lockForUpdate()->findOrFail($request->purchase_order_id);
-            abort_if(!in_array($po->status, ['confirmed', 'partially_received']), 403, 'PO tidak dapat diterima.');
+            abort_if(!$po->status->canReceiveGoods(), 403, 'PO tidak dapat diterima.');
 
             $physicalByItem = [];
             $receivedByItem = [];
@@ -136,7 +139,7 @@ class GoodsReceiptController extends Controller
                 'warehouse_id'            => $headerWarehouseId,
                 'user_id'                 => Auth::id(),
                 'qc_status'               => 'passed',
-                'status'                  => 'draft', // Disimpan sebagai DRAFT
+                'status'                  => GoodsReceiptStatus::Draft,
                 'received_date'           => $request->received_date,
                 'notes'                   => $request->notes,
                 'auto_generate_invoice'   => $request->boolean('auto_generate_invoice'),
@@ -177,7 +180,7 @@ class GoodsReceiptController extends Controller
 
     public function edit(GoodsReceipt $goodsReceipt): View|RedirectResponse
     {
-        if (!in_array($goodsReceipt->status, ['draft', 'revised'])) {
+        if (!$goodsReceipt->status->isEditable()) {
             return redirect()->route('purchase.goods-receipts.show', $goodsReceipt)
                 ->with('error', 'Hanya Penerimaan Barang berstatus Draft atau Revisi yang dapat diedit.');
         }
@@ -197,7 +200,7 @@ class GoodsReceiptController extends Controller
 
     public function update(Request $request, GoodsReceipt $goodsReceipt): RedirectResponse
     {
-        if (!in_array($goodsReceipt->status, ['draft', 'revised'])) {
+        if (!$goodsReceipt->status->isEditable()) {
             return redirect()->route('purchase.goods-receipts.show', $goodsReceipt)
                 ->with('error', 'Hanya Penerimaan Barang berstatus Draft atau Revisi yang dapat diedit.');
         }
@@ -315,7 +318,7 @@ class GoodsReceiptController extends Controller
 
     public function destroy(GoodsReceipt $goodsReceipt): RedirectResponse
     {
-        if (!in_array($goodsReceipt->status, ['draft', 'revised'])) {
+        if (!$goodsReceipt->status->isEditable()) {
             return back()->with('error', 'Hanya Penerimaan Barang berstatus Draft atau Revisi yang dapat dihapus.');
         }
 
@@ -331,14 +334,14 @@ class GoodsReceiptController extends Controller
 
     public function submit(GoodsReceipt $goodsReceipt): RedirectResponse
     {
-        if (!in_array($goodsReceipt->status, ['draft', 'revised', 'rejected'])) {
+        if (!in_array($goodsReceipt->status, [GoodsReceiptStatus::Draft, GoodsReceiptStatus::Revised, GoodsReceiptStatus::Rejected])) {
             return back()->with('error', 'Hanya dokumen berstatus Draft, Revisi, atau Ditolak yang dapat diajukan untuk approval.');
         }
 
         $goodsReceipt->load(['items.purchaseOrderItem', 'user', 'purchaseOrder']);
 
         $goodsReceipt->update([
-            'status'           => 'waiting_approval',
+            'status'           => GoodsReceiptStatus::WaitingApproval,
             'rejection_reason' => null,
         ]);
 
@@ -370,7 +373,7 @@ class GoodsReceiptController extends Controller
         ]);
 
         $goodsReceipt->update([
-            'status'      => 'confirmed',
+            'status'      => GoodsReceiptStatus::Confirmed,
             'approved_by' => $approverId,
             'approved_at' => now(),
         ]);
@@ -408,7 +411,7 @@ class GoodsReceiptController extends Controller
                 'supplier_id'      => $goodsReceipt->purchaseOrder->supplier_id,
                 'return_date'      => $goodsReceipt->received_date,
                 'reason'           => "Auto-generate dari LPB #{$goodsReceipt->receipt_number}: Ditemukan barang rusak/reject saat penerimaan",
-                'status'           => 'draft',
+                'status'           => PurchaseReturnStatus::Draft,
                 'notes'            => "Draft retur otomatis dibuat saat LPB #{$goodsReceipt->receipt_number} disetujui.",
             ]);
 
@@ -439,7 +442,7 @@ class GoodsReceiptController extends Controller
                 }
             }
             $po->update([
-                'status' => $allDone ? 'done' : 'partially_received'
+                'status' => $allDone ? PurchaseOrderStatus::Done : PurchaseOrderStatus::PartiallyReceived
             ]);
         }
 

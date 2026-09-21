@@ -337,6 +337,7 @@ class LedgerAndRecapReportsTest extends TestCase
             'payment_date' => '2026-09-03',
             'amount' => 5000000,
             'method' => 'cash',
+            'status' => \App\Enums\PaymentStatus::Posted,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -385,6 +386,7 @@ class LedgerAndRecapReportsTest extends TestCase
             'payment_date' => '2026-09-04',
             'amount' => 10000000,
             'method' => 'transfer',
+            'status' => \App\Enums\PaymentStatus::Posted,
         ]);
 
         $response = $this->actingAs($this->admin)

@@ -14,7 +14,7 @@
         <div class="bg-[#FBEBD2] border-l-4 border-[#92640B] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2.5 text-[#92640B]">
                 <span class="material-symbols-outlined text-[18px]">verified_user</span>
-                <span class="font-medium text-xs sm:text-sm"><strong>{{ $alerts['pending_approval'] }} Dokumen</strong> (PR/PO/SO) menunggu approval otorisasi</span>
+                <span class="font-medium text-xs sm:text-sm"><strong>{{ $alerts['pending_approval'] }} Dokumen</strong> (PR/PO/SO) menunggu approval limit otorisasi</span>
             </div>
             <a href="{{ route('approvals.index') }}" style="background-color: #03193c; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
                 Review Approval &rarr;

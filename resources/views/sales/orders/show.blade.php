@@ -18,7 +18,7 @@
     >
         <x-slot:actions>
             {{-- Workflow Status Action Buttons (Kiri) --}}
-            @if($order->status === 'draft')
+            @if($order->isDraft())
                 <button type="button" class="btn btn-danger"
                     data-confirm-swal="form-cancel-so"
                     data-swal-title="Batalkan Sales Order"
@@ -43,13 +43,13 @@
                 >
                     <i class="fa-solid fa-check"></i> Konfirmasi SO Sekarang
                 </button>
-            @elseif($order->status === 'confirmed')
+            @elseif($order->isConfirmed())
                 @if($canCreateDel)
                 <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan
                 </a>
                 @endif
-            @elseif($order->status === 'partially_delivered')
+            @elseif($order->status === \App\Enums\SalesOrderStatus::PartiallyDelivered)
                 @if($canCreateDel)
                 <a href="{{ route('sales.deliveries.create', ['so_id' => $order->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-truck-fast"></i> Buat Surat Jalan (Sisa)
@@ -64,9 +64,9 @@
 
             {{-- Divider --}}
             @if(
-                $order->status === 'draft' || 
-                ($order->status === 'confirmed' && $canCreateDel) || 
-                ($order->status === 'partially_delivered' && ($canCreateDel || $hasUninvoicedDel))
+                $order->isDraft() || 
+                ($order->isConfirmed() && $canCreateDel) || 
+                ($order->status === \App\Enums\SalesOrderStatus::PartiallyDelivered && ($canCreateDel || $hasUninvoicedDel))
             )
             <div style="width: 1px; height: 26px; background: #cbd5e1; margin: 0 4px;"></div>
             @endif
@@ -77,7 +77,7 @@
                 <i class="fa-solid fa-arrow-left"></i> Kembali
             </a>
 
-            @if(in_array($order->status, ['confirmed', 'partially_delivered', 'done']))
+            @if(in_array($order->status, [\App\Enums\SalesOrderStatus::Confirmed, \App\Enums\SalesOrderStatus::PartiallyDelivered, \App\Enums\SalesOrderStatus::Done]))
             <a href="{{ route('pdf.sales-order', $order) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
@@ -86,7 +86,7 @@
     </x-detail-header>
 
     {{-- Banner Status: Perlu Revisi (Draft dengan riwayat Revisi) --}}
-    @if($order->status === 'draft' && $latestApproval && $latestApproval->status === 'revised')
+    @if($order->isDraft() && $latestApproval && $latestApproval->status === 'revised')
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -110,7 +110,7 @@
     @endif
 
     {{-- Banner Status: Ditolak (Cancelled dengan riwayat Penolakan) --}}
-    @if($order->status === 'cancelled' && $latestApproval && $latestApproval->status === 'rejected')
+    @if($order->isCancelled() && $latestApproval && $latestApproval->status === 'rejected')
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fffbfb; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -257,7 +257,7 @@
     </div>
 
     @php
-        $isDraftOrApproval = in_array($order->status, ['draft', 'waiting_approval']);
+        $isDraftOrApproval = ($order->isDraft() || $order->isWaitingApproval());
         $whAllocations = [];
         $totalActiveReserved = 0;
         $totalActiveDemanded = 0;
@@ -328,9 +328,7 @@
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
             <h3><i class="fa-solid fa-cart-flatbed" style="color:var(--primary); margin-right:8px;"></i> Item Pesanan</h3>
-            <span class="badge badge-{{ $order->status }}" style="font-size:11px; padding:4px 10px;">
-                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-            </span>
+            <x-status-badge :status="$order->status" />
         </div>
         <div class="table-responsive">
             <table class="erp-table">
@@ -383,7 +381,7 @@
     </div>
 
     {{-- Hidden Action Forms for Workflow Submission --}}
-    @if($order->status === 'draft')
+    @if($order->isDraft())
     <form id="form-cancel-so" method="POST" action="{{ route('sales.orders.cancel', $order) }}" style="display:none;">
         @csrf @method('PATCH')
     </form>

@@ -31,7 +31,7 @@ class DashboardTest extends TestCase
             'alerts',
             'aktivitas',
         ]);
-        $response->assertSee('Overview');
+        $response->assertSee('Dashboard');
     }
 
     #[Test]

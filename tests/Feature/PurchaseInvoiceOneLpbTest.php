@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PurchaseInvoiceStatus;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\Product;
@@ -392,7 +393,7 @@ class PurchaseInvoiceOneLpbTest extends TestCase
         $this->assertEquals(240, $invoice->total_reversed_amount);
         $this->assertEquals(360, $invoice->effective_total_amount);
         $this->assertEquals(360, $invoice->outstanding_amount);
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Unpaid, $invoice->status);
     }
 
     /**

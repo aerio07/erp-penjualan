@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\SalesOrderStatus;
 use App\Models\Product;
 use App\Models\ProcurementDemand;
 use App\Models\PurchaseOrderItem;
@@ -340,14 +342,17 @@ class StockService
 
             // Auto-link ke Purchase Order aktif jika belum terhubung tapi ada PO aktif untuk produk ini
             if (!$demand->purchase_order_id) {
-                $matchingPo = \App\Models\PurchaseOrder::whereIn('status', ['confirmed', 'partially_received'])
+                $matchingPo = \App\Models\PurchaseOrder::whereIn('status', [
+                    PurchaseOrderStatus::Confirmed->value,
+                    PurchaseOrderStatus::PartiallyReceived->value,
+                ])
                     ->whereHas('items', fn($q) => $q->where('product_id', $demand->product_id))
                     ->orderBy('id', 'desc')
                     ->first();
                 if ($matchingPo) {
                     $demand->purchase_order_id = $matchingPo->id;
                 }
-            } elseif ($demand->purchaseOrder && in_array($demand->purchaseOrder->status, ['cancelled', 'rejected'])) {
+            } elseif ($demand->purchaseOrder && in_array($demand->purchaseOrder->status, [PurchaseOrderStatus::Cancelled])) {
                 $demand->purchase_order_id = null;
             }
 
@@ -391,7 +396,7 @@ class StockService
     {
         $order->load(['items.deliveryItems', 'items.reservations', 'items.procurementDemands']);
 
-        if ($order->status === 'draft' || $order->status === 'waiting_approval' || $order->status === 'cancelled') {
+        if (in_array($order->status, [SalesOrderStatus::Draft, SalesOrderStatus::WaitingApproval, SalesOrderStatus::Cancelled])) {
             return 'pending';
         }
 

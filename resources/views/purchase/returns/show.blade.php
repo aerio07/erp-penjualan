@@ -7,11 +7,11 @@
     <x-detail-header 
         :title="$return->return_number" 
         :subtitle="'Supplier: ' . ($return->supplier->name ?? '-') . ' · Ref GRN: ' . ($return->goodsReceipt->receipt_number ?? '-')"
-        :status="$return->status === 'completed' ? 'done' : 'pending'"
+        :status="$return->status"
         :back-url="route('purchase.returns.index')"
     >
         <x-slot:actions>
-            @if($return->status === 'draft')
+            @if($return->isDraft())
             <form method="POST" action="{{ route('purchase.returns.complete', $return) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-primary" onclick="return confirm('Selesaikan retur dan kurangi stok barang di gudang?')">
@@ -26,9 +26,7 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header">
                 <h3>Informasi Retur</h3>
-                <span class="badge badge-{{ $return->status === 'completed' ? 'done' : 'pending' }}">
-                    {{ ucfirst($return->status) }}
-                </span>
+                <x-status-badge :status="$return->status" />
             </div>
             <div class="card-body">
                 <div class="form-row form-row-2">

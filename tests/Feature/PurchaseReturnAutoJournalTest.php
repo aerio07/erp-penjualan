@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PurchaseReturnStatus;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\JournalEntry;
@@ -146,7 +147,7 @@ class PurchaseReturnAutoJournalTest extends TestCase
         $response->assertSessionHas('success');
 
         $return->refresh();
-        $this->assertEquals('completed', $return->status);
+        $this->assertEquals(PurchaseReturnStatus::Completed, $return->status);
 
         // 6. Verifikasi JURNAL OTOMATIS: Harus terbuat dan statusnya langsung 'posted' (bukan draft!)
         $journal = JournalEntry::where('reference_type', PurchaseReturn::class)

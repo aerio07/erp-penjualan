@@ -13,7 +13,7 @@
         <x-slot:actions>
 
 
-            @if(in_array($invoice->status, ['unpaid', 'partial', 'paid']))
+            @if(in_array($invoice->status, [\App\Enums\SalesInvoiceStatus::Unpaid, \App\Enums\SalesInvoiceStatus::Partial, \App\Enums\SalesInvoiceStatus::Paid]))
             <a href="{{ route('pdf.sales-invoice', $invoice) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
@@ -56,7 +56,7 @@
                     </div>
                     <div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Tanggal Jatuh Tempo</div>
-                        <div style="font-weight:600; color:{{ $invoice->status !== 'paid' && $invoice->due_date < today() ? 'var(--danger)' : 'var(--text-primary)' }};">
+                        <div style="font-weight:600; color:{{ !$invoice->isPaid() && $invoice->due_date < today() ? 'var(--danger)' : 'var(--text-primary)' }};">
                             {{ $invoice->due_date->format('d/m/Y') }}
                         </div>
                     </div>
@@ -138,8 +138,14 @@
                         $price = $item->unit_price ?? 0;
                         return ($qty * $price) * (($item->discount_percent ?? 0) / 100);
                     });
+                    $storedDiscountSum = $invoiceItems->sum(function($item) {
+                        return (float) ($item->discount_amount ?? 0);
+                    });
                     $netItemSubtotal = $grossSubtotal - $itemDiscountSum;
-                    $headerDiscount = max(0, round($netItemSubtotal - (float) $invoice->amount, 2));
+                    $headerDiscount = max(0, round($storedDiscountSum - $itemDiscountSum, 2));
+                    if ($headerDiscount <= 0) {
+                        $headerDiscount = max(0, round($netItemSubtotal - (float) $invoice->amount, 2));
+                    }
                 @endphp
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
                     <div style="display:flex; justify-content:space-between;">
@@ -290,7 +296,7 @@
     </div>
 
     {{-- Bottom Workflow Actions --}}
-    @if($invoice->status === 'draft')
+    @if($invoice->isDraft())
     <x-document-action-card>
         <form id="form-delete-draft-invoice" action="{{ route('sales.invoices.destroy', $invoice) }}" method="POST" style="display:none;">
             @csrf

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesInvoiceStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -193,7 +194,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
         $this->assertEquals(400000, $invoice->total_reversed_amount);
         $this->assertEquals(600000, $invoice->effective_total_amount);
         $this->assertEquals(0, $invoice->outstanding_amount);
-        $this->assertEquals('paid', $invoice->status);
+        $this->assertEquals(SalesInvoiceStatus::Paid, $invoice->status);
     }
 
     /**

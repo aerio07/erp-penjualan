@@ -441,7 +441,7 @@
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                         <td style="text-align:center;">
                             @if($item->salesOrder)
-                                <span class="badge badge-{{ $item->salesOrder->status }}">{{ ucfirst(str_replace('_', ' ', $item->salesOrder->status)) }}</span>
+                                <x-status-badge :status="$item->salesOrder->status" />
                             @else
                                 -
                             @endif
@@ -494,7 +494,7 @@
                         <td style="text-align:right; font-weight:600;">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                         <td style="text-align:center;">
                             @if($item->purchaseOrder)
-                                <span class="badge badge-{{ $item->purchaseOrder->status }}">{{ ucfirst(str_replace('_', ' ', $item->purchaseOrder->status)) }}</span>
+                                <x-status-badge :status="$item->purchaseOrder->status" />
                             @else
                                 -
                             @endif

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\DeliveryStatus;
+use App\Enums\SalesInvoiceStatus;
+use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Delivery;
@@ -52,9 +55,13 @@ class SalesInvoiceController extends Controller
     {
         // SO yang memiliki minimal 1 Surat Jalan (Delivery) yang SUDAH DITERIMA (delivered) dan belum diinvoice
         $orders = SalesOrder::with(['customer'])
-            ->whereIn('status', ['confirmed', 'partially_delivered', 'done'])
+            ->whereIn('status', [
+                SalesOrderStatus::Confirmed->value,
+                SalesOrderStatus::PartiallyDelivered->value,
+                SalesOrderStatus::Done->value,
+            ])
             ->whereHas('deliveries', function ($q) {
-                $q->where('is_invoiced', false)->where('status', 'delivered');
+                $q->where('is_invoiced', false)->where('status', DeliveryStatus::Delivered->value);
             })
             ->orderByDesc('id')
             ->get();
@@ -62,7 +69,7 @@ class SalesInvoiceController extends Controller
         // Ambil SEMUA Delivery (Surat Jalan) yang sudah diterima dan belum diinvoice untuk seluruh SO yang eligible
         $availableDeliveries = Delivery::whereIn('sales_order_id', $orders->pluck('id'))
             ->where('is_invoiced', false)
-            ->where('status', 'delivered')
+            ->where('status', DeliveryStatus::Delivered->value)
             ->with([
                 'items.salesOrderItem.product',
                 'items.salesReturnItems.salesReturn',
@@ -107,8 +114,8 @@ class SalesInvoiceController extends Controller
                 ->where('is_invoiced', false)
                 ->first();
             if ($singleDelivery) {
-                if ($singleDelivery->status !== 'delivered') {
-                    $singleDelivery->update(['status' => 'delivered']);
+                if ($singleDelivery->status !== DeliveryStatus::Delivered) {
+                    $singleDelivery->update(['status' => DeliveryStatus::Delivered]);
                 }
                 $request->merge(['delivery_id' => $singleDelivery->id]);
             }
@@ -141,7 +148,7 @@ class SalesInvoiceController extends Controller
                 }
 
                 // Guard: pastikan Surat Jalan sudah berstatus delivered (sudah diterima)
-                if ($delivery->status !== 'delivered') {
+                if ($delivery->status !== DeliveryStatus::Delivered) {
                     throw new \InvalidArgumentException("Surat Jalan #{$delivery->delivery_number} masih dalam pengiriman (In Transit). Barang harus dikonfirmasi telah diterima pembeli sebelum invoice diterbitkan.");
                 }
 
@@ -169,7 +176,7 @@ class SalesInvoiceController extends Controller
 
     public function edit(SalesInvoice $invoice): View|RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('sales.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
         }
@@ -181,7 +188,7 @@ class SalesInvoiceController extends Controller
 
     public function update(Request $request, SalesInvoice $invoice): RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('sales.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
         }
@@ -235,7 +242,7 @@ class SalesInvoiceController extends Controller
 
     public function destroy(SalesInvoice $invoice): RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('sales.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat dihapus.');
         }
@@ -276,7 +283,7 @@ class SalesInvoiceController extends Controller
 
     public function post(SalesInvoice $invoice): RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('sales.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat diposting.');
         }
@@ -284,7 +291,7 @@ class SalesInvoiceController extends Controller
         try {
             return DB::transaction(function () use ($invoice) {
                 $invoice = SalesInvoice::lockForUpdate()->findOrFail($invoice->id);
-                if ($invoice->status !== 'draft') {
+                if (!$invoice->isDraft()) {
                     throw new \InvalidArgumentException('Invoice ini sudah pernah diposting.');
                 }
 
@@ -315,7 +322,7 @@ class SalesInvoiceController extends Controller
 
     public function exportPdf(SalesInvoice $invoice)
     {
-        abort_if(!in_array($invoice->status, ['unpaid', 'partial', 'paid']), 403, 'PDF hanya dapat diunduh setelah Faktur Penjualan diposting.');
+        abort_if(!$invoice->isPosted(), 403, 'PDF hanya dapat diunduh setelah Faktur Penjualan diposting.');
 
         $invoice->load(['salesOrder.customer', 'delivery.warehouse', 'items.product', 'items.deliveryItem.delivery', 'payments']);
         $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);

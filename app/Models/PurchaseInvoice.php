@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentStatus;
+use App\Enums\PurchaseInvoiceStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,17 +26,8 @@ class PurchaseInvoice extends Model
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'status' => PurchaseInvoiceStatus::class,
     ];
-
-    public function isDraft(): bool
-    {
-        return $this->status === 'draft';
-    }
-
-    public function isPosted(): bool
-    {
-        return in_array($this->status, ['unpaid', 'partial', 'paid']);
-    }
 
     public function purchaseOrder(): BelongsTo
     {
@@ -59,10 +52,10 @@ class PurchaseInvoice extends Model
     public function getTotalPaidAttribute(): float
     {
         if ($this->relationLoaded('payments')) {
-            return (float) $this->payments->where('status', '!=', 'draft')->sum('amount');
+            return (float) $this->payments->filter(fn($p) => $p->status !== PaymentStatus::Draft)->sum('amount');
         }
 
-        return (float) $this->payments()->where('status', '!=', 'draft')->sum('amount');
+        return (float) $this->payments()->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
     }
 
     public function getTotalReversedAmountAttribute(): float
@@ -116,5 +109,39 @@ class PurchaseInvoice extends Model
         $batasNilai = (int) floor(max(0, $sisaBelumBayar) / $effectiveUnitPrice);
 
         return min($physicalLimit, $batasNilai);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status instanceof PurchaseInvoiceStatus ? $this->status->label() : (string) $this->status;
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return $this->status instanceof PurchaseInvoiceStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->status_badge;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === PurchaseInvoiceStatus::Draft;
+    }
+
+    public function isPosted(): bool
+    {
+        return in_array($this->status, [
+            PurchaseInvoiceStatus::Unpaid,
+            PurchaseInvoiceStatus::Partial,
+            PurchaseInvoiceStatus::Paid,
+        ]);
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === PurchaseInvoiceStatus::Paid;
     }
 }

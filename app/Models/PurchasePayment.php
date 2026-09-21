@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,7 @@ class PurchasePayment extends Model
     protected $casts = [
         'payment_date' => 'date',
         'amount' => 'decimal:2',
+        'status' => PaymentStatus::class,
     ];
 
     protected static function booted(): void
@@ -49,12 +51,12 @@ class PurchasePayment extends Model
 
     public function isDraft(): bool
     {
-        return $this->status === 'draft';
+        return $this->status->isDraft();
     }
 
     public function isPosted(): bool
     {
-        return $this->status === 'posted';
+        return $this->status->isPosted();
     }
 
     public function purchaseInvoice(): BelongsTo
@@ -90,5 +92,20 @@ class PurchasePayment extends Model
     public function getVoucherLabelAttribute(): string
     {
         return ($this->payment_type === 'kas' || $this->method === 'cash') ? 'No. Bukti Kas Keluar' : 'No. Bukti Bank Keluar';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status instanceof PaymentStatus ? $this->status->label() : (string) $this->status;
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return $this->status instanceof PaymentStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->status_badge;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\SalesOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Product;
@@ -103,7 +104,7 @@ class SalesOrderController extends Controller
                 'customer_id'            => $request->customer_id,
                 'channel'                => $request->input('channel', 'offline'),
                 'user_id'                => Auth::id(),
-                'status'                 => 'draft',
+                'status'                 => SalesOrderStatus::Draft,
                 'fulfillment_status'     => 'pending',
                 'order_date'             => $request->order_date,
                 'expected_delivery_date' => $request->expected_delivery_date,
@@ -161,7 +162,7 @@ class SalesOrderController extends Controller
     public function edit(SalesOrder $salesOrder): View
     {
         $order = $salesOrder;
-        abort_if($order->status !== 'draft', 403, 'SO yang sudah dikonfirmasi tidak dapat diedit.');
+        abort_if($order->status !== SalesOrderStatus::Draft, 403, 'SO yang sudah dikonfirmasi tidak dapat diedit.');
 
         $order->load(['items.product', 'approvalRequests.approver']);
         $customers = Customer::where('is_active', true)->orderBy('name')->get();
@@ -173,7 +174,7 @@ class SalesOrderController extends Controller
     public function update(Request $request, SalesOrder $salesOrder): RedirectResponse
     {
         $order = $salesOrder;
-        abort_if($order->status !== 'draft', 403);
+        abort_if($order->status !== SalesOrderStatus::Draft, 403);
 
         $request->validate([
             'customer_id'            => 'required|exists:customers,id',
@@ -256,7 +257,7 @@ class SalesOrderController extends Controller
     public function destroy(SalesOrder $salesOrder): RedirectResponse
     {
         $order = $salesOrder;
-        abort_if($order->status !== 'draft', 403);
+        abort_if($order->status !== SalesOrderStatus::Draft, 403);
 
         $order->approvalRequests()->where('status', 'pending')->update([
             'status'           => 'rejected',
@@ -272,11 +273,11 @@ class SalesOrderController extends Controller
     public function confirm(SalesOrder $salesOrder): RedirectResponse
     {
         $order = $salesOrder;
-        abort_if($order->status !== 'draft', 403);
+        abort_if($order->status !== SalesOrderStatus::Draft, 403);
 
         if ($this->approvalService->needsApproval('sales_order', $order->total_amount)) {
             $order->update([
-                'status' => 'waiting_approval',
+                'status' => SalesOrderStatus::WaitingApproval,
                 'fulfillment_status' => 'pending',
             ]);
             $this->approvalService->request(
@@ -290,7 +291,7 @@ class SalesOrderController extends Controller
                 ->with('info', "Sales Order #{$order->so_number} telah diajukan ke Menu Approval.");
         }
 
-        $order->update(['status' => 'confirmed']);
+        $order->update(['status' => SalesOrderStatus::Confirmed]);
         $this->stockService->allocateStockForSalesOrder($order);
 
         $order->refresh();
@@ -307,7 +308,7 @@ class SalesOrderController extends Controller
     public function cancel(SalesOrder $salesOrder): RedirectResponse
     {
         $order = $salesOrder;
-        abort_if(!in_array($order->status, ['draft', 'waiting_approval', 'confirmed']), 403);
+        abort_if(!in_array($order->status, [SalesOrderStatus::Draft, SalesOrderStatus::WaitingApproval, SalesOrderStatus::Confirmed]), 403);
 
         if ($order->deliveries()->where('status', '!=', 'cancelled')->exists()) {
             return back()->with('error', 'Sales Order tidak dapat dibatalkan karena sudah memiliki Surat Jalan pengiriman.');
@@ -319,7 +320,7 @@ class SalesOrderController extends Controller
             'rejection_reason' => 'Sales Order dibatalkan oleh pengguna.',
         ]);
 
-        $order->update(['status' => 'cancelled']);
+        $order->update(['status' => SalesOrderStatus::Cancelled]);
         $this->stockService->releaseReservationsForSalesOrder($order);
 
         return back()->with('success', 'Sales Order berhasil dibatalkan dan alokasi stok telah dilepaskan.');
@@ -328,14 +329,14 @@ class SalesOrderController extends Controller
     public function approve(SalesOrder $salesOrder): RedirectResponse
     {
         abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menyetujui Sales Order.');
-        abort_if($salesOrder->status !== 'waiting_approval', 403, 'Sales Order tidak dalam status menunggu persetujuan.');
+        abort_if($salesOrder->status !== SalesOrderStatus::WaitingApproval, 403, 'Sales Order tidak dalam status menunggu persetujuan.');
 
         $approval = $salesOrder->approvalRequests()->where('status', 'pending')->latest()->first();
         if ($approval) {
             $this->approvalService->approve($approval);
         }
 
-        $salesOrder->update(['status' => 'confirmed']);
+        $salesOrder->update(['status' => SalesOrderStatus::Confirmed]);
         $this->stockService->allocateStockForSalesOrder($salesOrder);
 
         $salesOrder->refresh();
@@ -352,7 +353,7 @@ class SalesOrderController extends Controller
     public function revise(Request $request, SalesOrder $salesOrder): RedirectResponse
     {
         abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat meminta revisi Sales Order.');
-        abort_if($salesOrder->status !== 'waiting_approval', 403, 'Sales Order tidak dalam status menunggu persetujuan.');
+        abort_if($salesOrder->status !== SalesOrderStatus::WaitingApproval, 403, 'Sales Order tidak dalam status menunggu persetujuan.');
 
         $request->validate([
             'revision_reason' => 'required|string|min:3',
@@ -367,7 +368,7 @@ class SalesOrderController extends Controller
         }
 
         $salesOrder->update([
-            'status'             => 'draft',
+            'status'             => SalesOrderStatus::Draft,
             'fulfillment_status' => 'pending',
         ]);
         $this->stockService->releaseReservationsForSalesOrder($salesOrder);
@@ -378,7 +379,7 @@ class SalesOrderController extends Controller
     public function reject(Request $request, SalesOrder $salesOrder): RedirectResponse
     {
         abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat menolak Sales Order.');
-        abort_if($salesOrder->status !== 'waiting_approval', 403, 'Sales Order tidak dalam status menunggu persetujuan.');
+        abort_if($salesOrder->status !== SalesOrderStatus::WaitingApproval, 403, 'Sales Order tidak dalam status menunggu persetujuan.');
 
         $request->validate([
             'rejection_reason' => 'nullable|string',
@@ -389,7 +390,7 @@ class SalesOrderController extends Controller
             $this->approvalService->reject($approval, $request->rejection_reason);
         }
 
-        $salesOrder->update(['status' => 'cancelled']);
+        $salesOrder->update(['status' => SalesOrderStatus::Cancelled]);
         $this->stockService->releaseReservationsForSalesOrder($salesOrder);
 
         return back()->with('success', "Sales Order #{$salesOrder->so_number} berhasil ditolak (Rejected) dan dibatalkan.");
@@ -397,7 +398,11 @@ class SalesOrderController extends Controller
 
     public function exportPdf(SalesOrder $salesOrder)
     {
-        abort_if(!in_array($salesOrder->status, ['confirmed', 'partially_delivered', 'done']), 403, 'PDF hanya dapat diunduh setelah Sales Order disetujui.');
+        abort_if(!in_array($salesOrder->status, [
+            SalesOrderStatus::Confirmed,
+            SalesOrderStatus::PartiallyDelivered,
+            SalesOrderStatus::Done,
+        ]), 403, 'PDF hanya dapat diunduh setelah Sales Order disetujui.');
 
         $order = $salesOrder;
         $order->load(['customer', 'user', 'items.product', 'approvalRequests.approver']);

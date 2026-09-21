@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DeliveryStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,7 @@ class Delivery extends Model
         'delivery_date' => 'date',
         'received_date' => 'date',
         'is_invoiced'   => 'boolean',
+        'status'        => DeliveryStatus::class,
     ];
 
     public function salesOrder(): BelongsTo
@@ -52,26 +54,31 @@ class Delivery extends Model
 
     public function getIsAvailableForInvoiceAttribute(): bool
     {
-        return !$this->is_invoiced && $this->status === 'delivered';
+        return !$this->is_invoiced && $this->status->canBeInvoiced();
     }
 
     public function getStatusLabelAttribute(): string
     {
-        return match ($this->status) {
-            'in_transit' => 'Dalam Pengiriman',
-            'delivered'  => 'Telah Diterima',
-            'cancelled'  => 'Dibatalkan',
-            default      => ucfirst($this->status),
-        };
+        return $this->status instanceof DeliveryStatus ? $this->status->label() : ucfirst((string) ($this->status ?? 'In Transit'));
     }
 
     public function getStatusBadgeClassAttribute(): string
     {
-        return match ($this->status) {
-            'in_transit' => 'badge-pending',
-            'delivered'  => 'badge-confirmed',
-            'cancelled'  => 'badge-cancelled',
-            default      => 'badge-neutral',
-        };
+        return $this->status instanceof DeliveryStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function isInTransit(): bool
+    {
+        return $this->status === DeliveryStatus::InTransit;
+    }
+
+    public function isDelivered(): bool
+    {
+        return $this->status === DeliveryStatus::Delivered;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === DeliveryStatus::Cancelled;
     }
 }

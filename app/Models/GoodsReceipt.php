@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GoodsReceiptStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,7 @@ class GoodsReceipt extends Model
         'invoice_date'          => 'date',
         'due_date'              => 'date',
         'invoice_tax_rate'      => 'decimal:2',
+        'status'                => GoodsReceiptStatus::class,
     ];
 
     public function approvedBy(): BelongsTo
@@ -38,26 +40,46 @@ class GoodsReceipt extends Model
 
     public function getStatusLabelAttribute(): string
     {
-        return match($this->status) {
-            'draft'            => 'Draft',
-            'waiting_approval' => 'Menunggu Approval',
-            'confirmed'        => 'Disetujui',
-            'rejected'         => 'Ditolak',
-            'revised'          => 'Perlu Revisi',
-            default            => ucfirst($this->status ?? 'Draft'),
-        };
+        return $this->status instanceof GoodsReceiptStatus ? $this->status->label() : ucfirst((string) ($this->status ?? 'Draft'));
     }
 
     public function getStatusBadgeAttribute(): string
     {
-        return match($this->status) {
-            'draft'            => 'badge-pending',
-            'waiting_approval' => 'badge-warning',
-            'confirmed'        => 'badge-done',
-            'rejected'         => 'badge-cancelled',
-            'revised'          => 'badge-warning',
-            default            => 'badge-secondary',
-        };
+        return $this->status instanceof GoodsReceiptStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === GoodsReceiptStatus::Draft;
+    }
+
+    public function isWaitingApproval(): bool
+    {
+        return $this->status === GoodsReceiptStatus::WaitingApproval;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === GoodsReceiptStatus::Confirmed;
+    }
+
+    public function isRevised(): bool
+    {
+        return $this->status === GoodsReceiptStatus::Revised;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === GoodsReceiptStatus::Rejected;
+    }
+
+    public function canSubmitApproval(): bool
+    {
+        return in_array($this->status, [
+            GoodsReceiptStatus::Draft,
+            GoodsReceiptStatus::Revised,
+            GoodsReceiptStatus::Rejected,
+        ]);
     }
 
     public function purchaseOrder(): BelongsTo

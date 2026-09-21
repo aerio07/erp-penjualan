@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentStatus;
+use App\Enums\PurchaseInvoiceStatus;
 use App\Models\ChartOfAccount;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
@@ -27,6 +29,7 @@ class PurchasePaymentTest extends TestCase
     private Supplier $supplier;
     private Warehouse $warehouse;
     private Product $product;
+    private ChartOfAccount $cashAccount;
 
     protected function setUp(): void
     {
@@ -61,7 +64,7 @@ class PurchasePaymentTest extends TestCase
             ['code' => '2-1100'],
             ['name' => 'Hutang Usaha', 'type' => 'liability', 'normal_balance' => 'credit', 'is_active' => true]
         );
-        ChartOfAccount::firstOrCreate(
+        $this->cashAccount = ChartOfAccount::firstOrCreate(
             ['code' => '1-1100'],
             ['name' => 'Kas & Bank', 'type' => 'asset', 'normal_balance' => 'debit', 'is_active' => true]
         );
@@ -163,12 +166,12 @@ class PurchasePaymentTest extends TestCase
 
         $payment = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
         $this->assertNotNull($payment);
-        $this->assertEquals('draft', $payment->status);
+        $this->assertEquals(PaymentStatus::Draft, $payment->status);
         $this->assertTrue($payment->isDraft());
 
         // Invoice status must NOT be changed while in draft
         $invoice->refresh();
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Unpaid, $invoice->status);
         $this->assertEquals(1000000, $invoice->outstanding_amount);
 
         // Journal Entry must NOT be created
@@ -208,7 +211,7 @@ class PurchasePaymentTest extends TestCase
         $response->assertRedirect(route('purchase.payments.index'));
         $payment->refresh();
         $this->assertEquals(450000, $payment->amount);
-        $this->assertEquals('draft', $payment->status);
+        $this->assertEquals(PaymentStatus::Draft, $payment->status);
         $this->assertEquals('cash', $payment->method);
     }
 
@@ -232,11 +235,11 @@ class PurchasePaymentTest extends TestCase
 
         $response->assertRedirect();
         $payment->refresh();
-        $this->assertEquals('posted', $payment->status);
+        $this->assertEquals(PaymentStatus::Posted, $payment->status);
         $this->assertTrue($payment->isPosted());
 
         $invoice->refresh();
-        $this->assertEquals('partial', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Partial, $invoice->status);
         $this->assertEquals(600000, $invoice->outstanding_amount);
 
         // Journal Entry must exist and be posted
@@ -301,10 +304,10 @@ class PurchasePaymentTest extends TestCase
         $response->assertRedirect(route('purchase.payments.index'));
         $payment = PurchasePayment::where('purchase_invoice_id', $invoice->id)->first();
         $this->assertNotNull($payment);
-        $this->assertEquals('posted', $payment->status);
+        $this->assertEquals(PaymentStatus::Posted, $payment->status);
 
         $invoice->refresh();
-        $this->assertEquals('paid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Paid, $invoice->status);
         $this->assertEquals(0, $invoice->outstanding_amount);
     }
 
@@ -326,7 +329,7 @@ class PurchasePaymentTest extends TestCase
         $response->assertSessionHas('error');
         $this->assertEquals(0, PurchasePayment::where('purchase_invoice_id', $invoice->id)->count());
         $invoice->refresh();
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Unpaid, $invoice->status);
     }
 
     public function test_auto_generates_payment_number_bbk_for_bank_and_bkk_for_cash(): void
@@ -387,4 +390,3 @@ class PurchasePaymentTest extends TestCase
         ]);
     }
 }
-

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('request_date')->comment('Tanggal pengajuan PR');
             $table->date('required_date')->comment('Date Needed / Tanggal dibutuhkan');
             $table->date('expired_date')->nullable()->comment('Batas waktu berlakunya PR');
-            $table->enum('status', ['draft', 'waiting_approval', 'approved', 'rejected', 'ordered', 'cancelled'])->default('draft');
+            $table->enum('status', ['draft', 'revised', 'waiting_approval', 'confirmed', 'done', 'approved', 'rejected', 'ordered', 'cancelled'])->default('draft');
             $table->text('notes')->nullable()->comment('Catatan/keperluan pengadaan');
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('approved_at')->nullable();

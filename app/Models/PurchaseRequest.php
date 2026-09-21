@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PurchaseRequestStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +34,7 @@ class PurchaseRequest extends Model
         'required_date' => 'date',
         'expired_date'  => 'date',
         'approved_at'   => 'datetime',
+        'status'        => PurchaseRequestStatus::class,
     ];
 
     public function items(): HasMany
@@ -72,60 +74,84 @@ class PurchaseRequest extends Model
 
     public function scopeApproved($query)
     {
-        return $query->whereIn('status', ['confirmed', 'approved']);
+        return $query->whereIn('status', [
+            PurchaseRequestStatus::Confirmed->value,
+        ]);
     }
 
     public function scopeAvailableForPo($query)
     {
-        return $query->whereIn('status', ['confirmed', 'approved'])
-            ->whereHas('items', function ($q) {
-                $q->whereRaw('qty > qty_ordered');
-            });
+        return $query->whereIn('status', [
+            PurchaseRequestStatus::Confirmed->value,
+            PurchaseRequestStatus::Done->value,
+        ])->whereHas('items', function ($q) {
+            $q->whereRaw('qty > qty_ordered');
+        });
     }
 
+    /**
+     * Accessor untuk label teks status — mendelegasikan ke Enum.
+     * Mempertahankan logika khusus: jika draft tapi approval terakhir 'revised', tampilkan 'Revisi'.
+     */
     public function getStatusLabelAttribute(): string
     {
-        if ($this->status === 'draft') {
+        if ($this->status === PurchaseRequestStatus::Draft) {
             $latest = $this->approvalRequests->sortByDesc('id')->first();
             if ($latest && $latest->status === 'revised') {
-                return 'Revisi';
+                return PurchaseRequestStatus::Revised->label();
             }
         }
 
-        return match ($this->status) {
-            'draft'            => 'Draft',
-            'revised'          => 'Revisi',
-            'waiting_approval' => 'Menunggu Approval',
-            'confirmed'        => 'Confirmed',
-            'approved'         => 'Confirmed',
-            'done'             => 'Done',
-            'ordered'          => 'Done',
-            'rejected'         => 'Ditolak',
-            'cancelled'        => 'Dibatalkan',
-            default            => ucfirst($this->status),
-        };
+        return $this->status->label();
     }
 
+    /**
+     * Accessor untuk CSS badge class status — mendelegasikan ke Enum.
+     */
     public function getStatusBadgeAttribute(): string
     {
-        if ($this->status === 'draft') {
+        if ($this->status === PurchaseRequestStatus::Draft) {
             $latest = $this->approvalRequests->sortByDesc('id')->first();
             if ($latest && $latest->status === 'revised') {
-                return 'badge-warning';
+                return PurchaseRequestStatus::Revised->badge();
             }
         }
 
-        return match ($this->status) {
-            'draft'            => 'badge-secondary',
-            'revised'          => 'badge-warning',
-            'waiting_approval' => 'badge-warning',
-            'confirmed'        => 'badge-info',
-            'approved'         => 'badge-info',
-            'done'             => 'badge-success',
-            'ordered'          => 'badge-success',
-            'rejected'         => 'badge-danger',
-            'cancelled'        => 'badge-dark',
-            default            => 'badge-secondary',
-        };
+        return $this->status->badge();
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->status_badge;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === PurchaseRequestStatus::Draft;
+    }
+
+    public function isWaitingApproval(): bool
+    {
+        return $this->status === PurchaseRequestStatus::WaitingApproval;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === PurchaseRequestStatus::Confirmed;
+    }
+
+    public function isDone(): bool
+    {
+        return $this->status === PurchaseRequestStatus::Done;
+    }
+
+    public function isRevised(): bool
+    {
+        return $this->status === PurchaseRequestStatus::Revised;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === PurchaseRequestStatus::Rejected;
     }
 }

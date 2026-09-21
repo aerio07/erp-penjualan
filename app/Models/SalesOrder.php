@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SalesOrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,7 @@ class SalesOrder extends Model
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'status' => SalesOrderStatus::class,
     ];
 
     public function customer(): BelongsTo
@@ -94,7 +96,7 @@ class SalesOrder extends Model
 
     public function canCreateDelivery(): bool
     {
-        if (!in_array($this->status, ['confirmed', 'partially_delivered'])) {
+        if (!$this->status->canCreateDelivery()) {
             return false;
         }
 
@@ -121,5 +123,40 @@ class SalesOrder extends Model
     public function canCreatePartialDelivery(): bool
     {
         return $this->canCreateDelivery() && in_array($this->fulfillment_status, ['partially_available', 'partially_delivered']);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return $this->status instanceof SalesOrderStatus ? $this->status->label() : (string) $this->status;
+    }
+
+    public function getStatusBadgeAttribute(): string
+    {
+        return $this->status instanceof SalesOrderStatus ? $this->status->badge() : 'badge-secondary';
+    }
+
+    public function getStatusBadgeClassAttribute(): string
+    {
+        return $this->status_badge;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === SalesOrderStatus::Draft;
+    }
+
+    public function isWaitingApproval(): bool
+    {
+        return $this->status === SalesOrderStatus::WaitingApproval;
+    }
+
+    public function isConfirmed(): bool
+    {
+        return $this->status === SalesOrderStatus::Confirmed;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === SalesOrderStatus::Cancelled;
     }
 }

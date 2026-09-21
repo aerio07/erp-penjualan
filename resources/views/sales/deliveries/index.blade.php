@@ -74,11 +74,11 @@
             </td>
             <td>{{ $del->delivery_date ? $del->delivery_date->format('d/m/Y') : '-' }}</td>
             <td>
-                @if($del->status === 'delivered')
+                @if($del->isDelivered())
                     <span class="badge badge-success" title="Diterima: {{ $del->received_date ? $del->received_date->format('d/m/Y') : '-' }}">
                         <i class="fa-solid fa-circle-check"></i> Diterima
                     </span>
-                @elseif($del->status === 'in_transit')
+                @elseif($del->isInTransit())
                     <span class="badge badge-warning">
                         <i class="fa-solid fa-truck-fast"></i> Dalam Kirim
                     </span>
@@ -91,7 +91,7 @@
                     <a href="{{ route('sales.invoices.show', $del->sales_invoice_id) }}" class="badge badge-info" style="text-decoration:none;" title="Lihat Invoice Penjualan">
                         <i class="fa-solid fa-file-invoice"></i> Invoiced
                     </a>
-                @elseif($del->status === 'delivered')
+                @elseif($del->isDelivered())
                     <a href="{{ route('sales.invoices.create', ['so_id' => $del->sales_order_id, 'delivery_id' => $del->id]) }}" class="badge badge-pending" style="text-decoration:none;" title="Barang sudah sampai, klik untuk terbitkan invoice">
                         <i class="fa-solid fa-plus"></i> Siap Ditagih
                     </a>
@@ -106,7 +106,7 @@
                     <a href="{{ route('sales.deliveries.show', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if(in_array($del->status, ['in_transit', 'delivered']))
+                    @if(!$del->isCancelled())
                     <a href="{{ route('pdf.delivery', $del) }}" class="btn btn-secondary btn-sm btn-icon" title="Cetak Surat Jalan" target="_blank">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>

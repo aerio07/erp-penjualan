@@ -62,7 +62,7 @@
                     <tr>
                         <td class="detail-label">Status Pembayaran</td>
                         <td class="detail-colon">:</td>
-                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper(str_replace('_', ' ', $invoice->status)) }}</td>
+                        <td class="detail-value" style="font-weight: 700; color: #111111;">{{ strtoupper($invoice->status_label) }}</td>
                     </tr>
                 </table>
             </td>
@@ -97,8 +97,19 @@
                         return ($qty * $price) * (($item->discount_percent ?? 0) / 100);
                     });
 
+                    // Pada SalesInvoiceItem, discount_amount berisi total diskon item + alokasi diskon header.
+                    // Jadi Diskon Header di print-out harus diambil dari selisih discount_amount tersimpan
+                    // dengan diskon item persentase. Fallback tetap memakai selisih DPP jika data lama belum punya discount_amount.
+                    $storedDiscountSum = $invoiceItems->sum(function($item) {
+                        return (float) ($item->discount_amount ?? 0);
+                    });
+
                     $netItemSubtotal = $grossSubtotal - $itemDiscountSum;
-                    $headerDiscount = max(0, round($netItemSubtotal - (float) $invoice->amount, 2));
+                    $headerDiscount = max(0, round($storedDiscountSum - $itemDiscountSum, 2));
+
+                    if ($headerDiscount <= 0) {
+                        $headerDiscount = max(0, round($netItemSubtotal - (float) $invoice->amount, 2));
+                    }
                 @endphp
                 @forelse($invoiceItems as $i => $item)
                     @php

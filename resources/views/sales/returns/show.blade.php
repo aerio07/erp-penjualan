@@ -7,21 +7,20 @@
     <x-detail-header 
         :title="$return->return_number"
         :back-url="route('sales.returns.index')"
-        :badge-text="ucfirst($return->status)"
-        :badge-class="'badge-' . ($return->status === 'completed' ? 'done' : ($return->status === 'received' ? 'confirmed' : 'pending'))"
+        :status="$return->status"
     >
         <x-slot:subtitle>
             Customer: <strong>{{ $return->customer->name ?? '-' }}</strong> &bull; Ref Surat Jalan: {{ $return->delivery->delivery_number ?? '-' }}
         </x-slot:subtitle>
         <x-slot:actions>
-            @if($return->status === 'draft')
+            @if($return->isDraft())
             <form method="POST" action="{{ route('sales.returns.receive', $return) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-primary" onclick="return confirm('Konfirmasi penerimaan fisik barang retur di gudang dan tambah stok?')">
                     <i class="fa-solid fa-boxes-packing"></i> Konfirmasi Terima Fisik di Gudang (Return In)
                 </button>
             </form>
-            @elseif($return->status === 'received')
+            @elseif($return->isReceived())
             <form method="POST" action="{{ route('sales.returns.complete', $return) }}" style="display:inline;">
                 @csrf @method('PATCH')
                 <button type="submit" class="btn btn-success" onclick="return confirm('Selesaikan proses retur penjualan ini?')">
@@ -36,9 +35,7 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header">
                 <h3>Informasi Retur</h3>
-                <span class="badge badge-{{ $return->status === 'completed' ? 'done' : ($return->status === 'received' ? 'confirmed' : 'pending') }}">
-                    {{ ucfirst($return->status) }}
-                </span>
+                <x-status-badge :status="$return->status" />
             </div>
             <div class="card-body">
                 <div class="form-row form-row-2">

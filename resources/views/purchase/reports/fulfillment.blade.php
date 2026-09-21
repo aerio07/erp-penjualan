@@ -169,9 +169,7 @@
 
                         {{-- Status PO --}}
                         <td style="text-align: center;">
-                            <span class="badge badge-{{ $order->status }}">
-                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                            </span>
+                            <x-status-badge :status="$order->status" />
                         </td>
 
                         {{-- Nilai Pesanan --}}
@@ -291,7 +289,7 @@
                                             <i class="fa-solid fa-boxes-stacked" style="color: var(--primary); margin-right: 6px;"></i>
                                             Daftar LPB ({{ $order->goodsReceipts->count() }})
                                         </div>
-                                        @if(in_array($order->status, ['confirmed', 'partially_received']) && $netReceived < $qtyOrdered)
+                                        @if(in_array($order->status, [\App\Enums\PurchaseOrderStatus::Confirmed, \App\Enums\PurchaseOrderStatus::PartiallyReceived]) && $netReceived < $qtyOrdered)
                                         <a href="{{ route('purchase.goods-receipts.create', ['po_id' => $order->id]) }}" class="btn btn-primary btn-sm" style="font-size: 11px; padding: 2px 8px;">
                                             + Buat LPB
                                         </a>
@@ -375,8 +373,8 @@
                                                     {{ $ret->items->sum('qty') }} item
                                                 </td>
                                                 <td style="text-align: center;">
-                                                    <span class="badge badge-{{ $ret->status }}" style="font-size: 10px;">
-                                                        {{ ucfirst($ret->status) }}
+                                                    <span class="badge {{ $ret->status_badge }}" style="font-size: 10px;">
+                                                        {{ $ret->status_label }}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -443,8 +441,8 @@
                                                     Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
                                                 </td>
                                                 <td style="text-align: center;">
-                                                    <span class="badge badge-{{ $inv->status }}" style="font-size: 10px;">
-                                                        {{ ucfirst($inv->status) }}
+                                                    <span class="badge {{ $inv->status_badge }}" style="font-size: 10px;">
+                                                        {{ $inv->status_label }}
                                                     </span>
                                                 </td>
                                             </tr>

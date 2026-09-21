@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesOrderStatus;
 use App\Models\ApprovalRequest;
 use App\Models\Customer;
 use App\Models\Product;
@@ -84,7 +85,7 @@ class SalesOrderApprovalFlowTest extends TestCase
         $response->assertSessionHas('info', "Sales Order #{$so->so_number} telah diajukan ke Menu Approval.");
 
         $so->refresh();
-        $this->assertEquals('waiting_approval', $so->status);
+        $this->assertEquals(SalesOrderStatus::WaitingApproval, $so->status);
 
         $approval = ApprovalRequest::where('approvable_type', SalesOrder::class)
             ->where('approvable_id', $so->id)
@@ -133,18 +134,18 @@ class SalesOrderApprovalFlowTest extends TestCase
         // 1. Confirm SO -> status waiting_approval
         $this->actingAs($this->sales)->patch(route('sales.orders.confirm', $so));
         $so->refresh();
-        $this->assertEquals('waiting_approval', $so->status);
+        $this->assertEquals(SalesOrderStatus::WaitingApproval, $so->status);
 
         // 2. Admin approve via approvals.approve
         $approval = ApprovalRequest::where('approvable_type', SalesOrder::class)
             ->where('approvable_id', $so->id)
             ->first();
 
-        $approveResponse = $this->actingAs($this->admin)->patch(route('approvals.approve', $approval));
-        $approveResponse->assertSessionHas('success');
+        $response = $this->actingAs($this->admin)->patch(route('approvals.approve', $approval));
+        $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('confirmed', $so->status);
+        $this->assertEquals(SalesOrderStatus::Confirmed, $so->status);
         $this->assertEquals('ready_to_ship', $so->fulfillment_status);
         $this->assertTrue($so->canCreateDelivery());
     }
@@ -180,7 +181,7 @@ class SalesOrderApprovalFlowTest extends TestCase
         $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('cancelled', $so->status);
+        $this->assertEquals(SalesOrderStatus::Cancelled, $so->status);
 
         $approval->refresh();
         $this->assertEquals('rejected', $approval->status);
@@ -225,14 +226,14 @@ class SalesOrderApprovalFlowTest extends TestCase
         // 1. Confirm SO -> status waiting_approval
         $this->actingAs($this->sales)->patch(route('sales.orders.confirm', $so));
         $so->refresh();
-        $this->assertEquals('waiting_approval', $so->status);
+        $this->assertEquals(SalesOrderStatus::WaitingApproval, $so->status);
 
         // 2. Admin approve via direct route: sales.orders.approve
         $response = $this->actingAs($this->admin)->patch(route('sales.orders.approve', $so));
         $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('confirmed', $so->status);
+        $this->assertEquals(SalesOrderStatus::Confirmed, $so->status);
         $this->assertEquals('ready_to_ship', $so->fulfillment_status);
 
         $approval = ApprovalRequest::where('approvable_type', SalesOrder::class)
@@ -274,7 +275,7 @@ class SalesOrderApprovalFlowTest extends TestCase
         $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('draft', $so->status);
+        $this->assertEquals(SalesOrderStatus::Draft, $so->status);
         $this->assertEquals('pending', $so->fulfillment_status);
 
         $approval->refresh();
@@ -317,7 +318,7 @@ class SalesOrderApprovalFlowTest extends TestCase
         $response->assertSessionHas('success');
 
         $so->refresh();
-        $this->assertEquals('cancelled', $so->status);
+        $this->assertEquals(SalesOrderStatus::Cancelled, $so->status);
 
         $approval->refresh();
         $this->assertEquals('rejected', $approval->status);

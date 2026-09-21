@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Purchase;
 
+use App\Enums\PurchaseInvoiceStatus;
+use App\Enums\PurchaseOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\GoodsReceipt;
 use App\Models\PurchaseInvoice;
@@ -53,7 +55,11 @@ class PurchaseInvoiceController extends Controller
     {
         // PO yang memiliki minimal 1 LPB belum diinvoice
         $orders = PurchaseOrder::with(['supplier'])
-            ->whereIn('status', ['confirmed', 'partially_received', 'done'])
+            ->whereIn('status', [
+                PurchaseOrderStatus::Confirmed->value,
+                PurchaseOrderStatus::PartiallyReceived->value,
+                PurchaseOrderStatus::Done->value,
+            ])
             ->whereHas('goodsReceipts', function ($q) {
                 $q->where('is_invoiced', false);
             })
@@ -163,7 +169,7 @@ class PurchaseInvoiceController extends Controller
 
     public function edit(PurchaseInvoice $invoice): View|RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('purchase.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
         }
@@ -175,7 +181,7 @@ class PurchaseInvoiceController extends Controller
 
     public function update(Request $request, PurchaseInvoice $invoice): RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('purchase.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat diedit.');
         }
@@ -229,7 +235,7 @@ class PurchaseInvoiceController extends Controller
 
     public function destroy(PurchaseInvoice $invoice): RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('purchase.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat dihapus.');
         }
@@ -264,7 +270,7 @@ class PurchaseInvoiceController extends Controller
 
     public function post(PurchaseInvoice $invoice): RedirectResponse
     {
-        if ($invoice->status !== 'draft') {
+        if (!$invoice->isDraft()) {
             return redirect()->route('purchase.invoices.show', $invoice)
                 ->with('error', 'Hanya invoice berstatus Draft yang dapat diposting.');
         }
@@ -272,7 +278,7 @@ class PurchaseInvoiceController extends Controller
         try {
             return DB::transaction(function () use ($invoice) {
                 $invoice = PurchaseInvoice::lockForUpdate()->findOrFail($invoice->id);
-                if ($invoice->status !== 'draft') {
+                if (!$invoice->isDraft()) {
                     throw new \InvalidArgumentException('Invoice ini sudah pernah diposting.');
                 }
 
@@ -288,7 +294,7 @@ class PurchaseInvoiceController extends Controller
 
     public function exportPdf(PurchaseInvoice $invoice)
     {
-        abort_if(!in_array($invoice->status, ['unpaid', 'partial', 'paid']), 403, 'PDF hanya dapat diunduh setelah Faktur Pembelian diposting.');
+        abort_if(!$invoice->isPosted(), 403, 'PDF hanya dapat diunduh setelah Faktur Pembelian diposting.');
 
         $invoice->load(['purchaseOrder.supplier', 'goodsReceipt', 'items.product', 'items.goodsReceiptItem.goodsReceipt', 'payments']);
         $safeNumber = str_replace(['/', '\\'], '-', $invoice->invoice_number);

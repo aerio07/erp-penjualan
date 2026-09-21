@@ -197,7 +197,7 @@
     </div>
 
     {{-- Bottom Workflow Actions --}}
-    @if($invoice->status === 'draft')
+    @if($invoice->isDraft())
     <x-document-action-card>
         <form id="form-delete-draft-invoice" action="{{ route('purchase.invoices.destroy', $invoice) }}" method="POST" style="display:none;">
             @csrf

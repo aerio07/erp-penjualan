@@ -120,7 +120,7 @@
                         <i class="fa-solid fa-eye"></i>
                     </a>
 
-                    @if($p->status === 'draft')
+                    @if($p->isDraft())
                     <a href="{{ route('purchase.payments.edit', $p) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit Draft" style="color:var(--primary);">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
@@ -131,7 +131,7 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </form>
-                    @elseif($p->status === 'posted')
+                    @elseif($p->isPosted())
                     <a href="{{ route('pdf.purchase-payment', $p) }}" target="_blank" class="btn btn-secondary btn-sm btn-icon" title="Cetak Bukti Pembayaran (PDF)">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>

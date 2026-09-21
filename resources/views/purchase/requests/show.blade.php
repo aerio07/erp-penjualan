@@ -20,7 +20,7 @@
     >
         <x-slot:actions>
             <div style="display:flex; gap:8px; align-items:center;">
-                @if(in_array($purchase_request->status, ['draft', 'revised', 'rejected']))
+                @if($purchase_request->isDraft() || $purchase_request->isRevised() || $purchase_request->isRejected())
                 <button type="button" class="btn btn-primary"
                     data-confirm-swal="form-submit-pr"
                     data-swal-title="Ajukan Purchase Request"
@@ -35,19 +35,19 @@
                 </button>
                 @endif
 
-                @if($purchase_request->status === 'waiting_approval' && auth()->user()->isAdmin())
+                @if($purchase_request->isWaitingApproval() && auth()->user()->isAdmin())
                 <a href="{{ route('approvals.index') }}" class="btn btn-secondary">
                     <i class="fa-solid fa-stamp"></i> Buka Menu Approval
                 </a>
                 @endif
 
-                @if(in_array($purchase_request->status, ['confirmed', 'approved']))
+                @if($purchase_request->isConfirmed())
                 <a href="{{ route('purchase.orders.create', ['purchase_request_id' => $purchase_request->id]) }}" class="btn btn-primary" style="background:#2563eb;">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Purchase Order (PO)
                 </a>
                 @endif
 
-                @if(in_array($purchase_request->status, ['confirmed', 'done', 'approved', 'ordered']))
+                @if($purchase_request->isConfirmed() || $purchase_request->isDone())
                 <a href="{{ route('pdf.purchase-request', $purchase_request) }}" class="btn btn-secondary" target="_blank">
                     <i class="fa-solid fa-file-pdf"></i> PDF
                 </a>
@@ -60,7 +60,7 @@
     </x-page-header>
 
     {{-- Banner Status: Perlu Revisi --}}
-    @if($purchase_request->status === 'revised' || ($purchase_request->status === 'draft' && $latestApproval && $latestApproval->status === 'revised'))
+    @if($purchase_request->isRevised() || ($purchase_request->isDraft() && $latestApproval && $latestApproval->status === 'revised'))
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -84,7 +84,7 @@
     @endif
 
     {{-- Banner Status: Ditolak (Rejected) --}}
-    @if($purchase_request->status === 'rejected')
+    @if($purchase_request->isRejected())
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fffbfb; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -174,15 +174,13 @@
             <div class="card-body">
                 <div style="margin-bottom:16px;">
                     <div style="font-size:12px; color:var(--text-secondary); margin-bottom:4px;">Status Saat Ini:</div>
-                    <span class="badge {{ $purchase_request->status_badge }}" style="font-size:14px; padding:6px 14px;">
-                        {{ $purchase_request->status_label }}
-                    </span>
+                    <x-status-badge :status="$purchase_request->status" class="text-xs px-2.5 py-1" />
                 </div>
 
                 @if($purchase_request->approved_at)
                 <div style="padding:12px; border-radius:6px; background:var(--bg-muted, #f8fafc); font-size:13px;">
                     <div style="font-weight:600; color:var(--text-primary); margin-bottom:2px;">
-                        {{ $purchase_request->status === 'rejected' ? 'Ditolak oleh:' : 'Disetujui oleh:' }}
+                        {{ $purchase_request->isRejected() ? 'Ditolak oleh:' : 'Disetujui oleh:' }}
                     </div>
                     <div>{{ $purchase_request->approver->name ?? '-' }}</div>
                     <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">

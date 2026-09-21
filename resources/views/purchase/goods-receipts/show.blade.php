@@ -11,11 +11,11 @@
     <x-detail-header 
         :title="$goodsReceipt->receipt_number" 
         :subtitle="'Penerimaan untuk PO: ' . ($goodsReceipt->purchaseOrder->po_number ?? '-')"
-        :status="$goodsReceipt->status ?? 'draft'"
+        :status="$goodsReceipt->status->value ?? 'draft'"
         :back-url="route('purchase.goods-receipts.index')"
     >
         <x-slot:actions>
-            @if(in_array($goodsReceipt->status, ['draft', 'revised', 'rejected']))
+            @if($goodsReceipt->canSubmitApproval())
 
             <button type="button" class="btn btn-primary"
                 data-confirm-swal="form-submit-grn"
@@ -31,13 +31,13 @@
             </button>
             @endif
 
-            @if($goodsReceipt->status === 'waiting_approval' && auth()->user()->isAdmin())
+            @if($goodsReceipt->isWaitingApproval() && auth()->user()->isAdmin())
             <a href="{{ route('approvals.index') }}" class="btn btn-secondary">
                 <i class="fa-solid fa-stamp"></i> Buka Menu Approval
             </a>
             @endif
 
-            @if($goodsReceipt->status === 'confirmed')
+            @if($goodsReceipt->isConfirmed())
                 @if(!$goodsReceipt->is_invoiced)
                 <a href="{{ route('purchase.invoices.create', ['po_id' => $goodsReceipt->purchase_order_id, 'grn_id' => $goodsReceipt->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Lempar ke Invoice / Buat Tagihan
@@ -54,7 +54,7 @@
     </x-detail-header>
 
     {{-- Banner Status: Perlu Revisi --}}
-    @if($goodsReceipt->status === 'revised')
+    @if($goodsReceipt->isRevised())
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #f59e0b; background: #fffdf7; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fef3c7; color:#b45309; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -78,7 +78,7 @@
     @endif
 
     {{-- Banner Status: Ditolak (Rejected) --}}
-    @if($goodsReceipt->status === 'rejected')
+    @if($goodsReceipt->isRejected())
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #ef4444; background: #fef2f2; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:flex-start;">
             <div style="width:40px; height:40px; border-radius:10px; background:#fee2e2; color:#b91c1c; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -98,7 +98,7 @@
     @endif
 
     {{-- Banner Status: Waiting Approval --}}
-    @if($goodsReceipt->status === 'waiting_approval')
+    @if($goodsReceipt->isWaitingApproval())
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #3b82f6; background: #eff6ff;">
         <div class="card-body" style="padding:16px 20px; display:flex; gap:14px; align-items:center;">
             <div style="width:40px; height:40px; border-radius:10px; background:#dbeafe; color:#1d4ed8; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
@@ -122,7 +122,7 @@
     @endif
 
     {{-- Banner Status: Draft --}}
-    @if($goodsReceipt->status === 'draft')
+    @if($goodsReceipt->isDraft())
     <div class="card" style="margin-bottom:20px; border-left: 4px solid #64748b; background: #f8fafc;">
         <div class="card-body" style="padding:14px 20px; display:flex; gap:14px; align-items:center;">
             <div style="width:36px; height:36px; border-radius:8px; background:#e2e8f0; color:#475569; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">
@@ -237,12 +237,12 @@
                             Total Tagihan: <strong>Rp {{ number_format($goodsReceipt->purchaseInvoice->total_amount, 0, ',', '.') }}</strong>
                         </div>
                         <div style="margin-top:6px;">
-                            <span class="badge {{ $goodsReceipt->purchaseInvoice->status === 'paid' ? 'badge-success' : 'badge-warning' }}">
-                                {{ ucfirst($goodsReceipt->purchaseInvoice->status) }}
+                            <span class="badge {{ $goodsReceipt->purchaseInvoice->isPaid() ? 'badge-success' : 'badge-warning' }}">
+                                {{ $goodsReceipt->purchaseInvoice->status_label }}
                             </span>
                         </div>
                     </div>
-                    @elseif(!$goodsReceipt->is_invoiced && $goodsReceipt->status === 'confirmed')
+                    @elseif(!$goodsReceipt->is_invoiced && $goodsReceipt->isConfirmed())
                     <hr style="border:none; border-top:1px solid var(--border); margin:0;">
                     <div style="padding:12px; background:#f0fdf4; border-radius:8px; border:1px solid #bbf7d0;">
                         <div style="font-size:12px; font-weight:600; color:#166534; margin-bottom:4px;">

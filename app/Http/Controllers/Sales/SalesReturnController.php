@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\DeliveryStatus;
+use App\Enums\SalesInvoiceStatus;
+use App\Enums\SalesReturnStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
@@ -61,7 +64,7 @@ class SalesReturnController extends Controller
             'salesInvoice.payments',
             'warehouse'
         ])
-            ->where('status', 'delivered')
+            ->where('status', DeliveryStatus::Delivered->value)
             ->orderByDesc('id')
             ->get();
 
@@ -109,7 +112,7 @@ class SalesReturnController extends Controller
         $invoice = $delivery->salesInvoice ?? SalesInvoice::with(['items', 'payments'])->where('delivery_id', $delivery->id)->first();
 
         // Tolak retur jika invoice Surat Jalan masih berstatus Draft
-        if ($invoice && $invoice->status === 'draft') {
+        if ($invoice && $invoice->isDraft()) {
             $msg = "Surat Jalan terkait masih memiliki Invoice Penjualan berstatus Draft ({$invoice->invoice_number}). Silakan hapus draft invoice atau posting invoice terlebih dahulu sebelum mengajukan retur.";
             return back()->with('error', $msg)->withErrors(['items' => $msg])->withInput();
         }
@@ -186,7 +189,7 @@ class SalesReturnController extends Controller
                 'customer_id'   => $delivery->salesOrder->customer_id,
                 'return_date'   => $request->return_date,
                 'reason'        => $request->reason,
-                'status'        => 'draft',
+                'status'        => SalesReturnStatus::Draft,
                 'notes'         => $request->notes,
             ]);
 
@@ -223,7 +226,7 @@ class SalesReturnController extends Controller
     {
         return DB::transaction(function () use ($return) {
             $return = SalesReturn::with(['delivery', 'items.product'])->lockForUpdate()->findOrFail($return->id);
-            abort_if($return->status !== 'draft', 403, 'Hanya retur berstatus draft yang dapat diterima fisiknya.');
+            abort_if($return->status !== SalesReturnStatus::Draft, 403, 'Hanya retur berstatus draft yang dapat diterima fisiknya.');
 
             $delivery = $return->delivery;
 
@@ -251,7 +254,7 @@ class SalesReturnController extends Controller
                 }
             }
 
-            $return->update(['status' => 'received']);
+            $return->update(['status' => SalesReturnStatus::Received]);
 
             return back()->with('success', 'Fisik barang retur telah diterima di gudang. Barang kondisi baik masuk stok siap jual, dan barang rusak masuk stok karantina.');
         });
@@ -264,7 +267,7 @@ class SalesReturnController extends Controller
     {
         return DB::transaction(function () use ($return) {
             $return = SalesReturn::with(['delivery', 'items.product'])->lockForUpdate()->findOrFail($return->id);
-            abort_if($return->status !== 'received', 403, 'Hanya retur yang sudah berstatus received yang dapat diselesaikan.');
+            abort_if($return->status !== SalesReturnStatus::Received, 403, 'Hanya retur yang sudah berstatus received yang dapat diselesaikan.');
 
             // Auto-journaling: balik piutang/PPN keluaran, serta persediaan/HPP jika kondisi baik
             $entry = $this->journalService->createFromSalesReturn($return);
@@ -272,7 +275,7 @@ class SalesReturnController extends Controller
                 $this->journalService->postEntry($entry);
             }
 
-            $return->update(['status' => 'completed']);
+            $return->update(['status' => SalesReturnStatus::Completed]);
             $this->refreshAffectedInvoiceStatuses($return);
 
             return back()->with('success', 'Proses Retur Penjualan telah diselesaikan dan jurnal akuntansi otomatis diposting (jika sudah pernah di-invoice).');
@@ -293,7 +296,7 @@ class SalesReturnController extends Controller
         }
 
         SalesInvoice::with(['items', 'payments'])
-            ->where('status', '!=', 'draft')
+            ->where('status', '!=', SalesInvoiceStatus::Draft->value)
             ->whereHas('items', fn($query) => $query->whereIn('delivery_item_id', $deliveryItemIds))
             ->get()
             ->each(function (SalesInvoice $invoice) {
@@ -301,12 +304,12 @@ class SalesReturnController extends Controller
             });
     }
 
-    private function statusFromOutstanding(SalesInvoice $invoice): string
+    private function statusFromOutstanding(SalesInvoice $invoice): SalesInvoiceStatus
     {
         if ($invoice->outstanding_amount <= 0.01) {
-            return 'paid';
+            return SalesInvoiceStatus::Paid;
         }
 
-        return $invoice->total_paid > 0 ? 'partial' : 'unpaid';
+        return $invoice->total_paid > 0 ? SalesInvoiceStatus::Partial : SalesInvoiceStatus::Unpaid;
     }
 }

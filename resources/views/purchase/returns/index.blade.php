@@ -56,9 +56,7 @@
             <td>{{ $r->return_date ? $r->return_date->format('d/m/Y') : '-' }}</td>
             <td class="col-notes" title="{{ $r->reason ?? '-' }}">{{ $r->reason ?? '-' }}</td>
             <td style="text-align:center;">
-                <span class="badge badge-{{ $r->status === 'completed' ? 'done' : ($r->status === 'sent' ? 'confirmed' : 'pending') }}">
-                    {{ ucfirst($r->status) }}
-                </span>
+                <x-status-badge :status="$r->status" />
             </td>
             <td class="col-actions text-center">
                 <a href="{{ route('purchase.returns.show', $r) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">

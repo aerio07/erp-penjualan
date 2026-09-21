@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\GoodsReceiptStatus;
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseRequestStatus;
+use App\Enums\SalesOrderStatus;
 use App\Models\ApprovalRequest;
 use App\Models\GoodsReceipt;
 use App\Models\PurchaseOrder;
@@ -58,12 +62,13 @@ class ApprovalController extends Controller
                 app(GoodsReceiptController::class)->processApproval($approvable, auth()->id());
             } elseif ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
-                    'status'      => 'confirmed',
+                    'status'      => PurchaseRequestStatus::Confirmed,
                     'approved_by' => auth()->id(),
                     'approved_at' => now(),
                 ]);
             } else {
-                $approvable->update(['status' => 'confirmed']);
+                $status = ($approvable instanceof SalesOrder) ? SalesOrderStatus::Confirmed : PurchaseOrderStatus::Confirmed;
+                $approvable->update(['status' => $status]);
 
                 if ($approvable instanceof SalesOrder) {
                     $this->stockService->allocateStockForSalesOrder($approvable);
@@ -85,20 +90,21 @@ class ApprovalController extends Controller
         if ($approvable && method_exists($approvable, 'update')) {
             if ($approvable instanceof GoodsReceipt) {
                 $approvable->update([
-                    'status'           => 'rejected',
+                    'status'           => GoodsReceiptStatus::Rejected,
                     'rejection_reason' => $request->rejection_reason,
                     'approved_by'      => auth()->id(),
                     'approved_at'      => now(),
                 ]);
             } elseif ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
-                    'status'           => 'rejected',
+                    'status'           => PurchaseRequestStatus::Rejected,
                     'rejection_reason' => $request->rejection_reason,
                     'approved_by'      => auth()->id(),
                     'approved_at'      => now(),
                 ]);
             } else {
-                $approvable->update(['status' => 'cancelled']);
+                $status = ($approvable instanceof SalesOrder) ? SalesOrderStatus::Cancelled : PurchaseOrderStatus::Cancelled;
+                $approvable->update(['status' => $status]);
 
                 if ($approvable instanceof SalesOrder) {
                     $this->stockService->releaseReservationsForSalesOrder($approvable);
@@ -128,17 +134,17 @@ class ApprovalController extends Controller
         if ($approvable && method_exists($approvable, 'update')) {
             if ($approvable instanceof GoodsReceipt) {
                 $approvable->update([
-                    'status'           => 'revised',
+                    'status'           => GoodsReceiptStatus::Revised,
                     'rejection_reason' => $request->revision_reason,
                 ]);
             } elseif ($approvable instanceof PurchaseRequest) {
                 $approvable->update([
-                    'status'           => 'revised',
+                    'status'           => PurchaseRequestStatus::Revised,
                     'rejection_reason' => $request->revision_reason,
                 ]);
             } elseif ($approvable instanceof PurchaseOrder) {
                 $approvable->update([
-                    'status'        => 'draft',
+                    'status'        => PurchaseOrderStatus::Draft,
                     'cancel_reason' => $request->revision_reason,
                 ]);
                 $approvable->procurementDemands()->update([
@@ -147,7 +153,7 @@ class ApprovalController extends Controller
                 ]);
             } else {
                 $approvable->update([
-                    'status'             => 'draft',
+                    'status'             => SalesOrderStatus::Draft,
                     'fulfillment_status' => 'pending',
                 ]);
 

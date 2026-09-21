@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PurchaseInvoiceStatus;
 use App\Models\ChartOfAccount;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
@@ -152,7 +153,7 @@ class PurchaseInvoiceDraftAndPostingTest extends TestCase
         $response->assertRedirect(route('purchase.invoices.index'));
 
         // Verifikasi status draft
-        $this->assertEquals('draft', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Draft, $invoice->status);
         $this->assertTrue($invoice->isDraft());
         $this->assertFalse($invoice->isPosted());
 
@@ -182,7 +183,7 @@ class PurchaseInvoiceDraftAndPostingTest extends TestCase
         ]);
 
         $invoice = PurchaseInvoice::where('purchase_order_id', $po->id)->first();
-        $this->assertEquals('draft', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Draft, $invoice->status);
 
         // Cek Laporan Hutang (AP Aging)
         $apResponse = $this->actingAs($this->admin)->get(route('accounting.reports.payables'));
@@ -225,15 +226,18 @@ class PurchaseInvoiceDraftAndPostingTest extends TestCase
         $this->assertFalse($unpaidInvoices->contains('id', $invoice->id));
 
         // Submit pembayaran untuk draft invoice harus ditolak
+        $cashCoa = ChartOfAccount::where('code', '1-1100')->first();
         $payResponse = $this->actingAs($this->admin)->post(route('purchase.payments.store'), [
             'purchase_invoice_id' => $invoice->id,
+            'chart_of_account_id' => $cashCoa->id,
+            'payment_type' => 'bank',
             'amount' => 500000,
             'payment_date' => now()->toDateString(),
             'method' => 'transfer',
         ]);
 
         $payResponse->assertSessionHas('error');
-        $this->assertEquals('draft', $invoice->fresh()->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Draft, $invoice->fresh()->status);
     }
 
     public function test_cannot_return_goods_if_invoice_is_draft(): void
@@ -352,14 +356,14 @@ class PurchaseInvoiceDraftAndPostingTest extends TestCase
         ]);
 
         $invoice = PurchaseInvoice::where('purchase_order_id', $po->id)->first();
-        $this->assertEquals('draft', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Draft, $invoice->status);
 
         // Klik Posting Jurnal
         $postResponse = $this->actingAs($this->admin)->post(route('purchase.invoices.post', $invoice));
         $postResponse->assertRedirect(route('purchase.invoices.index'));
 
         $invoice->refresh();
-        $this->assertEquals('unpaid', $invoice->status);
+        $this->assertEquals(PurchaseInvoiceStatus::Unpaid, $invoice->status);
         $this->assertTrue($invoice->isPosted());
         $this->assertFalse($invoice->isDraft());
 

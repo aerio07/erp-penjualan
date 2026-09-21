@@ -70,14 +70,12 @@
             </td>
             <td style="text-align:center;">
                 @php
-                    $isRevised = ($order->status === 'draft' && $order->approvalRequests->sortByDesc('id')->first()?->status === 'revised');
+                    $isRevised = ($order->isDraft() && $order->approvalRequests->sortByDesc('id')->first()?->status === 'revised');
                 @endphp
                 @if($isRevised)
                     <span class="badge badge-warning">Perlu Revisi</span>
                 @else
-                    <span class="badge badge-{{ $order->status }}">
-                        {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                    </span>
+                    <x-status-badge :status="$order->status" />
                 @endif
             </td>
             <td class="col-actions text-center">
@@ -85,7 +83,7 @@
                     <a href="{{ route('purchase.orders.show', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <i class="fa-solid fa-eye"></i>
                     </a>
-                    @if($order->status === 'draft')
+                    @if($order->isDraft())
                     <a href="{{ route('purchase.orders.edit', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Edit">
                         <i class="fa-solid fa-pen"></i>
                     </a>
@@ -96,7 +94,7 @@
                         @csrf @method('DELETE')
                     </form>
                     @endif
-                    @if(in_array($order->status, ['confirmed', 'partially_received', 'done']))
+                    @if(in_array($order->status, [\App\Enums\PurchaseOrderStatus::Confirmed, \App\Enums\PurchaseOrderStatus::PartiallyReceived, \App\Enums\PurchaseOrderStatus::Done]))
                     <a href="{{ route('pdf.purchase-order', $order) }}" class="btn btn-secondary btn-sm btn-icon" title="Export PDF" target="_blank">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>

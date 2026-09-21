@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseRequestStatus;
 use App\Models\ApprovalRequest;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -19,6 +22,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
     private Supplier $supplier;
     private Product $product;
     private Warehouse $warehouse;
+    private PurchaseRequest $pr;
 
     protected function setUp(): void
     {
@@ -44,6 +48,19 @@ class PurchaseOrderDiscountValidationTest extends TestCase
             'name' => 'Gudang Diskon',
             'is_active' => true,
         ]);
+
+        $this->pr = PurchaseRequest::create([
+            'pr_number' => 'PR-DISC-01',
+            'user_id' => $this->purchasing->id,
+            'warehouse_id' => $this->warehouse->id,
+            'request_date' => now()->toDateString(),
+            'required_date' => now()->addDays(7)->toDateString(),
+            'status' => PurchaseRequestStatus::Confirmed,
+        ]);
+        $this->pr->items()->create([
+            'product_id' => $this->product->id,
+            'qty' => 10,
+        ]);
     }
 
     public function test_cannot_create_po_if_discount_exceeds_subtotal(): void
@@ -51,6 +68,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         // 10 pcs @ Rp 100.000 = Rp 1.000.000 subtotal
         // Input discount: Rp 1.500.000 (melebihi subtotal)
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
+            'purchase_request_id' => $this->pr->id,
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
             'expected_date' => now()->addDays(5)->toDateString(),
@@ -73,6 +91,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
     public function test_expected_date_is_required_when_creating_po(): void
     {
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
+            'purchase_request_id' => $this->pr->id,
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
             'expected_date' => null,
@@ -96,6 +115,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         // Input discount: Rp 200.000 (wajar)
         // DPP = 800.000, PPN 11% = 88.000, Total = 888.000
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
+            'purchase_request_id' => $this->pr->id,
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
             'expected_date' => now()->addDays(5)->toDateString(),
@@ -126,6 +146,7 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         // Input discount: Rp 1.000.000 (100%)
         // DPP = 0, PPN = 0, Total = 0
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
+            'purchase_request_id' => $this->pr->id,
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
             'expected_date' => now()->addDays(5)->toDateString(),
@@ -212,11 +233,13 @@ class PurchaseOrderDiscountValidationTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $response = $this->actingAs($this->purchasing)->patch(route('purchase.orders.cancel', $po));
+        $response = $this->actingAs($this->purchasing)->patch(route('purchase.orders.cancel', $po), [
+            'cancel_reason' => 'Batal order karena salah input',
+        ]);
         $response->assertSessionHas('success');
 
         $po->refresh();
-        $this->assertEquals('cancelled', $po->status);
+        $this->assertEquals(PurchaseOrderStatus::Cancelled, $po->status);
 
         $approval->refresh();
         $this->assertEquals('rejected', $approval->status);
@@ -236,10 +259,12 @@ class PurchaseOrderDiscountValidationTest extends TestCase
             'total_amount' => 1110000,
         ]);
 
-        $response = $this->actingAs($this->purchasing)->patch(route('purchase.orders.cancel', $po));
+        $response = $this->actingAs($this->purchasing)->patch(route('purchase.orders.cancel', $po), [
+            'cancel_reason' => 'Batal order',
+        ]);
         $response->assertStatus(403);
 
         $po->refresh();
-        $this->assertEquals('confirmed', $po->status);
+        $this->assertEquals(PurchaseOrderStatus::Confirmed, $po->status);
     }
 }

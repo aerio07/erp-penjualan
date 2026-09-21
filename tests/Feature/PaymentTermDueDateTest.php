@@ -120,7 +120,7 @@ class PaymentTermDueDateTest extends TestCase
         $deliveryResponse->assertRedirect(route('sales.deliveries.index'));
 
         $delivery = Delivery::where('sales_order_id', $so->id)->first();
-        $this->assertEquals('in_transit', $delivery->status);
+        $this->assertEquals(\App\Enums\DeliveryStatus::InTransit, $delivery->status);
 
         // Konfirmasi penerimaan barang dengan auto_generate_invoice
         $confirmResponse = $this->actingAs($this->admin)->patch(route('sales.deliveries.confirm-receipt', $delivery), [

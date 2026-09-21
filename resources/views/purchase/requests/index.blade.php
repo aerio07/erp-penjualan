@@ -57,7 +57,7 @@
             </td>
             <td>{{ $pr->request_date ? $pr->request_date->format('d/m/Y') : '-' }}</td>
             <td>
-                <span style="font-weight:600; {{ $pr->required_date && $pr->required_date->isPast() && in_array($pr->status, ['draft','revised','waiting_approval']) ? 'color:var(--danger);' : '' }}">
+                <span style="font-weight:600; {{ $pr->required_date && $pr->required_date->isPast() && ($pr->isDraft() || $pr->isRevised() || $pr->isWaitingApproval()) ? 'color:var(--danger);' : '' }}">
                     {{ $pr->required_date ? $pr->required_date->format('d/m/Y') : '-' }}
                 </span>
             </td>
@@ -67,9 +67,7 @@
                 </div>
             </td>
             <td style="text-align:center;">
-                <span class="badge {{ $pr->status_badge }}">
-                    {{ $pr->status_label }}
-                </span>
+                <x-status-badge :status="$pr->status" />
             </td>
             <td class="text-center">
                 <div style="display:inline-flex; gap:6px;">
@@ -77,19 +75,19 @@
                         <i class="fa-solid fa-eye"></i>
                     </a>
 
-                    @if(in_array($pr->status, ['confirmed', 'done', 'approved', 'ordered']))
+                    @if($pr->isConfirmed() || $pr->isDone())
                     <a href="{{ route('pdf.purchase-request', $pr) }}" class="btn btn-sm btn-secondary" title="Export PDF" target="_blank">
                         <i class="fa-solid fa-file-pdf"></i>
                     </a>
                     @endif
 
-                    @if(in_array($pr->status, ['draft', 'revised', 'rejected']))
+                    @if($pr->isDraft() || $pr->isRevised() || $pr->isRejected())
                     <a href="{{ route('purchase.requests.edit', $pr) }}" class="btn btn-sm btn-secondary" title="Edit PR">
                         <i class="fa-solid fa-pen"></i>
                     </a>
                     @endif
 
-                    @if(in_array($pr->status, ['draft', 'revised']))
+                    @if($pr->isDraft() || $pr->isRevised())
                     <button type="button" class="btn btn-sm btn-danger" title="Hapus"
                         data-confirm-delete="delete-pr-{{ $pr->id }}"
                         data-name="Purchase Request {{ $pr->pr_number }}"

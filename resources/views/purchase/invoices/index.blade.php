@@ -76,7 +76,7 @@
             </td>
             <td>{{ $inv->invoice_date ? $inv->invoice_date->format('d/m/Y') : '-' }}</td>
             <td>
-                <span style="{{ $inv->status !== 'paid' && $inv->status !== 'draft' && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
+                <span style="{{ !$inv->isPaid() && !$inv->isDraft() && $inv->due_date < today() ? 'color:var(--danger); font-weight:600;' : '' }}">
                     {{ $inv->due_date ? $inv->due_date->format('d/m/Y') : '-' }}
                 </span>
             </td>
@@ -97,9 +97,9 @@
             <td class="col-actions text-center">
                 <x-table-actions 
                     :show-url="route('purchase.invoices.show', $inv)"
-                    :edit-url="$inv->status === 'draft' ? route('purchase.invoices.edit', $inv) : null"
-                    :pdf-url="in_array($inv->status, ['unpaid', 'partial', 'paid']) ? route('pdf.purchase-invoice', $inv) : null"
-                    :delete-url="$inv->status === 'draft' ? route('purchase.invoices.destroy', $inv) : null"
+                    :edit-url="$inv->isDraft() ? route('purchase.invoices.edit', $inv) : null"
+                    :pdf-url="$inv->isPosted() ? route('pdf.purchase-invoice', $inv) : null"
+                    :delete-url="$inv->isDraft() ? route('purchase.invoices.destroy', $inv) : null"
                     delete-confirm="Yakin ingin menghapus draft invoice ini? LPB terkait akan otomatis dilepaskan."
                 />
             </td>

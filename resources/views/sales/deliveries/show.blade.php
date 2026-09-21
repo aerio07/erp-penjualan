@@ -32,9 +32,9 @@
         :back-url="route('sales.deliveries.index')"
     >
         <x-slot:badge>
-            @if($delivery->status === 'delivered')
+            @if($delivery->isDelivered())
                 <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Diterima (Delivered)</span>
-            @elseif($delivery->status === 'in_transit')
+            @elseif($delivery->isInTransit())
                 <span class="badge badge-warning"><i class="fa-solid fa-truck-fast"></i> Dalam Pengiriman (In Transit)</span>
             @else
                 <span class="badge">{{ $delivery->status_label }}</span>
@@ -48,17 +48,17 @@
             Pengiriman untuk SO: <a href="{{ route('sales.orders.show', $delivery->salesOrder) }}" style="color:var(--primary); font-weight:600;">{{ $delivery->salesOrder->so_number }}</a>
         </x-slot:subtitle>
         <x-slot:actions>
-            @if($delivery->status === 'in_transit')
+            @if($delivery->isInTransit())
             <button type="button" @click="showConfirmModal = true" class="btn btn-primary">
                 <i class="fa-solid fa-clipboard-check"></i> Konfirmasi Penerimaan Barang
             </button>
-            @elseif($delivery->status === 'delivered' && !$delivery->is_invoiced)
+            @elseif($delivery->isDelivered() && !$delivery->is_invoiced)
             <a href="{{ route('sales.invoices.create', ['so_id' => $delivery->sales_order_id, 'delivery_id' => $delivery->id]) }}" class="btn btn-primary">
                 <i class="fa-solid fa-file-invoice-dollar"></i> Terbitkan Invoice Penjualan
             </a>
             @endif
 
-            @if(in_array($delivery->status, ['in_transit', 'delivered']))
+            @if(!$delivery->isCancelled())
             <a href="{{ route('pdf.delivery', $delivery) }}" class="btn btn-secondary" target="_blank">
                 <i class="fa-solid fa-file-pdf"></i> Cetak Surat Jalan PDF
             </a>
@@ -71,7 +71,7 @@
         <div class="card" style="grid-column:span 2;">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <h3>Informasi Pengiriman & Penerimaan</h3>
-                @if($delivery->status === 'delivered')
+                @if($delivery->isDelivered())
                     <span class="badge badge-success"><i class="fa-solid fa-check"></i> Barang Sampai</span>
                 @else
                     <span class="badge badge-warning"><i class="fa-solid fa-clock"></i> Belum Sampai</span>
@@ -145,12 +145,12 @@
                                 Jatuh Tempo: {{ $delivery->salesInvoice->due_date ? $delivery->salesInvoice->due_date->format('d/m/Y') : '-' }}
                             </div>
                             <div style="margin-top:10px;">
-                                <span class="badge {{ $delivery->salesInvoice->status === 'paid' ? 'badge-success' : 'badge-warning' }}">
-                                    {{ ucfirst($delivery->salesInvoice->status) }}
+                                <span class="badge {{ $delivery->salesInvoice->isPaid() ? 'badge-success' : 'badge-warning' }}">
+                                    {{ $delivery->salesInvoice->status_label }}
                                 </span>
                             </div>
                         </div>
-                    @elseif($delivery->status === 'delivered')
+                    @elseif($delivery->isDelivered())
                         <div style="padding:14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;">
                             <div style="font-size:13px; color:#166534; font-weight:600;">
                                 <i class="fa-solid fa-circle-check"></i> Siap Diterbitkan Invoice

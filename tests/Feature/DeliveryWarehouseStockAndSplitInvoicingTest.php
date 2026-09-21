@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\SalesOrderStatus;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Product;
@@ -300,6 +301,6 @@ class DeliveryWarehouseStockAndSplitInvoicingTest extends TestCase
 
         // Status SO harus 'done' karena semua 70 unit telah dikirim
         $so->refresh();
-        $this->assertEquals('done', $so->status);
+        $this->assertEquals(SalesOrderStatus::Done, $so->status);
     }
 }

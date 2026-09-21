@@ -48,7 +48,21 @@ class PurchaseOrderShipToTest extends TestCase
 
     public function test_can_create_purchase_order_with_ship_to(): void
     {
+        $pr = \App\Models\PurchaseRequest::create([
+            'pr_number' => 'PR-SHIPTO-01',
+            'user_id' => $this->purchasing->id,
+            'warehouse_id' => $this->warehouse->id,
+            'request_date' => now()->toDateString(),
+            'required_date' => now()->addDays(7)->toDateString(),
+            'status' => \App\Enums\PurchaseRequestStatus::Confirmed,
+        ]);
+        $pr->items()->create([
+            'product_id' => $this->product->id,
+            'qty' => 10,
+        ]);
+
         $response = $this->actingAs($this->purchasing)->post(route('purchase.orders.store'), [
+            'purchase_request_id' => $pr->id,
             'supplier_id' => $this->supplier->id,
             'order_date' => now()->toDateString(),
             'expected_date' => now()->addDays(5)->toDateString(),

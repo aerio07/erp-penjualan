@@ -40,7 +40,7 @@ class PurchaseReportController extends Controller
             ->selectRaw('(SELECT COALESCE(SUM(pii.qty_invoiced), 0) FROM purchase_invoice_items pii JOIN purchase_invoices pi ON pi.id = pii.purchase_invoice_id WHERE pi.purchase_order_id = purchase_orders.id) as qty_invoiced_sum')
             ->selectRaw('(SELECT COALESCE(SUM(pii.reversed_qty), 0) FROM purchase_invoice_items pii JOIN purchase_invoices pi ON pi.id = pii.purchase_invoice_id WHERE pi.purchase_order_id = purchase_orders.id) as qty_reversed_sum')
             ->selectRaw('(SELECT COALESCE(SUM(pi.total_amount), 0) FROM purchase_invoices pi WHERE pi.purchase_order_id = purchase_orders.id) as total_invoice_sum')
-            ->selectRaw('(SELECT COALESCE(SUM(CASE WHEN pii.qty_invoiced > 0 THEN ((pii.subtotal + pii.tax_amount) / pii.qty_invoiced) * LEAST(pii.reversed_qty, pii.qty_invoiced) ELSE 0 END), 0) FROM purchase_invoice_items pii JOIN purchase_invoices pi ON pi.id = pii.purchase_invoice_id WHERE pi.purchase_order_id = purchase_orders.id) as total_reversed_amount_sum')
+            ->selectRaw('(SELECT COALESCE(SUM(CASE WHEN pii.qty_invoiced > 0 THEN ((pii.subtotal + pii.tax_amount) / pii.qty_invoiced) * (CASE WHEN pii.reversed_qty < pii.qty_invoiced THEN pii.reversed_qty ELSE pii.qty_invoiced END) ELSE 0 END), 0) FROM purchase_invoice_items pii JOIN purchase_invoices pi ON pi.id = pii.purchase_invoice_id WHERE pi.purchase_order_id = purchase_orders.id) as total_reversed_amount_sum')
             ->selectRaw('(SELECT COALESCE(SUM(pp.amount), 0) FROM purchase_payments pp JOIN purchase_invoices pi ON pi.id = pp.purchase_invoice_id WHERE pi.purchase_order_id = purchase_orders.id) as total_paid_sum');
 
         // Filter: supplier_id, status, rentang tanggal
