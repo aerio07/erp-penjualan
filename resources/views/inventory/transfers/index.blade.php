@@ -9,7 +9,7 @@
         subtitle="Pindahkan stok produk antar lokasi gudang perusahaan">
         <x-slot:actions>
             <a href="{{ route('inventory.transfers.create') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Buat Transfer Baru
+                <i class="fa-solid fa-plus"></i> Buat Transfer Gudang
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -52,8 +52,6 @@
                 <th>Gudang Asal</th>
                 <th>Gudang Tujuan</th>
                 <x-sortable-header column="transfer_date" title="Tgl Dokumen" :isDefault="true" />
-                <th>Dikirim Oleh / Tgl</th>
-                <th>Diterima Oleh / Tgl</th>
                 <x-sortable-header column="status" title="Status" align="center" />
                 <th class="text-center col-actions">Aksi</th>
             </tr>
@@ -73,22 +71,6 @@
                 <span style="color:var(--success);"><i class="fa-solid fa-warehouse"></i> {{ $trf->toWarehouse->name ?? '-' }}</span>
             </td>
             <td>{{ $trf->transfer_date ? $trf->transfer_date->format('d/m/Y') : '-' }}</td>
-            <td>
-                @if($trf->shippedBy)
-                    <div>{{ $trf->shippedBy->name }}</div>
-                    <div style="font-size:11px; color:var(--text-secondary);">{{ $trf->shipped_at ? $trf->shipped_at->format('d/m/Y H:i') : '-' }}</div>
-                @else
-                    <span style="color:var(--text-secondary);">-</span>
-                @endif
-            </td>
-            <td>
-                @if($trf->receivedBy)
-                    <div>{{ $trf->receivedBy->name }}</div>
-                    <div style="font-size:11px; color:var(--text-secondary);">{{ $trf->received_at ? $trf->received_at->format('d/m/Y H:i') : '-' }}</div>
-                @else
-                    <span style="color:var(--text-secondary);">-</span>
-                @endif
-            </td>
             <td style="text-align:center;">
                 @if($trf->status === 'draft')
                     <span class="badge badge-draft"><i class="fa-solid fa-pen"></i> Draft</span>
@@ -116,7 +98,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="6" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-arrow-right-arrow-left" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada riwayat transfer barang antar gudang yang sesuai filter
             </td>
