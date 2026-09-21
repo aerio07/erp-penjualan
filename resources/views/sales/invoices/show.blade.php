@@ -179,7 +179,7 @@
                         <span>- Rp {{ number_format($invoice->total_reversed_amount, 0, ',', '.') }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; font-weight:700;">
-                        <span>Total Tagihan Efektif</span>
+                        <span>Total Nilai Tagihan</span>
                         <span style="color:var(--primary);">Rp {{ number_format($invoice->effective_total_amount, 0, ',', '.') }}</span>
                     </div>
                     @endif
