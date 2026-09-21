@@ -84,7 +84,7 @@
 
         {{-- Audit Trail & Status Card --}}
         <div class="card">
-            <div class="card-header"><h3>Audit Trail Transfer</h3></div>
+            <div class="card-header"><h3>Riwayat Transfer</h3></div>
             <div class="card-body" style="font-size:13px;">
                 <div style="margin-bottom:12px;">
                     <div style="color:var(--text-secondary); font-size:11.5px;">1. Posting / Pengirim (Ship)</div>
