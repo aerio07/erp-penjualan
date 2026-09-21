@@ -218,7 +218,7 @@
                         @foreach($goodsReceipt->purchaseReturns as $ret)
                         <a href="{{ route('purchase.returns.show', $ret) }}" style="display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#be123c; font-weight:600; text-decoration:none; margin-bottom:4px;">
                             <span>{{ $ret->return_number }}</span>
-                            <span class="badge badge-{{ $ret->status === 'completed' ? 'done' : ($ret->status === 'sent' ? 'confirmed' : 'pending') }}">{{ ucfirst($ret->status) }}</span>
+                            <span class="badge {{ $ret->status_badge }}">{{ $ret->status_label }}</span>
                         </a>
                         @endforeach
                     </div>
