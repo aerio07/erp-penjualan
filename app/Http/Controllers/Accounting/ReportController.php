@@ -481,8 +481,19 @@ class ReportController extends Controller
         $bucket61to90     = $openInvoices->where('aging_bucket', '61_90')->sum('outstanding_amount');
         $bucketOver90     = $openInvoices->where('aging_bucket', 'over_90')->sum('outstanding_amount');
 
+        // Pagination manual (aggregasi sudah selesai dari full collection)
+        $perPage = $request->integer('per_page', 10);
+        $page    = (int) $request->input('page', 1);
+        $paginatedInvoices = new \Illuminate\Pagination\LengthAwarePaginator(
+            $openInvoices->forPage($page, $perPage),
+            $openInvoices->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('accounting.reports.receivables', compact(
-            'openInvoices', 'totalOutstanding', 'bucketCurrent',
+            'paginatedInvoices', 'totalOutstanding', 'bucketCurrent',
             'bucket1to30', 'bucket31to60', 'bucket61to90', 'bucketOver90'
         ));
     }
@@ -525,8 +536,19 @@ class ReportController extends Controller
         $bucket61to90     = $openInvoices->where('aging_bucket', '61_90')->sum('outstanding_amount');
         $bucketOver90     = $openInvoices->where('aging_bucket', 'over_90')->sum('outstanding_amount');
 
+        // Pagination manual (aggregasi sudah selesai dari full collection)
+        $perPage = $request->integer('per_page', 10);
+        $page    = (int) $request->input('page', 1);
+        $paginatedInvoices = new \Illuminate\Pagination\LengthAwarePaginator(
+            $openInvoices->forPage($page, $perPage),
+            $openInvoices->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('accounting.reports.payables', compact(
-            'openInvoices', 'totalOutstanding', 'bucketCurrent',
+            'paginatedInvoices', 'totalOutstanding', 'bucketCurrent',
             'bucket1to30', 'bucket31to60', 'bucket61to90', 'bucketOver90'
         ));
     }
