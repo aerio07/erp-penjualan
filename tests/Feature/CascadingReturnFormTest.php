@@ -81,9 +81,9 @@ class CascadingReturnFormTest extends TestCase
             'subtotal' => 2000000,
         ]);
 
-        // PO1 has 2 GRNs (2 shipments)
+        // PO1 has 2 LPBs (2 shipments)
         $grn1 = GoodsReceipt::create([
-            'receipt_number' => 'GRN-CASC-01',
+            'receipt_number' => 'LPB-CASC-01',
             'purchase_order_id' => $po1->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
@@ -101,7 +101,7 @@ class CascadingReturnFormTest extends TestCase
         ]);
 
         $grn2 = GoodsReceipt::create([
-            'receipt_number' => 'GRN-CASC-02',
+            'receipt_number' => 'LPB-CASC-02',
             'purchase_order_id' => $po1->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

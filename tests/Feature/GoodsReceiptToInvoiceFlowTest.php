@@ -32,18 +32,18 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
 
         $this->admin = User::factory()->create(['role' => 'admin']);
         $this->warehouse = Warehouse::create([
-            'code' => 'WH-GRN-TEST',
-            'name' => 'Gudang Utama GRN',
+            'code' => 'WH-LPB-TEST',
+            'name' => 'Gudang Utama LPB',
             'is_active' => true,
         ]);
         $this->supplier = Supplier::create([
-            'code' => 'SUPP-GRN-TEST',
+            'code' => 'SUPP-LPB-TEST',
             'name' => 'PT Supplier Utama',
             'payment_term' => 30,
             'is_active' => true,
         ]);
         $this->product = Product::create([
-            'sku' => 'PROD-GRN-1',
+            'sku' => 'PROD-LPB-1',
             'name' => 'Bahan Baku A',
             'unit' => 'pcs',
             'purchase_price' => 50000,
@@ -60,7 +60,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $totalAmount = $subtotal + $taxAmount;
 
         $po = PurchaseOrder::create([
-            'po_number'    => 'PO-GRN-' . uniqid(),
+            'po_number'    => 'PO-LPB-' . uniqid(),
             'supplier_id'  => $this->supplier->id,
             'user_id'      => $this->admin->id,
             'warehouse_id' => $this->warehouse->id,
@@ -117,7 +117,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $response->assertRedirect(route('purchase.goods-receipts.index'));
         $response->assertSessionHas('success');
 
-        // Pastikan GRN tersimpan dan disetujui
+        // Pastikan LPB tersimpan dan disetujui
         $grn = GoodsReceipt::where('purchase_order_id', $po->id)->first();
         $this->assertNotNull($grn);
         $this->submitAndApproveGoodsReceipt($grn);
@@ -148,7 +148,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $po = $this->createPurchaseOrder(5);
         $poItem = $po->items->first();
 
-        // Buat GRN tanpa opsi auto invoice (bertahap)
+        // Buat LPB tanpa opsi auto invoice (bertahap)
         $response = $this->actingAs($this->admin)
             ->post(route('purchase.goods-receipts.store'), [
                 'purchase_order_id'     => $po->id,
@@ -223,7 +223,7 @@ class GoodsReceiptToInvoiceFlowTest extends TestCase
         $this->assertTrue((bool) $grn->is_invoiced);
         $countBefore = PurchaseInvoice::count();
 
-        // Coba terbitkan invoice ulang untuk GRN yang sama
+        // Coba terbitkan invoice ulang untuk LPB yang sama
         $dupResponse = $this->actingAs($this->admin)
             ->post(route('purchase.invoices.store'), [
                 'purchase_order_id'       => $po->id,

@@ -396,7 +396,7 @@ class InvoiceReturnConsistencyTest extends TestCase
             'subtotal' => $qty * 60,
         ]);
         $receipt = GoodsReceipt::create([
-            'receipt_number' => 'GRN-INVRET-' . $qty . '-' . uniqid(),
+            'receipt_number' => 'LPB-INVRET-' . $qty . '-' . uniqid(),
             'purchase_order_id' => $purchaseOrder->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

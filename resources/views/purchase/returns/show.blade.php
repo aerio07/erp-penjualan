@@ -6,7 +6,7 @@
 <div class="animate-in">
     <x-detail-header 
         :title="$return->return_number" 
-        :subtitle="'Supplier: ' . ($return->supplier->name ?? '-') . ' · Ref GRN: ' . ($return->goodsReceipt->receipt_number ?? '-')"
+        :subtitle="'Supplier: ' . ($return->supplier->name ?? '-') . ' · Ref LPB: ' . ($return->goodsReceipt->receipt_number ?? '-')"
         :status="$return->status"
         :back-url="route('purchase.returns.index')"
     >

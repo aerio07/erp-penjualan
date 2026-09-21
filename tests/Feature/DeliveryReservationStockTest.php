@@ -414,7 +414,7 @@ class DeliveryReservationStockTest extends TestCase
     }
 
     /**
-     * Skenario 5: Backorder SO (0 reserved) receives stock from GRN via allocateProcurementDemands, then can be delivered.
+     * Skenario 5: Backorder SO (0 reserved) receives stock from LPB via allocateProcurementDemands, then can be delivered.
      */
     public function test_backorder_so_gets_stock_from_grn_and_can_be_delivered(): void
     {
@@ -451,7 +451,7 @@ class DeliveryReservationStockTest extends TestCase
         ]);
         $responseFail->assertSessionHas('error');
 
-        // 3. Procurement: PO and GRN for 25 pcs
+        // 3. Procurement: PO and LPB for 25 pcs
         $po = PurchaseOrder::create([
             'po_number' => 'PO-DEMAND-001',
             'supplier_id' => $this->supplier->id,

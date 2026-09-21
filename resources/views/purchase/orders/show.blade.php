@@ -229,10 +229,10 @@
                     </div>
                 </div>
 
-                {{-- GRN Status --}}
+                {{-- LPB Status --}}
                 @if($order->goodsReceipts->count() > 0)
                 <div style="margin-top:16px; padding:12px; background:#ede9fe; border-radius:10px;">
-                    <div style="font-size:12px; font-weight:600; color:#7c3aed; margin-bottom:4px;">GRN Terkait</div>
+                    <div style="font-size:12px; font-weight:600; color:#7c3aed; margin-bottom:4px;">LPB Terkait</div>
                     @foreach($order->goodsReceipts as $grn)
                     <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
                         <a href="{{ route('purchase.goods-receipts.show', $grn) }}" style="font-size:13px; color:#4c1d95; text-decoration:none; font-weight:500;">

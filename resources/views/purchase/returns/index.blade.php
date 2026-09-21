@@ -15,7 +15,7 @@
         </x-slot:actions>
     </x-page-header>
 
-    <x-list-filter-bar :action="route('purchase.returns.index')" placeholder="Cari No. Retur, Ref. GRN, Supplier, Alasan..." :showDateFilter="true">
+    <x-list-filter-bar :action="route('purchase.returns.index')" placeholder="Cari No. Retur, Ref. LPB, Supplier, Alasan..." :showDateFilter="true">
         <select name="supplier_id" class="form-control filter-select">
             <option value="">Semua Supplier</option>
             @foreach($suppliers as $sup)
@@ -35,7 +35,7 @@
         <x-slot:head>
             <tr>
                 <x-sortable-header column="return_number" title="No. Retur" />
-                <th>Ref. GRN</th>
+                <th>Ref. LPB</th>
                 <th>Supplier</th>
                 <x-sortable-header column="return_date" title="Tgl Retur" :isDefault="true" />
                 <th>Alasan Utama</th>

@@ -8,7 +8,7 @@ trait GeneratesDocumentNumber
 {
     /**
      * Generate nomor dokumen dengan format: PREFIX-DD/MM/YYYY-XXXX
-     * Contoh: GRN-05/09/2026-0001, PO-05/09/2026-0001
+     * Contoh: LPB-05/09/2026-0001, PO-05/09/2026-0001
      * Nomor urut akan otomatis berlanjut pada hari yang sama dan direset setiap hari baru.
      *
      * @param class-string<Model> $modelClass

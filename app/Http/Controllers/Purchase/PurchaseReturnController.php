@@ -83,7 +83,7 @@ class PurchaseReturnController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        // Hitung ketersediaan stok fisik riil di gudang untuk setiap item GRN
+        // Hitung ketersediaan stok fisik riil di gudang untuk setiap item LPB
         foreach ($receipts as $grn) {
             foreach ($grn->items as $item) {
                 $productId   = $item->purchaseOrderItem->product_id ?? null;
@@ -162,8 +162,8 @@ class PurchaseReturnController extends Controller
 
             $hasAnyQty = true;
             $grnItem = GoodsReceiptItem::with(['purchaseOrderItem.product', 'purchaseInvoiceItem'])->findOrFail($itemData['goods_receipt_item_id']);
-            abort_if($grnItem->goods_receipt_id !== $grn->id, 422, 'Item retur tidak sesuai dengan GRN yang dipilih.');
-            abort_if($grnItem->purchaseOrderItem->product_id !== (int) $itemData['product_id'], 422, 'Produk retur tidak sesuai dengan item GRN.');
+            abort_if($grnItem->goods_receipt_id !== $grn->id, 422, 'Item retur tidak sesuai dengan LPB yang dipilih.');
+            abort_if($grnItem->purchaseOrderItem->product_id !== (int) $itemData['product_id'], 422, 'Produk retur tidak sesuai dengan item LPB.');
 
             $product = $grnItem->purchaseOrderItem->product;
             $warehouseId = $grnItem->warehouse_id ?? $grn->warehouse_id;
@@ -184,7 +184,7 @@ class PurchaseReturnController extends Controller
                         return back()->with('error', $errMsg)->withErrors(['items' => $errMsg])->withInput();
                     }
 
-                    $errMsg = "Qty retur '{$product->name}' (diterima stok) melebihi kuota sisa GRN yang bisa diretur ({$grnQuotaRemaining} {$product->unit}).";
+                    $errMsg = "Qty retur '{$product->name}' (diterima stok) melebihi kuota sisa LPB yang bisa diretur ({$grnQuotaRemaining} {$product->unit}).";
                     return back()->with('error', $errMsg)->withErrors(['items' => $errMsg])->withInput();
                 }
             } else {

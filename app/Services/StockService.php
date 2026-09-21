@@ -105,7 +105,7 @@ class StockService
     }
 
     /**
-     * Dimensi 5: INCOMING - Barang dalam PO Supplier yang sudah dikonfirmasi tapi belum diterima via GRN.
+     * Dimensi 5: INCOMING - Barang dalam PO Supplier yang sudah dikonfirmasi tapi belum diterima via LPB.
      */
     public function getIncomingStock(int $productId): int
     {
@@ -238,7 +238,7 @@ class StockService
     }
 
     /**
-     * Targeted Event-Driven Allocation: Alokasikan stok masuk (dari GRN atau pembatalan SO) ke demand backorder secara FIFO.
+     * Targeted Event-Driven Allocation: Alokasikan stok masuk (dari LPB atau pembatalan SO) ke demand backorder secara FIFO.
      */
     public function allocateStockToPendingDemands(int $productId, ?int $warehouseId = null): void
     {
@@ -325,7 +325,7 @@ class StockService
         // Pengiriman yang dialokasikan untuk menutupi demand
         $deliveredForDemands = max(0, $deliveredQty - $initialInStockQty);
 
-        // Kuantitas aktif ter-reserve (misalnya dari GRN yang belum dikirim)
+        // Kuantitas aktif ter-reserve (misalnya dari LPB yang belum dikirim)
         $activeReserved = (int) $soItem->reservations
             ->where('status', 'active')
             ->sum(fn($r) => max(0, $r->qty_reserved - $r->qty_delivered));

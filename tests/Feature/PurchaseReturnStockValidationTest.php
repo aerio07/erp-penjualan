@@ -86,7 +86,7 @@ class PurchaseReturnStockValidationTest extends TestCase
         ]);
 
         $grn = GoodsReceipt::create([
-            'receipt_number' => 'GRN-RET-001',
+            'receipt_number' => 'LPB-RET-001',
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
@@ -153,7 +153,7 @@ class PurchaseReturnStockValidationTest extends TestCase
         $this->assertEquals(0, $stockService->getOnHandStock($this->product->id, $this->warehouse->id));
         $this->assertEquals(0, $stockService->getAvailableStock($this->product->id, $this->warehouse->id));
 
-        // 3. Attempt to create a Purchase Return for that GRN (10 pcs)
+        // 3. Attempt to create a Purchase Return for that LPB (10 pcs)
         $response = $this->actingAs($this->admin)->post(route('purchase.returns.store'), [
             'goods_receipt_id' => $grn->id,
             'return_date' => now()->toDateString(),
@@ -193,7 +193,7 @@ class PurchaseReturnStockValidationTest extends TestCase
             'subtotal' => 500000,
         ]);
         $grn = GoodsReceipt::create([
-            'receipt_number' => 'GRN-PART-001',
+            'receipt_number' => 'LPB-PART-001',
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

@@ -91,7 +91,7 @@ class PurchasePaymentTest extends TestCase
         ]);
 
         $gr = GoodsReceipt::create([
-            'receipt_number' => 'GRN-PAY-' . uniqid(),
+            'receipt_number' => 'LPB-PAY-' . uniqid(),
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

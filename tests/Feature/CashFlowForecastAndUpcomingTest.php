@@ -166,7 +166,7 @@ class CashFlowForecastAndUpcomingTest extends TestCase
             'subtotal' => 50000000,
         ]);
         $gr = GoodsReceipt::create([
-            'receipt_number' => 'GRN-FC-01',
+            'receipt_number' => 'LPB-FC-01',
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

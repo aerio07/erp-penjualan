@@ -115,7 +115,7 @@ class PurchaseInvoiceDraftAndPostingTest extends TestCase
         ]);
 
         $grn = GoodsReceipt::create([
-            'receipt_number' => 'GRN-' . uniqid(),
+            'receipt_number' => 'LPB-' . uniqid(),
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

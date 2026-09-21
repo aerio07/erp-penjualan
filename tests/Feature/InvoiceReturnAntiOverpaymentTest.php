@@ -603,7 +603,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
         ]);
 
         $grn = GoodsReceipt::create([
-            'receipt_number' => 'GRN-AOP-001',
+            'receipt_number' => 'LPB-AOP-001',
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
@@ -628,7 +628,7 @@ class InvoiceReturnAntiOverpaymentTest extends TestCase
             'quantity' => 10,
             'unit_cost' => 100000,
             'movement_date' => now()->toDateString(),
-            'notes' => 'Penerimaan GRN Test',
+            'notes' => 'Penerimaan LPB Test',
             'user_id' => $this->admin->id,
         ]);
 

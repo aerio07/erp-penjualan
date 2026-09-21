@@ -97,7 +97,7 @@ class PurchaseInvoiceOneLpbTest extends TestCase
 
         // LPB A: qtyA unit
         $grnA = GoodsReceipt::create([
-            'receipt_number' => 'GRN-A-' . uniqid(),
+            'receipt_number' => 'LPB-A-' . uniqid(),
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
@@ -126,7 +126,7 @@ class PurchaseInvoiceOneLpbTest extends TestCase
 
         // LPB B: qtyB unit
         $grnB = GoodsReceipt::create([
-            'receipt_number' => 'GRN-B-' . uniqid(),
+            'receipt_number' => 'LPB-B-' . uniqid(),
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,
@@ -447,7 +447,7 @@ class PurchaseInvoiceOneLpbTest extends TestCase
         $grns = [];
         for ($i = 1; $i <= 3; $i++) {
             $grn = GoodsReceipt::create([
-                'receipt_number' => 'GRN-ROUND-' . $i . '-' . uniqid(),
+                'receipt_number' => 'LPB-ROUND-' . $i . '-' . uniqid(),
                 'purchase_order_id' => $po->id,
                 'warehouse_id' => $this->warehouse->id,
                 'user_id' => $this->admin->id,
@@ -547,7 +547,7 @@ class PurchaseInvoiceOneLpbTest extends TestCase
         $grns = [];
         foreach ($qtys as $i => $q) {
             $grn = GoodsReceipt::create([
-                'receipt_number' => 'GRN-TAX-' . ($i + 1) . '-' . uniqid(),
+                'receipt_number' => 'LPB-TAX-' . ($i + 1) . '-' . uniqid(),
                 'purchase_order_id' => $po->id,
                 'warehouse_id' => $this->warehouse->id,
                 'user_id' => $this->admin->id,

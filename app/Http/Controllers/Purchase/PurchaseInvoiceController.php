@@ -129,7 +129,7 @@ class PurchaseInvoiceController extends Controller
 
         try {
             return DB::transaction(function () use ($request) {
-                // Lock GRN untuk cegah race condition
+                // Lock LPB untuk cegah race condition
                 $grn = GoodsReceipt::with(['items.purchaseOrderItem'])
                     ->lockForUpdate()
                     ->findOrFail($request->goods_receipt_id);

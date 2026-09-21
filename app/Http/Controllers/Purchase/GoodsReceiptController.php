@@ -477,7 +477,7 @@ class GoodsReceiptController extends Controller
 
     private function generateNumber(): string
     {
-        return $this->generateDocumentNumber(GoodsReceipt::class, 'receipt_number', 'GRN');
+        return $this->generateDocumentNumber(GoodsReceipt::class, 'receipt_number', 'LPB');
     }
 
     private function generateReturnNumber(): string

@@ -69,7 +69,7 @@
                     <div class="form-row form-row-3" style="gap:10px; margin-bottom:0;">
                         <div><span style="font-weight:600; color:#7c3aed;">Admin</span> — Akses penuh semua modul</div>
                         <div><span style="font-weight:600; color:#1d4ed8;">Purchasing</span> — PO & Retur Beli</div>
-                        <div><span style="font-weight:600; color:#065f46;">Gudang</span> — GRN, Transfer, Opname</div>
+                        <div><span style="font-weight:600; color:#065f46;">Gudang</span> — LPB, Transfer, Opname</div>
                         <div><span style="font-weight:600; color:#92400e;">Sales</span> — SO, Delivery, Retur Jual</div>
                         <div><span style="font-weight:600; color:#991b1b;">Finance</span> — Invoice, Bayar, Jurnal</div>
                     </div>

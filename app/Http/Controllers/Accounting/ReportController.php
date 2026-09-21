@@ -493,7 +493,7 @@ class ReportController extends Controller
         );
 
         return view('accounting.reports.receivables', compact(
-            'paginatedInvoices', 'totalOutstanding', 'bucketCurrent',
+            'paginatedInvoices', 'openInvoices', 'totalOutstanding', 'bucketCurrent',
             'bucket1to30', 'bucket31to60', 'bucket61to90', 'bucketOver90'
         ));
     }
@@ -548,7 +548,7 @@ class ReportController extends Controller
         );
 
         return view('accounting.reports.payables', compact(
-            'paginatedInvoices', 'totalOutstanding', 'bucketCurrent',
+            'paginatedInvoices', 'openInvoices', 'totalOutstanding', 'bucketCurrent',
             'bucket1to30', 'bucket31to60', 'bucket61to90', 'bucketOver90'
         ));
     }

@@ -262,7 +262,7 @@ class JournalService
      * Buat journal entry dari retur pembelian (Purchase Return).
      *
      * Logika:
-     * - Per item retur: lookup SEMUA invoice items terkait GRN item ybs (->get(), bukan ->first())
+     * - Per item retur: lookup SEMUA invoice items terkait LPB item ybs (->get(), bukan ->first())
      * - qty_to_reverse = min(qty_returned, total_invoiced - total_reversed)  → anti double-reversal
      * - Nominal dari stored subtotal/tax_amount (weighted average) → sudah termasuk prorate diskon header
      * - reversed_qty di-increment FIFO per invoice item

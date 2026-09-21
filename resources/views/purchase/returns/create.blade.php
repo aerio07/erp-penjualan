@@ -6,7 +6,7 @@
 <div class="animate-in" x-data="returnForm()">
     <x-page-header 
         title="Buat Retur Pembelian" 
-        subtitle="Pilih bukti Penerimaan Barang (GRN) yang barangnya akan dikembalikan ke supplier"
+        subtitle="Pilih bukti Penerimaan Barang (LPB) yang barangnya akan dikembalikan ke supplier"
         :back-url="route('purchase.returns.index')"
     />
 
@@ -84,7 +84,7 @@
                     <thead>
                         <tr>
                             <th>Produk</th>
-                            <th style="text-align:center; width:95px;">Sisa GRN</th>
+                            <th style="text-align:center; width:95px;">Sisa LPB</th>
                             <th style="text-align:center; width:100px; color:#15803d;">Stok Fisik</th>
                             <th style="text-align:center; width:120px; color:#c2410c;">Batas Sisa Hutang</th>
                             <th style="text-align:center; width:100px; font-weight:700;">Maks Retur</th>

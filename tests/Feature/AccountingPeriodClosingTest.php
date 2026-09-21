@@ -353,7 +353,7 @@ class AccountingPeriodClosingTest extends TestCase
         ]);
 
         $grn = \App\Models\GoodsReceipt::create([
-            'receipt_number'    => 'GRN-TEST-' . uniqid(),
+            'receipt_number'    => 'LPB-TEST-' . uniqid(),
             'purchase_order_id' => $po->id,
             'warehouse_id'      => $warehouse->id,
             'user_id'           => $this->adminUser->id,

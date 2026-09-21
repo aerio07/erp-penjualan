@@ -80,9 +80,9 @@ class PurchaseReturnAutoJournalTest extends TestCase
             'subtotal' => 500000,
         ]);
 
-        // 2. LPB / GRN: Diterima 10 pcs kondisi baik
+        // 2. LPB: Diterima 10 pcs kondisi baik
         $grn = GoodsReceipt::create([
-            'receipt_number' => 'GRN-RET-JRN-01',
+            'receipt_number' => 'LPB-RET-JRN-01',
             'purchase_order_id' => $po->id,
             'warehouse_id' => $this->warehouse->id,
             'user_id' => $this->admin->id,

@@ -35,7 +35,7 @@ enum PurchaseOrderStatus: string
         };
     }
 
-    /** Apakah PO sudah bisa dibuatkan GRN? */
+    /** Apakah PO sudah bisa dibuatkan LPB? */
     public function canReceiveGoods(): bool
     {
         return in_array($this, [self::Confirmed, self::PartiallyReceived]);
