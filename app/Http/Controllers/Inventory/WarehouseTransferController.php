@@ -35,7 +35,7 @@ class WarehouseTransferController extends Controller
         $query = $this->applyDateRange($query, $request, 'transfer_date');
         $query = $this->applySort($query, $request, ['transfer_number', 'transfer_date', 'status', 'created_at'], 'transfer_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $transfers  = $query->paginate($perPage)->withQueryString();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 

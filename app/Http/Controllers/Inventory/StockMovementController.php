@@ -81,7 +81,7 @@ class StockMovementController extends Controller
         $query = $this->applyDateRange($query, $request, 'movement_date');
         $query = $this->applySort($query, $request, ['movement_date', 'quantity', 'unit_cost', 'type', 'created_at'], 'movement_date', 'desc');
 
-        $perPage = (int) $request->get('per_page', 20);
+        $perPage = (int) $request->get('per_page', 10);
         $movements  = $query->paginate($perPage)->withQueryString();
         $products   = Product::where('is_active', true)->orderBy('name')->get();
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();

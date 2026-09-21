@@ -40,7 +40,8 @@ class ProcurementDemandController extends Controller
 
         $query = $this->applySearch($query, $request, ['demand_number', 'product.name', 'product.sku', 'salesOrder.so_number', 'salesOrder.customer.name']);
 
-        $demands = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
+        $perPage = (int) $request->get('per_page', 10);
+        $demands = $query->orderBy('created_at', 'desc')->paginate($perPage)->withQueryString();
 
         // Konsolidasi Kebutuhan per Produk untuk Tim Purchasing
         $activeDemands = ProcurementDemand::with(['product', 'salesOrder.customer'])
