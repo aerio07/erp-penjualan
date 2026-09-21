@@ -800,6 +800,14 @@
         .erp-table .qty {
             font-variant-numeric: tabular-nums !important;
             font-feature-settings: "tnum" 1 !important;
+            white-space: nowrap !important;
+        }
+
+        /* Nominal tidak boleh terpotong menjadi "Rp" di atas angka. */
+        .stat-value,
+        .detail-value,
+        .nominal {
+            white-space: nowrap !important;
         }
 
         /* Kolom Catatan / Teks Panjang */

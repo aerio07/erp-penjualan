@@ -147,7 +147,7 @@
         }
         .text-left { text-align: left; }
         .text-center { text-align: center; }
-        .text-right { text-align: right; }
+        .text-right { text-align: right; white-space: nowrap; }
 
         /* ----------------------------------------------------
            6. TOTALS SECTION (Right Aligned Summary)
@@ -174,6 +174,7 @@
             text-align: right;
             color: #111111;
             width: 50%;
+            white-space: nowrap;
         }
         .tot-discount {
             color: #111111;
