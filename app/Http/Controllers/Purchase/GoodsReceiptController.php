@@ -44,7 +44,7 @@ class GoodsReceiptController extends Controller
         $query = $this->applyFilter($query, $request, 'warehouse_id');
         $query = $this->applyFilter($query, $request, 'is_invoiced');
         $query = $this->applyDateRange($query, $request, 'received_date');
-        $query = $this->applySort($query, $request, ['receipt_number', 'received_date', 'status', 'qc_status', 'created_at'], 'received_date', 'desc');
+        $query = $this->applySort($query, $request, ['receipt_number', 'received_date', 'status', 'qc_status', 'created_at'], 'created_at', 'desc');
 
         $perPage = (int) $request->get('per_page', 10);
         $receipts   = $query->paginate($perPage)->withQueryString();
