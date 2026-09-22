@@ -17,6 +17,7 @@ use App\Models\SalesPayment;
 use App\Models\SalesReturn;
 use App\Models\StockDisposition;
 use App\Models\Supplier;
+use App\Traits\ExportsPdfDocument;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,10 +25,26 @@ use Illuminate\View\View;
 
 class ReportController extends Controller
 {
+    use ExportsPdfDocument;
+
     /**
      * 1. Buku Besar / General Ledger
      */
     public function ledger(Request $request): View
+    {
+        return view('accounting.reports.ledger', $this->ledgerData($request));
+    }
+
+    public function ledgerPdf(Request $request)
+    {
+        $data = $this->ledgerData($request);
+        $accountCode = $data['selectedAccount']?->code ?? 'all';
+        $filename = "Buku-Besar-{$accountCode}-{$data['dateFrom']}-sd-{$data['dateTo']}";
+
+        return $this->streamPdf('pdf.accounting-ledger', $data, $filename, 'a4', 'landscape');
+    }
+
+    private function ledgerData(Request $request): array
     {
         $accounts  = ChartOfAccount::where('is_active', true)->orderBy('code')->get();
         $accountId = $request->input('chart_of_account_id', $accounts->first()?->id);
@@ -75,9 +92,9 @@ class ReportController extends Controller
             });
         }
 
-        return view('accounting.reports.ledger', compact(
+        return compact(
             'accounts', 'selectedAccount', 'accountId', 'dateFrom', 'dateTo', 'openingBalance', 'lines'
-        ));
+        );
     }
 
     /**

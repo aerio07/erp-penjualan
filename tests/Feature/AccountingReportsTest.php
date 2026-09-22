@@ -138,6 +138,30 @@ class AccountingReportsTest extends TestCase
         $this->assertEquals(8000000, $lines[1]->running_balance);
     }
 
+    public function test_ledger_pdf_route_returns_streamed_document(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $kasAcc = ChartOfAccount::where('code', '1-1100')->firstOrFail();
+
+        $entry = JournalEntry::create([
+            'entry_number' => 'JE-PDF-001',
+            'entry_date'   => '2026-03-01',
+            'status'       => 'posted',
+            'created_by'   => $admin->id,
+        ]);
+        $entry->lines()->create(['chart_of_account_id' => $kasAcc->id, 'debit' => 500000, 'credit' => 0]);
+
+        $response = $this->actingAs($admin)->get(route('accounting.reports.ledger.pdf', [
+            'chart_of_account_id' => $kasAcc->id,
+            'date_from'           => '2026-03-01',
+            'date_to'             => '2026-03-31',
+        ]));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('Buku-Besar', $response->headers->get('Content-Disposition'));
+    }
+
     public function test_receivables_aging_buckets(): void
     {
         $admin    = User::factory()->create(['role' => 'admin']);

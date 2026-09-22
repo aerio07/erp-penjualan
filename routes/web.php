@@ -208,6 +208,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('ledger', [ReportController::class, 'ledger'])->name('ledger');
+            Route::get('ledger/pdf', [ReportController::class, 'ledgerPdf'])->name('ledger.pdf');
             Route::get('trial-balance', [ReportController::class, 'trialBalance'])->name('trial-balance');
             Route::get('cash-flow', [ReportController::class, 'cashFlow'])->name('cash-flow');
             Route::get('cash-forecast', [ReportController::class, 'cashForecast'])->name('cash-forecast');

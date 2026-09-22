@@ -3,17 +3,23 @@
 @section('page-title', 'Buku Besar (General Ledger)')
 
 @section('content')
-<div class="animate-in flex flex-col gap-6">
+@php
+    $periodDebit = $lines->sum('debit');
+    $periodCredit = $lines->sum('credit');
+    $endingBalance = $lines->isNotEmpty() ? $lines->last()->running_balance : $openingBalance;
+@endphp
+
+<div class="animate-in flex flex-col gap-6 ledger-report-page">
     <x-page-header title="Buku Besar (General Ledger)" subtitle="Riwayat mutasi debet/kredit dan saldo berjalan per akun akuntansi">
         <x-slot:actions>
-            <button type="button" onclick="window.print()" class="btn btn-secondary btn-sm">
-                <i class="fa-solid fa-print"></i> Cetak Laporan
-            </button>
+            <a href="{{ route('accounting.reports.ledger.pdf', request()->query()) }}" target="_blank" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> PDF Laporan
+            </a>
         </x-slot:actions>
     </x-page-header>
 
     {{-- Filter Form --}}
-    <div class="card mb-0">
+    <div class="card mb-0 ledger-filter-card">
         <div class="card-body p-0">
             <form method="GET" action="{{ route('accounting.reports.ledger') }}" class="flex flex-col sm:flex-row flex-wrap sm:items-end gap-3">
                 <div class="w-full sm:flex-1 sm:min-w-[260px]">
@@ -47,7 +53,7 @@
     </div>
 
     @if($selectedAccount)
-    <div class="card">
+    <div class="card ledger-report-card">
         <div class="card-header">
             <div>
                 <h3>Akun: {{ $selectedAccount->code }} - {{ $selectedAccount->name }}</h3>
@@ -63,15 +69,15 @@
             </div>
         </div>
         <div class="table-responsive">
-            <table class="erp-table">
+            <table class="erp-table ledger-table">
                 <thead>
                     <tr>
-                        <th>Tgl Transaksi</th>
-                        <th>No. Referensi</th>
+                        <th class="ledger-date-col">Tgl Transaksi</th>
+                        <th class="ledger-ref-col">No. Referensi</th>
                         <th>Keterangan Transaksi</th>
-                        <th style="text-align:right;">Debit</th>
-                        <th style="text-align:right;">Kredit</th>
-                        <th style="text-align:right;">Saldo Berjalan</th>
+                        <th class="ledger-money-col" style="text-align:right;">Debit</th>
+                        <th class="ledger-money-col" style="text-align:right;">Kredit</th>
+                        <th class="ledger-money-col" style="text-align:right;">Saldo Berjalan</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -90,7 +96,7 @@
                     <tr>
                         <td>{{ $line->journalEntry->entry_date->format('d/m/Y') }}</td>
                         <td style="font-weight:600;">
-                            <a href="{{ route('accounting.journals.show', $line->journalEntry->id) }}" style="color:var(--primary); text-decoration:none;">
+                            <a href="{{ route('accounting.journals.show', $line->journalEntry->id) }}" class="ledger-ref-link" style="color:var(--primary); text-decoration:none;">
                                 {{ $line->journalEntry->entry_number }}
                             </a>
                         </td>
@@ -115,6 +121,14 @@
                     </tr>
                     @endforelse
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align:right; font-weight:800;">Total Mutasi Periode</td>
+                        <td style="text-align:right; font-weight:800;">Rp {{ number_format($periodDebit, 0, ',', '.') }}</td>
+                        <td style="text-align:right; font-weight:800;">Rp {{ number_format($periodCredit, 0, ',', '.') }}</td>
+                        <td style="text-align:right; font-weight:800;">Rp {{ number_format($endingBalance, 0, ',', '.') }}</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
