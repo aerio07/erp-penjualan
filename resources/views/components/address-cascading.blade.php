@@ -97,6 +97,9 @@
             this.selectedProvinceName = p ? p.name : '';
             this.openProvince = false;
             this.searchProvince = '';
+            if (this.$refs.provinceInput) {
+                this.$refs.provinceInput.setCustomValidity('');
+            }
             await this.onProvinceChange();
         },
 
@@ -132,6 +135,9 @@
             this.selectedRegencyName = r ? r.name : '';
             this.openRegency = false;
             this.searchRegency = '';
+            if (this.$refs.regencyInput) {
+                this.$refs.regencyInput.setCustomValidity('');
+            }
             await this.onRegencyChange();
         },
 
@@ -164,6 +170,9 @@
             this.selectedDistrictName = d ? d.name : '';
             this.openDistrict = false;
             this.searchDistrict = '';
+            if (this.$refs.districtInput) {
+                this.$refs.districtInput.setCustomValidity('');
+            }
             await this.onDistrictChange();
         },
 
@@ -210,15 +219,17 @@
 
         updateFullAddress() {
             let parts = [];
-            if (this.streetAddress.trim()) parts.push(this.streetAddress.trim());
+            if (this.streetAddress && this.streetAddress.trim()) parts.push(this.streetAddress.trim());
             if (this.selectedVillageName) parts.push('Kel. ' + this.selectedVillageName);
             if (this.selectedDistrictName) parts.push('Kec. ' + this.selectedDistrictName);
             if (this.selectedRegencyName) parts.push(this.selectedRegencyName);
             if (this.selectedProvinceName) parts.push('Prov. ' + this.selectedProvinceName);
-            if (this.postalCode.trim()) parts.push(this.postalCode.trim());
+            if (this.postalCode && this.postalCode.trim()) parts.push(this.postalCode.trim());
 
             if (parts.length > 0) {
                 this.fullAddress = parts.join(', ');
+            } else {
+                this.fullAddress = '';
             }
         },
 
@@ -245,12 +256,27 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             
-            {{-- 1. PROVINSI (Searchable Dropdown) --}}
+            {{-- 1. PROVINSI (Searchable Dropdown + Required Native Validation) --}}
             <div class="form-group mb-0 relative">
                 <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
                     <span>1. Provinsi @if($required)<span style="color:var(--danger);">*</span>@endif</span>
                     <span x-show="loadingProvince" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
+
+                {{-- Native Input for HTML5 Form Validation --}}
+                <input 
+                    type="text" 
+                    x-ref="provinceInput"
+                    :value="selectedProvince" 
+                    @if($required) 
+                        required 
+                        oninvalid="this.setCustomValidity('Silakan pilih Provinsi terlebih dahulu')"
+                        oninput="this.setCustomValidity('')"
+                    @endif
+                    tabindex="-1"
+                    aria-hidden="true"
+                    style="position: absolute; top: 22px; left: 0; width: 100%; height: 38px; opacity: 0; pointer-events: none; z-index: -1;"
+                />
 
                 {{-- Trigger Button --}}
                 <div 
@@ -344,12 +370,27 @@
                 </div>
             </div>
 
-            {{-- 2. KABUPATEN / KOTA (Searchable Dropdown) --}}
+            {{-- 2. KABUPATEN / KOTA (Searchable Dropdown + Required Native Validation) --}}
             <div class="form-group mb-0 relative">
                 <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
                     <span>2. Kabupaten / Kota @if($required)<span style="color:var(--danger);">*</span>@endif</span>
                     <span x-show="loadingRegency" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
+
+                {{-- Native Input for HTML5 Form Validation --}}
+                <input 
+                    type="text" 
+                    x-ref="regencyInput"
+                    :value="selectedRegency" 
+                    @if($required) 
+                        required 
+                        oninvalid="this.setCustomValidity('Silakan pilih Kabupaten / Kota terlebih dahulu')"
+                        oninput="this.setCustomValidity('')"
+                    @endif
+                    tabindex="-1"
+                    aria-hidden="true"
+                    style="position: absolute; top: 22px; left: 0; width: 100%; height: 38px; opacity: 0; pointer-events: none; z-index: -1;"
+                />
 
                 {{-- Trigger Button --}}
                 <div 
@@ -446,12 +487,27 @@
                 </div>
             </div>
 
-            {{-- 3. KECAMATAN (Searchable Dropdown) --}}
+            {{-- 3. KECAMATAN (Searchable Dropdown + Required Native Validation) --}}
             <div class="form-group mb-0 relative">
                 <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
                     <span>3. Kecamatan @if($required)<span style="color:var(--danger);">*</span>@endif</span>
                     <span x-show="loadingDistrict" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
+
+                {{-- Native Input for HTML5 Form Validation --}}
+                <input 
+                    type="text" 
+                    x-ref="districtInput"
+                    :value="selectedDistrict" 
+                    @if($required) 
+                        required 
+                        oninvalid="this.setCustomValidity('Silakan pilih Kecamatan terlebih dahulu')"
+                        oninput="this.setCustomValidity('')"
+                    @endif
+                    tabindex="-1"
+                    aria-hidden="true"
+                    style="position: absolute; top: 22px; left: 0; width: 100%; height: 38px; opacity: 0; pointer-events: none; z-index: -1;"
+                />
 
                 {{-- Trigger Button --}}
                 <div 
@@ -691,6 +747,11 @@
             placeholder="{{ $placeholder }}"
             class="form-control {{ $errors->has($name) ? 'is-invalid' : '' }}" 
             rows="2"
+            @if($required) 
+                required 
+                oninvalid="this.setCustomValidity('Silakan isi detail alamat jalan, nomor rumah, RT/RW')"
+                oninput="this.setCustomValidity('')"
+            @endif
         ></textarea>
 
         {{-- Hidden Input carrying the full combined address string for backend compatibility --}}
