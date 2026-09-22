@@ -132,7 +132,7 @@ class GlobalFilterSearchPaginationTest extends TestCase
             ->get(route('inventory.movements.index', ['type' => 'return_in_damaged']));
 
         $responseType->assertOk();
-        $responseType->assertSee('RETUR KARANTINA');
+        $responseType->assertSee('RETUR REJECT');
         $responseType->assertSee('Gudang Karantina Test');
 
         $responseWh = $this->actingAs($this->adminUser)
