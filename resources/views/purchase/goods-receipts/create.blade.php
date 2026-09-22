@@ -18,7 +18,7 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Informasi Surat Jalan / Penerimaan</h3></div>
                 <div class="card-body">
-                    <div class="form-row form-row-3">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Purchase Order <span style="color:var(--danger);">*</span></label>
                             <x-searchable-select 
@@ -29,6 +29,18 @@
                                 on-select="poId => { selectedPoId = poId; onPoChange(); }" 
                                 required 
                             />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Supplier <span class="text-xs text-slate-400 font-normal lowercase">(otomatis dari PO)</span></label>
+                            <input 
+                                type="text" 
+                                :value="selectedPo && selectedPo.supplier ? selectedPo.supplier.name + (selectedPo.supplier.code ? ' (' + selectedPo.supplier.code + ')' : '') : ''" 
+                                class="form-control bg-slate-100 font-semibold text-slate-700" 
+                                readonly 
+                                placeholder="— Otomatis terisi saat PO dipilih —"
+                                style="background:#f8fafc; border-style:dashed;"
+                            >
                         </div>
 
                         <div class="form-group">

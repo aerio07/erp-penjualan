@@ -18,6 +18,23 @@ class Supplier extends Model
 
     protected $appends = ['payment_term_days'];
 
+    public function getAddressAttribute($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        $parts = explode(', ', $value);
+        $uniqueParts = [];
+        foreach ($parts as $part) {
+            $trimmed = trim($part);
+            if ($trimmed !== '' && !in_array($trimmed, $uniqueParts)) {
+                $uniqueParts[] = $trimmed;
+            }
+        }
+        return implode(', ', $uniqueParts);
+    }
+
     public function getPaymentTermDaysAttribute(): int
     {
         if (empty($this->payment_term)) {

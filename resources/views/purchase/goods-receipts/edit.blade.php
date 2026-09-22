@@ -19,10 +19,15 @@
             <div class="card" style="grid-column:span 2;">
                 <div class="card-header"><h3>Informasi Surat Jalan / Penerimaan</h3></div>
                 <div class="card-body">
-                    <div class="form-row form-row-3">
+                    <div class="form-row form-row-4">
                         <div class="form-group">
                             <label class="form-label">Purchase Order</label>
-                            <input type="text" class="form-control" value="{{ $goodsReceipt->purchaseOrder->po_number }} - {{ $goodsReceipt->purchaseOrder->supplier->name ?? '-' }}" readonly style="background:#f1f5f9; cursor:not-allowed;">
+                            <input type="text" class="form-control" value="{{ $goodsReceipt->purchaseOrder->po_number }}" readonly style="background:#f1f5f9; cursor:not-allowed; font-weight:600;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Supplier <span class="text-xs text-slate-400 font-normal lowercase">(otomatis PO)</span></label>
+                            <input type="text" class="form-control" value="{{ $goodsReceipt->purchaseOrder->supplier->name ?? '-' }} ({{ $goodsReceipt->purchaseOrder->supplier->code ?? '-' }})" readonly style="background:#f1f5f9; cursor:not-allowed; font-weight:600;">
                         </div>
 
                         <div class="form-group">

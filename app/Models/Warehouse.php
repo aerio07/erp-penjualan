@@ -11,6 +11,23 @@ class Warehouse extends Model
 
     protected $casts = ['is_active' => 'boolean'];
 
+    public function getAddressAttribute($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        $parts = explode(', ', $value);
+        $uniqueParts = [];
+        foreach ($parts as $part) {
+            $trimmed = trim($part);
+            if ($trimmed !== '' && !in_array($trimmed, $uniqueParts)) {
+                $uniqueParts[] = $trimmed;
+            }
+        }
+        return implode(', ', $uniqueParts);
+    }
+
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
