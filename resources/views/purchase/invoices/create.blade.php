@@ -337,14 +337,47 @@ function invForm() {
         get isLastGrn() {
             if (!this.selectedPoId || !this.selectedGrnId) return false;
             const otherGrns = this.availableGrns.filter(g => String(g.id) !== String(this.selectedGrnId));
-            return otherGrns.length === 0;
+            if (otherGrns.length !== 0 || !this.selectedPoData) return false;
+
+            const poFullyReceived = (this.selectedPoData.items || []).every(item => {
+                const received = Number(item.qty_received) || 0;
+                const rejected = Number(item.qty_rejected) || 0;
+                const ordered = Number(item.qty_ordered) || 0;
+                return (received + rejected) >= ordered;
+            });
+            const status = String(this.selectedPoData.status || '').toLowerCase();
+            const totalPoSubtotal = this.totalPoSubtotal;
+
+            // Harus sama dengan PurchaseInvoiceService::createFromGoodsReceipt()
+            // agar preview nominal sebelum save konsisten dengan nominal invoice tersimpan.
+            return poFullyReceived
+                || status === 'done'
+                || this.roundAmount(this.rawSubtotal + this.totalInvoicedSubtotal) >= this.roundAmount(totalPoSubtotal);
+        },
+
+        get totalPoSubtotal() {
+            return (this.selectedPoData?.items || []).reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
+        },
+
+        get totalInvoicedSubtotal() {
+            return (this.selectedPoData?.invoices || []).reduce((sum, inv) => {
+                const invBaseSubtotal = (inv.items || []).reduce((itemSum, it) => {
+                    const lineBase = (Number(it.qty_invoiced) || 0) * (Number(it.unit_price) || 0);
+                    const lineDisc = lineBase * ((Number(it.discount_percent) || 0) / 100);
+                    return itemSum + (lineBase - lineDisc);
+                }, 0);
+                return sum + invBaseSubtotal;
+            }, 0);
         },
 
         get isIntegerCurrency() {
             if (!this.selectedPoData) return true;
             const poTax = Number(this.selectedPoData.tax_amount) || 0;
-            const poSubtotal = (this.selectedPoData.items || []).reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
-            return (Math.round(poTax) === poTax) && (Math.round(poSubtotal) === poSubtotal);
+            const poSubtotal = this.totalPoSubtotal;
+            const headerDisc = Number(this.selectedPoData.discount_amount) || 0;
+            return (Math.round(poTax) === poTax)
+                && (Math.round(poSubtotal) === poSubtotal)
+                && (Math.round(headerDisc) === headerDisc);
         },
 
         roundAmount(val) {
@@ -358,7 +391,7 @@ function invForm() {
             if (!this.selectedPoData) return 0;
             const headerDisc = Number(this.selectedPoData.discount_amount) || 0;
             if (headerDisc <= 0) return 0;
-            const totalPoSubtotal = (this.selectedPoData.items || []).reduce((s, it) => s + (Number(it.subtotal) || 0), 0);
+            const totalPoSubtotal = this.totalPoSubtotal;
             if (totalPoSubtotal <= 0) return 0;
 
             const usedDisc = Number(this.selectedPoData.used_header_discount) || 0;
@@ -372,7 +405,7 @@ function invForm() {
         },
 
         get dpp() {
-            return Math.max(0, this.rawSubtotal - this.proratedDiscount);
+            return Math.max(0, this.roundAmount(this.rawSubtotal - this.proratedDiscount));
         },
 
         get taxAmount() {
@@ -389,7 +422,7 @@ function invForm() {
         },
 
         get totalAmount() {
-            return this.dpp + this.taxAmount;
+            return this.roundAmount(this.dpp + this.taxAmount);
         },
 
         get isInvoiceInvalid() {
