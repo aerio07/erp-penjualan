@@ -27,15 +27,15 @@
                             on-select="poId => { selectedPoId = poId; onPoChange(); }" 
                             required 
                         />
-                        <small style="color:var(--text-secondary); font-size:11.5px; display:block; margin-top:3px;">Pilih PO untuk memfilter bukti penerimaan / invoice</small>
+                        <small style="color:var(--text-secondary); font-size:11.5px; display:block; margin-top:3px;">Pilih PO untuk memfilter bukti penerimaan (LPB)</small>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Bukti Penerimaan (LPB) / Faktur <span style="color:var(--danger);">*</span></label>
+                        <label class="form-label">Bukti Penerimaan (LPB) <span style="color:var(--danger);">*</span></label>
                         <select name="goods_receipt_id" class="form-control" x-model="selectedGrnId" @change="onGrnChange()" :disabled="!selectedPoId" required>
-                            <option value="">-- Pilih LPB / Invoice --</option>
+                            <option value="">-- Pilih LPB --</option>
                             <template x-for="r in filteredReceipts" :key="r.id">
-                                <option :value="r.id" x-text="`${r.receipt_number} (${formatDate(r.received_date)}) ${r.purchase_invoice ? '• Faktur: #' + r.purchase_invoice.invoice_number : '• Belum Di-invoice'}`"></option>
+                                <option :value="r.id" x-text="`${r.receipt_number} (${formatDate(r.received_date)})`"></option>
                             </template>
                         </select>
                         <small style="color:var(--text-secondary); font-size:11.5px;" x-text="selectedPoId ? (filteredReceipts.length + ' LPB ditemukan untuk PO ini') : 'Pilih PO terlebih dahulu'"></small>
@@ -76,7 +76,7 @@
             <div class="card-header">
                 <h3>Pilih Barang yang Dikembalikan</h3>
                 <p style="font-size:12.5px; color:var(--text-secondary); margin:2px 0 0 0;">
-                    Kuantitas retur dibatasi oleh sisa fisik yang ada di gudang dan sisa hutang invoice yang belum dibayar untuk mencegah overpayment ke supplier.
+                    Kuantitas retur dibatasi oleh sisa barang pada LPB dan stok fisik yang ada di gudang.
                 </p>
             </div>
             <div class="table-responsive">
@@ -107,7 +107,7 @@
                                 <td style="text-align:center; font-weight:600; color:#15803d;" x-text="item.source_type === 'accepted' ? item.physical_available + ' ' + item.product.unit : '-'"></td>
                                 <td style="text-align:center; font-size:12px;">
                                     <template x-if="item.max_financial === null">
-                                        <span class="badge badge-draft" style="font-size:11px;">Belum Di-invoice</span>
+                                        <span style="color:var(--text-secondary); font-size:12px;">-</span>
                                     </template>
                                     <template x-if="item.max_financial !== null">
                                         <span style="font-weight:600; color:#c2410c;" x-text="item.max_financial + ' ' + item.product.unit"></span>
