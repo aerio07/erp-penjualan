@@ -140,3 +140,23 @@ if (!function_exists('terbilang')) {
     }
 }
 
+if (!function_exists('fmt_pct')) {
+    /**
+     * Format nilai persentase tanpa trailing nol.
+     * Contoh: 11.00 → "11", 5.00 → "5", 10.50 → "10,5".
+     *
+     * @param mixed $value
+     * @return string
+     */
+    function fmt_pct($value): string
+    {
+        if ($value === null || $value === '') {
+            return '0';
+        }
+
+        $rounded = round((float) $value, 2);
+
+        return rtrim(rtrim(number_format($rounded, 2, ',', '.'), '0'), ',');
+    }
+}
+

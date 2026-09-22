@@ -429,8 +429,19 @@ function poForm() {
         get isDiscountInvalid() { return (Number(this.discountHeader) || 0) > this.netSubtotal; },
         get hasOverPrice() { return this.rows.some(r => r.refPrice > 0 && r.price > r.refPrice); },
         get taxableAmount() { return Math.max(0, this.netSubtotal - (Number(this.discountHeader) || 0)); },
-        get taxAmount() { return this.taxableAmount * ((Number(this.taxRate) || 0) / 100); },
-        get total() { return this.taxableAmount + this.taxAmount; },
+
+        // Konsisten dengan server (PurchaseOrderController): 0 desimal bila nilai
+        // bulat, selain itu 2 desimal — agar preview sama dengan nilai tersimpan.
+        get isIntegerCurrency() {
+            return Math.round(this.netSubtotal) === this.netSubtotal
+                && Math.round(Number(this.discountHeader) || 0) === (Number(this.discountHeader) || 0);
+        },
+        roundAmount(v) {
+            if (this.isIntegerCurrency) return Math.round(v || 0);
+            return Math.round((v || 0) * 100) / 100;
+        },
+        get taxAmount() { return this.roundAmount(this.taxableAmount * ((Number(this.taxRate) || 0) / 100)); },
+        get total() { return this.roundAmount(this.taxableAmount + this.taxAmount); },
 
         recalc() { /* Alpine handles reactivity */ },
         validateForm(e) {
@@ -450,7 +461,12 @@ function poForm() {
                 return false;
             }
         },
-        formatNum(v) { return new Intl.NumberFormat('id-ID').format(Math.round(v)); }
+        formatNum(v) {
+            const val = this.roundAmount(v || 0);
+            return new Intl.NumberFormat('id-ID', {
+                maximumFractionDigits: this.isIntegerCurrency ? 0 : 2
+            }).format(val);
+        }
     }
 }
 </script>

@@ -5,6 +5,23 @@
 @section('doc-subtitle', 'Invoice #: ' . $invoice->invoice_number)
 
 @section('content')
+    @php
+        // Subtotal per baris TIDAK boleh menyertakan potongan diskon header
+        // (PurchaseInvoiceService menanamkan sisa diskon header di item.subtotal item
+        //  terakhir agar jumlah pas 100%). Untuk tampilan, hitung ulang per baris
+        //  qty × harga × (1 − diskon item) dan tampilkan diskon header terpisah.
+        $pdfInvoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : ($invoice->purchaseOrder->items ?? collect());
+        $pdfItemsRawSubtotal = 0;
+        foreach (($pdfInvoiceItems ?? collect()) as $item) {
+            $qty = $item->qty_invoiced ?? $item->qty_received ?? 0;
+            $price = (float) $item->unit_price;
+            $discPercent = (float) ($item->discount_percent ?? 0);
+            $lineBase = $qty * $price;
+            $pdfItemsRawSubtotal += $lineBase - ($lineBase * ($discPercent / 100));
+        }
+        $pdfHeaderDiscount = max(0, round($pdfItemsRawSubtotal - (float) $invoice->amount, 2));
+        $pdfHasPoHeaderDiscount = (float) ($invoice->purchaseOrder->discount_amount ?? 0) > 0;
+    @endphp
     {{-- SUPPLIER & INVOICE DETAILS SECTION (Side by Side) --}}
     <table class="parties-table">
         <tr>
@@ -79,15 +96,14 @@
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $invoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : ($invoice->purchaseOrder->items ?? collect());
-                @endphp
-                @forelse($invoiceItems as $i => $item)
+                @forelse($pdfInvoiceItems as $i => $item)
                     @php
                         $qty = $item->qty_invoiced ?? $item->qty_received ?? 0;
                         $price = $item->unit_price;
                         $discPercent = $item->discount_percent ?? 0;
-                        $subtotal = $item->subtotal ?? (($qty * $price) - (($qty * $price) * ($discPercent / 100)));
+                        $lineBase = $qty * $price;
+                        $lineDisc = $lineBase * ($discPercent / 100);
+                        $subtotal = $lineBase - $lineDisc; // hanya diskon item, TANPA potongan diskon header
                     @endphp
                     <tr>
                         <td class="text-center">{{ $i + 1 }}</td>
@@ -99,7 +115,7 @@
                         </td>
                         <td class="text-right">{{ number_format($qty) }} {{ $item->product->unit ?? 'pcs' }}</td>
                         <td class="text-right">Rp {{ number_format($price, 0, ',', '.') }}</td>
-                        <td class="text-right">{{ $discPercent > 0 ? $discPercent . '%' : '-' }}</td>
+                        <td class="text-right">{{ $discPercent > 0 ? fmt_pct($discPercent) . '%' : '-' }}</td>
                         <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                     </tr>
                 @empty
@@ -115,12 +131,22 @@
     <div class="totals-table">
         <table class="totals-summary">
             <tr>
-                <td class="tot-label">Subtotal (DPP):</td>
+                <td class="tot-label">Subtotal:</td>
+                <td class="tot-value">Rp {{ number_format($pdfItemsRawSubtotal, 0, ',', '.') }}</td>
+            </tr>
+            @if($pdfHeaderDiscount > 0 && $pdfHasPoHeaderDiscount)
+            <tr>
+                <td class="tot-label tot-discount">Diskon Header:</td>
+                <td class="tot-value tot-discount">- Rp {{ number_format($pdfHeaderDiscount, 0, ',', '.') }}</td>
+            </tr>
+            @endif
+            <tr>
+                <td class="tot-label">DPP:</td>
                 <td class="tot-value">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</td>
             </tr>
             @if($invoice->tax_amount > 0 || $invoice->tax_rate > 0)
             <tr>
-                <td class="tot-label">PPN ({{ $invoice->tax_rate }}%):</td>
+                <td class="tot-label">PPN ({{ fmt_pct($invoice->tax_rate) }}%):</td>
                 <td class="tot-value">Rp {{ number_format($invoice->tax_amount, 0, ',', '.') }}</td>
             </tr>
             @endif

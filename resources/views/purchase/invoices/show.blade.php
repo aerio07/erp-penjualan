@@ -3,6 +3,24 @@
 @section('page-title', 'Detail Invoice Pembelian')
 
 @section('content')
+@php
+    // Subtotal per baris TIDAK boleh menyertakan potongan diskon header
+    // (LIhat PurchaseInvoiceService: potongan diskon header saat ini tertanam di
+    //  item.subtotal item terakhir agar jumlah pas 100%. Untuk tampilan, hitung
+    //  ulang sebagai qty × harga × (1 − diskon item) dan tampilkan diskon header
+    //  sebagai baris terpisah di ringkasan — konsisten dgn preview form create.)
+    $invoiceItemsShown = $invoice->items->isNotEmpty() ? $invoice->items : $invoice->purchaseOrder->items;
+    $itemsRawSubtotal = 0;
+    foreach ($invoiceItemsShown as $item) {
+        $qty = $item->qty_invoiced ?? $item->qty_received ?? 0;
+        $price = (float) $item->unit_price;
+        $discPercent = (float) ($item->discount_percent ?? 0);
+        $lineBase = $qty * $price;
+        $itemsRawSubtotal += $lineBase - ($lineBase * ($discPercent / 100));
+    }
+    $headerDiscountShown = max(0, round($itemsRawSubtotal - (float) $invoice->amount, 2));
+    $hasPoHeaderDiscount = (float) ($invoice->purchaseOrder->discount_amount ?? 0) > 0;
+@endphp
 <div class="animate-in">
     <x-detail-header 
         :title="$invoice->invoice_number" 
@@ -60,11 +78,21 @@
             <div class="card-body">
                 <div style="display:flex; flex-direction:column; gap:10px; font-size:14px;">
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">Subtotal (DPP)</span>
+                        <span style="color:var(--text-secondary);">Subtotal</span>
+                        <span>Rp {{ number_format($itemsRawSubtotal, 0, ',', '.') }}</span>
+                    </div>
+                    @if($headerDiscountShown > 0 && $hasPoHeaderDiscount)
+                    <div style="display:flex; justify-content:space-between; color:var(--danger);">
+                        <span>Diskon Header</span>
+                        <span>- Rp {{ number_format($headerDiscountShown, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-secondary);">DPP</span>
                         <span>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between;">
-                        <span style="color:var(--text-secondary);">PPN ({{ $invoice->tax_rate }}%)</span>
+                        <span style="color:var(--text-secondary);">PPN ({{ fmt_pct($invoice->tax_rate) }}%)</span>
                         <span>Rp {{ number_format($invoice->tax_amount, 0, ',', '.') }}</span>
                     </div>
                     <hr style="border:none; border-top:1px solid var(--border);">
@@ -112,15 +140,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @php
-                        $invoiceItems = $invoice->items->isNotEmpty() ? $invoice->items : $invoice->purchaseOrder->items;
-                    @endphp
-                    @foreach($invoiceItems as $item)
+                    @foreach($invoiceItemsShown as $item)
                     @php
                         $qty = $item->qty_invoiced ?? $item->qty_received ?? 0;
                         $price = $item->unit_price;
                         $discPercent = $item->discount_percent ?? 0;
-                        $subtotal = $item->subtotal ?? (($qty * $price) - (($qty * $price) * ($discPercent / 100)));
+                        $lineBase = $qty * $price;
+                        $lineDisc = $lineBase * ($discPercent / 100);
+                        $subtotal = $lineBase - $lineDisc; // hanya diskon item, TANPA potongan diskon header
                     @endphp
                     <tr>
                         <td>
@@ -141,7 +168,7 @@
                             Rp {{ number_format($price, 0, ',', '.') }}
                         </td>
                         <td style="text-align:center;">
-                            {{ $discPercent > 0 ? $discPercent . '%' : '-' }}
+                            {{ $discPercent > 0 ? fmt_pct($discPercent) . '%' : '-' }}
                         </td>
                         <td style="text-align:right; font-weight:600; color:var(--primary);">
                             Rp {{ number_format($subtotal, 0, ',', '.') }}

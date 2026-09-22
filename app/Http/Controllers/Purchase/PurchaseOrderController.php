@@ -133,9 +133,12 @@ class PurchaseOrderController extends Controller
         }
 
         DB::transaction(function () use ($request, $items, $subtotal, $discountHeader) {
-            $taxableAmount  = max(0, $subtotal - $discountHeader);
-            $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
-            $totalAmount    = $taxableAmount + $taxAmount;
+            // Konsisten dengan PurchaseInvoiceService: gunakan 0 desimal bila
+            // subtotal item & diskon header bulat, selain itu 2 desimal.
+            $dec             = (round($subtotal) == $subtotal && round($discountHeader) == $discountHeader) ? 0 : 2;
+            $taxableAmount   = max(0, $subtotal - $discountHeader);
+            $taxAmount       = max(0, round($taxableAmount * ($request->tax_rate / 100), $dec));
+            $totalAmount     = round($taxableAmount + $taxAmount, $dec);
 
             $po = PurchaseOrder::create([
                 'po_number'           => $this->generateNumber(),
@@ -280,9 +283,12 @@ class PurchaseOrderController extends Controller
         DB::transaction(function () use ($request, $order, $items, $subtotal, $discountHeader) {
             $order->items()->delete();
 
-            $taxableAmount  = max(0, $subtotal - $discountHeader);
-            $taxAmount      = max(0, $taxableAmount * ($request->tax_rate / 100));
-            $totalAmount    = $taxableAmount + $taxAmount;
+            // Konsisten dengan PurchaseInvoiceService: gunakan 0 desimal bila
+            // subtotal item & diskon header bulat, selain itu 2 desimal.
+            $dec             = (round($subtotal) == $subtotal && round($discountHeader) == $discountHeader) ? 0 : 2;
+            $taxableAmount   = max(0, $subtotal - $discountHeader);
+            $taxAmount       = max(0, round($taxableAmount * ($request->tax_rate / 100), $dec));
+            $totalAmount     = round($taxableAmount + $taxAmount, $dec);
 
             $order->update([
                 'supplier_id'    => $request->supplier_id,

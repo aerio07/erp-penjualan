@@ -173,10 +173,15 @@
                                 Rp {{ number_format($item->unit_price, 0, ',', '.') }}
                             </td>
                             <td style="text-align:center;">
-                                {{ $item->discount_percent > 0 ? $item->discount_percent . '%' : '-' }}
+                                {{ $item->discount_percent > 0 ? fmt_pct($item->discount_percent) . '%' : '-' }}
                             </td>
                             <td style="text-align:right; font-weight:600; color:var(--primary);">
-                                Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                @php
+                                    // Tampilkan subtotal per baris murni (tanpa potongan diskon header)
+                                    $lineBase = $item->qty_invoiced * $item->unit_price;
+                                    $lineDisc = $lineBase * (($item->discount_percent ?? 0) / 100);
+                                @endphp
+                                Rp {{ number_format($lineBase - $lineDisc, 0, ',', '.') }}
                             </td>
                         </tr>
                         @endforeach
