@@ -46,22 +46,134 @@
         loadingDistrict: false,
         loadingVillage: false,
 
+        cleanStreetAddress(str) {
+            if (!str) return '';
+            const idx = str.search(/,\s*(Kel\.|Kec\.|Prov\.)/i);
+            if (idx !== -1) {
+                return str.substring(0, idx).trim();
+            }
+            return str.trim();
+        },
+
+        parseInitialAddress(rawAddress) {
+            if (!rawAddress || !rawAddress.trim()) return;
+
+            let addressStr = rawAddress.trim();
+            
+            // 1. Extract postal code at the end if present (e.g. ", 10110")
+            const postalMatch = addressStr.match(/,?\s*(\d{5})$/);
+            if (postalMatch) {
+                this.postalCode = postalMatch[1];
+                addressStr = addressStr.substring(0, postalMatch.index).trim();
+            }
+
+            // 2. Extract Province: ", Prov. XXX"
+            const provMatch = addressStr.match(/,?\s*Prov\.\s*([^,]+)/i);
+            if (provMatch) {
+                this.selectedProvinceName = provMatch[1].trim();
+                addressStr = addressStr.substring(0, provMatch.index).trim();
+            }
+
+            // 3. Extract District and Regency: ", Kec. XXX, RegencyName"
+            const kecMatch = addressStr.match(/,?\s*Kec\.\s*([^,]+)/i);
+            if (kecMatch) {
+                this.selectedDistrictName = kecMatch[1].trim();
+                const regencyPart = addressStr.substring(kecMatch.index + kecMatch[0].length).trim();
+                if (regencyPart) {
+                    const regName = regencyPart.replace(/^,\s*/, '').trim();
+                    if (regName && !regName.toLowerCase().startsWith('prov.')) {
+                        this.selectedRegencyName = regName;
+                    }
+                }
+                addressStr = addressStr.substring(0, kecMatch.index).trim();
+            }
+
+            // 4. Extract Village: ", Kel. XXX"
+            const kelMatch = addressStr.match(/,?\s*Kel\.\s*([^,]+)/i);
+            if (kelMatch) {
+                this.selectedVillageName = kelMatch[1].trim();
+                addressStr = addressStr.substring(0, kelMatch.index).trim();
+            }
+
+            // Clean remaining street address
+            this.streetAddress = this.cleanStreetAddress(addressStr);
+        },
+
+        async autoSelectRegions() {
+            if (!this.selectedProvinceName) return;
+            const pMatch = this.provinces.find(p => p.name.toLowerCase() === this.selectedProvinceName.toLowerCase());
+            if (!pMatch) return;
+
+            this.selectedProvince = pMatch.id;
+            this.loadingRegency = true;
+            try {
+                const res = await fetch(`{{ url('/regions/provinces') }}/${this.selectedProvince}/regencies`);
+                const data = await res.json();
+                if (data.success) {
+                    this.regencies = data.data;
+                    if (this.selectedRegencyName) {
+                        const rMatch = this.regencies.find(r => r.name.toLowerCase() === this.selectedRegencyName.toLowerCase());
+                        if (rMatch) {
+                            this.selectedRegency = rMatch.id;
+                            this.loadingDistrict = true;
+                            const resD = await fetch(`{{ url('/regions/regencies') }}/${this.selectedRegency}/districts`);
+                            const dataD = await resD.json();
+                            if (dataD.success) {
+                                this.districts = dataD.data;
+                                if (this.selectedDistrictName) {
+                                    const dMatch = this.districts.find(d => d.name.toLowerCase() === this.selectedDistrictName.toLowerCase());
+                                    if (dMatch) {
+                                        this.selectedDistrict = dMatch.id;
+                                        this.loadingVillage = true;
+                                        const resV = await fetch(`{{ url('/regions/districts') }}/${this.selectedDistrict}/villages`);
+                                        const dataV = await resV.json();
+                                        if (dataV.success) {
+                                            this.villages = dataV.data;
+                                            if (this.selectedVillageName) {
+                                                const vMatch = this.villages.find(v => v.name.toLowerCase() === this.selectedVillageName.toLowerCase());
+                                                if (vMatch) {
+                                                    this.selectedVillage = vMatch.id;
+                                                    if (vMatch.postal_code) this.postalCode = vMatch.postal_code;
+                                                }
+                                            }
+                                        }
+                                        this.loadingVillage = false;
+                                    }
+                                }
+                                this.loadingDistrict = false;
+                            }
+                        }
+                    }
+                    this.loadingRegency = false;
+                }
+            } catch (e) {
+                console.error('Failed to auto-select cascading regions', e);
+            } finally {
+                this.loadingRegency = false;
+                this.loadingDistrict = false;
+                this.loadingVillage = false;
+            }
+        },
+
         async init() {
+            if (this.fullAddress) {
+                this.parseInitialAddress(this.fullAddress);
+            }
+
             this.loadingProvince = true;
             try {
                 const res = await fetch('{{ route('regions.provinces') }}');
                 const data = await res.json();
                 if (data.success) {
                     this.provinces = data.data;
+                    if (this.selectedProvinceName) {
+                        await this.autoSelectRegions();
+                    }
                 }
             } catch (e) {
                 console.error('Failed to load provinces', e);
             } finally {
                 this.loadingProvince = false;
-            }
-
-            if (this.fullAddress) {
-                this.streetAddress = this.fullAddress;
             }
         },
 
@@ -218,8 +330,9 @@
         },
 
         updateFullAddress() {
+            let cleanStreet = this.cleanStreetAddress(this.streetAddress);
             let parts = [];
-            if (this.streetAddress && this.streetAddress.trim()) parts.push(this.streetAddress.trim());
+            if (cleanStreet) parts.push(cleanStreet);
             if (this.selectedVillageName) parts.push('Kel. ' + this.selectedVillageName);
             if (this.selectedDistrictName) parts.push('Kec. ' + this.selectedDistrictName);
             if (this.selectedRegencyName) parts.push(this.selectedRegencyName);
