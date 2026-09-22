@@ -17,21 +17,37 @@
         districts: [],
         villages: [],
 
+        openProvince: false,
+        searchProvince: '',
         selectedProvince: '',
         selectedProvinceName: '',
+
+        openRegency: false,
+        searchRegency: '',
         selectedRegency: '',
         selectedRegencyName: '',
+
+        openDistrict: false,
+        searchDistrict: '',
         selectedDistrict: '',
         selectedDistrictName: '',
+
+        openVillage: false,
+        searchVillage: '',
         selectedVillage: '',
         selectedVillageName: '',
+
         postalCode: '',
         streetAddress: '',
         fullAddress: @js($currentAddress),
-        isLoading: false,
+        
+        loadingProvince: false,
+        loadingRegency: false,
+        loadingDistrict: false,
+        loadingVillage: false,
 
         async init() {
-            // Load provinces on start
+            this.loadingProvince = true;
             try {
                 const res = await fetch('{{ route('regions.provinces') }}');
                 const data = await res.json();
@@ -40,12 +56,48 @@
                 }
             } catch (e) {
                 console.error('Failed to load provinces', e);
+            } finally {
+                this.loadingProvince = false;
             }
 
-            // If initial address exists and has street part
             if (this.fullAddress) {
                 this.streetAddress = this.fullAddress;
             }
+        },
+
+        get filteredProvinces() {
+            if (!this.searchProvince.trim()) return this.provinces;
+            const q = this.searchProvince.toLowerCase();
+            return this.provinces.filter(p => p.name.toLowerCase().includes(q));
+        },
+
+        get filteredRegencies() {
+            if (!this.searchRegency.trim()) return this.regencies;
+            const q = this.searchRegency.toLowerCase();
+            return this.regencies.filter(r => r.name.toLowerCase().includes(q));
+        },
+
+        get filteredDistricts() {
+            if (!this.searchDistrict.trim()) return this.districts;
+            const q = this.searchDistrict.toLowerCase();
+            return this.districts.filter(d => d.name.toLowerCase().includes(q));
+        },
+
+        get filteredVillages() {
+            if (!this.searchVillage.trim()) return this.villages;
+            const q = this.searchVillage.toLowerCase();
+            return this.villages.filter(v => 
+                v.name.toLowerCase().includes(q) || 
+                (v.postal_code && v.postal_code.includes(q))
+            );
+        },
+
+        async selectProvince(p) {
+            this.selectedProvince = p ? p.id : '';
+            this.selectedProvinceName = p ? p.name : '';
+            this.openProvince = false;
+            this.searchProvince = '';
+            await this.onProvinceChange();
         },
 
         async onProvinceChange() {
@@ -59,14 +111,11 @@
             this.regencies = [];
             this.districts = [];
             this.villages = [];
-
-            const pObj = this.provinces.find(p => p.id === this.selectedProvince);
-            this.selectedProvinceName = pObj ? pObj.name : '';
             this.updateFullAddress();
 
             if (!this.selectedProvince) return;
 
-            this.isLoading = true;
+            this.loadingRegency = true;
             try {
                 const res = await fetch(`{{ url('/regions/provinces') }}/${this.selectedProvince}/regencies`);
                 const data = await res.json();
@@ -74,8 +123,16 @@
             } catch (e) {
                 console.error('Failed to load regencies', e);
             } finally {
-                this.isLoading = false;
+                this.loadingRegency = false;
             }
+        },
+
+        async selectRegency(r) {
+            this.selectedRegency = r ? r.id : '';
+            this.selectedRegencyName = r ? r.name : '';
+            this.openRegency = false;
+            this.searchRegency = '';
+            await this.onRegencyChange();
         },
 
         async onRegencyChange() {
@@ -86,14 +143,11 @@
             this.postalCode = '';
             this.districts = [];
             this.villages = [];
-
-            const rObj = this.regencies.find(r => r.id === this.selectedRegency);
-            this.selectedRegencyName = rObj ? rObj.name : '';
             this.updateFullAddress();
 
             if (!this.selectedRegency) return;
 
-            this.isLoading = true;
+            this.loadingDistrict = true;
             try {
                 const res = await fetch(`{{ url('/regions/regencies') }}/${this.selectedRegency}/districts`);
                 const data = await res.json();
@@ -101,8 +155,16 @@
             } catch (e) {
                 console.error('Failed to load districts', e);
             } finally {
-                this.isLoading = false;
+                this.loadingDistrict = false;
             }
+        },
+
+        async selectDistrict(d) {
+            this.selectedDistrict = d ? d.id : '';
+            this.selectedDistrictName = d ? d.name : '';
+            this.openDistrict = false;
+            this.searchDistrict = '';
+            await this.onDistrictChange();
         },
 
         async onDistrictChange() {
@@ -110,14 +172,11 @@
             this.selectedVillageName = '';
             this.postalCode = '';
             this.villages = [];
-
-            const dObj = this.districts.find(d => d.id === this.selectedDistrict);
-            this.selectedDistrictName = dObj ? dObj.name : '';
             this.updateFullAddress();
 
             if (!this.selectedDistrict) return;
 
-            this.isLoading = true;
+            this.loadingVillage = true;
             try {
                 const res = await fetch(`{{ url('/regions/districts') }}/${this.selectedDistrict}/villages`);
                 const data = await res.json();
@@ -125,20 +184,27 @@
             } catch (e) {
                 console.error('Failed to load villages', e);
             } finally {
-                this.isLoading = false;
+                this.loadingVillage = false;
             }
         },
 
-        onVillageChange() {
-            const vObj = this.villages.find(v => v.id === this.selectedVillage);
-            if (vObj) {
-                this.selectedVillageName = vObj.name;
-                if (vObj.postal_code) {
-                    this.postalCode = vObj.postal_code;
+        selectVillage(v) {
+            if (v) {
+                this.selectedVillage = v.id;
+                this.selectedVillageName = v.name;
+                if (v.postal_code) {
+                    this.postalCode = v.postal_code;
                 }
             } else {
+                this.selectedVillage = '';
                 this.selectedVillageName = '';
             }
+            this.openVillage = false;
+            this.searchVillage = '';
+            this.onVillageChange();
+        },
+
+        onVillageChange() {
             this.updateFullAddress();
         },
 
@@ -154,92 +220,441 @@
             if (parts.length > 0) {
                 this.fullAddress = parts.join(', ');
             }
+        },
+
+        closeAll() {
+            this.openProvince = false;
+            this.openRegency = false;
+            this.openDistrict = false;
+            this.openVillage = false;
         }
     }"
     class="w-full space-y-3"
+    @click.outside="closeAll()"
+    @keydown.escape.window="closeAll()"
 >
     {{-- Cascading Dropdowns Grid --}}
     <div class="p-3.5 bg-slate-50/80 rounded-lg border border-slate-200">
-        <div class="text-xs font-bold text-[#0e1b35] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-            <i class="fa-solid fa-map-location-dot text-primary"></i>
-            <span>Pilih Wilayah Administratif</span>
+        <div class="text-xs font-bold text-[#0e1b35] uppercase tracking-wider mb-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-map-location-dot text-primary"></i>
+                <span>Pilih Wilayah Administratif</span>
+            </div>
+            <span class="text-[11px] font-normal text-slate-500 normal-case">Ketik untuk mencari atau scroll opsi</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {{-- 1. Provinsi --}}
-            <div class="form-group mb-0">
-                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1">
-                    1. Provinsi @if($required)<span style="color:var(--danger);">*</span>@endif
+            
+            {{-- 1. PROVINSI (Searchable Dropdown) --}}
+            <div class="form-group mb-0 relative">
+                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>1. Provinsi @if($required)<span style="color:var(--danger);">*</span>@endif</span>
+                    <span x-show="loadingProvince" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
-                <select 
-                    x-model="selectedProvince" 
-                    @change="onProvinceChange()" 
-                    class="form-control text-xs" 
-                    style="height: 38px !important;"
+
+                {{-- Trigger Button --}}
+                <div 
+                    type="button"
+                    @click="openProvince = !openProvince; openRegency = false; openDistrict = false; openVillage = false; if(openProvince) $nextTick(() => $refs.searchProvinceInput?.focus())"
+                    class="form-control"
+                    :class="{ 'border-primary ring-1 ring-primary/20': openProvince }"
+                    style="display: flex !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; user-select: none; background-color: #fff; height: 38px !important; border-radius: 0.5rem; padding: 0 0.65rem !important; box-sizing: border-box !important;"
                 >
-                    <option value="">-- Pilih Provinsi --</option>
-                    <template x-for="p in provinces" :key="p.id">
-                        <option :value="p.id" x-text="p.name"></option>
-                    </template>
-                </select>
+                    <span 
+                        x-text="selectedProvinceName || '-- Pilih Provinsi --'" 
+                        :class="!selectedProvince ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+                        style="white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: 12px; line-height: 1.2;"
+                    ></span>
+                    
+                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 6px;">
+                        <template x-if="selectedProvince">
+                            <i 
+                                class="fa-solid fa-xmark text-slate-400 hover:text-red-500" 
+                                style="font-size: 11px; padding: 2px; cursor: pointer;" 
+                                @click.stop="selectProvince(null)"
+                                title="Hapus Pilihan"
+                            ></i>
+                        </template>
+                        <i 
+                            class="fa-solid fa-chevron-down text-slate-400 text-[11px]" 
+                            :style="openProvince ? 'transform: rotate(180deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'"
+                        ></i>
+                    </div>
+                </div>
+
+                {{-- Popup Menu --}}
+                <div 
+                    x-show="openProvince" 
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-1"
+                    style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; min-width: 220px; z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #cbd5e1; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                    x-cloak
+                >
+                    {{-- Search Input Box --}}
+                    <div style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; position: relative;">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 11px; pointer-events: none;"></i>
+                            <input 
+                                type="text" 
+                                x-ref="searchProvinceInput"
+                                x-model="searchProvince" 
+                                placeholder="Ketik cari provinsi..." 
+                                class="form-control"
+                                style="width: 100% !important; padding-left: 28px !important; padding-right: 24px !important; font-size: 12px !important; height: 32px !important; border-radius: 6px !important; border: 1px solid #cbd5e1 !important;"
+                                @click.stop
+                            />
+                            <template x-if="searchProvince">
+                                <button 
+                                    type="button" 
+                                    @click="searchProvince = ''; $refs.searchProvinceInput.focus()"
+                                    style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px; font-size: 11px;"
+                                >
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Scrollable List --}}
+                    <div style="overflow-y: auto; max-height: 200px; padding: 2px 0;">
+                        <template x-for="p in filteredProvinces" :key="p.id">
+                            <div 
+                                @click="selectProvince(p)"
+                                :class="{ 'bg-blue-50 font-semibold text-blue-700': selectedProvince === p.id }"
+                                class="px-3 py-2 cursor-pointer text-xs flex items-center justify-between hover:bg-slate-100 transition-colors border-b border-slate-50"
+                            >
+                                <span x-text="p.name" style="color: #1e293b;"></span>
+                                <template x-if="selectedProvince === p.id">
+                                    <i class="fa-solid fa-check text-blue-600 text-[11px]"></i>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="filteredProvinces.length === 0">
+                            <div class="p-3 text-center text-slate-400 text-xs">
+                                <i class="fa-solid fa-magnifying-glass mb-1 block opacity-40"></i>
+                                Tidak ditemukan
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
 
-            {{-- 2. Kabupaten / Kota --}}
-            <div class="form-group mb-0">
-                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1">
-                    2. Kabupaten / Kota @if($required)<span style="color:var(--danger);">*</span>@endif
+            {{-- 2. KABUPATEN / KOTA (Searchable Dropdown) --}}
+            <div class="form-group mb-0 relative">
+                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>2. Kabupaten / Kota @if($required)<span style="color:var(--danger);">*</span>@endif</span>
+                    <span x-show="loadingRegency" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
-                <select 
-                    x-model="selectedRegency" 
-                    @change="onRegencyChange()" 
-                    :disabled="!selectedProvince || regencies.length === 0"
-                    class="form-control text-xs disabled:bg-slate-100 disabled:cursor-not-allowed" 
-                    style="height: 38px !important;"
+
+                {{-- Trigger Button --}}
+                <div 
+                    type="button"
+                    @click="if(selectedProvince && regencies.length > 0 && !loadingRegency) { openRegency = !openRegency; openProvince = false; openDistrict = false; openVillage = false; if(openRegency) $nextTick(() => $refs.searchRegencyInput?.focus()); }"
+                    class="form-control"
+                    :class="{ 
+                        'border-primary ring-1 ring-primary/20': openRegency,
+                        'bg-slate-100/90 text-slate-400 cursor-not-allowed border-slate-200': !selectedProvince || regencies.length === 0 || loadingRegency 
+                    }"
+                    style="display: flex !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; user-select: none; background-color: #fff; height: 38px !important; border-radius: 0.5rem; padding: 0 0.65rem !important; box-sizing: border-box !important;"
                 >
-                    <option value="">-- Pilih Kab/Kota --</option>
-                    <template x-for="r in regencies" :key="r.id">
-                        <option :value="r.id" x-text="r.name"></option>
-                    </template>
-                </select>
+                    <span 
+                        x-text="loadingRegency ? 'Memuat kab/kota...' : (selectedRegencyName || '-- Pilih Kab/Kota --')" 
+                        :class="!selectedRegency ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+                        style="white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: 12px; line-height: 1.2;"
+                    ></span>
+                    
+                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 6px;">
+                        <template x-if="selectedRegency">
+                            <i 
+                                class="fa-solid fa-xmark text-slate-400 hover:text-red-500" 
+                                style="font-size: 11px; padding: 2px; cursor: pointer;" 
+                                @click.stop="selectRegency(null)"
+                                title="Hapus Pilihan"
+                            ></i>
+                        </template>
+                        <i 
+                            class="fa-solid fa-chevron-down text-slate-400 text-[11px]" 
+                            :style="openRegency ? 'transform: rotate(180deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'"
+                        ></i>
+                    </div>
+                </div>
+
+                {{-- Popup Menu --}}
+                <div 
+                    x-show="openRegency" 
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-1"
+                    style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; min-width: 220px; z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #cbd5e1; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                    x-cloak
+                >
+                    {{-- Search Input Box --}}
+                    <div style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; position: relative;">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 11px; pointer-events: none;"></i>
+                            <input 
+                                type="text" 
+                                x-ref="searchRegencyInput"
+                                x-model="searchRegency" 
+                                placeholder="Ketik cari kab/kota..." 
+                                class="form-control"
+                                style="width: 100% !important; padding-left: 28px !important; padding-right: 24px !important; font-size: 12px !important; height: 32px !important; border-radius: 6px !important; border: 1px solid #cbd5e1 !important;"
+                                @click.stop
+                            />
+                            <template x-if="searchRegency">
+                                <button 
+                                    type="button" 
+                                    @click="searchRegency = ''; $refs.searchRegencyInput.focus()"
+                                    style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px; font-size: 11px;"
+                                >
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Scrollable List --}}
+                    <div style="overflow-y: auto; max-height: 200px; padding: 2px 0;">
+                        <template x-for="r in filteredRegencies" :key="r.id">
+                            <div 
+                                @click="selectRegency(r)"
+                                :class="{ 'bg-blue-50 font-semibold text-blue-700': selectedRegency === r.id }"
+                                class="px-3 py-2 cursor-pointer text-xs flex items-center justify-between hover:bg-slate-100 transition-colors border-b border-slate-50"
+                            >
+                                <span x-text="r.name" style="color: #1e293b;"></span>
+                                <template x-if="selectedRegency === r.id">
+                                    <i class="fa-solid fa-check text-blue-600 text-[11px]"></i>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="filteredRegencies.length === 0">
+                            <div class="p-3 text-center text-slate-400 text-xs">
+                                <i class="fa-solid fa-magnifying-glass mb-1 block opacity-40"></i>
+                                Tidak ditemukan
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
 
-            {{-- 3. Kecamatan --}}
-            <div class="form-group mb-0">
-                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1">
-                    3. Kecamatan @if($required)<span style="color:var(--danger);">*</span>@endif
+            {{-- 3. KECAMATAN (Searchable Dropdown) --}}
+            <div class="form-group mb-0 relative">
+                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>3. Kecamatan @if($required)<span style="color:var(--danger);">*</span>@endif</span>
+                    <span x-show="loadingDistrict" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
-                <select 
-                    x-model="selectedDistrict" 
-                    @change="onDistrictChange()" 
-                    :disabled="!selectedRegency || districts.length === 0"
-                    class="form-control text-xs disabled:bg-slate-100 disabled:cursor-not-allowed" 
-                    style="height: 38px !important;"
+
+                {{-- Trigger Button --}}
+                <div 
+                    type="button"
+                    @click="if(selectedRegency && districts.length > 0 && !loadingDistrict) { openDistrict = !openDistrict; openProvince = false; openRegency = false; openVillage = false; if(openDistrict) $nextTick(() => $refs.searchDistrictInput?.focus()); }"
+                    class="form-control"
+                    :class="{ 
+                        'border-primary ring-1 ring-primary/20': openDistrict,
+                        'bg-slate-100/90 text-slate-400 cursor-not-allowed border-slate-200': !selectedRegency || districts.length === 0 || loadingDistrict 
+                    }"
+                    style="display: flex !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; user-select: none; background-color: #fff; height: 38px !important; border-radius: 0.5rem; padding: 0 0.65rem !important; box-sizing: border-box !important;"
                 >
-                    <option value="">-- Pilih Kecamatan --</option>
-                    <template x-for="d in districts" :key="d.id">
-                        <option :value="d.id" x-text="d.name"></option>
-                    </template>
-                </select>
+                    <span 
+                        x-text="loadingDistrict ? 'Memuat kecamatan...' : (selectedDistrictName || '-- Pilih Kecamatan --')" 
+                        :class="!selectedDistrict ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+                        style="white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: 12px; line-height: 1.2;"
+                    ></span>
+                    
+                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 6px;">
+                        <template x-if="selectedDistrict">
+                            <i 
+                                class="fa-solid fa-xmark text-slate-400 hover:text-red-500" 
+                                style="font-size: 11px; padding: 2px; cursor: pointer;" 
+                                @click.stop="selectDistrict(null)"
+                                title="Hapus Pilihan"
+                            ></i>
+                        </template>
+                        <i 
+                            class="fa-solid fa-chevron-down text-slate-400 text-[11px]" 
+                            :style="openDistrict ? 'transform: rotate(180deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'"
+                        ></i>
+                    </div>
+                </div>
+
+                {{-- Popup Menu --}}
+                <div 
+                    x-show="openDistrict" 
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-1"
+                    style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; min-width: 220px; z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #cbd5e1; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                    x-cloak
+                >
+                    {{-- Search Input Box --}}
+                    <div style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; position: relative;">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 11px; pointer-events: none;"></i>
+                            <input 
+                                type="text" 
+                                x-ref="searchDistrictInput"
+                                x-model="searchDistrict" 
+                                placeholder="Ketik cari kecamatan..." 
+                                class="form-control"
+                                style="width: 100% !important; padding-left: 28px !important; padding-right: 24px !important; font-size: 12px !important; height: 32px !important; border-radius: 6px !important; border: 1px solid #cbd5e1 !important;"
+                                @click.stop
+                            />
+                            <template x-if="searchDistrict">
+                                <button 
+                                    type="button" 
+                                    @click="searchDistrict = ''; $refs.searchDistrictInput.focus()"
+                                    style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px; font-size: 11px;"
+                                >
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Scrollable List --}}
+                    <div style="overflow-y: auto; max-height: 200px; padding: 2px 0;">
+                        <template x-for="d in filteredDistricts" :key="d.id">
+                            <div 
+                                @click="selectDistrict(d)"
+                                :class="{ 'bg-blue-50 font-semibold text-blue-700': selectedDistrict === d.id }"
+                                class="px-3 py-2 cursor-pointer text-xs flex items-center justify-between hover:bg-slate-100 transition-colors border-b border-slate-50"
+                            >
+                                <span x-text="d.name" style="color: #1e293b;"></span>
+                                <template x-if="selectedDistrict === d.id">
+                                    <i class="fa-solid fa-check text-blue-600 text-[11px]"></i>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="filteredDistricts.length === 0">
+                            <div class="p-3 text-center text-slate-400 text-xs">
+                                <i class="fa-solid fa-magnifying-glass mb-1 block opacity-40"></i>
+                                Tidak ditemukan
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
 
-            {{-- 4. Kelurahan / Desa & Kode Pos --}}
-            <div class="form-group mb-0">
-                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1">
-                    4. Kelurahan / Desa
+            {{-- 4. KELURAHAN / DESA (Searchable Dropdown) --}}
+            <div class="form-group mb-0 relative">
+                <label class="form-label text-[11px] font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>4. Kelurahan / Desa</span>
+                    <span x-show="loadingVillage" class="text-primary text-[10px]"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
                 </label>
-                <select 
-                    x-model="selectedVillage" 
-                    @change="onVillageChange()" 
-                    :disabled="!selectedDistrict || villages.length === 0"
-                    class="form-control text-xs disabled:bg-slate-100 disabled:cursor-not-allowed" 
-                    style="height: 38px !important;"
+
+                {{-- Trigger Button --}}
+                <div 
+                    type="button"
+                    @click="if(selectedDistrict && villages.length > 0 && !loadingVillage) { openVillage = !openVillage; openProvince = false; openRegency = false; openDistrict = false; if(openVillage) $nextTick(() => $refs.searchVillageInput?.focus()); }"
+                    class="form-control"
+                    :class="{ 
+                        'border-primary ring-1 ring-primary/20': openVillage,
+                        'bg-slate-100/90 text-slate-400 cursor-not-allowed border-slate-200': !selectedDistrict || villages.length === 0 || loadingVillage 
+                    }"
+                    style="display: flex !important; align-items: center !important; justify-content: space-between !important; cursor: pointer; user-select: none; background-color: #fff; height: 38px !important; border-radius: 0.5rem; padding: 0 0.65rem !important; box-sizing: border-box !important;"
                 >
-                    <option value="">-- Pilih Kelurahan --</option>
-                    <template x-for="v in villages" :key="v.id">
-                        <option :value="v.id" x-text="v.name + (v.postal_code ? ' (' + v.postal_code + ')' : '')"></option>
-                    </template>
-                </select>
+                    <span 
+                        x-text="loadingVillage ? 'Memuat kelurahan...' : (selectedVillageName ? (selectedVillageName + (postalCode ? ' (' + postalCode + ')' : '')) : '-- Pilih Kelurahan --')" 
+                        :class="!selectedVillage ? 'text-slate-400' : 'text-slate-900 font-semibold'"
+                        style="white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; font-size: 12px; line-height: 1.2;"
+                    ></span>
+                    
+                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 6px;">
+                        <template x-if="selectedVillage">
+                            <i 
+                                class="fa-solid fa-xmark text-slate-400 hover:text-red-500" 
+                                style="font-size: 11px; padding: 2px; cursor: pointer;" 
+                                @click.stop="selectVillage(null)"
+                                title="Hapus Pilihan"
+                            ></i>
+                        </template>
+                        <i 
+                            class="fa-solid fa-chevron-down text-slate-400 text-[11px]" 
+                            :style="openVillage ? 'transform: rotate(180deg); transition: transform 0.2s;' : 'transition: transform 0.2s;'"
+                        ></i>
+                    </div>
+                </div>
+
+                {{-- Popup Menu --}}
+                <div 
+                    x-show="openVillage" 
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 translate-y-1"
+                    style="position: absolute; top: calc(100% + 4px); left: 0; width: 100%; min-width: 220px; z-index: 1060; background: #ffffff; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); border: 1px solid #cbd5e1; max-height: 260px; display: flex; flex-direction: column; overflow: hidden;"
+                    x-cloak
+                >
+                    {{-- Search Input Box --}}
+                    <div style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; position: relative;">
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 11px; pointer-events: none;"></i>
+                            <input 
+                                type="text" 
+                                x-ref="searchVillageInput"
+                                x-model="searchVillage" 
+                                placeholder="Ketik cari kelurahan..." 
+                                class="form-control"
+                                style="width: 100% !important; padding-left: 28px !important; padding-right: 24px !important; font-size: 12px !important; height: 32px !important; border-radius: 6px !important; border: 1px solid #cbd5e1 !important;"
+                                @click.stop
+                            />
+                            <template x-if="searchVillage">
+                                <button 
+                                    type="button" 
+                                    @click="searchVillage = ''; $refs.searchVillageInput.focus()"
+                                    style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px; font-size: 11px;"
+                                >
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    {{-- Scrollable List --}}
+                    <div style="overflow-y: auto; max-height: 200px; padding: 2px 0;">
+                        <template x-for="v in filteredVillages" :key="v.id">
+                            <div 
+                                @click="selectVillage(v)"
+                                :class="{ 'bg-blue-50 font-semibold text-blue-700': selectedVillage === v.id }"
+                                class="px-3 py-2 cursor-pointer text-xs flex items-center justify-between hover:bg-slate-100 transition-colors border-b border-slate-50"
+                            >
+                                <div>
+                                    <span x-text="v.name" style="color: #1e293b;"></span>
+                                    <template x-if="v.postal_code">
+                                        <span class="text-[10.5px] text-slate-400 font-mono ml-1" x-text="'(' + v.postal_code + ')'"></span>
+                                    </template>
+                                </div>
+                                <template x-if="selectedVillage === v.id">
+                                    <i class="fa-solid fa-check text-blue-600 text-[11px]"></i>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template x-if="filteredVillages.length === 0">
+                            <div class="p-3 text-center text-slate-400 text-xs">
+                                <i class="fa-solid fa-magnifying-glass mb-1 block opacity-40"></i>
+                                Tidak ditemukan
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
+
         </div>
 
         {{-- Kode Pos Input --}}
@@ -256,7 +671,7 @@
                     maxlength="10"
                 >
             </div>
-            <span class="text-[11px] text-slate-400">Kode pos terisi otomatis saat kelurahan dipilih.</span>
+            <span class="text-[11px] text-slate-400">Kode pos otomatis terisi saat kelurahan dipilih atau dapat disesuaikan manual.</span>
         </div>
     </div>
 

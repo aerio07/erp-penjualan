@@ -94,15 +94,15 @@
         </div>
         @endif
 
-        {{-- Karantina --}}
+        {{-- Gudang Reject --}}
         @if(isset($alerts['quarantine_pending']) && $alerts['quarantine_pending'] > 0)
         <div class="bg-[#faf5ff] border-l-4 border-[#9333ea] py-2 px-3.5 rounded-lg flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2.5 text-[#7e22ce]">
                 <span class="material-symbols-outlined text-[18px]">healing</span>
-                <span class="font-medium text-xs sm:text-sm">Karantina: <strong>{{ $alerts['quarantine_pending'] }} Produk</strong> rusak perlu disposisi</span>
+                <span class="font-medium text-xs sm:text-sm">Gudang Reject: <strong>{{ $alerts['quarantine_pending'] }} Produk</strong> rusak perlu diproses</span>
             </div>
             <a href="{{ route('inventory.dispositions.index') }}" style="background-color: #7e22ce; color: #ffffff;" class="px-3 py-1 rounded hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm whitespace-nowrap">
-                Disposisi &rarr;
+                Proses Reject &rarr;
             </a>
         </div>
         @endif

@@ -41,7 +41,7 @@
                 <div style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
                     Total Nilai Persediaan (On Hand): <strong>Rp {{ number_format($products->sum('stock_value'), 0, ',', '.') }}</strong>
                     @if($products->sum('quarantine_stock') > 0)
-                        · Total Barang Karantina: <strong style="color:#b45309;">{{ number_format($products->sum('quarantine_stock')) }} pcs</strong>
+                        · Total Barang Reject: <strong style="color:#b45309;">{{ number_format($products->sum('quarantine_stock')) }} pcs</strong>
                     @endif
                 </div>
             </div>
@@ -58,7 +58,7 @@
                         <th style="text-align:right; color:#15803d; background:rgba(16, 185, 129, 0.05);">Available</th>
                         <th style="text-align:right; color:#dc2626; background:rgba(220, 38, 38, 0.05);">Backorder</th>
                         <th style="text-align:right; color:#4f46e5;">Incoming PO</th>
-                        <th style="text-align:right;">Karantina</th>
+                        <th style="text-align:right;">Reject</th>
                         <th style="text-align:right;">Nilai HPP</th>
                         <th style="text-align:center;">Status</th>
                         <th class="text-center col-actions">Aksi</th>
@@ -113,7 +113,7 @@
                                     <i class="fa-solid fa-rectangle-list"></i>
                                 </a>
                                 @if($p->quarantine_stock > 0)
-                                <a href="{{ route('inventory.dispositions.create') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-warning btn-sm btn-icon" title="Selesaikan Barang Karantina">
+                                <a href="{{ route('inventory.dispositions.create') }}?product_id={{ $p->id }}&warehouse_id={{ $warehouseId }}" class="btn btn-warning btn-sm btn-icon" title="Proses Gudang Reject">
                                     <i class="fa-solid fa-box-archive"></i>
                                 </a>
                                 @endif

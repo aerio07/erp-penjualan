@@ -99,8 +99,8 @@
                                     <i class="fa-solid fa-check"></i> Bagus (Siap Jual)
                                 </span>
                             @else
-                                <span class="badge badge-cancelled" title="Masuk ke Stok Karantina / Rusak (Tidak Dijual)">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> Rusak (Karantina)
+                                <span class="badge badge-cancelled" title="Masuk ke Gudang Reject / Rusak (Tidak Dijual)">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Rusak (Gudang Reject)
                                 </span>
                             @endif
                         </td>

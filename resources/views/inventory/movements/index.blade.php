@@ -37,7 +37,7 @@
             <option value="transfer_in" {{ request('type') === 'transfer_in' ? 'selected' : '' }}>Transfer In</option>
             <option value="transfer_out" {{ request('type') === 'transfer_out' ? 'selected' : '' }}>Transfer Out</option>
             <option value="return_in" {{ request('type') === 'return_in' ? 'selected' : '' }}>Retur In (Baik)</option>
-            <option value="return_in_damaged" {{ request('type') === 'return_in_damaged' ? 'selected' : '' }}>Retur Karantina (Rusak)</option>
+            <option value="return_in_damaged" {{ request('type') === 'return_in_damaged' ? 'selected' : '' }}>Retur Reject (Rusak)</option>
             <option value="return_out" {{ request('type') === 'return_out' ? 'selected' : '' }}>Retur Out</option>
             <option value="adjustment" {{ request('type') === 'adjustment' ? 'selected' : '' }}>Adjustment Opname</option>
             <option value="write_off" {{ request('type') === 'write_off' ? 'selected' : '' }}>Write Off (Pemusnahan)</option>
@@ -77,7 +77,7 @@
             <td>
                 @if($isDamaged)
                     <span class="badge badge-warning" style="background:#fef3c7; color:#92400e; font-weight:700;">
-                        <i class="fa-solid fa-triangle-exclamation"></i> RETUR KARANTINA
+                        <i class="fa-solid fa-triangle-exclamation"></i> RETUR REJECT
                     </span>
                 @elseif($isOpeningBalance)
                     <span class="badge badge-done" style="background:#e0e7ff; color:#3730a3; font-weight:700;">

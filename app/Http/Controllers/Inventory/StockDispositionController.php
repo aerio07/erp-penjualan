@@ -96,11 +96,11 @@ class StockDispositionController extends Controller
             // 1. Lock product row to serialize disposition operations
             $product = Product::lockForUpdate()->findOrFail($request->product_id);
 
-            // 2. Validasi stok karantina tersedia
+            // 2. Validasi stok reject tersedia
             $available = $this->stockService->getQuarantineStockAvailable($request->product_id, $request->warehouse_id);
             if ($request->qty > $available) {
                 throw ValidationException::withMessages([
-                    'qty' => "Jumlah yang diselesaikan ({$request->qty}) melebihi stok karantina yang tersedia ({$available}).",
+                    'qty' => "Jumlah yang diproses ({$request->qty}) melebihi stok reject yang tersedia ({$available}).",
                 ]);
             }
 
@@ -146,7 +146,7 @@ class StockDispositionController extends Controller
                 'reference_type' => StockDisposition::class,
                 'reference_id'   => $disposition->id,
                 'movement_date'  => $disposition->disposed_at->toDateString(),
-                'notes'          => "Disposisi karantina: {$typeLabel}" . ($disposition->notes ? " ({$disposition->notes})" : ""),
+                'notes'          => "Penyelesaian gudang reject: {$typeLabel}" . ($disposition->notes ? " ({$disposition->notes})" : ""),
                 'user_id'        => $disposition->user_id,
             ]);
 
@@ -158,7 +158,7 @@ class StockDispositionController extends Controller
         });
 
         return redirect()->route('inventory.dispositions.index')
-            ->with('success', "Penyelesaian barang karantina #{$disposition->disposition_number} berhasil disimpan.");
+            ->with('success', "Penyelesaian barang reject #{$disposition->disposition_number} berhasil disimpan.");
     }
 
     private function generateDispositionNumber(): string

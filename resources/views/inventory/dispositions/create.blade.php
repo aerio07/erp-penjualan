@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', 'Form Disposisi Barang Karantina')
-@section('page-title', 'Form Disposisi Barang Karantina')
+@section('title', 'Form Proses Gudang Reject')
+@section('page-title', 'Form Proses Gudang Reject')
 
 @section('content')
 <div class="animate-in" x-data="{
@@ -13,8 +13,8 @@
     get totalRevenue() { return this.resolutionType === 'sold_as_reject' ? (this.qty * this.salePrice) : 0; }
 }">
     <x-page-header
-        title="Form Penyelesaian Barang Karantina"
-        subtitle="Pilih produk & gudang untuk menyelesaikan status barang retur rusak/cacat"
+        title="Form Penyelesaian Gudang Reject"
+        subtitle="Pilih produk & gudang untuk menyelesaikan status barang retur rusak/reject (Write Off atau Jual Reject)"
         :back-url="route('inventory.dispositions.index')"
     />
 
@@ -35,7 +35,7 @@
     {{-- Step 1: Filter Selection (jika belum dipilihi) --}}
     <div class="card" style="margin-bottom:20px;">
         <div class="card-header">
-            <h3>1. Pilih Produk & Gudang Karantina</h3>
+            <h3>1. Pilih Produk & Gudang</h3>
         </div>
         <div class="card-body">
             <form method="GET" action="{{ route('inventory.dispositions.create') }}" style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
@@ -69,7 +69,7 @@
     </div>
 
     @if($selectedProduct && $selectedWarehouse)
-    {{-- Info Card Stok Karantina --}}
+    {{-- Info Card Stok Reject --}}
     <div class="card" style="margin-bottom:20px; border-left:4px solid var(--warning); background:#fffbeb;">
         <div class="card-body" style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
             <div style="width:48px; height:48px; background:#fef3c7; color:#d97706; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;">
@@ -84,7 +84,7 @@
                 </div>
             </div>
             <div style="text-align:right;">
-                <div style="font-size:12px; color:#92400e; font-weight:600;">Sisa Stok Karantina Tersedia:</div>
+                <div style="font-size:12px; color:#92400e; font-weight:600;">Sisa Stok Reject Tersedia:</div>
                 <div style="font-size:26px; font-weight:800; color:#b45309;">
                     {{ number_format($availableQuarantine) }} <span style="font-size:14px; font-weight:500;">{{ $selectedProduct->unit }}</span>
                 </div>
@@ -94,7 +94,7 @@
 
     @if($availableQuarantine <= 0)
     <div class="alert alert-warning">
-        <i class="fa-solid fa-circle-info"></i> Tidak ada stok karantina (barang rusak) yang tersedia untuk diselesaikan pada produk dan gudang ini.
+        <i class="fa-solid fa-circle-info"></i> Tidak ada stok barang reject yang tersedia untuk diselesaikan pada produk dan gudang ini.
     </div>
     @else
 
@@ -107,16 +107,16 @@
         <div class="grid grid-2">
             <div class="card">
                 <div class="card-header">
-                    <h3>2. Rincian Disposisi & Metode Penyelesaian</h3>
+                    <h3>2. Rincian & Metode Penyelesaian Reject</h3>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label class="form-label">Tanggal Penyelesaian <span style="color:var(--danger);">*</span></label>
+                        <label class="form-label">Tanggal Proses <span style="color:var(--danger);">*</span></label>
                         <input type="date" name="disposed_at" value="{{ old('disposed_at', date('Y-m-d')) }}" class="form-control" required>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Jumlah Disposisi (Qty) <span style="color:var(--danger);">*</span></label>
+                        <label class="form-label">Jumlah Diproses (Qty) <span style="color:var(--danger);">*</span></label>
                         <input type="number" name="qty" x-model.number="qty" min="1" max="{{ $availableQuarantine }}" class="form-control" required>
                         <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
                             Maksimal {{ number_format($availableQuarantine) }} {{ $selectedProduct->unit }}
@@ -154,8 +154,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Catatan / Alasan Disposisi</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Keterangan tambahan barang rusak atau detail pembeli reject...">{{ old('notes') }}</textarea>
+                        <label class="form-label">Catatan / Alasan Penyelesaian</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Keterangan tambahan barang rusak/reject atau detail pembeli reject...">{{ old('notes') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -242,7 +242,7 @@
 
                     <x-form-actions
                         :cancel-url="route('inventory.dispositions.index')"
-                        submit-label="Simpan Disposisi &amp; Pembukuan"
+                        submit-label="Simpan &amp; Bukukan Jurnal"
                         submit-icon="fa-solid fa-check"
                     />
                 </div>

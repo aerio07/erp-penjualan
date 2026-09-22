@@ -1,15 +1,15 @@
 @extends('layouts.app')
-@section('title', 'Disposisi Karantina')
-@section('page-title', 'Disposisi Karantina')
+@section('title', 'Gudang Reject')
+@section('page-title', 'Gudang Reject')
 
 @section('content')
 <div class="animate-in">
     <x-page-header
-        title="Disposisi Karantina"
-        subtitle="Riwayat penyelesaian barang rusak (stok karantina) melalui Write Off atau Jual Sebagai Reject">
+        title="Gudang Reject"
+        subtitle="Riwayat penyelesaian barang rusak & afkir (Gudang Reject) melalui Write Off atau Jual Sebagai Reject">
         <x-slot:actions>
             <a href="{{ route('inventory.dispositions.create') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Disposisi Baru
+                <i class="fa-solid fa-plus"></i> Proses Reject Baru
             </a>
         </x-slot:actions>
     </x-page-header>
@@ -109,7 +109,7 @@
         <tr>
             <td colspan="10" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-box-archive" style="font-size:32px; margin-bottom:12px; opacity:0.3; display:block;"></i>
-                Belum ada transaksi penyelesaian barang karantina yang sesuai filter.
+                Belum ada transaksi penyelesaian barang reject yang sesuai filter.
             </td>
         </tr>
         @endforelse

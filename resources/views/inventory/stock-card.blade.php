@@ -133,7 +133,7 @@
                         <td>
                             @if($isDamaged)
                                 <span class="badge badge-warning" style="background:#fef3c7; color:#92400e; font-weight:700;">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> RETUR KARANTINA
+                                    <i class="fa-solid fa-triangle-exclamation"></i> RETUR REJECT
                                 </span>
                             @elseif($isOpeningBalance)
                                 <span class="badge badge-done" style="background:#e0e7ff; color:#3730a3; font-weight:700;">
@@ -167,7 +167,7 @@
                             @endif
                         </td>
                         <td style="text-align:right; font-weight:600; {{ $isDamaged ? 'color:#92400e;' : 'color:var(--success);' }}">
-                            {{ $isIncoming ? '+'.number_format(abs($m->quantity)) : ($isDamaged ? '+'.number_format(abs($m->quantity)).' (Karantina)' : '-') }}
+                            {{ $isIncoming ? '+'.number_format(abs($m->quantity)) : ($isDamaged ? '+'.number_format(abs($m->quantity)).' (Gudang Reject)' : '-') }}
                         </td>
                         <td style="text-align:right; color:var(--danger); font-weight:600;">
                             {{ $isOutgoing ? '-'.number_format(abs($m->quantity)) : '-' }}

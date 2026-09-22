@@ -233,9 +233,9 @@ class SalesReturnController extends Controller
             foreach ($return->items as $item) {
                 $isGood = ($item->condition === 'baik');
                 $movementType = $isGood ? 'return_in' : 'return_in_damaged';
-                $conditionLabel = $isGood ? 'Kondisi Baik - Masuk Stok Siap Jual' : 'Kondisi Rusak - Masuk Stok Karantina';
+                $conditionLabel = $isGood ? 'Kondisi Baik - Masuk Stok Siap Jual' : 'Kondisi Rusak - Masuk Gudang Reject';
 
-                // Record stock movement (return_in untuk baik, return_in_damaged untuk karantina)
+                // Record stock movement (return_in untuk baik, return_in_damaged untuk gudang reject)
                 $this->stockService->recordMovement([
                     'product_id'     => $item->product_id,
                     'warehouse_id'   => $delivery->warehouse_id,
@@ -256,7 +256,7 @@ class SalesReturnController extends Controller
 
             $return->update(['status' => SalesReturnStatus::Received]);
 
-            return back()->with('success', 'Fisik barang retur telah diterima di gudang. Barang kondisi baik masuk stok siap jual, dan barang rusak masuk stok karantina.');
+            return back()->with('success', 'Fisik barang retur telah diterima di gudang. Barang kondisi baik masuk stok siap jual, dan barang rusak masuk gudang reject.');
         });
     }
 

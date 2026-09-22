@@ -45,7 +45,7 @@
         'waiting_approval' => 'WAITING APPROVAL',
         'partially_received' => 'PARTIAL RECV',
         'partially_delivered' => 'PARTIAL DELIV',
-        'return_in_damaged' => 'RETUR KARANTINA',
+        'return_in_damaged' => 'RETUR REJECT',
         'sold_as_reject' => 'SOLD REJECT',
         'in_transit' => 'IN TRANSIT',
         'in_progress' => 'IN PROGRESS',
