@@ -39,9 +39,8 @@
             <tr>
                 <x-sortable-header column="entry_number" title="No. Entri" />
                 <x-sortable-header column="entry_date" title="Tanggal" :isDefault="true" />
-                <th>Keterangan / Referensi</th>
-                <th style="text-align: right;">Total Nominal</th>
-                <th>Dibuat Oleh</th>
+                <th style="text-align: right;">Debit / Kredit</th>
+                <th>Keterangan Header</th>
                 <x-sortable-header column="status" title="Status" align="center" />
                 <th class="text-center col-actions">Aksi</th>
             </tr>
@@ -55,11 +54,15 @@
                 </a>
             </td>
             <td>{{ $entry->entry_date ? $entry->entry_date->format('d/m/Y') : '-' }}</td>
-            <td class="col-notes" title="{{ $entry->description ?? '-' }}">{{ $entry->description ?? '-' }}</td>
             <td style="text-align: right; font-weight: 600; font-family: 'Inter', monospace; color: var(--primary);">
                 Rp {{ number_format($entry->total_debit, 0, ',', '.') }}
             </td>
-            <td>{{ $entry->creator->name ?? '-' }}</td>
+            <td>
+                <div class="col-notes" title="{{ $entry->description ?? '-' }}">{{ $entry->description ?? '-' }}</div>
+                @if($entry->creator)
+                <div style="font-size:11.5px; color:var(--text-secondary); margin-top:2px;">Oleh: {{ $entry->creator->name }}</div>
+                @endif
+            </td>
             <td style="text-align:center;">
                 <span class="badge badge-{{ $entry->status === 'posted' ? 'posted' : 'draft' }}">
                     {{ ucfirst($entry->status) }}
@@ -92,7 +95,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="7" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="6" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-book-open" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada entri jurnal akuntansi yang sesuai filter
             </td>
