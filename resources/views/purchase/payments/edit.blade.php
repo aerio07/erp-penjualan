@@ -136,7 +136,7 @@
                         </div>
                         <hr style="border:none; border-top:1px solid var(--border);">
                         <div style="display:flex; justify-content:space-between;">
-                            <span style="color:var(--text-secondary);">Total Tagihan Efektif</span>
+                            <span style="color:var(--text-secondary);">Nominal Tagihan</span>
                             <span style="font-weight:600;">Rp {{ number_format($invoice->effective_total_amount, 0, ',', '.') }}</span>
                         </div>
                         @if($invoice->total_reversed_amount > 0)

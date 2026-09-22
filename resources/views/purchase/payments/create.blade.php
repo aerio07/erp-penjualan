@@ -137,7 +137,7 @@
                             </div>
                             <hr style="border:none; border-top:1px solid var(--border);">
                             <div style="display:flex; justify-content:space-between;">
-                                <span style="color:var(--text-secondary);">Total Tagihan Efektif</span>
+                                <span style="color:var(--text-secondary);">Nominal Tagihan</span>
                                 <span style="font-weight:600;" x-text="'Rp ' + formatNum(selectedInvoice.effective_total_amount || selectedInvoice.total_amount)"></span>
                             </div>
                             <template x-if="selectedInvoice.total_reversed_amount > 0">

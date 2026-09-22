@@ -80,7 +80,7 @@
                 <th>Tgl Invoice</th>
                 <th>Jatuh Tempo</th>
                 <th style="text-align:center;">Umur (Aging)</th>
-                <th style="text-align:right;">Tagihan Efektif</th>
+                <th style="text-align:right;">Nominal Tagihan</th>
                 <th style="text-align:right;">Sisa Hutang</th>
                 <th style="text-align:center;">Aksi</th>
             </tr>
