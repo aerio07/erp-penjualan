@@ -19,54 +19,64 @@
     </x-page-header>
 
     {{-- Stats Cards Summary (5 AP Aging Buckets) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <div class="stat-card border-l-4 border-[#0284c7]">
-            <div class="stat-icon" style="background:#e0f2fe; color:#0284c7;">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="stat-card border-l-4 border-[#0284c7]" style="padding: 12px 14px !important; gap: 10px !important;">
+            <div class="stat-icon" style="background:#e0f2fe; color:#0284c7; width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important;">
                 <i class="fa-solid fa-clock"></i>
             </div>
-            <div class="stat-info">
-                <div class="stat-label">Belum Jatuh Tempo</div>
-                <div class="stat-value text-base">Rp {{ number_format($bucketCurrent, 0, ',', '.') }}</div>
+            <div class="stat-info" style="min-width: 0;">
+                <div class="stat-label" style="font-size: 10.5px !important; margin-bottom: 2px !important;" title="Belum Jatuh Tempo">Belum Jatuh Tempo</div>
+                <div class="stat-value text-slate-900" style="font-size: 13px !important; font-weight: 700 !important; white-space: nowrap !important;" title="Rp {{ number_format($bucketCurrent, 0, ',', '.') }}">
+                    Rp {{ number_format($bucketCurrent, 0, ',', '.') }}
+                </div>
             </div>
         </div>
 
-        <div class="stat-card border-l-4 border-[#d97706]">
-            <div class="stat-icon" style="background:#fef3c7; color:#d97706;">
+        <div class="stat-card border-l-4 border-[#d97706]" style="padding: 12px 14px !important; gap: 10px !important;">
+            <div class="stat-icon" style="background:#fef3c7; color:#d97706; width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important;">
                 <i class="fa-solid fa-calendar-day"></i>
             </div>
-            <div class="stat-info">
-                <div class="stat-label">1 - 30 Hari</div>
-                <div class="stat-value text-base text-[#d97706]">Rp {{ number_format($bucket1to30, 0, ',', '.') }}</div>
+            <div class="stat-info" style="min-width: 0;">
+                <div class="stat-label" style="font-size: 10.5px !important; margin-bottom: 2px !important;" title="1 - 30 Hari">1 - 30 Hari</div>
+                <div class="stat-value text-[#d97706]" style="font-size: 13px !important; font-weight: 700 !important; white-space: nowrap !important;" title="Rp {{ number_format($bucket1to30, 0, ',', '.') }}">
+                    Rp {{ number_format($bucket1to30, 0, ',', '.') }}
+                </div>
             </div>
         </div>
 
-        <div class="stat-card border-l-4 border-[#ea580c]">
-            <div class="stat-icon" style="background:#ffedd5; color:#ea580c;">
+        <div class="stat-card border-l-4 border-[#ea580c]" style="padding: 12px 14px !important; gap: 10px !important;">
+            <div class="stat-icon" style="background:#ffedd5; color:#ea580c; width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important;">
                 <i class="fa-solid fa-calendar-days"></i>
             </div>
-            <div class="stat-info">
-                <div class="stat-label">31 - 60 Hari</div>
-                <div class="stat-value text-base text-[#ea580c]">Rp {{ number_format($bucket31to60, 0, ',', '.') }}</div>
+            <div class="stat-info" style="min-width: 0;">
+                <div class="stat-label" style="font-size: 10.5px !important; margin-bottom: 2px !important;" title="31 - 60 Hari">31 - 60 Hari</div>
+                <div class="stat-value text-[#ea580c]" style="font-size: 13px !important; font-weight: 700 !important; white-space: nowrap !important;" title="Rp {{ number_format($bucket31to60, 0, ',', '.') }}">
+                    Rp {{ number_format($bucket31to60, 0, ',', '.') }}
+                </div>
             </div>
         </div>
 
-        <div class="stat-card border-l-4 border-[#dc2626]">
-            <div class="stat-icon" style="background:#fee2e2; color:#dc2626;">
+        <div class="stat-card border-l-4 border-[#dc2626]" style="padding: 12px 14px !important; gap: 10px !important;">
+            <div class="stat-icon" style="background:#fee2e2; color:#dc2626; width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important;">
                 <i class="fa-solid fa-calendar-minus"></i>
             </div>
-            <div class="stat-info">
-                <div class="stat-label">61 - 90 Hari</div>
-                <div class="stat-value text-base text-[#dc2626]">Rp {{ number_format($bucket61to90, 0, ',', '.') }}</div>
+            <div class="stat-info" style="min-width: 0;">
+                <div class="stat-label" style="font-size: 10.5px !important; margin-bottom: 2px !important;" title="61 - 90 Hari">61 - 90 Hari</div>
+                <div class="stat-value text-[#dc2626]" style="font-size: 13px !important; font-weight: 700 !important; white-space: nowrap !important;" title="Rp {{ number_format($bucket61to90, 0, ',', '.') }}">
+                    Rp {{ number_format($bucket61to90, 0, ',', '.') }}
+                </div>
             </div>
         </div>
 
-        <div class="stat-card border-l-4 border-[#991b1b]">
-            <div class="stat-icon" style="background:#fee2e2; color:#991b1b;">
+        <div class="stat-card border-l-4 border-[#991b1b]" style="padding: 12px 14px !important; gap: 10px !important;">
+            <div class="stat-icon" style="background:#fee2e2; color:#991b1b; width: 38px !important; height: 38px !important; min-width: 38px !important; font-size: 16px !important;">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <div class="stat-info">
-                <div class="stat-label">> 90 Hari</div>
-                <div class="stat-value text-base text-[#991b1b]">Rp {{ number_format($bucketOver90, 0, ',', '.') }}</div>
+            <div class="stat-info" style="min-width: 0;">
+                <div class="stat-label" style="font-size: 10.5px !important; margin-bottom: 2px !important;" title="> 90 Hari">> 90 Hari</div>
+                <div class="stat-value text-[#991b1b]" style="font-size: 13px !important; font-weight: 700 !important; white-space: nowrap !important;" title="Rp {{ number_format($bucketOver90, 0, ',', '.') }}">
+                    Rp {{ number_format($bucketOver90, 0, ',', '.') }}
+                </div>
             </div>
         </div>
     </div>
