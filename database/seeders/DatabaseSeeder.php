@@ -16,10 +16,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,               // 1. Users (butuh sebelum semua tabel lain)
-            ChartOfAccountSeeder::class,     // 2. COA (butuh sebelum journal)
-            MasterDataSeeder::class,         // 3. Warehouse, Supplier, Customer, Product
-            FixedAssetCategorySeeder::class, // 4. Kategori Aset Tetap
+            UserSeeder::class,           // 1. Users
+            ChartOfAccountSeeder::class, // 2. COA
         ]);
     }
 }
