@@ -230,162 +230,224 @@
     <!-- ========================================================= -->
     <!-- 4. OPERATIONAL DASHBOARD: JATUH TEMPO & LOGISTIK QUEUE -->
     <!-- ========================================================= -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" x-data="{ upcomingTab: 'receivables' }">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch" x-data="{ upcomingTab: 'receivables' }">
 
-        <!-- Kolom Kiri: Tagihan Mendekati Jatuh Tempo (≤ 7 Hari) -->
-        <div class="bg-white rounded-lg shadow-sm flex flex-col border border-[#E2E8F0] overflow-hidden">
-            <div class="p-4 border-b border-[#E2E8F0] bg-slate-50 flex flex-wrap justify-between items-center gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#0e1b35] text-[20px]">calendar_clock</span>
-                    <h2 class="font-bold text-[#0e1b35] text-base font-sans">Jatuh Tempo (≤ 7 Hari)</h2>
+        <!-- Kolom Kiri: Tagihan Mendekati Jatuh Tempo (≤ 7 Hari / Tertunggak) -->
+        <div class="bg-white rounded-lg shadow-sm flex flex-col border border-[#E2E8F0] overflow-hidden h-full justify-between">
+            <div>
+                {{-- Header Card --}}
+                <div class="p-4 border-b border-[#E2E8F0] bg-slate-50 flex flex-wrap justify-between items-center gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#0e1b35] text-[20px]">calendar_clock</span>
+                        <h2 class="font-bold text-[#0e1b35] text-base font-sans">Jatuh Tempo (Prioritas Kas)</h2>
+                    </div>
+                    {{-- Tabs Toggle --}}
+                    <div class="flex bg-slate-200/80 p-0.5 rounded text-xs font-semibold">
+                        <button type="button" @click="upcomingTab = 'receivables'" 
+                                :class="upcomingTab === 'receivables' ? 'bg-white text-[#0284c7] shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                                class="px-2.5 py-1 rounded transition-all flex items-center gap-1.5">
+                            <span>Piutang</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="upcomingTab === 'receivables' ? 'bg-sky-100 text-sky-800' : 'bg-slate-300 text-slate-700'">{{ $allUpcomingReceivables->count() }}</span>
+                        </button>
+                        <button type="button" @click="upcomingTab = 'payables'" 
+                                :class="upcomingTab === 'payables' ? 'bg-white text-[#dc2626] shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                                class="px-2.5 py-1 rounded transition-all flex items-center gap-1.5">
+                            <span>Hutang</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px]" :class="upcomingTab === 'payables' ? 'bg-rose-100 text-rose-800' : 'bg-slate-300 text-slate-700'">{{ $allUpcomingPayables->count() }}</span>
+                        </button>
+                    </div>
                 </div>
-                {{-- Tabs Toggle --}}
-                <div class="flex bg-slate-200/80 p-0.5 rounded text-xs font-semibold">
-                    <button type="button" @click="upcomingTab = 'receivables'" 
-                            :class="upcomingTab === 'receivables' ? 'bg-white text-[#0284c7] shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                            class="px-2.5 py-1 rounded transition-all">
-                        Piutang ({{ $upcomingReceivables->count() }})
+
+                {{-- 3 Quick Financial Metric Badges (Simetris Sempurna dengan Card Kanan) --}}
+                <div class="p-4 grid grid-cols-3 gap-3 border-b border-slate-100 bg-white">
+                    <button type="button" @click="upcomingTab = 'receivables'" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 transition-all flex flex-col items-center text-center">
+                        <span class="text-sm sm:text-base font-bold text-sky-700 font-sans truncate max-w-full">
+                            Rp {{ number_format($totalUpcomingReceivables / 1000000, 1, ',', '.') }} Jt
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">Piutang Segera</span>
                     </button>
-                    <button type="button" @click="upcomingTab = 'payables'" 
-                            :class="upcomingTab === 'payables' ? 'bg-white text-[#dc2626] shadow-sm' : 'text-slate-600 hover:text-slate-900'"
-                            class="px-2.5 py-1 rounded transition-all">
-                        Hutang ({{ $upcomingPayables->count() }})
+                    <button type="button" @click="upcomingTab = 'payables'" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition-all flex flex-col items-center text-center">
+                        <span class="text-sm sm:text-base font-bold text-rose-700 font-sans truncate max-w-full">
+                            Rp {{ number_format($totalUpcomingPayables / 1000000, 1, ',', '.') }} Jt
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">Hutang Segera</span>
                     </button>
+                    <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-300 transition-all flex flex-col items-center text-center">
+                        <span class="text-base sm:text-lg font-bold text-amber-700 font-sans">
+                            {{ $allUpcomingReceivables->count() + $allUpcomingPayables->count() }}
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">Faktur Prioritas</span>
+                    </a>
+                </div>
+
+                {{-- Subheader (Simetris dengan Card Kanan) --}}
+                <div class="p-3 bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-700 flex justify-between items-center">
+                    <span x-text="upcomingTab === 'receivables' ? 'Daftar Piutang Jatuh Tempo Terdekat' : 'Daftar Hutang Jatuh Tempo Terdekat'"></span>
+                    <span class="text-[11px] text-slate-500 font-normal">Prioritas Tagihan</span>
                 </div>
             </div>
 
             {{-- Tab Content: Piutang --}}
-            <div x-show="upcomingTab === 'receivables'" class="flex-1 overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-                        <tr>
-                            <th class="py-2.5 px-3">No. Invoice</th>
-                            <th class="py-2.5 px-3">Customer</th>
-                            <th class="py-2.5 px-3 text-center">Jatuh Tempo</th>
-                            <th class="py-2.5 px-3 text-right">Sisa Tagihan</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 font-sans">
-                        @forelse($upcomingReceivables as $inv)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-2.5 px-3">
-                                <a href="{{ route('sales.invoices.show', $inv->id) }}" class="font-bold text-[#0284c7] hover:underline">
-                                    {{ $inv->invoice_number }}
-                                </a>
-                            </td>
-                            <td class="py-2.5 px-3 font-medium text-slate-800 truncate max-w-[140px]">
-                                {{ $inv->salesOrder?->customer?->name ?? 'Customer Umum' }}
-                            </td>
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $inv->days_remaining <= 3 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' }}">
-                                    {{ $inv->days_remaining == 0 ? 'Hari Ini' : $inv->days_remaining . ' hr lagi' }}
-                                </span>
-                            </td>
-                            <td class="py-2.5 px-3 text-right font-bold text-[#0284c7] whitespace-nowrap">
-                                Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="py-8 text-center text-slate-400">
-                                <span class="material-symbols-outlined text-2xl text-emerald-500 mb-1 block">check_circle</span>
-                                Tidak ada piutang jatuh tempo dalam 7 hari ke depan.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                @if($upcomingReceivables->isNotEmpty())
-                <div class="p-2.5 bg-slate-50 border-t border-slate-200 text-right">
+            <div x-show="upcomingTab === 'receivables'" class="flex-1 flex flex-col justify-between">
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3">No. Invoice</th>
+                                <th class="py-2.5 px-3">Customer</th>
+                                <th class="py-2.5 px-3 text-center">Status Tempo</th>
+                                <th class="py-2.5 px-3 text-right">Sisa Tagihan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-sans">
+                            @forelse($upcomingReceivables as $inv)
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-2.5 px-3">
+                                    <a href="{{ route('sales.invoices.show', $inv->id) }}" class="font-bold text-[#0284c7] hover:underline">
+                                        {{ $inv->invoice_number }}
+                                    </a>
+                                </td>
+                                <td class="py-2.5 px-3 font-medium text-slate-800 truncate max-w-[140px]" title="{{ $inv->salesOrder?->customer?->name ?? 'Customer Umum' }}">
+                                    {{ $inv->salesOrder?->customer?->name ?? 'Customer Umum' }}
+                                </td>
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                    @if(!empty($inv->is_overdue))
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
+                                            Telat {{ $inv->days_overdue }} hr
+                                        </span>
+                                    @elseif($inv->days_remaining == 0)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">
+                                            Hari Ini
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">
+                                            {{ $inv->days_remaining }} hr lagi
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="py-2.5 px-3 text-right font-bold text-[#0284c7] whitespace-nowrap">
+                                    Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="py-12 text-center text-slate-400">
+                                    <span class="material-symbols-outlined text-3xl text-emerald-500 mb-1 block">check_circle</span>
+                                    <span class="font-medium text-xs text-slate-600 block">Tidak ada piutang jatuh tempo.</span>
+                                    <span class="text-[11px] text-slate-400">Seluruh piutang customer dalam batas aman.</span>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                
+                {{-- Footer Pinned at Bottom --}}
+                <div class="p-2.5 bg-slate-50 border-t border-slate-200 text-right mt-auto">
                     <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="text-xs text-[#0284c7] font-bold hover:underline">
                         Lihat Semua Piutang Jatuh Tempo &rarr;
                     </a>
                 </div>
-                @endif
             </div>
 
             {{-- Tab Content: Hutang --}}
-            <div x-show="upcomingTab === 'payables'" x-cloak class="flex-1 overflow-x-auto">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-                        <tr>
-                            <th class="py-2.5 px-3">No. Invoice</th>
-                            <th class="py-2.5 px-3">Supplier</th>
-                            <th class="py-2.5 px-3 text-center">Jatuh Tempo</th>
-                            <th class="py-2.5 px-3 text-right">Sisa Hutang</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 font-sans">
-                        @forelse($upcomingPayables as $inv)
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-2.5 px-3">
-                                <a href="{{ route('purchase.invoices.show', $inv->id) }}" class="font-bold text-[#dc2626] hover:underline">
-                                    {{ $inv->invoice_number }}
-                                </a>
-                            </td>
-                            <td class="py-2.5 px-3 font-medium text-slate-800 truncate max-w-[140px]">
-                                {{ $inv->purchaseOrder?->supplier?->name ?? 'Supplier Umum' }}
-                            </td>
-                            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $inv->days_remaining <= 3 ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' }}">
-                                    {{ $inv->days_remaining == 0 ? 'Hari Ini' : $inv->days_remaining . ' hr lagi' }}
-                                </span>
-                            </td>
-                            <td class="py-2.5 px-3 text-right font-bold text-[#dc2626] whitespace-nowrap">
-                                Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="py-8 text-center text-slate-400">
-                                <span class="material-symbols-outlined text-2xl text-emerald-500 mb-1 block">check_circle</span>
-                                Tidak ada hutang supplier jatuh tempo dalam 7 hari ke depan.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                @if($upcomingPayables->isNotEmpty())
-                <div class="p-2.5 bg-slate-50 border-t border-slate-200 text-right">
+            <div x-show="upcomingTab === 'payables'" x-cloak class="flex-1 flex flex-col justify-between">
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3">No. Invoice</th>
+                                <th class="py-2.5 px-3">Supplier</th>
+                                <th class="py-2.5 px-3 text-center">Status Tempo</th>
+                                <th class="py-2.5 px-3 text-right">Sisa Hutang</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-sans">
+                            @forelse($upcomingPayables as $inv)
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="py-2.5 px-3">
+                                    <a href="{{ route('purchase.invoices.show', $inv->id) }}" class="font-bold text-[#dc2626] hover:underline">
+                                        {{ $inv->invoice_number }}
+                                    </a>
+                                </td>
+                                <td class="py-2.5 px-3 font-medium text-slate-800 truncate max-w-[140px]" title="{{ $inv->purchaseOrder?->supplier?->name ?? 'Supplier Umum' }}">
+                                    {{ $inv->purchaseOrder?->supplier?->name ?? 'Supplier Umum' }}
+                                </td>
+                                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                                    @if(!empty($inv->is_overdue))
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
+                                            Telat {{ $inv->days_overdue }} hr
+                                        </span>
+                                    @elseif($inv->days_remaining == 0)
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">
+                                            Hari Ini
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">
+                                            {{ $inv->days_remaining }} hr lagi
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="py-2.5 px-3 text-right font-bold text-[#dc2626] whitespace-nowrap">
+                                    Rp {{ number_format($inv->outstanding_amount, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="py-12 text-center text-slate-400">
+                                    <span class="material-symbols-outlined text-3xl text-emerald-500 mb-1 block">check_circle</span>
+                                    <span class="font-medium text-xs text-slate-600 block">Tidak ada hutang supplier jatuh tempo.</span>
+                                    <span class="text-[11px] text-slate-400">Seluruh kewajiban pembayaran supplier dalam batas aman.</span>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Footer Pinned at Bottom --}}
+                <div class="p-2.5 bg-slate-50 border-t border-slate-200 text-right mt-auto">
                     <a href="{{ route('accounting.reports.payables-upcoming') }}" class="text-xs text-[#dc2626] font-bold hover:underline">
                         Lihat Semua Hutang Jatuh Tempo &rarr;
                     </a>
                 </div>
-                @endif
             </div>
         </div>
 
         <!-- Kolom Kanan: Status Antrian Operasional & Stok Menipis -->
-        <div class="bg-white rounded-lg shadow-sm flex flex-col border border-[#E2E8F0] overflow-hidden">
-            <div class="p-4 border-b border-[#E2E8F0] bg-slate-50 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[#0e1b35] text-[20px]">conveyor_belt</span>
-                    <h2 class="font-bold text-[#0e1b35] text-base font-sans">Antrian Operasional & Logistik</h2>
+        <div class="bg-white rounded-lg shadow-sm flex flex-col border border-[#E2E8F0] overflow-hidden h-full justify-between">
+            <div>
+                <div class="p-4 border-b border-[#E2E8F0] bg-slate-50 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[#0e1b35] text-[20px]">conveyor_belt</span>
+                        <h2 class="font-bold text-[#0e1b35] text-base font-sans">Antrian Operasional & Logistik</h2>
+                    </div>
+                    <a href="{{ route('inventory.stock-summary') }}" class="text-xs text-[#03193c] font-bold hover:underline">Stok &rarr;</a>
                 </div>
-                <a href="{{ route('inventory.stock-summary') }}" class="text-xs text-[#03193c] font-bold hover:underline">Stok &rarr;</a>
+
+                {{-- 3 Quick Operational Metric Badges --}}
+                <div class="p-4 grid grid-cols-3 gap-3 border-b border-slate-100 bg-white">
+                    <a href="{{ route('sales.orders.index') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 transition-all flex flex-col items-center text-center">
+                        <span class="text-base sm:text-lg font-bold text-sky-700 font-sans">{{ $operationalQueues['so_ready_to_ship'] ?? 0 }}</span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">SO Butuh Dikirim</span>
+                    </a>
+                    <a href="{{ route('purchase.orders.index') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 transition-all flex flex-col items-center text-center">
+                        <span class="text-base sm:text-lg font-bold text-indigo-700 font-sans">{{ $operationalQueues['po_waiting_receipt'] ?? 0 }}</span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PO Menunggu Masuk</span>
+                    </a>
+                    <a href="{{ \Illuminate\Support\Facades\Route::has('purchase.requests.index') ? route('purchase.requests.index') : url('/purchase/requests') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition-all flex flex-col items-center text-center">
+                        <span class="text-base sm:text-lg font-bold text-rose-700 font-sans">{{ \Illuminate\Support\Facades\Schema::hasTable('purchase_requests') ? \App\Models\PurchaseRequest::where('status', 'waiting_approval')->count() : 0 }}</span>
+                        <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PR Menunggu ACC</span>
+                    </a>
+                </div>
+
+                {{-- Cuplikan 5 Produk Stok Kritis --}}
+                <div class="p-3 bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-700 flex justify-between items-center">
+                    <span>Daftar Stok Kritis (Perlu Reorder)</span>
+                    <span class="text-[11px] text-slate-500 font-normal">Min. Stock Alert</span>
+                </div>
             </div>
 
-            {{-- 3 Quick Operational Metric Badges --}}
-            <div class="p-4 grid grid-cols-3 gap-3 border-b border-slate-100 bg-white">
-                <a href="{{ route('sales.orders.index') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 transition-all flex flex-col items-center text-center">
-                    <span class="text-lg font-bold text-sky-700 font-sans">{{ $operationalQueues['so_ready_to_ship'] ?? 0 }}</span>
-                    <span class="text-[11px] font-semibold text-slate-600 mt-0.5">SO Butuh Dikirim</span>
-                </a>
-                <a href="{{ route('purchase.orders.index') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-300 transition-all flex flex-col items-center text-center">
-                    <span class="text-lg font-bold text-indigo-700 font-sans">{{ $operationalQueues['po_waiting_receipt'] ?? 0 }}</span>
-                    <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PO Menunggu Masuk</span>
-                </a>
-                <a href="{{ \Illuminate\Support\Facades\Route::has('purchase.requests.index') ? route('purchase.requests.index') : url('/purchase/requests') }}" class="p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-rose-50 hover:border-rose-300 transition-all flex flex-col items-center text-center">
-                    <span class="text-lg font-bold text-rose-700 font-sans">{{ \Illuminate\Support\Facades\Schema::hasTable('purchase_requests') ? \App\Models\PurchaseRequest::where('status', 'waiting_approval')->count() : 0 }}</span>
-                    <span class="text-[11px] font-semibold text-slate-600 mt-0.5">PR Menunggu ACC</span>
-                </a>
-            </div>
-
-            {{-- Cuplikan 5 Produk Stok Kritis --}}
-            <div class="p-3 bg-slate-50/50 border-b border-slate-100 text-xs font-bold text-slate-700 flex justify-between items-center">
-                <span>Daftar Stok Kritis (Perlu Reorder)</span>
-                <span class="text-[11px] text-slate-500 font-normal">Min. Stock Alert</span>
-            </div>
             <div class="flex-1 overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
@@ -417,15 +479,23 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="py-6 text-center text-slate-400">
-                                <span class="material-symbols-outlined text-2xl text-emerald-500 mb-1 block">check_circle</span>
-                                Seluruh stok produk saat ini dalam batas aman.
+                            <td colspan="4" class="py-12 text-center text-slate-400">
+                                <span class="material-symbols-outlined text-3xl text-emerald-500 mb-1 block">check_circle</span>
+                                <span class="font-medium text-xs text-slate-600 block">Seluruh stok produk dalam batas aman.</span>
                             </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            @if($lowStockProducts->isNotEmpty())
+            <div class="p-2.5 bg-slate-50 border-t border-slate-200 text-right mt-auto">
+                <a href="{{ route('inventory.stock-summary') }}" class="text-xs text-[#03193c] font-bold hover:underline">
+                    Lihat Semua Stok Menipis &rarr;
+                </a>
+            </div>
+            @endif
         </div>
 
     </div>

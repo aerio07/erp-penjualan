@@ -42,19 +42,21 @@ class DashboardController extends Controller
         // --- BARIS 4: Aktivitas Terbaru ---
         $aktivitas = $this->getAktivitasTerbaru();
 
-        // Extra info untuk list preview jatuh tempo (≤ 7 hari dari hari ini) & low stock
+        // Extra info untuk list preview jatuh tempo (≤ 7 hari dari hari ini atau overdue tertunggak) & low stock
         $today = Carbon::today();
         $dueThreshold = $today->copy()->addDays(7);
 
         $allUpcomingReceivables = SalesInvoice::with(['salesOrder.customer', 'payments', 'items'])
             ->whereNotIn('status', ['paid', 'draft'])
-            ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
-            ->orderBy('due_date')
+            ->orderBy('due_date', 'asc')
             ->get()
             ->map(function ($inv) use ($today) {
                 $dueDate = Carbon::parse($inv->due_date);
-                $inv->days_remaining = max(0, $today->diffInDays($dueDate, false));
+                $diff = $today->diffInDays($dueDate, false);
+                $inv->is_overdue = $dueDate->lt($today);
+                $inv->days_remaining = $diff;
+                $inv->days_overdue = abs($diff);
                 return $inv;
             })
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
@@ -65,13 +67,15 @@ class DashboardController extends Controller
 
         $allUpcomingPayables = PurchaseInvoice::with(['purchaseOrder.supplier', 'payments', 'items'])
             ->whereNotIn('status', ['paid', 'draft'])
-            ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
-            ->orderBy('due_date')
+            ->orderBy('due_date', 'asc')
             ->get()
             ->map(function ($inv) use ($today) {
                 $dueDate = Carbon::parse($inv->due_date);
-                $inv->days_remaining = max(0, $today->diffInDays($dueDate, false));
+                $diff = $today->diffInDays($dueDate, false);
+                $inv->is_overdue = $dueDate->lt($today);
+                $inv->days_remaining = $diff;
+                $inv->days_overdue = abs($diff);
                 return $inv;
             })
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
@@ -101,6 +105,8 @@ class DashboardController extends Controller
             'aktivitas',
             'upcomingReceivables',
             'upcomingPayables',
+            'allUpcomingReceivables',
+            'allUpcomingPayables',
             'totalUpcomingReceivables',
             'totalUpcomingPayables',
             'lowStockProducts',
@@ -254,7 +260,6 @@ class DashboardController extends Controller
 
         $dueReceivablesCount = SalesInvoice::with(['payments', 'items'])
             ->whereNotIn('status', ['paid', 'draft'])
-            ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
             ->get()
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
@@ -262,7 +267,6 @@ class DashboardController extends Controller
 
         $duePayablesCount = PurchaseInvoice::with(['payments', 'items'])
             ->whereNotIn('status', ['paid', 'draft'])
-            ->whereDate('due_date', '>=', $today)
             ->whereDate('due_date', '<=', $dueThreshold)
             ->get()
             ->filter(fn($invoice) => $invoice->outstanding_amount > 0.01)
