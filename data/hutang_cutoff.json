@@ -1,0 +1,2012 @@
+[
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060291",
+    "invoice_date": "2026-06-02",
+    "due_date": "2026-06-02",
+    "total_amount": 790663792.0,
+    "paid_amount": 608437262.0,
+    "outstanding_amount": 182226530.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060292",
+    "invoice_date": "2026-06-02",
+    "due_date": "2026-06-02",
+    "total_amount": 113601304.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 113601304.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060293",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-07-03",
+    "total_amount": 144260474.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 144260474.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060294",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-06-03",
+    "total_amount": 103638737.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 103638737.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060295",
+    "invoice_date": "2026-06-04",
+    "due_date": "2026-06-04",
+    "total_amount": 484525800.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 484525800.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060296",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-06-03",
+    "total_amount": 118888999.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 118888999.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060297",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-06-03",
+    "total_amount": 38610000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 38610000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060298",
+    "invoice_date": "2026-06-04",
+    "due_date": "2026-06-04",
+    "total_amount": 165148830.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 165148830.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060299",
+    "invoice_date": "2026-06-04",
+    "due_date": "2026-06-04",
+    "total_amount": 279954180.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 279954180.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060300",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 140325677.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 140325677.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060301",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 111120168.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 111120168.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060302",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 32398045.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 32398045.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060303",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 2924976.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 2924976.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060304",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 78185250.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78185250.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060305",
+    "invoice_date": "2026-06-09",
+    "due_date": "2026-06-09",
+    "total_amount": 47977815.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 47977815.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060306",
+    "invoice_date": "2026-06-09",
+    "due_date": "2026-06-09",
+    "total_amount": 69989753.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 69989753.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060307",
+    "invoice_date": "2026-06-08",
+    "due_date": "2026-06-08",
+    "total_amount": 511689667.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 511689667.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060308",
+    "invoice_date": "2026-06-08",
+    "due_date": "2026-06-08",
+    "total_amount": 78880230.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78880230.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060309",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 311027315.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 311027315.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060310",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 218295000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 218295000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060311",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 500425200.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 500425200.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060312",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 159021349.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 159021349.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060313",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 172200085.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 172200085.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060314",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 398337000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 398337000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060315",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 35838000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 35838000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060316",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 4950000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 4950000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060317",
+    "invoice_date": "2026-06-12",
+    "due_date": "2026-06-12",
+    "total_amount": 117966256.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 117966256.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060318",
+    "invoice_date": "2026-06-12",
+    "due_date": "2026-06-12",
+    "total_amount": 131273928.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 131273928.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060319",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 49755475.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 49755475.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060320",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 56549444.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 56549444.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060321",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 59275698.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 59275698.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060322",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 16673580.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 16673580.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060323",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 15769215.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 15769215.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060324",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 88328130.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 88328130.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060325",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 68207832.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 68207832.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060326",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 26730000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 26730000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060327",
+    "invoice_date": "2026-06-18",
+    "due_date": "2026-06-18",
+    "total_amount": 243050116.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 243050116.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060328",
+    "invoice_date": "2026-06-18",
+    "due_date": "2026-06-18",
+    "total_amount": 147923508.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 147923508.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060329",
+    "invoice_date": "2026-06-18",
+    "due_date": "2026-06-18",
+    "total_amount": 58167766.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 58167766.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060330",
+    "invoice_date": "2026-06-17",
+    "due_date": "2026-06-17",
+    "total_amount": 590200380.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 590200380.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060331",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 275981310.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 275981310.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060332",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 60915212.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 60915212.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060333",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 27299973.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 27299973.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060334",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 988134701.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 988134701.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060335",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 550303088.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 550303088.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060336",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 79492048.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 79492048.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060337",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 157437105.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 157437105.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060338",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 69327170.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 69327170.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060339",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 618751980.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 618751980.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060340",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 190176896.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 190176896.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060341",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 79907177.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 79907177.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060342",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 109260954.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 109260954.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060343",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 226479578.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 226479578.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060344",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 516737727.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 516737727.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060345",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 120068497.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 120068497.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060346",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 9660420.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 9660420.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060347",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 16687440.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 16687440.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060348",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 58240923.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 58240923.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060349",
+    "invoice_date": "2026-06-26",
+    "due_date": "2026-06-26",
+    "total_amount": 15966720.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 15966720.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060350",
+    "invoice_date": "2026-06-26",
+    "due_date": "2026-06-26",
+    "total_amount": 32393124.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 32393124.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060351",
+    "invoice_date": "2026-06-26",
+    "due_date": "2026-06-26",
+    "total_amount": 145663705.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 145663705.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060352",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 153568795.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 153568795.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060353",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 270814562.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 270814562.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060354",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 266560072.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 266560072.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060355",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 153464256.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 153464256.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060356",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 145170729.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 145170729.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060357",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 265867099.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 265867099.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060358",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 541087534.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 541087534.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060359",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 137453037.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 137453037.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060360",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 84700508.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 84700508.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060361",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 480526200.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 480526200.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060362",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 23644467.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 23644467.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070363",
+    "invoice_date": "2026-07-01",
+    "due_date": "2026-07-01",
+    "total_amount": 104583228.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 104583228.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070364",
+    "invoice_date": "2026-07-01",
+    "due_date": "2026-07-01",
+    "total_amount": 337384793.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 337384793.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070365",
+    "invoice_date": "2026-07-01",
+    "due_date": "2026-07-01",
+    "total_amount": 242531888.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 242531888.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070366",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 83230686.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 83230686.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070367",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 203521325.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 203521325.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070368",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 84391453.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 84391453.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070369",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 104470352.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 104470352.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070370",
+    "invoice_date": "2026-07-03",
+    "due_date": "2026-07-03",
+    "total_amount": 731372039.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 731372039.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070371",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 638875760.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 638875760.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070372",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 192331614.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 192331614.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070373",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 35286847.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 35286847.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070374",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 78658262.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78658262.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070375",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 88838000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 88838000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070376",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 113374800.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 113374800.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070377",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 205506970.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 205506970.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070378",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 91782900.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 91782900.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070379",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 210083544.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 210083544.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070380",
+    "invoice_date": "2026-07-08",
+    "due_date": "2026-07-08",
+    "total_amount": 108250306.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 108250306.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070381",
+    "invoice_date": "2026-07-09",
+    "due_date": "2026-07-09",
+    "total_amount": 128858077.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 128858077.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070382",
+    "invoice_date": "2026-07-09",
+    "due_date": "2026-07-09",
+    "total_amount": 392611626.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 392611626.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070383",
+    "invoice_date": "2026-07-09",
+    "due_date": "2026-07-09",
+    "total_amount": 127189277.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 127189277.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070384",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 23948100.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 23948100.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070385",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 447017670.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 447017670.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070386",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 139154094.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 139154094.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070387",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 145136575.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 145136575.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070388",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 123572881.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 123572881.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070389",
+    "invoice_date": "2026-07-13",
+    "due_date": "2026-07-13",
+    "total_amount": 97555377.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 97555377.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070390",
+    "invoice_date": "2026-07-13",
+    "due_date": "2026-07-13",
+    "total_amount": 658450525.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 658450525.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070391",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 77471856.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 77471856.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070392",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 320934272.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 320934272.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070393",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 80009127.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 80009127.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070394",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 138941447.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 138941447.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070395",
+    "invoice_date": "2026-07-15",
+    "due_date": "2026-07-15",
+    "total_amount": 83862702.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 83862702.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070396",
+    "invoice_date": "2026-07-15",
+    "due_date": "2026-07-15",
+    "total_amount": 63386860.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 63386860.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070397",
+    "invoice_date": "2026-07-16",
+    "due_date": "2026-07-16",
+    "total_amount": 81302179.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 81302179.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070398",
+    "invoice_date": "2026-07-16",
+    "due_date": "2026-07-16",
+    "total_amount": 75228386.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 75228386.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070399",
+    "invoice_date": "2026-07-17",
+    "due_date": "2026-07-17",
+    "total_amount": 440794332.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 440794332.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070400",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 82980394.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 82980394.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070401",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 75371670.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 75371670.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070402",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 12564288.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 12564288.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070403",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 175845276.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 175845276.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070404",
+    "invoice_date": "2026-07-21",
+    "due_date": "2026-07-21",
+    "total_amount": 95463374.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 95463374.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070405",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 261624330.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 261624330.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070406",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 147133308.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 147133308.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070407",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 108101539.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 108101539.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070408",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 121804077.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 121804077.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070409",
+    "invoice_date": "2026-07-23",
+    "due_date": "2026-07-23",
+    "total_amount": 162421974.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 162421974.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070410",
+    "invoice_date": "2026-07-23",
+    "due_date": "2026-07-23",
+    "total_amount": 101920085.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 101920085.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070411",
+    "invoice_date": "2026-07-23",
+    "due_date": "2026-07-23",
+    "total_amount": 194032008.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 194032008.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070412",
+    "invoice_date": "2026-07-24",
+    "due_date": "2026-07-24",
+    "total_amount": 24250050.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 24250050.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070413",
+    "invoice_date": "2026-07-27",
+    "due_date": "2026-07-27",
+    "total_amount": 126696291.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 126696291.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070414",
+    "invoice_date": "2026-07-27",
+    "due_date": "2026-07-27",
+    "total_amount": 197137602.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 197137602.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070415",
+    "invoice_date": "2026-07-28",
+    "due_date": "2026-07-28",
+    "total_amount": 1579814902.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 1579814902.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070416",
+    "invoice_date": "2026-07-28",
+    "due_date": "2026-07-28",
+    "total_amount": 23948100.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 23948100.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070417",
+    "invoice_date": "2026-07-28",
+    "due_date": "2026-07-28",
+    "total_amount": 208577924.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 208577924.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070418",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 202592478.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 202592478.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070419",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 121867416.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 121867416.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070420",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 66443002.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 66443002.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070421",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 42981642.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 42981642.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070422",
+    "invoice_date": "2026-07-30",
+    "due_date": "2026-07-30",
+    "total_amount": 65986747.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 65986747.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070423",
+    "invoice_date": "2026-07-30",
+    "due_date": "2026-07-30",
+    "total_amount": 362129432.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 362129432.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070424",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 124197170.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 124197170.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070425",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 90363389.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 90363389.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070426",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 68390349.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 68390349.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070427",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 229457250.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 229457250.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070428",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 45891450.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 45891450.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070429",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 17768520.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 17768520.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070430",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 452618467.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 452618467.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080431",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-08-03",
+    "total_amount": 390639164.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 390639164.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080432",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-08-03",
+    "total_amount": 141735460.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 141735460.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080433",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-08-03",
+    "total_amount": 172427996.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 172427996.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080434",
+    "invoice_date": "2026-08-04",
+    "due_date": "2026-08-04",
+    "total_amount": 204375145.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 204375145.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080435",
+    "invoice_date": "2026-08-05",
+    "due_date": "2026-08-05",
+    "total_amount": 60466725.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 60466725.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080436",
+    "invoice_date": "2026-08-05",
+    "due_date": "2026-08-05",
+    "total_amount": 201656070.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 201656070.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080437",
+    "invoice_date": "2026-08-05",
+    "due_date": "2026-08-05",
+    "total_amount": 114178884.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 114178884.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080438",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 175345434.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 175345434.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080439",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 227369885.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 227369885.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080440",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 130432772.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 130432772.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080441",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 725222584.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 725222584.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080442",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 12307680.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 12307680.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080443",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 36005904.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 36005904.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080444",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 27064259.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 27064259.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080445",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 175698099.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 175698099.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080446",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 90316938.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 90316938.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080447",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 198968000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 198968000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080448",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 15778125.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 15778125.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080449",
+    "invoice_date": "2026-08-10",
+    "due_date": "2026-08-10",
+    "total_amount": 47780865.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 47780865.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080450",
+    "invoice_date": "2026-08-11",
+    "due_date": "2026-08-11",
+    "total_amount": 110649825.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 110649825.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080451",
+    "invoice_date": "2026-08-11",
+    "due_date": "2026-08-11",
+    "total_amount": 120414785.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 120414785.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080452",
+    "invoice_date": "2026-08-11",
+    "due_date": "2026-08-11",
+    "total_amount": 488232360.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 488232360.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080453",
+    "invoice_date": "2026-08-12",
+    "due_date": "2026-08-12",
+    "total_amount": 57550492.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 57550492.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080454",
+    "invoice_date": "2026-08-12",
+    "due_date": "2026-08-12",
+    "total_amount": 78652298.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78652298.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080455",
+    "invoice_date": "2026-08-12",
+    "due_date": "2026-08-12",
+    "total_amount": 281041933.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 281041933.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080456",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 122481871.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 122481871.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080457",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 217849436.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 217849436.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080458",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 161596788.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 161596788.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080459",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 607842009.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 607842009.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080460",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 45891450.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 45891450.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080461",
+    "invoice_date": "2026-08-14",
+    "due_date": "2026-08-14",
+    "total_amount": 120518307.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 120518307.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080462",
+    "invoice_date": "2026-08-14",
+    "due_date": "2026-08-14",
+    "total_amount": 80677674.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 80677674.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080463",
+    "invoice_date": "2026-08-18",
+    "due_date": "2026-08-18",
+    "total_amount": 1054944.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 1054944.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080464",
+    "invoice_date": "2026-08-18",
+    "due_date": "2026-08-18",
+    "total_amount": 79880458.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 79880458.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080465",
+    "invoice_date": "2026-08-18",
+    "due_date": "2026-08-18",
+    "total_amount": 234292410.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 234292410.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080466",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 358419600.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 358419600.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080467",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 950706514.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 950706514.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080468",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 226790872.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 226790872.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080469",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 169880634.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 169880634.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080470",
+    "invoice_date": "2026-08-20",
+    "due_date": "2026-08-20",
+    "total_amount": 136824079.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 136824079.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080471",
+    "invoice_date": "2026-08-20",
+    "due_date": "2026-08-20",
+    "total_amount": 91899647.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 91899647.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080472",
+    "invoice_date": "2026-08-20",
+    "due_date": "2026-08-20",
+    "total_amount": 20055420.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 20055420.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080473",
+    "invoice_date": "2026-08-21",
+    "due_date": "2026-08-21",
+    "total_amount": 234465311.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 234465311.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080474",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 70113446.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 70113446.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080475",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 129295406.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 129295406.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080476",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 99579422.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 99579422.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080477",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 125039366.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 125039366.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080478",
+    "invoice_date": "2026-08-26",
+    "due_date": "2026-08-26",
+    "total_amount": 206516717.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 206516717.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080479",
+    "invoice_date": "2026-08-26",
+    "due_date": "2026-08-26",
+    "total_amount": 51657210.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 51657210.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080480",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 517033594.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 517033594.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080481",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 104000336.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 104000336.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080482",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 71485540.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 71485540.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080483",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 117277717.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 117277717.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080484",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 41872491.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 41872491.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080485",
+    "invoice_date": "2026-08-28",
+    "due_date": "2026-08-28",
+    "total_amount": 188632089.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 188632089.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080486",
+    "invoice_date": "2026-08-28",
+    "due_date": "2026-08-28",
+    "total_amount": 78885528.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78885528.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080487",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 325724824.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 325724824.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080488",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 339873435.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 339873435.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080489",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 300824172.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 300824172.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080490",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 341550000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 341550000.0,
+    "status": "Open"
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080492",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 296596441.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 296596441.0,
+    "status": "Open"
+  }
+]

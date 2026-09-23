@@ -1,0 +1,4826 @@
+[
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060291",
+    "invoice_date": "2026-06-02",
+    "due_date": "2026-06-02",
+    "total_amount": 790663792.0,
+    "paid_amount": 608437262.0,
+    "outstanding_amount": 182226530.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 1000ml",
+        "qty": 1000,
+        "unit_price": 513931.46,
+        "subtotal": 513931464.8
+      },
+      {
+        "product_name": "ALKOHOL 70% 100ml",
+        "qty": 500,
+        "unit_price": 553464.65,
+        "subtotal": 276732327.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060292",
+    "invoice_date": "2026-06-02",
+    "due_date": "2026-06-02",
+    "total_amount": 113601304.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 113601304.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALLOPURINOL   100MG",
+        "qty": 1000,
+        "unit_price": 73840.85,
+        "subtotal": 73840847.6
+      },
+      {
+        "product_name": "ALLOPURINOL   300MG",
+        "qty": 500,
+        "unit_price": 79520.91,
+        "subtotal": 39760456.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060293",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-07-03",
+    "total_amount": 144260474.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 144260474.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE  BESILATE   10MG",
+        "qty": 1000,
+        "unit_price": 93769.31,
+        "subtotal": 93769308.1
+      },
+      {
+        "product_name": "AMLODIPINE BESILATE 10MG (@ 10 STRIP)",
+        "qty": 500,
+        "unit_price": 100982.33,
+        "subtotal": 50491165.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060294",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-06-03",
+    "total_amount": 103638737.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 103638737.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOSTERRA",
+        "qty": 1000,
+        "unit_price": 67365.18,
+        "subtotal": 67365179.05
+      },
+      {
+        "product_name": "AMOSTERRA SIRUP KERING",
+        "qty": 500,
+        "unit_price": 72547.12,
+        "subtotal": 36273557.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060295",
+    "invoice_date": "2026-06-04",
+    "due_date": "2026-06-04",
+    "total_amount": 484525800.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 484525800.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN 500",
+        "qty": 1000,
+        "unit_price": 314941.77,
+        "subtotal": 314941770.0
+      },
+      {
+        "product_name": "AMOXICILLIN SIRUP KERING",
+        "qty": 500,
+        "unit_price": 339168.06,
+        "subtotal": 169584030.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060296",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-06-03",
+    "total_amount": 118888999.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 118888999.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ANTASIDA DOEN",
+        "qty": 1000,
+        "unit_price": 77277.85,
+        "subtotal": 77277849.35
+      },
+      {
+        "product_name": "BIOMOM",
+        "qty": 500,
+        "unit_price": 83222.3,
+        "subtotal": 41611149.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060297",
+    "invoice_date": "2026-06-03",
+    "due_date": "2026-06-03",
+    "total_amount": 38610000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 38610000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CALCIUM LACTATE",
+        "qty": 1000,
+        "unit_price": 25096.5,
+        "subtotal": 25096500.0
+      },
+      {
+        "product_name": "CETIRIZINE HYDROCHLORIDE",
+        "qty": 500,
+        "unit_price": 27027.0,
+        "subtotal": 13513500.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060298",
+    "invoice_date": "2026-06-04",
+    "due_date": "2026-06-04",
+    "total_amount": 165148830.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 165148830.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CHLORAMPHENICOL  250",
+        "qty": 1000,
+        "unit_price": 107346.74,
+        "subtotal": 107346739.5
+      },
+      {
+        "product_name": "COTRIMOKSAZOLE",
+        "qty": 500,
+        "unit_price": 115604.18,
+        "subtotal": 57802090.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060299",
+    "invoice_date": "2026-06-04",
+    "due_date": "2026-06-04",
+    "total_amount": 279954180.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 279954180.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DEXAMETHASONE",
+        "qty": 1000,
+        "unit_price": 181970.22,
+        "subtotal": 181970217.0
+      },
+      {
+        "product_name": "DOMIKADO",
+        "qty": 500,
+        "unit_price": 195967.93,
+        "subtotal": 97983963.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060300",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 140325677.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 140325677.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "GUAIFENESIN",
+        "qty": 1000,
+        "unit_price": 91211.69,
+        "subtotal": 91211690.05
+      },
+      {
+        "product_name": "ILPHIL.",
+        "qty": 500,
+        "unit_price": 98227.97,
+        "subtotal": 49113986.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060301",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 111120168.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 111120168.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METAMIZOLE SODIUM",
+        "qty": 1000,
+        "unit_price": 72228.11,
+        "subtotal": 72228109.2
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  16",
+        "qty": 500,
+        "unit_price": 77784.12,
+        "subtotal": 38892058.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060302",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 32398045.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 32398045.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  8",
+        "qty": 1000,
+        "unit_price": 21058.73,
+        "subtotal": 21058729.25
+      },
+      {
+        "product_name": "METRONIDAZOLE 500",
+        "qty": 500,
+        "unit_price": 22678.63,
+        "subtotal": 11339315.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060303",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 2924976.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 2924976.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METTY  8",
+        "qty": 1000,
+        "unit_price": 1901.23,
+        "subtotal": 1901234.4
+      },
+      {
+        "product_name": "PARACETAMOL  500MG",
+        "qty": 500,
+        "unit_price": 2047.48,
+        "subtotal": 1023741.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060304",
+    "invoice_date": "2026-06-05",
+    "due_date": "2026-06-05",
+    "total_amount": 78185250.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78185250.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PROVINAS 200MG",
+        "qty": 1000,
+        "unit_price": 50820.41,
+        "subtotal": 50820412.5
+      },
+      {
+        "product_name": "PROVINAS 400MG",
+        "qty": 500,
+        "unit_price": 54729.68,
+        "subtotal": 27364837.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060305",
+    "invoice_date": "2026-06-09",
+    "due_date": "2026-06-09",
+    "total_amount": 47977815.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 47977815.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "RANITIDINE 150 MG",
+        "qty": 1000,
+        "unit_price": 31185.58,
+        "subtotal": 31185579.75
+      },
+      {
+        "product_name": "SELEBROX",
+        "qty": 500,
+        "unit_price": 33584.47,
+        "subtotal": 16792235.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060306",
+    "invoice_date": "2026-06-09",
+    "due_date": "2026-06-09",
+    "total_amount": 69989753.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 69989753.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEDRYL",
+        "qty": 1000,
+        "unit_price": 45493.34,
+        "subtotal": 45493339.45
+      },
+      {
+        "product_name": "SELES B1 50 (BOX)",
+        "qty": 500,
+        "unit_price": 48992.83,
+        "subtotal": 24496413.55
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060307",
+    "invoice_date": "2026-06-08",
+    "due_date": "2026-06-08",
+    "total_amount": 511689667.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 511689667.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESBION",
+        "qty": 1000,
+        "unit_price": 332598.28,
+        "subtotal": 332598283.55
+      },
+      {
+        "product_name": "SELESBION PLUS CAL",
+        "qty": 500,
+        "unit_price": 358182.77,
+        "subtotal": 179091383.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060308",
+    "invoice_date": "2026-06-08",
+    "due_date": "2026-06-08",
+    "total_amount": 78880230.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78880230.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESCARDIO 10",
+        "qty": 1000,
+        "unit_price": 51272.15,
+        "subtotal": 51272149.5
+      },
+      {
+        "product_name": "SELESCARDIO 5",
+        "qty": 500,
+        "unit_price": 55216.16,
+        "subtotal": 27608080.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060309",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 311027315.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 311027315.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESIKLIN 500 MG",
+        "qty": 1000,
+        "unit_price": 202167.75,
+        "subtotal": 202167754.75
+      },
+      {
+        "product_name": "SELESKOL 250 MG",
+        "qty": 500,
+        "unit_price": 217719.12,
+        "subtotal": 108859560.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060310",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 218295000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 218295000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL (BOTOL)",
+        "qty": 1000,
+        "unit_price": 141891.75,
+        "subtotal": 141891750.0
+      },
+      {
+        "product_name": "SELESMOL CAFE",
+        "qty": 500,
+        "unit_price": 152806.5,
+        "subtotal": 76403250.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060311",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 500425200.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 500425200.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESNIZOL",
+        "qty": 1000,
+        "unit_price": 325276.38,
+        "subtotal": 325276380.0
+      },
+      {
+        "product_name": "SELESPURIN 100MG",
+        "qty": 500,
+        "unit_price": 350297.64,
+        "subtotal": 175148820.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060312",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 159021349.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 159021349.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESTRIM",
+        "qty": 1000,
+        "unit_price": 103363.88,
+        "subtotal": 103363876.85
+      },
+      {
+        "product_name": "SELEXON 0.5",
+        "qty": 500,
+        "unit_price": 111314.94,
+        "subtotal": 55657472.15
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060313",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 172200085.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 172200085.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C'",
+        "qty": 1000,
+        "unit_price": 111930.06,
+        "subtotal": 111930055.25
+      },
+      {
+        "product_name": "SELKOM C (AMP)",
+        "qty": 500,
+        "unit_price": 120540.06,
+        "subtotal": 60270029.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060314",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 398337000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 398337000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM - C GOLD",
+        "qty": 1000,
+        "unit_price": 258919.05,
+        "subtotal": 258919050.0
+      },
+      {
+        "product_name": "SELMATIC 20",
+        "qty": 500,
+        "unit_price": 278835.9,
+        "subtotal": 139417950.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060315",
+    "invoice_date": "2026-06-10",
+    "due_date": "2026-06-10",
+    "total_amount": 35838000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 35838000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMETOR (BOTOL)",
+        "qty": 1000,
+        "unit_price": 23294.7,
+        "subtotal": 23294700.0
+      },
+      {
+        "product_name": "SELPYRON",
+        "qty": 500,
+        "unit_price": 25086.6,
+        "subtotal": 12543300.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060316",
+    "invoice_date": "2026-06-11",
+    "due_date": "2026-06-11",
+    "total_amount": 4950000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 4950000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "TETRACYCLINE  500MG",
+        "qty": 1000,
+        "unit_price": 3217.5,
+        "subtotal": 3217500.0
+      },
+      {
+        "product_name": "THIAMPHENICOL  500",
+        "qty": 500,
+        "unit_price": 3465.0,
+        "subtotal": 1732500.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060317",
+    "invoice_date": "2026-06-12",
+    "due_date": "2026-06-12",
+    "total_amount": 117966256.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 117966256.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "VITAMIN B KOMPLEKS (BOX)",
+        "qty": 1000,
+        "unit_price": 76678.07,
+        "subtotal": 76678066.4
+      },
+      {
+        "product_name": "ALKOHOL 70% 1000ml",
+        "qty": 500,
+        "unit_price": 82576.38,
+        "subtotal": 41288189.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060318",
+    "invoice_date": "2026-06-12",
+    "due_date": "2026-06-12",
+    "total_amount": 131273928.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 131273928.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 300ml",
+        "qty": 1000,
+        "unit_price": 85328.05,
+        "subtotal": 85328053.2
+      },
+      {
+        "product_name": "ALLOPURINOL   100MG",
+        "qty": 500,
+        "unit_price": 91891.75,
+        "subtotal": 45945874.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060319",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 49755475.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 49755475.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMBROXOL",
+        "qty": 1000,
+        "unit_price": 32341.06,
+        "subtotal": 32341058.75
+      },
+      {
+        "product_name": "AMLODIPINE  BESILATE   10MG",
+        "qty": 500,
+        "unit_price": 34828.83,
+        "subtotal": 17414416.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060320",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 56549444.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 56549444.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE  BESILATE   5MG",
+        "qty": 1000,
+        "unit_price": 36757.14,
+        "subtotal": 36757138.6
+      },
+      {
+        "product_name": "AMOSTERRA",
+        "qty": 500,
+        "unit_price": 39584.61,
+        "subtotal": 19792305.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060321",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 59275698.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 59275698.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN 250",
+        "qty": 1000,
+        "unit_price": 38529.2,
+        "subtotal": 38529203.7
+      },
+      {
+        "product_name": "AMOXICILLIN 500",
+        "qty": 500,
+        "unit_price": 41492.99,
+        "subtotal": 20746494.3
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060322",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 16673580.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 16673580.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMPICILLIN",
+        "qty": 1000,
+        "unit_price": 10837.83,
+        "subtotal": 10837827.0
+      },
+      {
+        "product_name": "ANTASIDA DOEN",
+        "qty": 500,
+        "unit_price": 11671.51,
+        "subtotal": 5835753.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060323",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 15769215.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 15769215.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "BIOMOM LACTA",
+        "qty": 1000,
+        "unit_price": 10249.99,
+        "subtotal": 10249989.75
+      },
+      {
+        "product_name": "CALCIUM LACTATE",
+        "qty": 500,
+        "unit_price": 11038.45,
+        "subtotal": 5519225.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060324",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 88328130.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 88328130.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CETRIZ",
+        "qty": 1000,
+        "unit_price": 57413.28,
+        "subtotal": 57413284.5
+      },
+      {
+        "product_name": "CHLORAMPHENICOL  250",
+        "qty": 500,
+        "unit_price": 61829.69,
+        "subtotal": 30914845.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060325",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 68207832.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 68207832.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DAILY FARMA C + E",
+        "qty": 1000,
+        "unit_price": 44335.09,
+        "subtotal": 44335090.8
+      },
+      {
+        "product_name": "DEXAMETHASONE",
+        "qty": 500,
+        "unit_price": 47745.48,
+        "subtotal": 23872741.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060326",
+    "invoice_date": "2026-06-15",
+    "due_date": "2026-06-15",
+    "total_amount": 26730000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 26730000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DOMPERIDONE",
+        "qty": 1000,
+        "unit_price": 17374.5,
+        "subtotal": 17374500.0
+      },
+      {
+        "product_name": "GUAIFENESIN",
+        "qty": 500,
+        "unit_price": 18711.0,
+        "subtotal": 9355500.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060327",
+    "invoice_date": "2026-06-18",
+    "due_date": "2026-06-18",
+    "total_amount": 243050116.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 243050116.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "MEFENAMIC ACID",
+        "qty": 1000,
+        "unit_price": 157982.58,
+        "subtotal": 157982575.4
+      },
+      {
+        "product_name": "METAMIZOLE SODIUM",
+        "qty": 500,
+        "unit_price": 170135.08,
+        "subtotal": 85067540.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060328",
+    "invoice_date": "2026-06-18",
+    "due_date": "2026-06-18",
+    "total_amount": 147923508.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 147923508.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  4",
+        "qty": 1000,
+        "unit_price": 96150.28,
+        "subtotal": 96150280.2
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  8",
+        "qty": 500,
+        "unit_price": 103546.46,
+        "subtotal": 51773227.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060329",
+    "invoice_date": "2026-06-18",
+    "due_date": "2026-06-18",
+    "total_amount": 58167766.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 58167766.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METTY  4",
+        "qty": 1000,
+        "unit_price": 37809.05,
+        "subtotal": 37809047.9
+      },
+      {
+        "product_name": "METTY  8",
+        "qty": 500,
+        "unit_price": 40717.44,
+        "subtotal": 20358718.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060330",
+    "invoice_date": "2026-06-17",
+    "due_date": "2026-06-17",
+    "total_amount": 590200380.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 590200380.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PIROXICAM  20",
+        "qty": 1000,
+        "unit_price": 383630.25,
+        "subtotal": 383630247.0
+      },
+      {
+        "product_name": "PROVINAS 200MG",
+        "qty": 500,
+        "unit_price": 413140.27,
+        "subtotal": 206570133.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060331",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 275981310.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 275981310.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "RANIPHIL 150",
+        "qty": 1000,
+        "unit_price": 179387.85,
+        "subtotal": 179387851.5
+      },
+      {
+        "product_name": "RANITIDINE 150 MG",
+        "qty": 500,
+        "unit_price": 193186.92,
+        "subtotal": 96593458.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060332",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 60915212.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 60915212.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEDIAR.",
+        "qty": 1000,
+        "unit_price": 39594.89,
+        "subtotal": 39594887.8
+      },
+      {
+        "product_name": "SELEDRYL",
+        "qty": 500,
+        "unit_price": 42640.65,
+        "subtotal": 21320324.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060333",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 27299973.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 27299973.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES B6 10 (BOX)",
+        "qty": 1000,
+        "unit_price": 17744.98,
+        "subtotal": 17744982.45
+      },
+      {
+        "product_name": "SELESBION",
+        "qty": 500,
+        "unit_price": 19109.98,
+        "subtotal": 9554990.55
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060334",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 988134701.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 988134701.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES C 50 (BOX)",
+        "qty": 1000,
+        "unit_price": 642287.56,
+        "subtotal": 642287555.65
+      },
+      {
+        "product_name": "SELESCARDIO 10",
+        "qty": 500,
+        "unit_price": 691694.29,
+        "subtotal": 345847145.35
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060335",
+    "invoice_date": "2026-06-19",
+    "due_date": "2026-06-19",
+    "total_amount": 550303088.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 550303088.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESGIN",
+        "qty": 1000,
+        "unit_price": 357697.01,
+        "subtotal": 357697007.2
+      },
+      {
+        "product_name": "SELESIKLIN 500 MG",
+        "qty": 500,
+        "unit_price": 385212.16,
+        "subtotal": 192606080.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060336",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 79492048.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 79492048.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL",
+        "qty": 1000,
+        "unit_price": 51669.83,
+        "subtotal": 51669831.2
+      },
+      {
+        "product_name": "SELESMOL (BOTOL)",
+        "qty": 500,
+        "unit_price": 55644.43,
+        "subtotal": 27822216.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060337",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 157437105.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 157437105.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL FORTE",
+        "qty": 1000,
+        "unit_price": 102334.12,
+        "subtotal": 102334118.25
+      },
+      {
+        "product_name": "SELESNIZOL",
+        "qty": 500,
+        "unit_price": 110205.97,
+        "subtotal": 55102986.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060338",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 69327170.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 69327170.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESPURIN 300MG",
+        "qty": 1000,
+        "unit_price": 45062.66,
+        "subtotal": 45062660.5
+      },
+      {
+        "product_name": "SELESTRIM",
+        "qty": 500,
+        "unit_price": 48529.02,
+        "subtotal": 24264509.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060339",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 618751980.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 618751980.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELFOLIC",
+        "qty": 1000,
+        "unit_price": 402188.79,
+        "subtotal": 402188787.0
+      },
+      {
+        "product_name": "SELKOM C'",
+        "qty": 500,
+        "unit_price": 433126.39,
+        "subtotal": 216563193.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060340",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 190176896.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 190176896.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C DT",
+        "qty": 1000,
+        "unit_price": 123614.98,
+        "subtotal": 123614982.4
+      },
+      {
+        "product_name": "SELKOM - C GOLD",
+        "qty": 500,
+        "unit_price": 133123.83,
+        "subtotal": 66561913.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060341",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 79907177.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 79907177.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMETOR.",
+        "qty": 1000,
+        "unit_price": 51939.67,
+        "subtotal": 51939665.05
+      },
+      {
+        "product_name": "SELMETOR (BOTOL)",
+        "qty": 500,
+        "unit_price": 55935.02,
+        "subtotal": 27967511.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060342",
+    "invoice_date": "2026-06-23",
+    "due_date": "2026-06-23",
+    "total_amount": 109260954.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 109260954.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELVIPLEX.",
+        "qty": 1000,
+        "unit_price": 71019.62,
+        "subtotal": 71019620.1
+      },
+      {
+        "product_name": "TETRACYCLINE  500MG",
+        "qty": 500,
+        "unit_price": 76482.67,
+        "subtotal": 38241333.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060343",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 226479578.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 226479578.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "VITACAPS",
+        "qty": 1000,
+        "unit_price": 147211.73,
+        "subtotal": 147211725.7
+      },
+      {
+        "product_name": "VITAMIN B KOMPLEKS (BOX)",
+        "qty": 500,
+        "unit_price": 158535.7,
+        "subtotal": 79267852.3
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060344",
+    "invoice_date": "2026-06-24",
+    "due_date": "2026-06-24",
+    "total_amount": 516737727.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 516737727.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 100ml",
+        "qty": 1000,
+        "unit_price": 335879.52,
+        "subtotal": 335879522.55
+      },
+      {
+        "product_name": "ALKOHOL 70% 300ml",
+        "qty": 500,
+        "unit_price": 361716.41,
+        "subtotal": 180858204.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060345",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 120068497.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 120068497.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALLOPURINOL   300MG",
+        "qty": 1000,
+        "unit_price": 78044.52,
+        "subtotal": 78044523.05
+      },
+      {
+        "product_name": "AMBROXOL",
+        "qty": 500,
+        "unit_price": 84047.95,
+        "subtotal": 42023973.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060346",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 9660420.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 9660420.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE BESILATE 10MG (@ 10 STRIP)",
+        "qty": 1000,
+        "unit_price": 6279.27,
+        "subtotal": 6279273.0
+      },
+      {
+        "product_name": "AMLODIPINE  BESILATE   5MG",
+        "qty": 500,
+        "unit_price": 6762.29,
+        "subtotal": 3381147.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060347",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 16687440.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 16687440.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOSTERRA SIRUP KERING",
+        "qty": 1000,
+        "unit_price": 10846.84,
+        "subtotal": 10846836.0
+      },
+      {
+        "product_name": "AMOXICILLIN 250",
+        "qty": 500,
+        "unit_price": 11681.21,
+        "subtotal": 5840604.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060348",
+    "invoice_date": "2026-06-25",
+    "due_date": "2026-06-25",
+    "total_amount": 58240923.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 58240923.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN SIRUP KERING",
+        "qty": 1000,
+        "unit_price": 37856.6,
+        "subtotal": 37856599.95
+      },
+      {
+        "product_name": "AMPICILLIN",
+        "qty": 500,
+        "unit_price": 40768.65,
+        "subtotal": 20384323.05
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060349",
+    "invoice_date": "2026-06-26",
+    "due_date": "2026-06-26",
+    "total_amount": 15966720.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 15966720.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "BIOMOM",
+        "qty": 1000,
+        "unit_price": 10378.37,
+        "subtotal": 10378368.0
+      },
+      {
+        "product_name": "BIOMOM LACTA",
+        "qty": 500,
+        "unit_price": 11176.7,
+        "subtotal": 5588352.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060350",
+    "invoice_date": "2026-06-26",
+    "due_date": "2026-06-26",
+    "total_amount": 32393124.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 32393124.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CETIRIZINE HYDROCHLORIDE",
+        "qty": 1000,
+        "unit_price": 21055.53,
+        "subtotal": 21055530.6
+      },
+      {
+        "product_name": "CETRIZ",
+        "qty": 500,
+        "unit_price": 22675.19,
+        "subtotal": 11337593.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060351",
+    "invoice_date": "2026-06-26",
+    "due_date": "2026-06-26",
+    "total_amount": 145663705.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 145663705.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "COTRIMOKSAZOLE",
+        "qty": 1000,
+        "unit_price": 94681.41,
+        "subtotal": 94681408.25
+      },
+      {
+        "product_name": "DAILY FARMA C + E",
+        "qty": 500,
+        "unit_price": 101964.59,
+        "subtotal": 50982296.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060352",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 153568795.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 153568795.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DOMIKADO",
+        "qty": 1000,
+        "unit_price": 99819.72,
+        "subtotal": 99819716.75
+      },
+      {
+        "product_name": "DOMPERIDONE",
+        "qty": 500,
+        "unit_price": 107498.16,
+        "subtotal": 53749078.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060353",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 270814562.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 270814562.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ILPHIL.",
+        "qty": 1000,
+        "unit_price": 176029.47,
+        "subtotal": 176029465.3
+      },
+      {
+        "product_name": "MEFENAMIC ACID",
+        "qty": 500,
+        "unit_price": 189570.19,
+        "subtotal": 94785096.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060354",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 266560072.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 266560072.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  16",
+        "qty": 1000,
+        "unit_price": 173264.05,
+        "subtotal": 173264046.8
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  4",
+        "qty": 500,
+        "unit_price": 186592.05,
+        "subtotal": 93296025.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060355",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 153464256.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 153464256.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METRONIDAZOLE 500",
+        "qty": 1000,
+        "unit_price": 99751.77,
+        "subtotal": 99751766.4
+      },
+      {
+        "product_name": "METTY  4",
+        "qty": 500,
+        "unit_price": 107424.98,
+        "subtotal": 53712489.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060356",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 145170729.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 145170729.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PARACETAMOL  500MG",
+        "qty": 1000,
+        "unit_price": 94360.97,
+        "subtotal": 94360973.85
+      },
+      {
+        "product_name": "PIROXICAM  20",
+        "qty": 500,
+        "unit_price": 101619.51,
+        "subtotal": 50809755.15
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060357",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 265867099.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 265867099.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PROVINAS 400MG",
+        "qty": 1000,
+        "unit_price": 172813.61,
+        "subtotal": 172813614.35
+      },
+      {
+        "product_name": "RANIPHIL 150",
+        "qty": 500,
+        "unit_price": 186106.97,
+        "subtotal": 93053484.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060358",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 541087534.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 541087534.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEBROX",
+        "qty": 1000,
+        "unit_price": 351706.9,
+        "subtotal": 351706897.1
+      },
+      {
+        "product_name": "SELEDIAR.",
+        "qty": 500,
+        "unit_price": 378761.27,
+        "subtotal": 189380636.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060359",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 137453037.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 137453037.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES B1 50 (BOX)",
+        "qty": 1000,
+        "unit_price": 89344.47,
+        "subtotal": 89344474.05
+      },
+      {
+        "product_name": "SELES B6 10 (BOX)",
+        "qty": 500,
+        "unit_price": 96217.13,
+        "subtotal": 48108562.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060360",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 84700508.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 84700508.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESBION PLUS CAL",
+        "qty": 1000,
+        "unit_price": 55055.33,
+        "subtotal": 55055330.2
+      },
+      {
+        "product_name": "SELES C 50 (BOX)",
+        "qty": 500,
+        "unit_price": 59290.36,
+        "subtotal": 29645177.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060361",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 480526200.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 480526200.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESCARDIO 5",
+        "qty": 1000,
+        "unit_price": 312342.03,
+        "subtotal": 312342030.0
+      },
+      {
+        "product_name": "SELESGIN",
+        "qty": 500,
+        "unit_price": 336368.34,
+        "subtotal": 168184170.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26060362",
+    "invoice_date": "2026-06-30",
+    "due_date": "2026-06-30",
+    "total_amount": 23644467.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 23644467.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESKOL 250 MG",
+        "qty": 1000,
+        "unit_price": 15368.9,
+        "subtotal": 15368903.55
+      },
+      {
+        "product_name": "SELESMOL",
+        "qty": 500,
+        "unit_price": 16551.13,
+        "subtotal": 8275563.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070363",
+    "invoice_date": "2026-07-01",
+    "due_date": "2026-07-01",
+    "total_amount": 104583228.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 104583228.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL CAFE",
+        "qty": 1000,
+        "unit_price": 67979.1,
+        "subtotal": 67979098.2
+      },
+      {
+        "product_name": "SELESMOL FORTE",
+        "qty": 500,
+        "unit_price": 73208.26,
+        "subtotal": 36604129.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070364",
+    "invoice_date": "2026-07-01",
+    "due_date": "2026-07-01",
+    "total_amount": 337384793.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 337384793.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESPURIN 100MG",
+        "qty": 1000,
+        "unit_price": 219300.12,
+        "subtotal": 219300115.45
+      },
+      {
+        "product_name": "SELESPURIN 300MG",
+        "qty": 500,
+        "unit_price": 236169.36,
+        "subtotal": 118084677.55
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070365",
+    "invoice_date": "2026-07-01",
+    "due_date": "2026-07-01",
+    "total_amount": 242531888.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 242531888.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEXON 0.5",
+        "qty": 1000,
+        "unit_price": 157645.73,
+        "subtotal": 157645727.2
+      },
+      {
+        "product_name": "SELFOLIC",
+        "qty": 500,
+        "unit_price": 169772.32,
+        "subtotal": 84886160.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070366",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 83230686.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 83230686.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C (AMP)",
+        "qty": 1000,
+        "unit_price": 54099.95,
+        "subtotal": 54099945.9
+      },
+      {
+        "product_name": "SELKOM C DT",
+        "qty": 500,
+        "unit_price": 58261.48,
+        "subtotal": 29130740.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070367",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 203521325.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 203521325.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMATIC 20",
+        "qty": 1000,
+        "unit_price": 132288.86,
+        "subtotal": 132288861.25
+      },
+      {
+        "product_name": "SELMETOR.",
+        "qty": 500,
+        "unit_price": 142464.93,
+        "subtotal": 71232463.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070368",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 84391453.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 84391453.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELPYRON",
+        "qty": 1000,
+        "unit_price": 54854.44,
+        "subtotal": 54854444.45
+      },
+      {
+        "product_name": "SELVIPLEX.",
+        "qty": 500,
+        "unit_price": 59074.02,
+        "subtotal": 29537008.55
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070369",
+    "invoice_date": "2026-07-02",
+    "due_date": "2026-07-02",
+    "total_amount": 104470352.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 104470352.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "THIAMPHENICOL  500",
+        "qty": 1000,
+        "unit_price": 67905.73,
+        "subtotal": 67905728.8
+      },
+      {
+        "product_name": "VITACAPS",
+        "qty": 500,
+        "unit_price": 73129.25,
+        "subtotal": 36564623.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070370",
+    "invoice_date": "2026-07-03",
+    "due_date": "2026-07-03",
+    "total_amount": 731372039.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 731372039.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 1000ml",
+        "qty": 1000,
+        "unit_price": 475391.83,
+        "subtotal": 475391825.35
+      },
+      {
+        "product_name": "ALKOHOL 70% 100ml",
+        "qty": 500,
+        "unit_price": 511960.43,
+        "subtotal": 255980213.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070371",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 638875760.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 638875760.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALLOPURINOL   100MG",
+        "qty": 1000,
+        "unit_price": 415269.24,
+        "subtotal": 415269244.0
+      },
+      {
+        "product_name": "ALLOPURINOL   300MG",
+        "qty": 500,
+        "unit_price": 447213.03,
+        "subtotal": 223606516.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070372",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 192331614.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 192331614.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE  BESILATE   10MG",
+        "qty": 1000,
+        "unit_price": 125015.55,
+        "subtotal": 125015549.1
+      },
+      {
+        "product_name": "AMLODIPINE BESILATE 10MG (@ 10 STRIP)",
+        "qty": 500,
+        "unit_price": 134632.13,
+        "subtotal": 67316064.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070373",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 35286847.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 35286847.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOSTERRA",
+        "qty": 1000,
+        "unit_price": 22936.45,
+        "subtotal": 22936450.55
+      },
+      {
+        "product_name": "AMOSTERRA SIRUP KERING",
+        "qty": 500,
+        "unit_price": 24700.79,
+        "subtotal": 12350396.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070374",
+    "invoice_date": "2026-07-06",
+    "due_date": "2026-07-06",
+    "total_amount": 78658262.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78658262.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN 500",
+        "qty": 1000,
+        "unit_price": 51127.87,
+        "subtotal": 51127870.3
+      },
+      {
+        "product_name": "AMOXICILLIN SIRUP KERING",
+        "qty": 500,
+        "unit_price": 55060.78,
+        "subtotal": 27530391.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070375",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 88838000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 88838000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ANTASIDA DOEN",
+        "qty": 1000,
+        "unit_price": 57744.7,
+        "subtotal": 57744700.0
+      },
+      {
+        "product_name": "BIOMOM",
+        "qty": 500,
+        "unit_price": 62186.6,
+        "subtotal": 31093300.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070376",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 113374800.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 113374800.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CALCIUM LACTATE",
+        "qty": 1000,
+        "unit_price": 73693.62,
+        "subtotal": 73693620.0
+      },
+      {
+        "product_name": "CETIRIZINE HYDROCHLORIDE",
+        "qty": 500,
+        "unit_price": 79362.36,
+        "subtotal": 39681180.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070377",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 205506970.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 205506970.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CHLORAMPHENICOL  250",
+        "qty": 1000,
+        "unit_price": 133579.53,
+        "subtotal": 133579530.5
+      },
+      {
+        "product_name": "COTRIMOKSAZOLE",
+        "qty": 500,
+        "unit_price": 143854.88,
+        "subtotal": 71927439.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070378",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 91782900.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 91782900.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DEXAMETHASONE",
+        "qty": 1000,
+        "unit_price": 59658.89,
+        "subtotal": 59658885.0
+      },
+      {
+        "product_name": "DOMIKADO",
+        "qty": 500,
+        "unit_price": 64248.03,
+        "subtotal": 32124015.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070379",
+    "invoice_date": "2026-07-07",
+    "due_date": "2026-07-07",
+    "total_amount": 210083544.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 210083544.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "GUAIFENESIN",
+        "qty": 1000,
+        "unit_price": 136554.3,
+        "subtotal": 136554303.6
+      },
+      {
+        "product_name": "ILPHIL.",
+        "qty": 500,
+        "unit_price": 147058.48,
+        "subtotal": 73529240.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070380",
+    "invoice_date": "2026-07-08",
+    "due_date": "2026-07-08",
+    "total_amount": 108250306.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 108250306.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METAMIZOLE SODIUM",
+        "qty": 1000,
+        "unit_price": 70362.7,
+        "subtotal": 70362698.9
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  16",
+        "qty": 500,
+        "unit_price": 75775.21,
+        "subtotal": 37887607.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070381",
+    "invoice_date": "2026-07-09",
+    "due_date": "2026-07-09",
+    "total_amount": 128858077.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 128858077.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  8",
+        "qty": 1000,
+        "unit_price": 83757.75,
+        "subtotal": 83757750.05
+      },
+      {
+        "product_name": "METRONIDAZOLE 500",
+        "qty": 500,
+        "unit_price": 90200.65,
+        "subtotal": 45100326.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070382",
+    "invoice_date": "2026-07-09",
+    "due_date": "2026-07-09",
+    "total_amount": 392611626.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 392611626.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METTY  8",
+        "qty": 1000,
+        "unit_price": 255197.56,
+        "subtotal": 255197556.9
+      },
+      {
+        "product_name": "PARACETAMOL  500MG",
+        "qty": 500,
+        "unit_price": 274828.14,
+        "subtotal": 137414069.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070383",
+    "invoice_date": "2026-07-09",
+    "due_date": "2026-07-09",
+    "total_amount": 127189277.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 127189277.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PROVINAS 200MG",
+        "qty": 1000,
+        "unit_price": 82673.03,
+        "subtotal": 82673030.05
+      },
+      {
+        "product_name": "PROVINAS 400MG",
+        "qty": 500,
+        "unit_price": 89032.49,
+        "subtotal": 44516246.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070384",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 23948100.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 23948100.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "RANITIDINE 150 MG",
+        "qty": 1000,
+        "unit_price": 15566.26,
+        "subtotal": 15566265.0
+      },
+      {
+        "product_name": "SELEBROX",
+        "qty": 500,
+        "unit_price": 16763.67,
+        "subtotal": 8381835.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070385",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 447017670.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 447017670.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEDRYL",
+        "qty": 1000,
+        "unit_price": 290561.49,
+        "subtotal": 290561485.5
+      },
+      {
+        "product_name": "SELES B1 50 (BOX)",
+        "qty": 500,
+        "unit_price": 312912.37,
+        "subtotal": 156456184.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070386",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 139154094.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 139154094.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESBION",
+        "qty": 1000,
+        "unit_price": 90450.16,
+        "subtotal": 90450161.1
+      },
+      {
+        "product_name": "SELESBION PLUS CAL",
+        "qty": 500,
+        "unit_price": 97407.87,
+        "subtotal": 48703932.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070387",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 145136575.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 145136575.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESCARDIO 10",
+        "qty": 1000,
+        "unit_price": 94338.77,
+        "subtotal": 94338773.75
+      },
+      {
+        "product_name": "SELESCARDIO 5",
+        "qty": 500,
+        "unit_price": 101595.6,
+        "subtotal": 50797801.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070388",
+    "invoice_date": "2026-07-10",
+    "due_date": "2026-07-10",
+    "total_amount": 123572881.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 123572881.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESIKLIN 500 MG",
+        "qty": 1000,
+        "unit_price": 80322.37,
+        "subtotal": 80322372.65
+      },
+      {
+        "product_name": "SELESKOL 250 MG",
+        "qty": 500,
+        "unit_price": 86501.02,
+        "subtotal": 43250508.35
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070389",
+    "invoice_date": "2026-07-13",
+    "due_date": "2026-07-13",
+    "total_amount": 97555377.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 97555377.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL (BOTOL)",
+        "qty": 1000,
+        "unit_price": 63411.0,
+        "subtotal": 63410995.05
+      },
+      {
+        "product_name": "SELESMOL CAFE",
+        "qty": 500,
+        "unit_price": 68288.76,
+        "subtotal": 34144381.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070390",
+    "invoice_date": "2026-07-13",
+    "due_date": "2026-07-13",
+    "total_amount": 658450525.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 658450525.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESNIZOL",
+        "qty": 1000,
+        "unit_price": 427992.84,
+        "subtotal": 427992841.25
+      },
+      {
+        "product_name": "SELESPURIN 100MG",
+        "qty": 500,
+        "unit_price": 460915.37,
+        "subtotal": 230457683.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070391",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 77471856.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 77471856.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESTRIM",
+        "qty": 1000,
+        "unit_price": 50356.71,
+        "subtotal": 50356706.4
+      },
+      {
+        "product_name": "SELEXON 0.5",
+        "qty": 500,
+        "unit_price": 54230.3,
+        "subtotal": 27115149.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070392",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 320934272.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 320934272.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C'",
+        "qty": 1000,
+        "unit_price": 208607.28,
+        "subtotal": 208607276.8
+      },
+      {
+        "product_name": "SELKOM C (AMP)",
+        "qty": 500,
+        "unit_price": 224653.99,
+        "subtotal": 112326995.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070393",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 80009127.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 80009127.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM - C GOLD",
+        "qty": 1000,
+        "unit_price": 52005.93,
+        "subtotal": 52005932.55
+      },
+      {
+        "product_name": "SELMATIC 20",
+        "qty": 500,
+        "unit_price": 56006.39,
+        "subtotal": 28003194.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070394",
+    "invoice_date": "2026-07-14",
+    "due_date": "2026-07-14",
+    "total_amount": 138941447.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 138941447.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMETOR (BOTOL)",
+        "qty": 1000,
+        "unit_price": 90311.94,
+        "subtotal": 90311940.55
+      },
+      {
+        "product_name": "SELPYRON",
+        "qty": 500,
+        "unit_price": 97259.01,
+        "subtotal": 48629506.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070395",
+    "invoice_date": "2026-07-15",
+    "due_date": "2026-07-15",
+    "total_amount": 83862702.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 83862702.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "TETRACYCLINE  500MG",
+        "qty": 1000,
+        "unit_price": 54510.76,
+        "subtotal": 54510756.3
+      },
+      {
+        "product_name": "THIAMPHENICOL  500",
+        "qty": 500,
+        "unit_price": 58703.89,
+        "subtotal": 29351945.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070396",
+    "invoice_date": "2026-07-15",
+    "due_date": "2026-07-15",
+    "total_amount": 63386860.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 63386860.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "VITAMIN B KOMPLEKS (BOX)",
+        "qty": 1000,
+        "unit_price": 41201.46,
+        "subtotal": 41201459.0
+      },
+      {
+        "product_name": "ALKOHOL 70% 1000ml",
+        "qty": 500,
+        "unit_price": 44370.8,
+        "subtotal": 22185401.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070397",
+    "invoice_date": "2026-07-16",
+    "due_date": "2026-07-16",
+    "total_amount": 81302179.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 81302179.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 300ml",
+        "qty": 1000,
+        "unit_price": 52846.42,
+        "subtotal": 52846416.35
+      },
+      {
+        "product_name": "ALLOPURINOL   100MG",
+        "qty": 500,
+        "unit_price": 56911.53,
+        "subtotal": 28455762.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070398",
+    "invoice_date": "2026-07-16",
+    "due_date": "2026-07-16",
+    "total_amount": 75228386.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 75228386.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMBROXOL",
+        "qty": 1000,
+        "unit_price": 48898.45,
+        "subtotal": 48898450.9
+      },
+      {
+        "product_name": "AMLODIPINE  BESILATE   10MG",
+        "qty": 500,
+        "unit_price": 52659.87,
+        "subtotal": 26329935.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070399",
+    "invoice_date": "2026-07-17",
+    "due_date": "2026-07-17",
+    "total_amount": 440794332.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 440794332.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE  BESILATE   5MG",
+        "qty": 1000,
+        "unit_price": 286516.32,
+        "subtotal": 286516315.8
+      },
+      {
+        "product_name": "AMOSTERRA",
+        "qty": 500,
+        "unit_price": 308556.03,
+        "subtotal": 154278016.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070400",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 82980394.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 82980394.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN 250",
+        "qty": 1000,
+        "unit_price": 53937.26,
+        "subtotal": 53937256.1
+      },
+      {
+        "product_name": "AMOXICILLIN 500",
+        "qty": 500,
+        "unit_price": 58086.28,
+        "subtotal": 29043137.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070401",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 75371670.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 75371670.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMPICILLIN",
+        "qty": 1000,
+        "unit_price": 48991.59,
+        "subtotal": 48991585.5
+      },
+      {
+        "product_name": "ANTASIDA DOEN",
+        "qty": 500,
+        "unit_price": 52760.17,
+        "subtotal": 26380084.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070402",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 12564288.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 12564288.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "BIOMOM LACTA",
+        "qty": 1000,
+        "unit_price": 8166.79,
+        "subtotal": 8166787.2
+      },
+      {
+        "product_name": "CALCIUM LACTATE",
+        "qty": 500,
+        "unit_price": 8795.0,
+        "subtotal": 4397500.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070403",
+    "invoice_date": "2026-07-20",
+    "due_date": "2026-07-20",
+    "total_amount": 175845276.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 175845276.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CETRIZ",
+        "qty": 1000,
+        "unit_price": 114299.43,
+        "subtotal": 114299429.4
+      },
+      {
+        "product_name": "CHLORAMPHENICOL  250",
+        "qty": 500,
+        "unit_price": 123091.69,
+        "subtotal": 61545846.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070404",
+    "invoice_date": "2026-07-21",
+    "due_date": "2026-07-21",
+    "total_amount": 95463374.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 95463374.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DAILY FARMA C + E",
+        "qty": 1000,
+        "unit_price": 62051.19,
+        "subtotal": 62051193.1
+      },
+      {
+        "product_name": "DEXAMETHASONE",
+        "qty": 500,
+        "unit_price": 66824.36,
+        "subtotal": 33412180.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070405",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 261624330.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 261624330.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DOMPERIDONE",
+        "qty": 1000,
+        "unit_price": 170055.81,
+        "subtotal": 170055814.5
+      },
+      {
+        "product_name": "GUAIFENESIN",
+        "qty": 500,
+        "unit_price": 183137.03,
+        "subtotal": 91568515.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070406",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 147133308.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 147133308.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "MEFENAMIC ACID",
+        "qty": 1000,
+        "unit_price": 95636.65,
+        "subtotal": 95636650.2
+      },
+      {
+        "product_name": "METAMIZOLE SODIUM",
+        "qty": 500,
+        "unit_price": 102993.32,
+        "subtotal": 51496657.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070407",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 108101539.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 108101539.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  4",
+        "qty": 1000,
+        "unit_price": 70266.0,
+        "subtotal": 70266000.35
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  8",
+        "qty": 500,
+        "unit_price": 75671.08,
+        "subtotal": 37835538.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070408",
+    "invoice_date": "2026-07-22",
+    "due_date": "2026-07-22",
+    "total_amount": 121804077.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 121804077.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METTY  4",
+        "qty": 1000,
+        "unit_price": 79172.65,
+        "subtotal": 79172650.05
+      },
+      {
+        "product_name": "METTY  8",
+        "qty": 500,
+        "unit_price": 85262.85,
+        "subtotal": 42631426.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070409",
+    "invoice_date": "2026-07-23",
+    "due_date": "2026-07-23",
+    "total_amount": 162421974.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 162421974.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PIROXICAM  20",
+        "qty": 1000,
+        "unit_price": 105574.28,
+        "subtotal": 105574283.1
+      },
+      {
+        "product_name": "PROVINAS 200MG",
+        "qty": 500,
+        "unit_price": 113695.38,
+        "subtotal": 56847690.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070410",
+    "invoice_date": "2026-07-23",
+    "due_date": "2026-07-23",
+    "total_amount": 101920085.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 101920085.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "RANIPHIL 150",
+        "qty": 1000,
+        "unit_price": 66248.06,
+        "subtotal": 66248055.25
+      },
+      {
+        "product_name": "RANITIDINE 150 MG",
+        "qty": 500,
+        "unit_price": 71344.06,
+        "subtotal": 35672029.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070411",
+    "invoice_date": "2026-07-23",
+    "due_date": "2026-07-23",
+    "total_amount": 194032008.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 194032008.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEDIAR.",
+        "qty": 1000,
+        "unit_price": 126120.81,
+        "subtotal": 126120805.2
+      },
+      {
+        "product_name": "SELEDRYL",
+        "qty": 500,
+        "unit_price": 135822.41,
+        "subtotal": 67911202.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070412",
+    "invoice_date": "2026-07-24",
+    "due_date": "2026-07-24",
+    "total_amount": 24250050.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 24250050.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES B6 10 (BOX)",
+        "qty": 1000,
+        "unit_price": 15762.53,
+        "subtotal": 15762532.5
+      },
+      {
+        "product_name": "SELESBION",
+        "qty": 500,
+        "unit_price": 16975.03,
+        "subtotal": 8487517.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070413",
+    "invoice_date": "2026-07-27",
+    "due_date": "2026-07-27",
+    "total_amount": 126696291.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 126696291.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES C 50 (BOX)",
+        "qty": 1000,
+        "unit_price": 82352.59,
+        "subtotal": 82352589.15
+      },
+      {
+        "product_name": "SELESCARDIO 10",
+        "qty": 500,
+        "unit_price": 88687.4,
+        "subtotal": 44343701.85
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070414",
+    "invoice_date": "2026-07-27",
+    "due_date": "2026-07-27",
+    "total_amount": 197137602.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 197137602.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESGIN",
+        "qty": 1000,
+        "unit_price": 128139.44,
+        "subtotal": 128139441.3
+      },
+      {
+        "product_name": "SELESIKLIN 500 MG",
+        "qty": 500,
+        "unit_price": 137996.32,
+        "subtotal": 68998160.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070415",
+    "invoice_date": "2026-07-28",
+    "due_date": "2026-07-28",
+    "total_amount": 1579814902.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 1579814902.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL",
+        "qty": 1000,
+        "unit_price": 1026879.69,
+        "subtotal": 1026879686.3
+      },
+      {
+        "product_name": "SELESMOL (BOTOL)",
+        "qty": 500,
+        "unit_price": 1105870.43,
+        "subtotal": 552935215.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070416",
+    "invoice_date": "2026-07-28",
+    "due_date": "2026-07-28",
+    "total_amount": 23948100.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 23948100.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL FORTE",
+        "qty": 1000,
+        "unit_price": 15566.26,
+        "subtotal": 15566265.0
+      },
+      {
+        "product_name": "SELESNIZOL",
+        "qty": 500,
+        "unit_price": 16763.67,
+        "subtotal": 8381835.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070417",
+    "invoice_date": "2026-07-28",
+    "due_date": "2026-07-28",
+    "total_amount": 208577924.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 208577924.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESPURIN 300MG",
+        "qty": 1000,
+        "unit_price": 135575.65,
+        "subtotal": 135575650.6
+      },
+      {
+        "product_name": "SELESTRIM",
+        "qty": 500,
+        "unit_price": 146004.55,
+        "subtotal": 73002273.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070418",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 202592478.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 202592478.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELFOLIC",
+        "qty": 1000,
+        "unit_price": 131685.11,
+        "subtotal": 131685110.7
+      },
+      {
+        "product_name": "SELKOM C'",
+        "qty": 500,
+        "unit_price": 141814.73,
+        "subtotal": 70907367.3
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070419",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 121867416.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 121867416.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C DT",
+        "qty": 1000,
+        "unit_price": 79213.82,
+        "subtotal": 79213820.4
+      },
+      {
+        "product_name": "SELKOM - C GOLD",
+        "qty": 500,
+        "unit_price": 85307.19,
+        "subtotal": 42653595.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070420",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 66443002.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 66443002.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMETOR.",
+        "qty": 1000,
+        "unit_price": 43187.95,
+        "subtotal": 43187951.3
+      },
+      {
+        "product_name": "SELMETOR (BOTOL)",
+        "qty": 500,
+        "unit_price": 46510.1,
+        "subtotal": 23255050.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070421",
+    "invoice_date": "2026-07-29",
+    "due_date": "2026-07-29",
+    "total_amount": 42981642.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 42981642.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELVIPLEX.",
+        "qty": 1000,
+        "unit_price": 27938.07,
+        "subtotal": 27938067.3
+      },
+      {
+        "product_name": "TETRACYCLINE  500MG",
+        "qty": 500,
+        "unit_price": 30087.15,
+        "subtotal": 15043574.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070422",
+    "invoice_date": "2026-07-30",
+    "due_date": "2026-07-30",
+    "total_amount": 65986747.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 65986747.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "VITACAPS",
+        "qty": 1000,
+        "unit_price": 42891.39,
+        "subtotal": 42891385.55
+      },
+      {
+        "product_name": "VITAMIN B KOMPLEKS (BOX)",
+        "qty": 500,
+        "unit_price": 46190.72,
+        "subtotal": 23095361.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070423",
+    "invoice_date": "2026-07-30",
+    "due_date": "2026-07-30",
+    "total_amount": 362129432.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 362129432.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 100ml",
+        "qty": 1000,
+        "unit_price": 235384.13,
+        "subtotal": 235384130.8
+      },
+      {
+        "product_name": "ALKOHOL 70% 300ml",
+        "qty": 500,
+        "unit_price": 253490.6,
+        "subtotal": 126745301.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070424",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 124197170.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 124197170.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALLOPURINOL   300MG",
+        "qty": 1000,
+        "unit_price": 80728.16,
+        "subtotal": 80728160.5
+      },
+      {
+        "product_name": "AMBROXOL",
+        "qty": 500,
+        "unit_price": 86938.02,
+        "subtotal": 43469009.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070425",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 90363389.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 90363389.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE BESILATE 10MG (@ 10 STRIP)",
+        "qty": 1000,
+        "unit_price": 58736.2,
+        "subtotal": 58736202.85
+      },
+      {
+        "product_name": "AMLODIPINE  BESILATE   5MG",
+        "qty": 500,
+        "unit_price": 63254.37,
+        "subtotal": 31627186.15
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070426",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 68390349.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 68390349.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOSTERRA SIRUP KERING",
+        "qty": 1000,
+        "unit_price": 44453.73,
+        "subtotal": 44453726.85
+      },
+      {
+        "product_name": "AMOXICILLIN 250",
+        "qty": 500,
+        "unit_price": 47873.24,
+        "subtotal": 23936622.15
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070427",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 229457250.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 229457250.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN SIRUP KERING",
+        "qty": 1000,
+        "unit_price": 149147.21,
+        "subtotal": 149147212.5
+      },
+      {
+        "product_name": "AMPICILLIN",
+        "qty": 500,
+        "unit_price": 160620.08,
+        "subtotal": 80310037.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070428",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 45891450.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 45891450.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "BIOMOM",
+        "qty": 1000,
+        "unit_price": 29829.44,
+        "subtotal": 29829442.5
+      },
+      {
+        "product_name": "BIOMOM LACTA",
+        "qty": 500,
+        "unit_price": 32124.01,
+        "subtotal": 16062007.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070429",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 17768520.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 17768520.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CETIRIZINE HYDROCHLORIDE",
+        "qty": 1000,
+        "unit_price": 11549.54,
+        "subtotal": 11549538.0
+      },
+      {
+        "product_name": "CETRIZ",
+        "qty": 500,
+        "unit_price": 12437.96,
+        "subtotal": 6218982.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26070430",
+    "invoice_date": "2026-07-31",
+    "due_date": "2026-07-31",
+    "total_amount": 452618467.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 452618467.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "COTRIMOKSAZOLE",
+        "qty": 1000,
+        "unit_price": 294202.0,
+        "subtotal": 294202003.55
+      },
+      {
+        "product_name": "DAILY FARMA C + E",
+        "qty": 500,
+        "unit_price": 316832.93,
+        "subtotal": 158416463.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080431",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-08-03",
+    "total_amount": 390639164.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 390639164.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DOMIKADO",
+        "qty": 1000,
+        "unit_price": 253915.46,
+        "subtotal": 253915456.6
+      },
+      {
+        "product_name": "DOMPERIDONE",
+        "qty": 500,
+        "unit_price": 273447.41,
+        "subtotal": 136723707.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080432",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-08-03",
+    "total_amount": 141735460.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 141735460.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ILPHIL.",
+        "qty": 1000,
+        "unit_price": 92128.05,
+        "subtotal": 92128049.0
+      },
+      {
+        "product_name": "MEFENAMIC ACID",
+        "qty": 500,
+        "unit_price": 99214.82,
+        "subtotal": 49607411.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080433",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-08-03",
+    "total_amount": 172427996.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 172427996.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  16",
+        "qty": 1000,
+        "unit_price": 112078.2,
+        "subtotal": 112078197.4
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  4",
+        "qty": 500,
+        "unit_price": 120699.6,
+        "subtotal": 60349798.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080434",
+    "invoice_date": "2026-08-04",
+    "due_date": "2026-08-04",
+    "total_amount": 204375145.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 204375145.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METRONIDAZOLE 500",
+        "qty": 1000,
+        "unit_price": 132843.84,
+        "subtotal": 132843844.25
+      },
+      {
+        "product_name": "METTY  4",
+        "qty": 500,
+        "unit_price": 143062.6,
+        "subtotal": 71531300.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080435",
+    "invoice_date": "2026-08-05",
+    "due_date": "2026-08-05",
+    "total_amount": 60466725.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 60466725.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PARACETAMOL  500MG",
+        "qty": 1000,
+        "unit_price": 39303.37,
+        "subtotal": 39303371.25
+      },
+      {
+        "product_name": "PIROXICAM  20",
+        "qty": 500,
+        "unit_price": 42326.71,
+        "subtotal": 21163353.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080436",
+    "invoice_date": "2026-08-05",
+    "due_date": "2026-08-05",
+    "total_amount": 201656070.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 201656070.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PROVINAS 400MG",
+        "qty": 1000,
+        "unit_price": 131076.45,
+        "subtotal": 131076445.5
+      },
+      {
+        "product_name": "RANIPHIL 150",
+        "qty": 500,
+        "unit_price": 141159.25,
+        "subtotal": 70579624.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080437",
+    "invoice_date": "2026-08-05",
+    "due_date": "2026-08-05",
+    "total_amount": 114178884.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 114178884.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEBROX",
+        "qty": 1000,
+        "unit_price": 74216.27,
+        "subtotal": 74216274.6
+      },
+      {
+        "product_name": "SELEDIAR.",
+        "qty": 500,
+        "unit_price": 79925.22,
+        "subtotal": 39962609.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080438",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 175345434.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 175345434.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES B1 50 (BOX)",
+        "qty": 1000,
+        "unit_price": 113974.53,
+        "subtotal": 113974532.1
+      },
+      {
+        "product_name": "SELES B6 10 (BOX)",
+        "qty": 500,
+        "unit_price": 122741.8,
+        "subtotal": 61370901.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080439",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 227369885.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 227369885.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESBION PLUS CAL",
+        "qty": 1000,
+        "unit_price": 147790.43,
+        "subtotal": 147790425.25
+      },
+      {
+        "product_name": "SELES C 50 (BOX)",
+        "qty": 500,
+        "unit_price": 159158.92,
+        "subtotal": 79579459.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080440",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 130432772.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 130432772.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESCARDIO 5",
+        "qty": 1000,
+        "unit_price": 84781.3,
+        "subtotal": 84781301.8
+      },
+      {
+        "product_name": "SELESGIN",
+        "qty": 500,
+        "unit_price": 91302.94,
+        "subtotal": 45651470.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080441",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 725222584.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 725222584.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESKOL 250 MG",
+        "qty": 1000,
+        "unit_price": 471394.68,
+        "subtotal": 471394679.6
+      },
+      {
+        "product_name": "SELESMOL",
+        "qty": 500,
+        "unit_price": 507655.81,
+        "subtotal": 253827904.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080442",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 12307680.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 12307680.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL CAFE",
+        "qty": 1000,
+        "unit_price": 7999.99,
+        "subtotal": 7999992.0
+      },
+      {
+        "product_name": "SELESMOL FORTE",
+        "qty": 500,
+        "unit_price": 8615.38,
+        "subtotal": 4307688.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080443",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 36005904.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 36005904.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESPURIN 100MG",
+        "qty": 1000,
+        "unit_price": 23403.84,
+        "subtotal": 23403837.6
+      },
+      {
+        "product_name": "SELESPURIN 300MG",
+        "qty": 500,
+        "unit_price": 25204.13,
+        "subtotal": 12602066.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080444",
+    "invoice_date": "2026-08-06",
+    "due_date": "2026-08-06",
+    "total_amount": 27064259.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 27064259.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEXON 0.5",
+        "qty": 1000,
+        "unit_price": 17591.77,
+        "subtotal": 17591768.35
+      },
+      {
+        "product_name": "SELFOLIC",
+        "qty": 500,
+        "unit_price": 18944.98,
+        "subtotal": 9472490.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080445",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 175698099.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 175698099.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C (AMP)",
+        "qty": 1000,
+        "unit_price": 114203.76,
+        "subtotal": 114203764.35
+      },
+      {
+        "product_name": "SELKOM C DT",
+        "qty": 500,
+        "unit_price": 122988.67,
+        "subtotal": 61494334.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080446",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 90316938.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 90316938.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMATIC 20",
+        "qty": 1000,
+        "unit_price": 58706.01,
+        "subtotal": 58706009.7
+      },
+      {
+        "product_name": "SELMETOR.",
+        "qty": 500,
+        "unit_price": 63221.86,
+        "subtotal": 31610928.3
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080447",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 198968000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 198968000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELPYRON",
+        "qty": 1000,
+        "unit_price": 129329.2,
+        "subtotal": 129329200.0
+      },
+      {
+        "product_name": "SELVIPLEX.",
+        "qty": 500,
+        "unit_price": 139277.6,
+        "subtotal": 69638800.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080448",
+    "invoice_date": "2026-08-07",
+    "due_date": "2026-08-07",
+    "total_amount": 15778125.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 15778125.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "THIAMPHENICOL  500",
+        "qty": 1000,
+        "unit_price": 10255.78,
+        "subtotal": 10255781.25
+      },
+      {
+        "product_name": "VITACAPS",
+        "qty": 500,
+        "unit_price": 11044.69,
+        "subtotal": 5522343.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080449",
+    "invoice_date": "2026-08-10",
+    "due_date": "2026-08-10",
+    "total_amount": 47780865.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 47780865.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 1000ml",
+        "qty": 1000,
+        "unit_price": 31057.56,
+        "subtotal": 31057562.25
+      },
+      {
+        "product_name": "ALKOHOL 70% 100ml",
+        "qty": 500,
+        "unit_price": 33446.61,
+        "subtotal": 16723302.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080450",
+    "invoice_date": "2026-08-11",
+    "due_date": "2026-08-11",
+    "total_amount": 110649825.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 110649825.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALLOPURINOL   100MG",
+        "qty": 1000,
+        "unit_price": 71922.39,
+        "subtotal": 71922386.25
+      },
+      {
+        "product_name": "ALLOPURINOL   300MG",
+        "qty": 500,
+        "unit_price": 77454.88,
+        "subtotal": 38727438.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080451",
+    "invoice_date": "2026-08-11",
+    "due_date": "2026-08-11",
+    "total_amount": 120414785.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 120414785.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE  BESILATE   10MG",
+        "qty": 1000,
+        "unit_price": 78269.61,
+        "subtotal": 78269610.25
+      },
+      {
+        "product_name": "AMLODIPINE BESILATE 10MG (@ 10 STRIP)",
+        "qty": 500,
+        "unit_price": 84290.35,
+        "subtotal": 42145174.75
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080452",
+    "invoice_date": "2026-08-11",
+    "due_date": "2026-08-11",
+    "total_amount": 488232360.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 488232360.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOSTERRA",
+        "qty": 1000,
+        "unit_price": 317351.03,
+        "subtotal": 317351034.0
+      },
+      {
+        "product_name": "AMOSTERRA SIRUP KERING",
+        "qty": 500,
+        "unit_price": 341762.65,
+        "subtotal": 170881326.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080453",
+    "invoice_date": "2026-08-12",
+    "due_date": "2026-08-12",
+    "total_amount": 57550492.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 57550492.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN 500",
+        "qty": 1000,
+        "unit_price": 37407.82,
+        "subtotal": 37407819.8
+      },
+      {
+        "product_name": "AMOXICILLIN SIRUP KERING",
+        "qty": 500,
+        "unit_price": 40285.34,
+        "subtotal": 20142672.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080454",
+    "invoice_date": "2026-08-12",
+    "due_date": "2026-08-12",
+    "total_amount": 78652298.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78652298.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ANTASIDA DOEN",
+        "qty": 1000,
+        "unit_price": 51123.99,
+        "subtotal": 51123993.7
+      },
+      {
+        "product_name": "BIOMOM",
+        "qty": 500,
+        "unit_price": 55056.61,
+        "subtotal": 27528304.3
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080455",
+    "invoice_date": "2026-08-12",
+    "due_date": "2026-08-12",
+    "total_amount": 281041933.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 281041933.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CALCIUM LACTATE",
+        "qty": 1000,
+        "unit_price": 182677.26,
+        "subtotal": 182677256.45
+      },
+      {
+        "product_name": "CETIRIZINE HYDROCHLORIDE",
+        "qty": 500,
+        "unit_price": 196729.35,
+        "subtotal": 98364676.55
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080456",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 122481871.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 122481871.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CHLORAMPHENICOL  250",
+        "qty": 1000,
+        "unit_price": 79613.22,
+        "subtotal": 79613216.15
+      },
+      {
+        "product_name": "COTRIMOKSAZOLE",
+        "qty": 500,
+        "unit_price": 85737.31,
+        "subtotal": 42868654.85
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080457",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 217849436.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 217849436.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DEXAMETHASONE",
+        "qty": 1000,
+        "unit_price": 141602.13,
+        "subtotal": 141602133.4
+      },
+      {
+        "product_name": "DOMIKADO",
+        "qty": 500,
+        "unit_price": 152494.61,
+        "subtotal": 76247302.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080458",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 161596788.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 161596788.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "GUAIFENESIN",
+        "qty": 1000,
+        "unit_price": 105037.91,
+        "subtotal": 105037912.2
+      },
+      {
+        "product_name": "ILPHIL.",
+        "qty": 500,
+        "unit_price": 113117.75,
+        "subtotal": 56558875.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080459",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 607842009.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 607842009.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METAMIZOLE SODIUM",
+        "qty": 1000,
+        "unit_price": 395097.31,
+        "subtotal": 395097305.85
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  16",
+        "qty": 500,
+        "unit_price": 425489.41,
+        "subtotal": 212744703.15
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080460",
+    "invoice_date": "2026-08-13",
+    "due_date": "2026-08-13",
+    "total_amount": 45891450.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 45891450.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  8",
+        "qty": 1000,
+        "unit_price": 29829.44,
+        "subtotal": 29829442.5
+      },
+      {
+        "product_name": "METRONIDAZOLE 500",
+        "qty": 500,
+        "unit_price": 32124.01,
+        "subtotal": 16062007.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080461",
+    "invoice_date": "2026-08-14",
+    "due_date": "2026-08-14",
+    "total_amount": 120518307.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 120518307.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METTY  8",
+        "qty": 1000,
+        "unit_price": 78336.9,
+        "subtotal": 78336899.55
+      },
+      {
+        "product_name": "PARACETAMOL  500MG",
+        "qty": 500,
+        "unit_price": 84362.81,
+        "subtotal": 42181407.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080462",
+    "invoice_date": "2026-08-14",
+    "due_date": "2026-08-14",
+    "total_amount": 80677674.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 80677674.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PROVINAS 200MG",
+        "qty": 1000,
+        "unit_price": 52440.49,
+        "subtotal": 52440488.1
+      },
+      {
+        "product_name": "PROVINAS 400MG",
+        "qty": 500,
+        "unit_price": 56474.37,
+        "subtotal": 28237185.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080463",
+    "invoice_date": "2026-08-18",
+    "due_date": "2026-08-18",
+    "total_amount": 1054944.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 1054944.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "RANITIDINE 150 MG",
+        "qty": 1000,
+        "unit_price": 685.71,
+        "subtotal": 685713.6
+      },
+      {
+        "product_name": "SELEBROX",
+        "qty": 500,
+        "unit_price": 738.46,
+        "subtotal": 369230.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080464",
+    "invoice_date": "2026-08-18",
+    "due_date": "2026-08-18",
+    "total_amount": 79880458.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 79880458.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEDRYL",
+        "qty": 1000,
+        "unit_price": 51922.3,
+        "subtotal": 51922297.7
+      },
+      {
+        "product_name": "SELES B1 50 (BOX)",
+        "qty": 500,
+        "unit_price": 55916.32,
+        "subtotal": 27958160.3
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080465",
+    "invoice_date": "2026-08-18",
+    "due_date": "2026-08-18",
+    "total_amount": 234292410.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 234292410.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESBION",
+        "qty": 1000,
+        "unit_price": 152290.07,
+        "subtotal": 152290066.5
+      },
+      {
+        "product_name": "SELESBION PLUS CAL",
+        "qty": 500,
+        "unit_price": 164004.69,
+        "subtotal": 82002343.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080466",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 358419600.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 358419600.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESCARDIO 10",
+        "qty": 1000,
+        "unit_price": 232972.74,
+        "subtotal": 232972740.0
+      },
+      {
+        "product_name": "SELESCARDIO 5",
+        "qty": 500,
+        "unit_price": 250893.72,
+        "subtotal": 125446860.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080467",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 950706514.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 950706514.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESIKLIN 500 MG",
+        "qty": 1000,
+        "unit_price": 617959.23,
+        "subtotal": 617959234.1
+      },
+      {
+        "product_name": "SELESKOL 250 MG",
+        "qty": 500,
+        "unit_price": 665494.56,
+        "subtotal": 332747279.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080468",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 226790872.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 226790872.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESMOL (BOTOL)",
+        "qty": 1000,
+        "unit_price": 147414.07,
+        "subtotal": 147414066.8
+      },
+      {
+        "product_name": "SELESMOL CAFE",
+        "qty": 500,
+        "unit_price": 158753.61,
+        "subtotal": 79376805.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080469",
+    "invoice_date": "2026-08-19",
+    "due_date": "2026-08-19",
+    "total_amount": 169880634.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 169880634.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESNIZOL",
+        "qty": 1000,
+        "unit_price": 110422.41,
+        "subtotal": 110422412.1
+      },
+      {
+        "product_name": "SELESPURIN 100MG",
+        "qty": 500,
+        "unit_price": 118916.44,
+        "subtotal": 59458221.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080470",
+    "invoice_date": "2026-08-20",
+    "due_date": "2026-08-20",
+    "total_amount": 136824079.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 136824079.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELESTRIM",
+        "qty": 1000,
+        "unit_price": 88935.65,
+        "subtotal": 88935651.35
+      },
+      {
+        "product_name": "SELEXON 0.5",
+        "qty": 500,
+        "unit_price": 95776.86,
+        "subtotal": 47888427.65
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080471",
+    "invoice_date": "2026-08-20",
+    "due_date": "2026-08-20",
+    "total_amount": 91899647.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 91899647.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM C'",
+        "qty": 1000,
+        "unit_price": 59734.77,
+        "subtotal": 59734770.55
+      },
+      {
+        "product_name": "SELKOM C (AMP)",
+        "qty": 500,
+        "unit_price": 64329.75,
+        "subtotal": 32164876.45
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080472",
+    "invoice_date": "2026-08-20",
+    "due_date": "2026-08-20",
+    "total_amount": 20055420.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 20055420.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELKOM - C GOLD",
+        "qty": 1000,
+        "unit_price": 13036.02,
+        "subtotal": 13036023.0
+      },
+      {
+        "product_name": "SELMATIC 20",
+        "qty": 500,
+        "unit_price": 14038.79,
+        "subtotal": 7019397.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080473",
+    "invoice_date": "2026-08-21",
+    "due_date": "2026-08-21",
+    "total_amount": 234465311.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 234465311.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELMETOR (BOTOL)",
+        "qty": 1000,
+        "unit_price": 152402.45,
+        "subtotal": 152402452.15
+      },
+      {
+        "product_name": "SELPYRON",
+        "qty": 500,
+        "unit_price": 164125.72,
+        "subtotal": 82062858.85
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080474",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 70113446.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 70113446.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "TETRACYCLINE  500MG",
+        "qty": 1000,
+        "unit_price": 45573.74,
+        "subtotal": 45573739.9
+      },
+      {
+        "product_name": "THIAMPHENICOL  500",
+        "qty": 500,
+        "unit_price": 49079.41,
+        "subtotal": 24539706.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080475",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 129295406.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 129295406.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "VITAMIN B KOMPLEKS (BOX)",
+        "qty": 1000,
+        "unit_price": 84042.01,
+        "subtotal": 84042013.9
+      },
+      {
+        "product_name": "ALKOHOL 70% 1000ml",
+        "qty": 500,
+        "unit_price": 90506.78,
+        "subtotal": 45253392.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080476",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 99579422.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 99579422.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "ALKOHOL 70% 300ml",
+        "qty": 1000,
+        "unit_price": 64726.62,
+        "subtotal": 64726624.3
+      },
+      {
+        "product_name": "ALLOPURINOL   100MG",
+        "qty": 500,
+        "unit_price": 69705.6,
+        "subtotal": 34852797.7
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080477",
+    "invoice_date": "2026-08-24",
+    "due_date": "2026-08-24",
+    "total_amount": 125039366.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 125039366.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMBROXOL",
+        "qty": 1000,
+        "unit_price": 81275.59,
+        "subtotal": 81275587.9
+      },
+      {
+        "product_name": "AMLODIPINE  BESILATE   10MG",
+        "qty": 500,
+        "unit_price": 87527.56,
+        "subtotal": 43763778.1
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080478",
+    "invoice_date": "2026-08-26",
+    "due_date": "2026-08-26",
+    "total_amount": 206516717.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 206516717.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMLODIPINE  BESILATE   5MG",
+        "qty": 1000,
+        "unit_price": 134235.87,
+        "subtotal": 134235866.05
+      },
+      {
+        "product_name": "AMOSTERRA",
+        "qty": 500,
+        "unit_price": 144561.7,
+        "subtotal": 72280850.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080479",
+    "invoice_date": "2026-08-26",
+    "due_date": "2026-08-26",
+    "total_amount": 51657210.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 51657210.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMOXICILLIN 250",
+        "qty": 1000,
+        "unit_price": 33577.19,
+        "subtotal": 33577186.5
+      },
+      {
+        "product_name": "AMOXICILLIN 500",
+        "qty": 500,
+        "unit_price": 36160.05,
+        "subtotal": 18080023.5
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080480",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 517033594.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 517033594.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "AMPICILLIN",
+        "qty": 1000,
+        "unit_price": 336071.84,
+        "subtotal": 336071836.1
+      },
+      {
+        "product_name": "ANTASIDA DOEN",
+        "qty": 500,
+        "unit_price": 361923.52,
+        "subtotal": 180961757.9
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080481",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 104000336.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 104000336.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "BIOMOM LACTA",
+        "qty": 1000,
+        "unit_price": 67600.22,
+        "subtotal": 67600218.4
+      },
+      {
+        "product_name": "CALCIUM LACTATE",
+        "qty": 500,
+        "unit_price": 72800.24,
+        "subtotal": 36400117.6
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080482",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 71485540.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 71485540.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "CETRIZ",
+        "qty": 1000,
+        "unit_price": 46465.6,
+        "subtotal": 46465601.0
+      },
+      {
+        "product_name": "CHLORAMPHENICOL  250",
+        "qty": 500,
+        "unit_price": 50039.88,
+        "subtotal": 25019939.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080483",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 117277717.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 117277717.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DAILY FARMA C + E",
+        "qty": 1000,
+        "unit_price": 76230.52,
+        "subtotal": 76230516.05
+      },
+      {
+        "product_name": "DEXAMETHASONE",
+        "qty": 500,
+        "unit_price": 82094.4,
+        "subtotal": 41047200.95
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080484",
+    "invoice_date": "2026-08-27",
+    "due_date": "2026-08-27",
+    "total_amount": 41872491.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 41872491.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "DOMPERIDONE",
+        "qty": 1000,
+        "unit_price": 27217.12,
+        "subtotal": 27217119.15
+      },
+      {
+        "product_name": "GUAIFENESIN",
+        "qty": 500,
+        "unit_price": 29310.74,
+        "subtotal": 14655371.85
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080485",
+    "invoice_date": "2026-08-28",
+    "due_date": "2026-08-28",
+    "total_amount": 188632089.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 188632089.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "MEFENAMIC ACID",
+        "qty": 1000,
+        "unit_price": 122610.86,
+        "subtotal": 122610857.85
+      },
+      {
+        "product_name": "METAMIZOLE SODIUM",
+        "qty": 500,
+        "unit_price": 132042.46,
+        "subtotal": 66021231.15
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080486",
+    "invoice_date": "2026-08-28",
+    "due_date": "2026-08-28",
+    "total_amount": 78885528.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 78885528.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METHYLPREDNISOLONE  4",
+        "qty": 1000,
+        "unit_price": 51275.59,
+        "subtotal": 51275593.2
+      },
+      {
+        "product_name": "METHYLPREDNISOLONE  8",
+        "qty": 500,
+        "unit_price": 55219.87,
+        "subtotal": 27609934.8
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080487",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 325724824.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 325724824.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "METTY  4",
+        "qty": 1000,
+        "unit_price": 211721.14,
+        "subtotal": 211721135.6
+      },
+      {
+        "product_name": "METTY  8",
+        "qty": 500,
+        "unit_price": 228007.38,
+        "subtotal": 114003688.4
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080488",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 339873435.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 339873435.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "PIROXICAM  20",
+        "qty": 1000,
+        "unit_price": 220917.73,
+        "subtotal": 220917732.75
+      },
+      {
+        "product_name": "PROVINAS 200MG",
+        "qty": 500,
+        "unit_price": 237911.4,
+        "subtotal": 118955702.25
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080489",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 300824172.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 300824172.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "RANIPHIL 150",
+        "qty": 1000,
+        "unit_price": 195535.71,
+        "subtotal": 195535711.8
+      },
+      {
+        "product_name": "RANITIDINE 150 MG",
+        "qty": 500,
+        "unit_price": 210576.92,
+        "subtotal": 105288460.2
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080490",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 341550000.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 341550000.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELEDIAR.",
+        "qty": 1000,
+        "unit_price": 222007.5,
+        "subtotal": 222007500.0
+      },
+      {
+        "product_name": "SELEDRYL",
+        "qty": 500,
+        "unit_price": 239085.0,
+        "subtotal": 119542500.0
+      }
+    ]
+  },
+  {
+    "supplier_name": "PT SEJAHTERA LESTARI FARMA",
+    "pi_code": "PISL26080492",
+    "invoice_date": "2026-08-31",
+    "due_date": "2026-08-31",
+    "total_amount": 296596441.0,
+    "paid_amount": 0.0,
+    "outstanding_amount": 296596441.0,
+    "status": "Open",
+    "items": [
+      {
+        "product_name": "SELES B6 10 (BOX)",
+        "qty": 1000,
+        "unit_price": 192787.69,
+        "subtotal": 192787686.65
+      },
+      {
+        "product_name": "SELESBION",
+        "qty": 500,
+        "unit_price": 207617.51,
+        "subtotal": 103808754.35
+      }
+    ]
+  }
+]
