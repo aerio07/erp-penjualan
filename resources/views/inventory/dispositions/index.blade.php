@@ -15,7 +15,7 @@
     </x-page-header>
 
     {{-- Filter Bar --}}
-    <x-list-filter-bar :action="route('inventory.dispositions.index')" placeholder="Cari No. Disposisi, Produk, Catatan..." :showDateFilter="true">
+    <x-list-filter-bar :action="route('inventory.dispositions.index')" placeholder="Cari No. Reject, Produk, Catatan..." :showDateFilter="true">
         <select name="product_id" class="form-control filter-select">
             <option value="">Semua Produk</option>
             @foreach($products as $p)
@@ -40,8 +40,8 @@
     <x-data-table :paginator="$dispositions">
         <x-slot:head>
             <tr>
-                <x-sortable-header column="disposition_number" title="No. Disposisi" />
-                <x-sortable-header column="disposed_at" title="Tgl Disposisi" />
+                <x-sortable-header column="disposition_number" title="No. Reject" />
+                <x-sortable-header column="disposed_at" title="Tgl Reject" />
                 <th>Produk</th>
                 <th>Gudang</th>
                 <x-sortable-header column="qty" title="Qty" align="center" />
