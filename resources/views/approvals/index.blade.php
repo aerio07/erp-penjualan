@@ -43,7 +43,7 @@
 </style>
 
 <div class="animate-in">
-    <x-page-header title="Approval" subtitle="Persetujuan dokumen Purchase Request, Purchase Order, dan Sales Order" />
+    <x-page-header title="Approval" subtitle="Persetujuan dokumen Purchase Request, Purchase Order, Penerimaan Barang (LPB), dan Sales Order" />
 
     {{-- Filter Bar --}}
     <x-list-filter-bar :action="route('approvals.index')" placeholder="Cari No. Request, Catatan..." :showDateFilter="true">
@@ -101,7 +101,11 @@
                             $docTypeLabel = 'SO';
                             $badgeClass = 'badge-info';
                         }
-                        $isPr = ($app->approvable_type === 'App\Models\PurchaseRequest');
+                        $hasNoAmount = in_array($app->approvable_type, [
+                            'App\Models\PurchaseRequest',
+                            'App\Models\GoodsReceipt',
+                        ]);
+                        $displayAmount = (float) (($app->amount > 0) ? $app->amount : ($doc->total_amount ?? 0));
                     @endphp
                     <tr>
                         <td style="font-weight:600; color:var(--primary); white-space:nowrap;">{{ $app->request_number }}</td>
@@ -117,12 +121,10 @@
                         </td>
                         <td>{{ $app->requester->name ?? '-' }}</td>
                         <td style="text-align:right; font-weight:700; color:var(--primary); white-space:nowrap;">
-                            @if($isPr)
+                            @if($hasNoAmount)
                                 <span style="color:var(--text-secondary); font-weight:400;">-</span>
-                            @elseif($app->amount > 0)
-                                Rp {{ number_format($app->amount, 0, ',', '.') }}
                             @else
-                                <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">-</span>
+                                Rp {{ number_format($displayAmount, 0, ',', '.') }}
                             @endif
                         </td>
                         <td style="white-space:nowrap; font-size:12.5px; color:var(--text-secondary);">
@@ -134,7 +136,7 @@
                                 <form id="approve-form-{{ $app->id }}" method="POST" action="{{ route('approvals.approve', $app) }}" style="display:inline; margin:0;">
                                     @csrf 
                                     @method('PATCH')
-                                    <button type="button" class="btn btn-success approval-btn" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ (!$isPr && $app->amount > 0) ? number_format($app->amount, 0, ',', '.') : '' }}')">
+                                    <button type="button" class="btn btn-success approval-btn" onclick="approveApproval({{ $app->id }}, '{{ $docNum }}', '{{ (!$hasNoAmount) ? number_format($displayAmount, 0, ',', '.') : '' }}')">
                                         <i class="fa-solid fa-check"></i> Setujui
                                     </button>
                                 </form>
@@ -228,7 +230,11 @@
                             $typeLabel = 'SO';
                             $badgeClass = 'badge-info';
                         }
-                        $isPr = ($app->approvable_type === 'App\Models\PurchaseRequest');
+                        $hasNoAmount = in_array($app->approvable_type, [
+                            'App\Models\PurchaseRequest',
+                            'App\Models\GoodsReceipt',
+                        ]);
+                        $displayAmount = (float) (($app->amount > 0) ? $app->amount : ($doc->total_amount ?? 0));
                         
                         $statusBadge = match($app->status) {
                             'approved' => 'badge-done',
@@ -262,12 +268,10 @@
                         </td>
                         <td>{{ $app->requester->name ?? '-' }}</td>
                         <td style="text-align:right; white-space:nowrap; font-weight:600;">
-                            @if($isPr)
+                            @if($hasNoAmount)
                                 <span style="color:var(--text-secondary); font-weight:400;">-</span>
-                            @elseif($app->amount > 0)
-                                Rp {{ number_format($app->amount, 0, ',', '.') }}
                             @else
-                                <span style="color:var(--text-secondary); font-weight:400;">-</span>
+                                Rp {{ number_format($displayAmount, 0, ',', '.') }}
                             @endif
                         </td>
                         <td style="text-align:center;">

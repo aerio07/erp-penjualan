@@ -17,19 +17,28 @@ class ApprovalService
      */
     public function request(string $type, int $id, float $amount, string $notes = ''): ApprovalRequest
     {
-        return ApprovalRequest::firstOrCreate(
-            [
-                'approvable_type' => $type,
-                'approvable_id'   => $id,
-                'status'          => 'pending',
-            ],
-            [
-                'request_number'  => $this->generateNumber(),
-                'requester_id'    => Auth::id(),
-                'amount'          => $amount,
-                'notes'           => $notes,
-            ]
-        );
+        $existing = ApprovalRequest::where('approvable_type', $type)
+            ->where('approvable_id', $id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existing) {
+            $existing->update([
+                'amount' => $amount,
+                'notes'  => $notes,
+            ]);
+            return $existing;
+        }
+
+        return ApprovalRequest::create([
+            'approvable_type' => $type,
+            'approvable_id'   => $id,
+            'status'          => 'pending',
+            'request_number'  => $this->generateNumber(),
+            'requester_id'    => Auth::id(),
+            'amount'          => $amount,
+            'notes'           => $notes,
+        ]);
     }
 
     /**

@@ -57,9 +57,18 @@ class GoodsReceiptController extends Controller
     {
         $selectedPoId = $request->query('po_id');
         $confirmedPos = PurchaseOrder::with(['supplier', 'warehouse', 'items.product', 'items.goodsReceiptItems'])
-            ->whereIn('status', ['confirmed', 'partially_received'])
+            ->whereIn('status', [PurchaseOrderStatus::Confirmed, PurchaseOrderStatus::PartiallyReceived])
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->filter(function ($po) {
+                $hasRemaining = $po->items->sum('qty_remaining') > 0;
+                if (!$hasRemaining && $po->items->isNotEmpty()) {
+                    $po->update(['status' => PurchaseOrderStatus::Done]);
+                    return false;
+                }
+                return $hasRemaining;
+            })
+            ->values();
 
         $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
 
@@ -345,14 +354,10 @@ class GoodsReceiptController extends Controller
             'rejection_reason' => null,
         ]);
 
-        $totalAmount = (float) $goodsReceipt->items->sum(function ($item) {
-            return ($item->qty_received + $item->qty_rejected) * $item->unit_cost;
-        });
-
         $this->approvalService->request(
             GoodsReceipt::class,
             $goodsReceipt->id,
-            $totalAmount,
+            0,
             "Penerimaan Barang #{$goodsReceipt->receipt_number} (PO #{$goodsReceipt->purchaseOrder->po_number}) diajukan oleh " . (Auth::user()->name ?? 'User') . "."
         );
 

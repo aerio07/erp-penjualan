@@ -460,6 +460,12 @@ function poForm() {
                 alert('Diskon header tidak boleh melebihi subtotal item!');
                 return false;
             }
+            const zeroPriceItem = this.rows.find(r => !r.price || Number(r.price) <= 0);
+            if (zeroPriceItem) {
+                e.preventDefault();
+                alert('Harga satuan untuk semua item PO wajib diisi lebih besar dari Rp 0!');
+                return false;
+            }
         },
         formatNum(v) {
             const val = this.roundAmount(v || 0);

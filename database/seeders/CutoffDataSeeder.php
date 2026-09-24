@@ -307,6 +307,8 @@ class CutoffDataSeeder extends Seeder
                 }
             }
 
+            $po->update(['status' => PurchaseOrderStatus::Done]);
+
             if ($paid > 0 && $invoice->payments()->count() === 0) {
                 PurchasePayment::create([
                     'payment_number' => PurchasePayment::generatePaymentNumber('transfer', $invoiceDate),

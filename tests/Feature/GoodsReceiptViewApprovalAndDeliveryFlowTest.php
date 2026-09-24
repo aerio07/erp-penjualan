@@ -4,12 +4,15 @@ namespace Tests\Feature;
 
 use App\Enums\DeliveryStatus;
 use App\Enums\GoodsReceiptStatus;
+use App\Models\ApprovalRequest;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\DeliveryItem;
 use App\Models\GoodsReceipt;
+use App\Models\GoodsReceiptItem;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use App\Models\Supplier;
@@ -182,4 +185,65 @@ class GoodsReceiptViewApprovalAndDeliveryFlowTest extends TestCase
         $response->assertSee('Terbitkan Invoice Penjualan');
         $response->assertSee('Diterima (Delivered)');
     }
+
+    public function test_goods_receipt_submit_approval_has_no_nominal_and_displays_dash_in_approval_list(): void
+    {
+        $po = PurchaseOrder::create([
+            'po_number'    => 'PO-TEST-' . uniqid(),
+            'supplier_id'  => $this->supplier->id,
+            'user_id'      => $this->admin->id,
+            'warehouse_id' => $this->warehouse->id,
+            'status'       => 'confirmed',
+            'order_date'   => now()->toDateString(),
+            'total_amount' => 100000,
+        ]);
+
+        $poItem = PurchaseOrderItem::create([
+            'purchase_order_id' => $po->id,
+            'product_id'        => $this->product->id,
+            'qty_ordered'       => 10,
+            'unit_price'        => 10000,
+            'subtotal'          => 100000,
+        ]);
+
+        $grn = GoodsReceipt::create([
+            'receipt_number'    => 'LPB-TEST-' . uniqid(),
+            'purchase_order_id' => $po->id,
+            'warehouse_id'      => $this->warehouse->id,
+            'user_id'           => $this->admin->id,
+            'status'            => GoodsReceiptStatus::Draft,
+            'received_date'     => now()->toDateString(),
+        ]);
+
+        GoodsReceiptItem::create([
+            'goods_receipt_id'       => $grn->id,
+            'purchase_order_item_id' => $poItem->id,
+            'warehouse_id'           => $this->warehouse->id,
+            'qty_received'           => 10,
+            'qty_rejected'           => 0,
+            'unit_cost'              => 10000,
+            'condition'              => 'Good',
+            'shortage_reason'        => 'none',
+        ]);
+
+        // Submit approval
+        $response = $this->actingAs($this->admin)->post(route('purchase.goods-receipts.submit', $grn));
+        $response->assertRedirect(route('purchase.goods-receipts.index'));
+
+        // ApprovalRequest harus ada dengan amount = 0 (bukan total nominal barang)
+        $approval = ApprovalRequest::where('approvable_type', GoodsReceipt::class)
+            ->where('approvable_id', $grn->id)
+            ->first();
+
+        $this->assertNotNull($approval);
+        $this->assertEquals(0, (float) $approval->amount);
+
+        // Halaman Approval Index tidak boleh menampilkan nominal Rp pada LPB
+        $indexResponse = $this->actingAs($this->admin)->get(route('approvals.index'));
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee($grn->receipt_number);
+        // Pastikan tidak ada "Rp 100.000" terkait LPB
+        $indexResponse->assertDontSee('Rp 100.000');
+    }
 }
+
