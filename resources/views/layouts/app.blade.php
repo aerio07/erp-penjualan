@@ -1473,12 +1473,14 @@
                 $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance') || request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
                 $isHutangPiutang = request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
                 $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.cash-forecast') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
+                $isKasBank = request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*');
             @endphp
             <div x-data="{ 
                 open: {{ $isAccountingRoute ? 'true' : 'false' }},
                 subBukuJurnal: {{ $isBukuJurnal ? 'true' : 'false' }},
                 subHutangPiutang: {{ $isHutangPiutang ? 'true' : 'false' }},
-                subLaporanKeuangan: {{ $isLaporanKeuangan ? 'true' : 'false' }}
+                subLaporanKeuangan: {{ $isLaporanKeuangan ? 'true' : 'false' }},
+                subKasBank: {{ $isKasBank ? 'true' : 'false' }}
             }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1552,6 +1554,20 @@
                             <a href="{{ route('accounting.reports.cash-forecast') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.cash-forecast') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Proyeksi Kas</a>
                             <a href="{{ route('accounting.reports.gross-profit') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.gross-profit') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Tren Laba Kotor</a>
                             <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Persediaan</a>
+                        </div>
+                    </div>
+                    <!-- Sub-Master: Kas & Bank Transaksi -->
+                    <div class="group">
+                        <button @click="subKasBank = !subKasBank" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined mr-3">account_balance_wallet</span>
+                                <span class="text-xs font-medium">Kas &amp; Bank</span>
+                            </div>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isKasBank ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subKasBank ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                        </button>
+                        <div x-show="subKasBank" @if(!$isKasBank) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('accounting.cash-bank-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Receipt</a>
+                            <a href="{{ route('accounting.cash-bank-expenses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-expenses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Expense</a>
                         </div>
                     </div>
 

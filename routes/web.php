@@ -38,6 +38,8 @@ use App\Http\Controllers\Accounting\ReportController;
 use App\Http\Controllers\Accounting\FixedAssetController;
 use App\Http\Controllers\Accounting\OpeningBalanceController;
 use App\Http\Controllers\Accounting\PeriodController;
+use App\Http\Controllers\Accounting\CashBankReceiptController;
+use App\Http\Controllers\Accounting\CashBankExpenseController;
 // Approval
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Route;
@@ -225,6 +227,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('balance-sheet', [ReportController::class, 'balanceSheet'])->name('balance-sheet');
             Route::get('stock-valuation', [ReportController::class, 'stockValuation'])->name('stock-valuation');
         });
+
+        // Cash Bank Receipt
+        Route::resource('cash-bank-receipts', CashBankReceiptController::class);
+        Route::patch('cash-bank-receipts/{cashBankReceipt}/post', [CashBankReceiptController::class, 'post'])->name('cash-bank-receipts.post');
+
+        // Cash Bank Expense
+        Route::resource('cash-bank-expenses', CashBankExpenseController::class);
+        Route::patch('cash-bank-expenses/{cashBankExpense}/post', [CashBankExpenseController::class, 'post'])->name('cash-bank-expenses.post');
     });
 
     // =========================================================
