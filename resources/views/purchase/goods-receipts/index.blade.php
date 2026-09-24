@@ -24,12 +24,6 @@
             <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
         </select>
 
-        <select name="is_invoiced" class="form-control filter-select">
-            <option value="">Semua Status Faktur</option>
-            <option value="0" {{ request('is_invoiced') === '0' ? 'selected' : '' }}>Siap Ditagih</option>
-            <option value="1" {{ request('is_invoiced') === '1' ? 'selected' : '' }}>Sudah Di-Invoice</option>
-        </select>
-
         <select name="warehouse_id" class="form-control filter-select">
             <option value="">Semua Gudang</option>
             @foreach($warehouses as $wh)
@@ -55,7 +49,6 @@
                 <th>Gudang Penerimaan</th>
                 <x-sortable-header column="received_date" title="Tgl Terima" :isDefault="true" />
                 <x-sortable-header column="status" title="Status" />
-                <th>Status Faktur</th>
                 <th>Diterima Oleh</th>
                 <th class="text-center col-actions">Aksi</th>
             </tr>
@@ -89,21 +82,6 @@
                     {{ $receipt->status_label }}
                 </span>
             </td>
-            <td>
-                @if($receipt->isConfirmed())
-                    @if($receipt->is_invoiced && $receipt->purchaseInvoice)
-                        <a href="{{ route('purchase.invoices.show', $receipt->purchaseInvoice) }}" class="badge badge-info" style="text-decoration:none;" title="Lihat Faktur Pembelian">
-                            <i class="fa-solid fa-file-invoice-dollar"></i> Invoiced
-                        </a>
-                    @else
-                        <a href="{{ route('purchase.invoices.create', ['po_id' => $receipt->purchase_order_id, 'grn_id' => $receipt->id]) }}" class="badge badge-pending" style="text-decoration:none;" title="Klik untuk terbitkan tagihan supplier">
-                            <i class="fa-solid fa-plus"></i> Siap Ditagih
-                        </a>
-                    @endif
-                @else
-                    <span style="color:var(--text-secondary); font-size:12px;">-</span>
-                @endif
-            </td>
             <td>{{ $receipt->user->name ?? '-' }}</td>
             <td class="col-actions text-center">
                 <div style="display:flex; gap:6px; justify-content:center;">
@@ -136,7 +114,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="9" style="text-align:center; padding:48px; color:var(--text-secondary);">
+            <td colspan="8" style="text-align:center; padding:48px; color:var(--text-secondary);">
                 <i class="fa-solid fa-boxes-stacked" style="font-size:32px; margin-bottom:12px; display:block; opacity:0.4;"></i>
                 Belum ada catatan penerimaan barang yang sesuai filter
             </td>
