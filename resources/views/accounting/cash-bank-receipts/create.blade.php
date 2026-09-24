@@ -26,7 +26,7 @@
                     <div style="display:flex; flex-direction:column; gap:14px;">
                         <div class="form-group">
                             <label class="form-label">Company <span style="color:var(--danger);">*</span></label>
-                            <input type="text" name="company_name" class="form-control" value="{{ old('company_name', 'PT Bhrama Benua Sejahtera') }}" placeholder="Nama perusahaan" required>
+                            <input type="text" name="company_name" class="form-control" value="{{ old('company_name') }}" placeholder="Company" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Upload Document</label>

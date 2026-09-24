@@ -25,7 +25,7 @@
                     <div style="display:flex; flex-direction:column; gap:14px;">
                         <div class="form-group">
                             <label class="form-label">Company <span style="color:var(--danger);">*</span></label>
-                            <input type="text" name="company_name" class="form-control" value="{{ old('company_name', $cashBankExpense->company_name) }}" required>
+                            <input type="text" name="company_name" class="form-control" value="{{ old('company_name', $cashBankExpense->company_name) }}" placeholder="Company" required>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Upload Document (Opsional)</label>

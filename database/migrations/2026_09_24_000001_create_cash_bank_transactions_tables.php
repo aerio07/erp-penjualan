@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('cash_bank_receipts', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')->default('PT Bhrama Benua Sejahtera');
+            $table->string('company_name');
             $table->string('receipt_number')->unique();
             $table->string('voucher_number')->nullable();
             $table->string('type')->default('KAS');
@@ -40,7 +40,7 @@ return new class extends Migration
 
         Schema::create('cash_bank_expenses', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')->default('PT Bhrama Benua Sejahtera');
+            $table->string('company_name');
             $table->string('expense_number')->unique();
             $table->string('voucher_number')->nullable();
             $table->string('type')->default('KAS');
