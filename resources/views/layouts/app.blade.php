@@ -1470,7 +1470,7 @@
 
             @php 
                 $isAccountingMaster = request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
-                $isAccountingTrans = request()->routeIs('accounting.journals.*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*') || request()->routeIs('accounting.debit-notes.*');
+                $isAccountingTrans = request()->routeIs('accounting.journals.*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*') || request()->routeIs('accounting.debit-notes.*') || request()->routeIs('accounting.credit-notes.*');
                 $isAccountingReport = request()->is('accounting/reports/*');
                 $isAccountingRoute = $isAccountingMaster || $isAccountingTrans || $isAccountingReport;
             @endphp
@@ -1518,6 +1518,7 @@
                             <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Piutang</a>
                             <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
                             <a href="{{ route('accounting.debit-notes.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.debit-notes.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Debet Note</a>
+                            <a href="{{ route('accounting.credit-notes.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.credit-notes.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kredit Note</a>
                             <a href="{{ route('accounting.cash-bank-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Receipt</a>
                             <a href="{{ route('accounting.cash-bank-expenses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-expenses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Expense</a>
                         </div>

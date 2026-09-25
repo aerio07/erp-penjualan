@@ -41,6 +41,7 @@ use App\Http\Controllers\Accounting\PeriodController;
 use App\Http\Controllers\Accounting\CashBankReceiptController;
 use App\Http\Controllers\Accounting\CashBankExpenseController;
 use App\Http\Controllers\Accounting\DebitNoteController;
+use App\Http\Controllers\Accounting\CreditNoteController;
 // Approval
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Route;
@@ -242,7 +243,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('debit-notes/{debitNote}/print', [DebitNoteController::class, 'print'])->name('debit-notes.print');
         Route::patch('debit-notes/{debitNote}/post', [DebitNoteController::class, 'post'])->name('debit-notes.post');
         Route::patch('debit-notes/{debitNote}/cancel', [DebitNoteController::class, 'cancel'])->name('debit-notes.cancel');
-        Route::resource('debit-notes', DebitNoteController::class);
+        Route::resource('debit-notes', DebitNoteController::class)->parameters(['debit-notes' => 'debitNote']);
+
+        // Credit Note
+        Route::get('credit-notes/invoices', [CreditNoteController::class, 'getInvoices'])->name('credit-notes.invoices');
+        Route::get('credit-notes/{creditNote}/print', [CreditNoteController::class, 'print'])->name('credit-notes.print');
+        Route::patch('credit-notes/{creditNote}/post', [CreditNoteController::class, 'post'])->name('credit-notes.post');
+        Route::patch('credit-notes/{creditNote}/cancel', [CreditNoteController::class, 'cancel'])->name('credit-notes.cancel');
+        Route::resource('credit-notes', CreditNoteController::class)->parameters(['credit-notes' => 'creditNote']);
     });
 
     // =========================================================
