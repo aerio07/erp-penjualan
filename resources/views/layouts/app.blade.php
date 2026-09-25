@@ -1469,18 +1469,16 @@
             <div class="sidebar-section-title">Finance & Akuntansi</div>
 
             @php 
-                $isAccountingRoute = request()->is('accounting/*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*');
-                $isBukuJurnal = request()->routeIs('accounting.journals.*') || request()->routeIs('accounting.reports.ledger') || request()->routeIs('accounting.reports.trial-balance') || request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
-                $isHutangPiutang = request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.reports.receivables*') || request()->routeIs('accounting.reports.payables*') || request()->routeIs('accounting.reports.ledger-payable') || request()->routeIs('accounting.reports.ledger-receivable');
-                $isLaporanKeuangan = request()->routeIs('accounting.reports.profit-loss') || request()->routeIs('accounting.reports.balance-sheet') || request()->routeIs('accounting.reports.cash-flow') || request()->routeIs('accounting.reports.cash-forecast') || request()->routeIs('accounting.reports.gross-profit') || request()->routeIs('accounting.reports.stock-valuation');
-                $isKasBank = request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*');
+                $isAccountingMaster = request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
+                $isAccountingTrans = request()->routeIs('accounting.journals.*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*');
+                $isAccountingReport = request()->is('accounting/reports/*');
+                $isAccountingRoute = $isAccountingMaster || $isAccountingTrans || $isAccountingReport;
             @endphp
             <div x-data="{ 
                 open: {{ $isAccountingRoute ? 'true' : 'false' }},
-                subBukuJurnal: {{ $isBukuJurnal ? 'true' : 'false' }},
-                subHutangPiutang: {{ $isHutangPiutang ? 'true' : 'false' }},
-                subLaporanKeuangan: {{ $isLaporanKeuangan ? 'true' : 'false' }},
-                subKasBank: {{ $isKasBank ? 'true' : 'false' }}
+                subMaster: {{ $isAccountingMaster ? 'true' : 'false' }},
+                subTransaksi: {{ $isAccountingTrans ? 'true' : 'false' }},
+                subLaporan: {{ $isAccountingReport ? 'true' : 'false' }}
             }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1491,63 +1489,57 @@
                 </button>
                 <div x-show="open" @if(!$isAccountingRoute) x-cloak style="display: none;" @endif class="pl-6 pr-2 py-1 flex flex-col gap-1">
                     
-                    <!-- Sub-Master 1: Buku & Jurnal -->
+                    <!-- 1. Master Data / Pengaturan Setup -->
                     <div class="group">
-                        <button @click="subBukuJurnal = !subBukuJurnal" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                        <button @click="subMaster = !subMaster" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                             <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">menu_book</span>
-                                <span class="text-xs font-medium">Buku & Jurnal</span>
+                                <span class="material-symbols-outlined mr-3">tune</span>
+                                <span class="text-xs font-medium">Master Data</span>
                             </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isBukuJurnal ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subBukuJurnal ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isAccountingMaster ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subMaster ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                         </button>
-                        <div x-show="subBukuJurnal" @if(!$isBukuJurnal) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
-                            <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
-                            <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
-                            <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
+                        <div x-show="subMaster" @if(!$isAccountingMaster) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
                             <a href="{{ route('accounting.opening-balance.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.opening-balance.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Saldo Awal Neraca</a>
                             <a href="{{ route('accounting.periods.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.periods.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Periode & Closing</a>
                         </div>
                     </div>
 
-                    <!-- Sub-Master 2: Hutang & Piutang -->
+                    <!-- 2. Transaksi / Operasional -->
                     <div class="group">
-                        <button @click="subHutangPiutang = !subHutangPiutang" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                        <button @click="subTransaksi = !subTransaksi" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                             <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">payments</span>
-                                <span class="text-xs font-medium">Hutang & Piutang</span>
+                                <span class="material-symbols-outlined mr-3">receipt_long</span>
+                                <span class="text-xs font-medium">Transaksi</span>
                             </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isHutangPiutang ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subHutangPiutang ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isAccountingTrans ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subTransaksi ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                         </button>
-                        <div x-show="subHutangPiutang" @if(!$isHutangPiutang) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                        <div x-show="subTransaksi" @if(!$isAccountingTrans) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
                             <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Piutang</a>
                             <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
+                            <a href="{{ route('accounting.cash-bank-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Receipt</a>
+                            <a href="{{ route('accounting.cash-bank-expenses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-expenses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Expense</a>
+                        </div>
+                    </div>
+
+                    <!-- 3. Laporan / Report -->
+                    <div class="group">
+                        <button @click="subLaporan = !subLaporan" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined mr-3">bar_chart</span>
+                                <span class="text-xs font-medium">Laporan</span>
+                            </div>
+                            <span class="material-symbols-outlined text-sm" style="{{ $isAccountingReport ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subLaporan ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                        </button>
+                        <div x-show="subLaporan" @if(!$isAccountingReport) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                            <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
+                            <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
                             <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Piutang Jatuh Tempo</a>
                             <a href="{{ route('accounting.reports.receivables-by-customer') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-by-customer') || request()->routeIs('accounting.reports.ledger-receivable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Piutang per Customer</a>
                             <a href="{{ route('accounting.reports.receivables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Umur Piutang (AR Aging)</a>
                             <a href="{{ route('accounting.reports.payables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Hutang Jatuh Tempo</a>
                             <a href="{{ route('accounting.reports.payables-by-vendor') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables-by-vendor') || request()->routeIs('accounting.reports.ledger-payable') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Hutang per Vendor</a>
                             <a href="{{ route('accounting.reports.payables') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.payables') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Umur Hutang (AP Aging)</a>
-                        </div>
-                    </div>
-
-                    <!-- Sub-Master: Fixed Asset & Inventaris -->
-                    <a href="{{ route('accounting.fixed-assets.index') }}" class="flex items-center justify-between px-3 py-1.5 rounded {{ request()->routeIs('accounting.fixed-assets.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
-                        <div class="flex items-center">
-                            <span class="material-symbols-outlined mr-3 text-base">precision_manufacturing</span>
-                            <span class="text-xs font-medium">Aset Tetap & Inventaris</span>
-                        </div>
-                    </a>
-
-                    <!-- Sub-Master 3: Laporan Keuangan -->
-                    <div class="group">
-                        <button @click="subLaporanKeuangan = !subLaporanKeuangan" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
-                            <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">bar_chart</span>
-                                <span class="text-xs font-medium">Laporan Keuangan</span>
-                            </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isLaporanKeuangan ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subLaporanKeuangan ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
-                        </button>
-                        <div x-show="subLaporanKeuangan" @if(!$isLaporanKeuangan) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
                             <a href="{{ route('accounting.reports.profit-loss') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.profit-loss') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laba Rugi</a>
                             <a href="{{ route('accounting.reports.balance-sheet') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.balance-sheet') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Keuangan</a>
                             <a href="{{ route('accounting.reports.cash-flow') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.cash-flow') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Laporan Arus Kas</a>
@@ -1556,23 +1548,15 @@
                             <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Persediaan</a>
                         </div>
                     </div>
-                    <!-- Sub-Master: Kas & Bank Transaksi -->
-                    <div class="group">
-                        <button @click="subKasBank = !subKasBank" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
-                            <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">account_balance_wallet</span>
-                                <span class="text-xs font-medium">Kas &amp; Bank</span>
-                            </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isKasBank ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subKasBank ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
-                        </button>
-                        <div x-show="subKasBank" @if(!$isKasBank) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
-                            <a href="{{ route('accounting.cash-bank-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Receipt</a>
-                            <a href="{{ route('accounting.cash-bank-expenses.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.cash-bank-expenses.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Cash Bank Expense</a>
-                        </div>
-                    </div>
 
                 </div>
             </div>
+
+            <!-- Modul Terpisah: Aset Tetap (Fixed Asset) -->
+            <a href="{{ route('accounting.fixed-assets.index') }}" class="flex items-center px-4 py-2 rounded {{ request()->routeIs('accounting.fixed-assets.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/70 hover:bg-[#1b2e52] hover:text-white' }}">
+                <span class="material-symbols-outlined mr-3">precision_manufacturing</span>
+                <span class="text-sm font-medium">Aset Tetap & Inventaris</span>
+            </a>
             @endif
 
             <!-- SECTION 3: APPROVALS (HANYA ADMIN) -->
