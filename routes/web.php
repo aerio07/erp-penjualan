@@ -40,6 +40,7 @@ use App\Http\Controllers\Accounting\OpeningBalanceController;
 use App\Http\Controllers\Accounting\PeriodController;
 use App\Http\Controllers\Accounting\CashBankReceiptController;
 use App\Http\Controllers\Accounting\CashBankExpenseController;
+use App\Http\Controllers\Accounting\DebitNoteController;
 // Approval
 use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Route;
@@ -235,6 +236,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Cash Bank Expense
         Route::resource('cash-bank-expenses', CashBankExpenseController::class);
         Route::patch('cash-bank-expenses/{cashBankExpense}/post', [CashBankExpenseController::class, 'post'])->name('cash-bank-expenses.post');
+
+        // Debet Note
+        Route::get('debit-notes/invoices', [DebitNoteController::class, 'getInvoices'])->name('debit-notes.invoices');
+        Route::get('debit-notes/{debitNote}/print', [DebitNoteController::class, 'print'])->name('debit-notes.print');
+        Route::patch('debit-notes/{debitNote}/post', [DebitNoteController::class, 'post'])->name('debit-notes.post');
+        Route::patch('debit-notes/{debitNote}/cancel', [DebitNoteController::class, 'cancel'])->name('debit-notes.cancel');
+        Route::resource('debit-notes', DebitNoteController::class);
     });
 
     // =========================================================

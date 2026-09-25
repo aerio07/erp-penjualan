@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PurchaseInvoice extends Model
 {
-    protected $appends = ['total_paid', 'total_reversed_amount', 'effective_total_amount', 'outstanding_amount'];
+    protected $appends = ['total_paid', 'total_reversed_amount', 'effective_total_amount', 'total_debit_note_amount', 'outstanding_amount'];
 
     protected $fillable = [
         'invoice_number', 'purchase_order_id', 'goods_receipt_id',
@@ -49,6 +49,11 @@ class PurchaseInvoice extends Model
         return $this->hasMany(PurchaseInvoiceItem::class);
     }
 
+    public function debitNoteInvoices(): HasMany
+    {
+        return $this->hasMany(DebitNoteInvoice::class);
+    }
+
     public function getTotalPaidAttribute(): float
     {
         if ($this->relationLoaded('payments')) {
@@ -56,6 +61,19 @@ class PurchaseInvoice extends Model
         }
 
         return (float) $this->payments()->where('status', '!=', PaymentStatus::Draft->value)->sum('amount');
+    }
+
+    public function getTotalDebitNoteAmountAttribute(): float
+    {
+        if ($this->relationLoaded('debitNoteInvoices')) {
+            return (float) $this->debitNoteInvoices
+                ->filter(fn($dni) => $dni->debitNote && $dni->debitNote->status === 'posted')
+                ->sum('dn_amount');
+        }
+
+        return (float) $this->debitNoteInvoices()
+            ->whereHas('debitNote', fn($q) => $q->where('status', 'posted'))
+            ->sum('dn_amount');
     }
 
     public function getTotalReversedAmountAttribute(): float
@@ -81,7 +99,7 @@ class PurchaseInvoice extends Model
 
     public function getOutstandingAmountAttribute(): float
     {
-        return max(0, round($this->effective_total_amount - $this->total_paid, 2));
+        return max(0, round($this->effective_total_amount - $this->total_paid - $this->total_debit_note_amount, 2));
     }
 
     public function calculateMaxReturnQty(GoodsReceiptItem $grnItem, string $sourceType = 'accepted'): int
