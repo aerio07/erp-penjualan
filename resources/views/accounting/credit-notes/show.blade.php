@@ -197,46 +197,5 @@
         </div>
     </div>
 
-    {{-- Informasi Jurnal Akuntansi --}}
-    @if($creditNote->journalEntry)
-    <div class="card" style="margin-bottom:20px; border:1px solid #10b981;">
-        <div class="card-header" style="background:#f0fdf4; display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:#065f46;"><i class="fa-solid fa-book"></i> Jurnal Akuntansi Otomatis</h3>
-            <a href="{{ route('accounting.journals.show', $creditNote->journalEntry) }}" class="btn btn-secondary btn-sm" style="font-family:monospace; font-weight:700;">
-                {{ $creditNote->journalEntry->entry_number }} <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
-        </div>
-        <div class="card-body" style="padding:0;">
-            <div class="table-responsive">
-                <table class="table" style="margin:0;">
-                    <thead>
-                        <tr>
-                            <th>Kode Akun</th>
-                            <th>Nama Akun</th>
-                            <th>Keterangan</th>
-                            <th style="text-align:right;">Debit</th>
-                            <th style="text-align:right;">Kredit</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($creditNote->journalEntry->lines as $line)
-                        <tr>
-                            <td style="font-family:monospace; font-weight:700;">{{ $line->chartOfAccount->code ?? '-' }}</td>
-                            <td>{{ $line->chartOfAccount->name ?? '-' }}</td>
-                            <td style="color:var(--text-secondary);">{{ $line->description }}</td>
-                            <td style="text-align:right; font-weight:600;">
-                                {{ $line->debit > 0 ? 'Rp ' . number_format($line->debit, 0, ',', '.') : '-' }}
-                            </td>
-                            <td style="text-align:right; font-weight:600;">
-                                {{ $line->credit > 0 ? 'Rp ' . number_format($line->credit, 0, ',', '.') : '-' }}
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    @endif
 </div>
 @endsection
