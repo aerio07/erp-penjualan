@@ -328,16 +328,21 @@ class PurchaseOrderController extends Controller
         $order = $purchaseOrder;
         abort_if($order->status !== PurchaseOrderStatus::Draft, 403, 'Hanya PO berstatus draft yang dapat dihapus.');
 
-        // Reset linked procurement demands if any
-        $order->procurementDemands()->update([
-            'purchase_order_id' => null,
-            'status'            => 'pending',
-        ]);
+        DB::transaction(function () use ($order) {
+            // Reset linked procurement demands if any
+            $order->procurementDemands()->update([
+                'purchase_order_id' => null,
+                'status'            => 'pending',
+            ]);
 
-        $order->delete();
+            // Kembalikan kuantitas Purchase Request dan buka kembali status PR ke Confirmed
+            $order->reopenPurchaseRequest();
+
+            $order->delete();
+        });
 
         return redirect()->route('purchase.orders.index')
-            ->with('success', 'Purchase Order berhasil dihapus.');
+            ->with('success', 'Purchase Order berhasil dihapus dan status Purchase Request telah dibuka kembali.');
     }
 
     public function confirm(PurchaseOrder $purchaseOrder): RedirectResponse
@@ -409,39 +414,30 @@ class PurchaseOrderController extends Controller
 
         $reason = trim((string) $request->rejection_reason);
 
-        $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
-        if ($approval) {
-            $this->approvalService->reject($approval, $reason);
-        }
-
-        // Kembalikan procurement demands ke pending jika ada
-        $purchaseOrder->procurementDemands()->update([
-            'purchase_order_id' => null,
-            'status'            => 'pending',
-        ]);
-
-        // Kembalikan kuantitas Purchase Request jika PO berasal dari PR
-        if (!empty($purchaseOrder->purchase_request_id)) {
-            $pr = \App\Models\PurchaseRequest::with('items')->find($purchaseOrder->purchase_request_id);
-            if ($pr) {
-                foreach ($purchaseOrder->items as $poItem) {
-                    $prItem = $pr->items->firstWhere('product_id', $poItem->product_id);
-                    if ($prItem) {
-                        $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
-                    }
-                }
-                $pr->update(['status' => PurchaseRequestStatus::Confirmed]);
+        DB::transaction(function () use ($purchaseOrder, $reason) {
+            $approval = $purchaseOrder->approvalRequests()->where('status', 'pending')->latest()->first();
+            if ($approval) {
+                $this->approvalService->reject($approval, $reason);
             }
-        }
 
-        $updateData = ['status' => PurchaseOrderStatus::Cancelled];
-        if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
-            $updateData['cancel_reason'] = $reason;
-        } else {
-            $updateData['notes'] = ($purchaseOrder->notes ? $purchaseOrder->notes . "\n" : '') . "[Alasan Penolakan]: " . $reason;
-        }
+            // Kembalikan procurement demands ke pending jika ada
+            $purchaseOrder->procurementDemands()->update([
+                'purchase_order_id' => null,
+                'status'            => 'pending',
+            ]);
 
-        $purchaseOrder->update($updateData);
+            // Kembalikan kuantitas Purchase Request jika PO berasal dari PR dan buka kembali status PR ke Confirmed
+            $purchaseOrder->reopenPurchaseRequest();
+
+            $updateData = ['status' => PurchaseOrderStatus::Cancelled];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
+                $updateData['cancel_reason'] = $reason;
+            } else {
+                $updateData['notes'] = ($purchaseOrder->notes ? $purchaseOrder->notes . "\n" : '') . "[Alasan Penolakan]: " . $reason;
+            }
+
+            $purchaseOrder->update($updateData);
+        });
 
         return back()->with('success', "Purchase Order #{$purchaseOrder->po_number} berhasil ditolak (Rejected) dan dibatalkan.");
     }
@@ -450,7 +446,15 @@ class PurchaseOrderController extends Controller
     public function cancel(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         $order = $purchaseOrder;
-        abort_if(!in_array($order->status, [PurchaseOrderStatus::Draft, PurchaseOrderStatus::WaitingApproval]), 403, 'Purchase Order yang sudah dikonfirmasi tidak dapat dibatalkan.');
+
+        if ($order->status === PurchaseOrderStatus::Confirmed) {
+            abort_if(!Auth::user()->isAdmin(), 403, 'Hanya Admin yang dapat membatalkan Purchase Order yang sudah dikonfirmasi.');
+            if ($order->goodsReceipts()->where('status', '!=', 'cancelled')->exists()) {
+                return back()->with('error', 'Purchase Order tidak dapat dibatalkan karena sudah ada Penerimaan Barang (LPB).');
+            }
+        } else {
+            abort_if(!in_array($order->status, [PurchaseOrderStatus::Draft, PurchaseOrderStatus::WaitingApproval]), 403, 'Purchase Order tidak dapat dibatalkan pada status saat ini.');
+        }
 
         $request->validate([
             'cancel_reason' => 'required|string|min:3|max:500',
@@ -462,43 +466,33 @@ class PurchaseOrderController extends Controller
 
         $reason = trim((string) $request->cancel_reason);
 
-        // Batalkan approval request yang masih pending jika ada
-        $order->approvalRequests()->where('status', 'pending')->update([
-            'status'           => 'rejected',
-            'rejection_reason' => $reason,
-        ]);
+        DB::transaction(function () use ($order, $reason) {
+            // Batalkan approval request yang masih pending jika ada
+            $order->approvalRequests()->where('status', 'pending')->update([
+                'status'           => 'rejected',
+                'rejection_reason' => $reason,
+            ]);
 
-        // Kembalikan procurement demands ke pending jika ada
-        $order->procurementDemands()->update([
-            'purchase_order_id' => null,
-            'status'            => 'pending',
-        ]);
+            // Kembalikan procurement demands ke pending jika ada
+            $order->procurementDemands()->update([
+                'purchase_order_id' => null,
+                'status'            => 'pending',
+            ]);
 
-        // Kembalikan kuantitas Purchase Request jika PO berasal dari PR
-        if (!empty($order->purchase_request_id)) {
-            $pr = \App\Models\PurchaseRequest::with('items')->find($order->purchase_request_id);
-            if ($pr) {
-                foreach ($order->items as $poItem) {
-                    $prItem = $pr->items->firstWhere('product_id', $poItem->product_id);
-                    if ($prItem) {
-                        $prItem->decrement('qty_ordered', min((int)$prItem->qty_ordered, (int)$poItem->qty_ordered));
-                    }
-                }
-                // Kembalikan status PR ke confirmed agar siap dibuatkan PO baru
-                $pr->update(['status' => PurchaseRequestStatus::Confirmed]);
+            // Kembalikan kuantitas Purchase Request jika PO berasal dari PR dan buka kembali status PR ke Confirmed
+            $order->reopenPurchaseRequest();
+
+            $updateData = ['status' => PurchaseOrderStatus::Cancelled];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
+                $updateData['cancel_reason'] = $reason;
+            } else {
+                $updateData['notes'] = ($order->notes ? $order->notes . "\n" : '') . "[Alasan Pembatalan]: " . $reason;
             }
-        }
 
-        $updateData = ['status' => PurchaseOrderStatus::Cancelled];
-        if (\Illuminate\Support\Facades\Schema::hasColumn('purchase_orders', 'cancel_reason')) {
-            $updateData['cancel_reason'] = $reason;
-        } else {
-            $updateData['notes'] = ($order->notes ? $order->notes . "\n" : '') . "[Alasan Pembatalan]: " . $reason;
-        }
+            $order->update($updateData);
+        });
 
-        $order->update($updateData);
-
-        return back()->with('success', 'Purchase Order #' . $order->po_number . ' berhasil dibatalkan.');
+        return back()->with('success', 'Purchase Order #' . $order->po_number . ' berhasil dibatalkan dan status Purchase Request telah dibuka kembali.');
     }
 
     public function exportPdf(PurchaseOrder $purchaseOrder)

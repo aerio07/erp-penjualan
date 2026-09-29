@@ -113,6 +113,7 @@ class ApprovalController extends Controller
                         'purchase_order_id' => null,
                         'status'            => 'pending',
                     ]);
+                    $approvable->reopenPurchaseRequest();
                 }
             }
         }

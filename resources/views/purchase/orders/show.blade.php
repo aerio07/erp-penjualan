@@ -51,6 +51,11 @@
                     <i class="fa-solid fa-ban"></i> Batalkan PO
                 </button>
             @elseif($order->status->canReceiveGoods())
+                @if($isAdmin && $order->goodsReceipts->where('status', '!=', 'cancelled')->count() === 0)
+                <button type="button" class="btn btn-danger" onclick="confirmCancelPO()">
+                    <i class="fa-solid fa-ban"></i> Batalkan PO
+                </button>
+                @endif
                 <a href="{{ route('purchase.goods-receipts.create', ['po_id' => $order->id]) }}" class="btn btn-primary">
                     <i class="fa-solid fa-truck-ramp-box"></i> Terima Barang
                 </a>

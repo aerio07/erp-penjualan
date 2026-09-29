@@ -267,4 +267,175 @@ class PurchaseOrderDiscountValidationTest extends TestCase
         $po->refresh();
         $this->assertEquals(PurchaseOrderStatus::Confirmed, $po->status);
     }
+
+    public function test_cancelling_po_reopens_purchase_request(): void
+    {
+        // 1. Create a PO from PR
+        $po = PurchaseOrder::create([
+            'po_number'           => 'PO-CANCEL-PR-TEST',
+            'supplier_id'         => $this->supplier->id,
+            'user_id'             => $this->purchasing->id,
+            'purchase_request_id' => $this->pr->id,
+            'status'              => PurchaseOrderStatus::Draft,
+            'order_date'          => now()->toDateString(),
+            'expected_date'       => now()->addDays(5)->toDateString(),
+            'tax_rate'            => 11,
+            'discount_amount'     => 0,
+            'tax_amount'          => 110000,
+            'total_amount'        => 1110000,
+        ]);
+        $po->items()->create([
+            'product_id'       => $this->product->id,
+            'qty_ordered'      => 10,
+            'unit_price'       => 100000,
+            'discount_percent' => 0,
+            'discount_amount'  => 0,
+            'subtotal'         => 1000000,
+        ]);
+
+        // Mark PR as done as it would be when fully ordered
+        $this->pr->items()->first()->update(['qty_ordered' => 10]);
+        $this->pr->update(['status' => PurchaseRequestStatus::Done]);
+
+        $this->assertEquals(PurchaseRequestStatus::Done, $this->pr->fresh()->status);
+        $this->assertEquals(10, $this->pr->fresh()->items()->first()->qty_ordered);
+
+        // 2. Cancel the PO
+        $response = $this->actingAs($this->purchasing)->patch(route('purchase.orders.cancel', $po), [
+            'cancel_reason' => 'Supplier membatalkan pesanan',
+        ]);
+        $response->assertSessionHas('success');
+
+        // 3. Assert PO is cancelled and PR is reopened
+        $this->assertEquals(PurchaseOrderStatus::Cancelled, $po->fresh()->status);
+        $this->assertEquals(PurchaseRequestStatus::Confirmed, $this->pr->fresh()->status);
+        $this->assertEquals(0, $this->pr->fresh()->items()->first()->qty_ordered);
+        $this->assertEquals(10, $this->pr->fresh()->items()->first()->qty_remaining);
+    }
+
+    public function test_rejecting_po_in_approval_reopens_purchase_request(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $po = PurchaseOrder::create([
+            'po_number'           => 'PO-REJECT-PR-TEST',
+            'supplier_id'         => $this->supplier->id,
+            'user_id'             => $this->purchasing->id,
+            'purchase_request_id' => $this->pr->id,
+            'status'              => PurchaseOrderStatus::WaitingApproval,
+            'order_date'          => now()->toDateString(),
+            'expected_date'       => now()->addDays(5)->toDateString(),
+            'tax_rate'            => 11,
+            'discount_amount'     => 0,
+            'tax_amount'          => 110000,
+            'total_amount'        => 1110000,
+        ]);
+        $po->items()->create([
+            'product_id'       => $this->product->id,
+            'qty_ordered'      => 10,
+            'unit_price'       => 100000,
+            'discount_percent' => 0,
+            'discount_amount'  => 0,
+            'subtotal'         => 1000000,
+        ]);
+
+        $approval = ApprovalRequest::create([
+            'request_number'  => 'APR-PO-REJECT',
+            'approvable_type' => PurchaseOrder::class,
+            'approvable_id'   => $po->id,
+            'requester_id'    => $this->purchasing->id,
+            'amount'          => 1110000,
+            'status'          => 'pending',
+        ]);
+
+        $this->pr->items()->first()->update(['qty_ordered' => 10]);
+        $this->pr->update(['status' => PurchaseRequestStatus::Done]);
+
+        // Admin rejects the PO approval
+        $response = $this->actingAs($admin)->patch(route('approvals.reject', $approval), [
+            'rejection_reason' => 'Harga tidak disetujui',
+        ]);
+        $response->assertSessionHas('success');
+
+        // Assert PO is cancelled and PR is reopened
+        $this->assertEquals(PurchaseOrderStatus::Cancelled, $po->fresh()->status);
+        $this->assertEquals(PurchaseRequestStatus::Confirmed, $this->pr->fresh()->status);
+        $this->assertEquals(0, $this->pr->fresh()->items()->first()->qty_ordered);
+    }
+
+    public function test_deleting_draft_po_reopens_purchase_request(): void
+    {
+        $po = PurchaseOrder::create([
+            'po_number'           => 'PO-DELETE-PR-TEST',
+            'supplier_id'         => $this->supplier->id,
+            'user_id'             => $this->purchasing->id,
+            'purchase_request_id' => $this->pr->id,
+            'status'              => PurchaseOrderStatus::Draft,
+            'order_date'          => now()->toDateString(),
+            'expected_date'       => now()->addDays(5)->toDateString(),
+            'tax_rate'            => 11,
+            'discount_amount'     => 0,
+            'tax_amount'          => 110000,
+            'total_amount'        => 1110000,
+        ]);
+        $po->items()->create([
+            'product_id'       => $this->product->id,
+            'qty_ordered'      => 10,
+            'unit_price'       => 100000,
+            'discount_percent' => 0,
+            'discount_amount'  => 0,
+            'subtotal'         => 1000000,
+        ]);
+
+        $this->pr->items()->first()->update(['qty_ordered' => 10]);
+        $this->pr->update(['status' => PurchaseRequestStatus::Done]);
+
+        $response = $this->actingAs($this->purchasing)->delete(route('purchase.orders.destroy', $po));
+        $response->assertRedirect(route('purchase.orders.index'));
+
+        // Assert PR is reopened
+        $this->assertEquals(PurchaseRequestStatus::Confirmed, $this->pr->fresh()->status);
+        $this->assertEquals(0, $this->pr->fresh()->items()->first()->qty_ordered);
+    }
+
+    public function test_admin_can_cancel_confirmed_po_and_reopen_purchase_request(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $po = PurchaseOrder::create([
+            'po_number'           => 'PO-ADMIN-CANCEL-CONFIRMED',
+            'supplier_id'         => $this->supplier->id,
+            'user_id'             => $this->purchasing->id,
+            'purchase_request_id' => $this->pr->id,
+            'status'              => PurchaseOrderStatus::Confirmed,
+            'order_date'          => now()->toDateString(),
+            'expected_date'       => now()->addDays(5)->toDateString(),
+            'tax_rate'            => 11,
+            'discount_amount'     => 0,
+            'tax_amount'          => 110000,
+            'total_amount'        => 1110000,
+        ]);
+        $po->items()->create([
+            'product_id'       => $this->product->id,
+            'qty_ordered'      => 10,
+            'unit_price'       => 100000,
+            'discount_percent' => 0,
+            'discount_amount'  => 0,
+            'subtotal'         => 1000000,
+        ]);
+
+        $this->pr->items()->first()->update(['qty_ordered' => 10]);
+        $this->pr->update(['status' => PurchaseRequestStatus::Done]);
+
+        // Admin cancels confirmed PO
+        $response = $this->actingAs($admin)->patch(route('purchase.orders.cancel', $po), [
+            'cancel_reason' => 'Vendor bangkrut tidak bisa kirim',
+        ]);
+        $response->assertSessionHas('success');
+
+        // Assert PO is cancelled and PR is reopened
+        $this->assertEquals(PurchaseOrderStatus::Cancelled, $po->fresh()->status);
+        $this->assertEquals(PurchaseRequestStatus::Confirmed, $this->pr->fresh()->status);
+        $this->assertEquals(0, $this->pr->fresh()->items()->first()->qty_ordered);
+    }
 }

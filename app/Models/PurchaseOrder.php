@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseRequestStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -125,5 +126,35 @@ class PurchaseOrder extends Model
     public function isCancelled(): bool
     {
         return $this->status === PurchaseOrderStatus::Cancelled;
+    }
+
+    /**
+     * Kembalikan kuota Purchase Request dan buka kembali statusnya ke Confirmed saat PO dibatalkan/dihapus/ditolak.
+     */
+    public function reopenPurchaseRequest(): void
+    {
+        if (empty($this->purchase_request_id)) {
+            return;
+        }
+
+        $this->loadMissing('items');
+        $pr = PurchaseRequest::with('items')->find($this->purchase_request_id);
+        if (!$pr) {
+            return;
+        }
+
+        foreach ($this->items as $poItem) {
+            $prItem = $pr->items->firstWhere('product_id', $poItem->product_id);
+            if ($prItem) {
+                $newOrdered = max(0, (int)$prItem->qty_ordered - (int)$poItem->qty_ordered);
+                $prItem->update(['qty_ordered' => $newOrdered]);
+            }
+        }
+
+        // Buka kembali status PR ke Confirmed jika masih ada kuota yang belum di-PO
+        $allFulfilled = $pr->fresh()->items->every(fn($it) => $it->qty_ordered >= $it->qty);
+        $pr->update([
+            'status' => $allFulfilled ? PurchaseRequestStatus::Done : PurchaseRequestStatus::Confirmed,
+        ]);
     }
 }
