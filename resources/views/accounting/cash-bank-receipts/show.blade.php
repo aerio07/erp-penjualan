@@ -12,14 +12,14 @@
     >
         <x-slot:actions>
             @if($cashBankReceipt->isDraft())
-            <a href="{{ route('accounting.cash-bank-receipts.edit', $cashBankReceipt) }}" class="btn btn-warning">
+            <a href="{{ route('accounting.cash-bank-receipts.edit', $cashBankReceipt) }}" class="btn btn-secondary">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
             </a>
-            <form method="POST" action="{{ route('accounting.cash-bank-receipts.post', $cashBankReceipt) }}" style="display:inline;" onsubmit="return confirm('Posting dokumen ini?')">
+            <form method="POST" action="{{ route('accounting.cash-bank-receipts.post', $cashBankReceipt) }}" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin memposting Cash Bank Receipt {{ $cashBankReceipt->receipt_number }}?')">
                 @csrf @method('PATCH')
-                <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Posting</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Posting Sekarang</button>
             </form>
-            <form method="POST" action="{{ route('accounting.cash-bank-receipts.destroy', $cashBankReceipt) }}" style="display:inline;" onsubmit="return confirm('Hapus dokumen ini?')">
+            <form method="POST" action="{{ route('accounting.cash-bank-receipts.destroy', $cashBankReceipt) }}" style="display:inline;" onsubmit="return confirm('Hapus dokumen draft ini?')">
                 @csrf @method('DELETE')
                 <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash"></i> Hapus</button>
             </form>
@@ -28,7 +28,30 @@
     </x-detail-header>
 
     @if(session('success'))
-    <div class="alert alert-success" style="margin-bottom:20px;"><i class="fa-solid fa-circle-check"></i> {{ session('success') }}</div>
+    <div class="alert alert-success" style="margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+        <i class="fa-solid fa-circle-check" style="font-size:18px;"></i>
+        <div>{{ session('success') }}</div>
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="alert alert-danger" style="margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:18px;"></i>
+        <div>{{ session('error') }}</div>
+    </div>
+    @endif
+
+    @if($cashBankReceipt->isDraft())
+    <x-draft-banner 
+        title="Penerimaan Masih Berstatus DRAFT"
+        message="Dokumen ini belum diposting. Periksa kembali rekening kas/bank, akun lawan, dan nominal sebelum memposting."
+        :action-url="route('accounting.cash-bank-receipts.post', $cashBankReceipt)"
+        action-method="PATCH"
+        action-label="Posting Sekarang"
+        confirm-text="Apakah Anda yakin ingin memposting Cash Bank Receipt {{ $cashBankReceipt->receipt_number }}?"
+        :edit-url="route('accounting.cash-bank-receipts.edit', $cashBankReceipt)"
+        :delete-url="route('accounting.cash-bank-receipts.destroy', $cashBankReceipt)"
+        delete-confirm="Hapus dokumen draft ini?"
+    />
     @endif
 
     <div class="grid grid-3" style="margin-bottom:20px;">

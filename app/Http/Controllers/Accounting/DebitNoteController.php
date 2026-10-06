@@ -213,7 +213,7 @@ class DebitNoteController extends Controller
                 ]);
             }
 
-            return redirect()->route('accounting.debit-notes.index')
+            return redirect()->route('accounting.debit-notes.show', $debitNote)
                 ->with('success', "Debet Note #{$debitNote->dn_number} berhasil disimpan sebagai Draft.");
         });
     }

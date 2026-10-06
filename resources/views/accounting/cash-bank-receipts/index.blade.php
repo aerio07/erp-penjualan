@@ -25,35 +25,39 @@
     </div>
     @endif
 
-    {{-- Filter Tab --}}
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; flex-wrap:wrap;">
-        <div style="display:flex; gap:8px;">
-            @foreach([''=>'All','draft'=>'Draft','posted'=>'Posted'] as $val=>$label)
-            <a href="{{ request()->fullUrlWithQuery(['status' => $val]) }}"
-               style="padding:6px 16px; border-radius:6px; font-size:13px; font-weight:600; text-decoration:none; {{ request('status','')===$val ? 'background:var(--primary); color:#fff;' : 'background:#f1f5f9; color:var(--text-secondary);' }}">
-                {{ $label }}
-            </a>
-            @endforeach
-        </div>
-        <form method="GET" action="{{ route('accounting.cash-bank-receipts.index') }}" style="display:flex; gap:8px; align-items:center;">
-            <input type="hidden" name="status" value="{{ request('status') }}">
-            <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Search cash bank receipt..." style="height:36px; font-size:13px; width:220px;">
-            <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-search"></i></button>
-        </form>
-    </div>
+    <x-list-filter-bar 
+        :action="route('accounting.cash-bank-receipts.index')" 
+        placeholder="Cari No. Receipt, Voucher, Company, Catatan..." 
+        :showDateFilter="true" 
+        dateFromParam="date_from" 
+        dateToParam="date_to"
+    >
+        <select name="status" class="form-control filter-select">
+            <option value="">Semua Status</option>
+            <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+            <option value="posted" {{ request('status') === 'posted' ? 'selected' : '' }}>Posted</option>
+        </select>
+
+        <select name="type" class="form-control filter-select">
+            <option value="">Semua Tipe</option>
+            <option value="KAS" {{ request('type') === 'KAS' ? 'selected' : '' }}>KAS</option>
+            <option value="BANK" {{ request('type') === 'BANK' ? 'selected' : '' }}>BANK</option>
+            <option value="DP" {{ request('type') === 'DP' ? 'selected' : '' }}>DP</option>
+        </select>
+    </x-list-filter-bar>
 
     <x-data-table :paginator="$receipts">
         <x-slot:head>
             <tr>
-                <th>No</th>
-                <th>Receipt No.</th>
+                <th style="width:50px;">No</th>
+                <x-sortable-header column="receipt_number" title="Receipt No." />
                 <th>Voucher No.</th>
                 <th style="text-align:center;">Type</th>
-                <th>Date</th>
+                <x-sortable-header column="transaction_date" title="Date" :isDefault="true" />
                 <th>Company</th>
                 <th>Account</th>
-                <th style="text-align:right;">Jumlah</th>
-                <th style="text-align:center;">Status</th>
+                <x-sortable-header column="amount" title="Jumlah" align="right" />
+                <x-sortable-header column="status" title="Status" align="center" />
                 <th style="text-align:center;" class="col-actions">Aksi</th>
             </tr>
         </x-slot:head>

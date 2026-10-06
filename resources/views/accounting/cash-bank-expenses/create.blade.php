@@ -165,13 +165,10 @@
         {{-- Action Buttons --}}
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:32px;">
             <a href="{{ route('accounting.cash-bank-expenses.index') }}" class="btn btn-secondary">
-                <i class="fa-solid fa-times"></i> Cancel
+                <i class="fa-solid fa-times"></i> Batal
             </a>
-            <button type="submit" name="action" value="save" class="btn btn-primary">
-                <i class="fa-solid fa-floppy-disk"></i> Save
-            </button>
-            <button type="submit" name="action" value="post" class="btn btn-warning" style="background:#f59e0b; border-color:#d97706; color:#fff;">
-                <i class="fa-solid fa-paper-plane"></i> Post
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Draft
             </button>
         </div>
     </form>

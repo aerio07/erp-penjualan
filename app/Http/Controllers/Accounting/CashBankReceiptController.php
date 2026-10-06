@@ -91,16 +91,8 @@ class CashBankReceiptController extends Controller
                 }
             }
 
-            if ($request->action === 'post') {
-                $receipt->update([
-                    'status'    => 'posted',
-                    'posted_by' => Auth::id(),
-                    'posted_at' => now(),
-                ]);
-            }
-
-            return redirect()->route('accounting.cash-bank-receipts.index')
-                ->with('success', "Cash Bank Receipt {$receipt->receipt_number} berhasil disimpan.");
+            return redirect()->route('accounting.cash-bank-receipts.show', $receipt)
+                ->with('success', "Cash Bank Receipt {$receipt->receipt_number} berhasil disimpan sebagai Draft.");
         });
     }
 

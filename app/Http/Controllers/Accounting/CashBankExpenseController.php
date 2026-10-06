@@ -91,16 +91,8 @@ class CashBankExpenseController extends Controller
                 }
             }
 
-            if ($request->action === 'post') {
-                $expense->update([
-                    'status'    => 'posted',
-                    'posted_by' => Auth::id(),
-                    'posted_at' => now(),
-                ]);
-            }
-
-            return redirect()->route('accounting.cash-bank-expenses.index')
-                ->with('success', "Cash Bank Expense {$expense->expense_number} berhasil disimpan.");
+            return redirect()->route('accounting.cash-bank-expenses.show', $expense)
+                ->with('success', "Cash Bank Expense {$expense->expense_number} berhasil disimpan sebagai Draft.");
         });
     }
 
