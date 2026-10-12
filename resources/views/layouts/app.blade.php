@@ -1372,7 +1372,11 @@
 
             <!-- Purchase Group -->
             @if($isAdmin || $isPurchasing || $isGudang || $isFinance)
-            @php $isPurchaseRoute = request()->is('purchase/*') && !request()->routeIs('purchase.payments.*'); @endphp
+            @php 
+                $isPurchaseReportRoute = request()->is('purchase/reports*') || request()->routeIs('purchase.reports.*');
+                $isPurchaseTransRoute = request()->is('purchase/*') && !request()->routeIs('purchase.payments.*') && !$isPurchaseReportRoute;
+                $isPurchaseRoute = request()->is('purchase/*') && !request()->routeIs('purchase.payments.*');
+            @endphp
             <div x-data="{ open: {{ $isPurchaseRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1381,26 +1385,44 @@
                     </div>
                     <span class="material-symbols-outlined text-sm" style="{{ $isPurchaseRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
-                    @if($isAdmin || $isPurchasing || $isGudang || $isSales)
-                    <a href="{{ \Illuminate\Support\Facades\Route::has('purchase.requests.index') ? route('purchase.requests.index') : url('/purchase/requests') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.requests.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
-                    @endif
-                    @if($isAdmin || $isPurchasing)
-                    <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
-                    @endif
-                    @if($isAdmin || $isGudang)
-                    <a href="{{ route('purchase.goods-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.goods-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Barang</a>
-                    @endif
-                    @if($isAdmin || $isFinance)
-                    <a href="{{ route('purchase.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Pembelian</a>
-                    @endif
-                    @if($isAdmin || $isPurchasing)
-                    <a href="{{ route('purchase.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Pembelian</a>
-                    @endif
+                <div x-show="open" @if(!$isPurchaseRoute) x-cloak style="display: none;" @endif class="pl-6 pr-2 py-1 flex flex-col gap-1">
+                    <!-- Sub-Dropdown Transaksi -->
+                    <div x-data="{ subOpen: {{ $isPurchaseTransRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Transaksi</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isPurchaseTransRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
+                        </button>
+                        <div x-show="subOpen" @if(!$isPurchaseTransRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
+                            @if($isAdmin || $isPurchasing || $isGudang || $isSales)
+                            <a href="{{ \Illuminate\Support\Facades\Route::has('purchase.requests.index') ? route('purchase.requests.index') : url('/purchase/requests') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.requests.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Request</a>
+                            @endif
+                            @if($isAdmin || $isPurchasing)
+                            <a href="{{ route('purchase.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.orders.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Purchase Order</a>
+                            @endif
+                            @if($isAdmin || $isGudang)
+                            <a href="{{ route('purchase.goods-receipts.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.goods-receipts.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Penerimaan Barang</a>
+                            @endif
+                            @if($isAdmin || $isFinance)
+                            <a href="{{ route('purchase.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Pembelian</a>
+                            @endif
+                            @if($isAdmin || $isPurchasing)
+                            <a href="{{ route('purchase.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Pembelian</a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Sub-Dropdown Laporan -->
                     @if($isAdmin || $isPurchasing || $isFinance)
-                    {{-- Monitoring PO dinonaktifkan sementara --}}
-                    {{-- <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring PO</a> --}}
-                    <a href="{{ route('purchase.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Beli per Barang</a>
+                    <div x-data="{ subOpen: {{ $isPurchaseReportRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Laporan</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isPurchaseReportRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
+                        </button>
+                        <div x-show="subOpen" @if(!$isPurchaseReportRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
+                            <a href="{{ route('purchase.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Beli per Barang</a>
+                            <a href="{{ route('purchase.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Status Pemenuhan PO</a>
+                        </div>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -1408,7 +1430,11 @@
 
             <!-- Inventory Group -->
             @if($isAdmin || $isGudang || $isPurchasing || $isSales || $isFinance)
-            @php $isInventoryRoute = request()->is('inventory/*'); @endphp
+            @php 
+                $isInventoryReportRoute = request()->is('inventory/reports*') || request()->routeIs('inventory.reports.*') || request()->routeIs('inventory.stock-summary') || request()->routeIs('inventory.stock-card') || request()->routeIs('inventory.movements.*');
+                $isInventoryTransRoute = request()->is('inventory/*') && !$isInventoryReportRoute;
+                $isInventoryRoute = request()->is('inventory/*'); 
+            @endphp
             <div x-data="{ open: {{ $isInventoryRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1417,23 +1443,48 @@
                     </div>
                     <span class="material-symbols-outlined text-sm" style="{{ $isInventoryRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isInventoryRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
-                    <a href="{{ route('inventory.stock-summary') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-summary') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Ringkasan Stok</a>
+                <div x-show="open" @if(!$isInventoryRoute) x-cloak style="display: none;" @endif class="pl-6 pr-2 py-1 flex flex-col gap-1">
+                    <!-- Sub-Dropdown Transaksi -->
                     @if($isAdmin || $isGudang)
-                    <a href="{{ route('inventory.stock-card') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-card') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kartu Stok</a>
-                    <a href="{{ route('inventory.movements.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.movements.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Mutasi Stok</a>
-                    <a href="{{ route('inventory.transfers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.transfers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Transfer Gudang</a>
-                    <a href="{{ route('inventory.opname.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.opname.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Stock Opname</a>
-                    <a href="{{ route('inventory.dispositions.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.dispositions.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Gudang Reject</a>
-                    <a href="{{ route('inventory.reports.returns-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.reports.returns-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Retur Barang</a>
+                    <div x-data="{ subOpen: {{ $isInventoryTransRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Transaksi</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isInventoryTransRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
+                        </button>
+                        <div x-show="subOpen" @if(!$isInventoryTransRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
+                            <a href="{{ route('inventory.transfers.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.transfers.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Transfer Gudang</a>
+                            <a href="{{ route('inventory.opname.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.opname.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Stock Opname</a>
+                            <a href="{{ route('inventory.dispositions.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.dispositions.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Gudang Reject</a>
+                        </div>
+                    </div>
                     @endif
+
+                    <!-- Sub-Dropdown Laporan -->
+                    <div x-data="{ subOpen: {{ $isInventoryReportRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Laporan</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isInventoryReportRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
+                        </button>
+                        <div x-show="subOpen" @if(!$isInventoryReportRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
+                            <a href="{{ route('inventory.stock-summary') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-summary') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Ringkasan Stok</a>
+                            @if($isAdmin || $isGudang)
+                            <a href="{{ route('inventory.stock-card') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.stock-card') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Kartu Stok</a>
+                            <a href="{{ route('inventory.movements.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.movements.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Mutasi Stok</a>
+                            <a href="{{ route('inventory.reports.returns-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('inventory.reports.returns-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Retur Barang</a>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
             @endif
 
             <!-- Sales Group -->
             @if($isAdmin || $isSales || $isGudang || $isFinance)
-            @php $isSalesRoute = request()->is('sales/*') && !request()->routeIs('sales.payments.*'); @endphp
+            @php 
+                $isSalesReportRoute = request()->is('sales/reports*') || request()->routeIs('sales.reports.*');
+                $isSalesTransRoute = request()->is('sales/*') && !request()->routeIs('sales.payments.*') && !$isSalesReportRoute;
+                $isSalesRoute = request()->is('sales/*') && !request()->routeIs('sales.payments.*'); 
+            @endphp
             <div x-data="{ open: {{ $isSalesRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
@@ -1442,23 +1493,41 @@
                     </div>
                     <span class="material-symbols-outlined text-sm" style="{{ $isSalesRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
-                <div x-show="open" @if(!$isSalesRoute) x-cloak style="display: none;" @endif class="pl-9 pr-2 py-1 flex flex-col gap-1">
-                    @if($isAdmin || $isSales)
-                    <a href="{{ route('sales.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.orders.*') && !request()->routeIs('sales.reports.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Sales Order</a>
-                    @endif
-                    @if($isAdmin || $isGudang)
-                    <a href="{{ route('sales.deliveries.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.deliveries.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Surat Jalan</a>
-                    @endif
-                    @if($isAdmin || $isFinance)
-                    <a href="{{ route('sales.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Penjualan</a>
-                    @endif
-                    @if($isAdmin || $isSales)
-                    <a href="{{ route('sales.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Penjualan</a>
-                    @endif
+                <div x-show="open" @if(!$isSalesRoute) x-cloak style="display: none;" @endif class="pl-6 pr-2 py-1 flex flex-col gap-1">
+                    <!-- Sub-Dropdown Transaksi -->
+                    <div x-data="{ subOpen: {{ $isSalesTransRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Transaksi</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isSalesTransRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
+                        </button>
+                        <div x-show="subOpen" @if(!$isSalesTransRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
+                            @if($isAdmin || $isSales)
+                            <a href="{{ route('sales.orders.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.orders.*') && !request()->routeIs('sales.reports.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Sales Order</a>
+                            @endif
+                            @if($isAdmin || $isGudang)
+                            <a href="{{ route('sales.deliveries.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.deliveries.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Surat Jalan</a>
+                            @endif
+                            @if($isAdmin || $isFinance)
+                            <a href="{{ route('sales.invoices.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.invoices.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Invoice Penjualan</a>
+                            @endif
+                            @if($isAdmin || $isSales)
+                            <a href="{{ route('sales.returns.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.returns.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Retur Penjualan</a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Sub-Dropdown Laporan -->
                     @if($isAdmin || $isSales || $isFinance)
-                    {{-- Monitoring SO dinonaktifkan sementara --}}
-                    {{-- <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Monitoring SO</a> --}}
-                    <a href="{{ route('sales.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Jual per Barang</a>
+                    <div x-data="{ subOpen: {{ $isSalesReportRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Laporan</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isSalesReportRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
+                        </button>
+                        <div x-show="subOpen" @if(!$isSalesReportRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
+                            <a href="{{ route('sales.reports.recap-by-product') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.recap-by-product') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Rekap Jual per Barang</a>
+                            <a href="{{ route('sales.reports.fulfillment') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.reports.fulfillment') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Status Pemenuhan SO</a>
+                        </div>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -1469,17 +1538,12 @@
             <div class="sidebar-section-title">Finance & Akuntansi</div>
 
             @php 
-                $isAccountingMaster = request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
-                $isAccountingTrans = request()->routeIs('accounting.journals.*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*') || request()->routeIs('accounting.debit-notes.*') || request()->routeIs('accounting.credit-notes.*');
-                $isAccountingReport = request()->is('accounting/reports/*');
-                $isAccountingRoute = $isAccountingMaster || $isAccountingTrans || $isAccountingReport;
+                $isAccMasterRoute = request()->routeIs('accounting.opening-balance.*') || request()->routeIs('accounting.periods.*');
+                $isAccReportRoute = request()->is('accounting/reports/*') || request()->routeIs('accounting.reports.*');
+                $isAccTransRoute = request()->routeIs('accounting.journals.*') || request()->routeIs('sales.payments.*') || request()->routeIs('purchase.payments.*') || request()->routeIs('accounting.cash-bank-receipts.*') || request()->routeIs('accounting.cash-bank-expenses.*') || request()->routeIs('accounting.debit-notes.*') || request()->routeIs('accounting.credit-notes.*');
+                $isAccountingRoute = $isAccMasterRoute || $isAccReportRoute || $isAccTransRoute;
             @endphp
-            <div x-data="{ 
-                open: {{ $isAccountingRoute ? 'true' : 'false' }},
-                subMaster: {{ $isAccountingMaster ? 'true' : 'false' }},
-                subTransaksi: {{ $isAccountingTrans ? 'true' : 'false' }},
-                subLaporan: {{ $isAccountingReport ? 'true' : 'false' }}
-            }" class="group">
+            <div x-data="{ open: {{ $isAccountingRoute ? 'true' : 'false' }} }" class="group">
                 <button @click="open = !open" type="button" class="w-full flex items-center justify-between px-4 py-2 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
                     <div class="flex items-center">
                         <span class="material-symbols-outlined mr-3">account_balance</span>
@@ -1488,32 +1552,25 @@
                     <span class="material-symbols-outlined text-sm" style="{{ $isAccountingRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="open ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
                 </button>
                 <div x-show="open" @if(!$isAccountingRoute) x-cloak style="display: none;" @endif class="pl-6 pr-2 py-1 flex flex-col gap-1">
-                    
-                    <!-- 1. Master Data / Pengaturan Setup -->
-                    <div class="group">
-                        <button @click="subMaster = !subMaster" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
-                            <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">tune</span>
-                                <span class="text-xs font-medium">Master Data</span>
-                            </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isAccountingMaster ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subMaster ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                    <!-- Sub-Dropdown Master Data -->
+                    <div x-data="{ subOpen: {{ $isAccMasterRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Master Data</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isAccMasterRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
                         </button>
-                        <div x-show="subMaster" @if(!$isAccountingMaster) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                        <div x-show="subOpen" @if(!$isAccMasterRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
                             <a href="{{ route('accounting.opening-balance.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.opening-balance.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Saldo Awal Neraca</a>
                             <a href="{{ route('accounting.periods.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.periods.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Periode & Closing</a>
                         </div>
                     </div>
 
-                    <!-- 2. Transaksi / Operasional -->
-                    <div class="group">
-                        <button @click="subTransaksi = !subTransaksi" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
-                            <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">receipt_long</span>
-                                <span class="text-xs font-medium">Transaksi</span>
-                            </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isAccountingTrans ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subTransaksi ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                    <!-- Sub-Dropdown Transaksi -->
+                    <div x-data="{ subOpen: {{ $isAccTransRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Transaksi</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isAccTransRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
                         </button>
-                        <div x-show="subTransaksi" @if(!$isAccountingTrans) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                        <div x-show="subOpen" @if(!$isAccTransRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
                             <a href="{{ route('accounting.journals.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.journals.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Jurnal Umum</a>
                             <a href="{{ route('sales.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('sales.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Piutang</a>
                             <a href="{{ route('purchase.payments.index') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('purchase.payments.*') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Pembayaran Hutang</a>
@@ -1524,16 +1581,13 @@
                         </div>
                     </div>
 
-                    <!-- 3. Laporan / Report -->
-                    <div class="group">
-                        <button @click="subLaporan = !subLaporan" type="button" class="w-full flex items-center justify-between px-3 py-1.5 rounded text-white/70 hover:bg-[#1b2e52] hover:text-white">
-                            <div class="flex items-center">
-                                <span class="material-symbols-outlined mr-3">bar_chart</span>
-                                <span class="text-xs font-medium">Laporan</span>
-                            </div>
-                            <span class="material-symbols-outlined text-sm" style="{{ $isAccountingReport ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;" :style="subLaporan ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'">expand_more</span>
+                    <!-- Sub-Dropdown Laporan -->
+                    <div x-data="{ subOpen: {{ $isAccReportRoute ? 'true' : 'false' }} }">
+                        <button @click="subOpen = !subOpen" type="button" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs font-semibold text-white/80 hover:bg-[#1b2e52] hover:text-white transition">
+                            <span>Laporan</span>
+                            <span class="material-symbols-outlined text-xs" :style="subOpen ? 'transform: rotate(180deg)' : 'transform: rotate(0deg)'" style="{{ $isAccReportRoute ? 'transform: rotate(180deg);' : 'transform: rotate(0deg);' }} transition: transform 0.2s;">expand_more</span>
                         </button>
-                        <div x-show="subLaporan" @if(!$isAccountingReport) x-cloak style="display: none;" @endif class="pl-8 pr-2 py-1 flex flex-col gap-1">
+                        <div x-show="subOpen" @if(!$isAccReportRoute) x-cloak style="display: none;" @endif class="pl-3 pr-1 py-1 flex flex-col gap-0.5">
                             <a href="{{ route('accounting.reports.ledger') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.ledger') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Buku Besar</a>
                             <a href="{{ route('accounting.reports.trial-balance') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.trial-balance') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Neraca Saldo</a>
                             <a href="{{ route('accounting.reports.receivables-upcoming') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.receivables-upcoming') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Piutang Jatuh Tempo</a>
@@ -1550,7 +1604,6 @@
                             <a href="{{ route('accounting.reports.stock-valuation') }}" class="py-1.5 px-2 text-xs rounded {{ request()->routeIs('accounting.reports.stock-valuation') ? 'bg-[#1b2e52] text-white font-bold' : 'text-white/60 hover:text-white' }}">Valuasi Persediaan</a>
                         </div>
                     </div>
-
                 </div>
             </div>
 
