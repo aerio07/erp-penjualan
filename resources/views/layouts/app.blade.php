@@ -6,6 +6,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — FlashSuite Pro</title>
 
+    <!-- Favicon / Logo Tab Browser -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}">
+    <link rel="alternate icon" type="image/svg+xml" href="{{ asset('assets/favicon/favicon.svg') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/favicon.svg') }}">
+
 
 
     <!-- Google Fonts & Material Symbols -->

@@ -7,6 +7,11 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon / Logo Tab Browser -->
+        <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}">
+        <link rel="alternate icon" type="image/svg+xml" href="{{ asset('assets/favicon/favicon.svg') }}">
+        <link rel="shortcut icon" href="{{ asset('assets/favicon.svg') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
