@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'FlashSuite Pro') }}</title>
+        <title>FlashSuite Pro</title>
 
         <!-- Favicon / Logo Tab Browser -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}?v=6">
