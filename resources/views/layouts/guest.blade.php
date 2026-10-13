@@ -5,12 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'FlashSuite Pro') }}</title>
 
         <!-- Favicon / Logo Tab Browser -->
-        <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}">
-        <link rel="alternate icon" type="image/svg+xml" href="{{ asset('assets/favicon/favicon.svg') }}">
-        <link rel="shortcut icon" href="{{ asset('assets/favicon.svg') }}">
+        <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}?v=6">
+        <link rel="alternate icon" type="image/svg+xml" href="{{ asset('assets/favicon/favicon.svg') }}?v=6">
+        <link rel="shortcut icon" href="{{ asset('assets/favicon.svg') }}?v=6">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

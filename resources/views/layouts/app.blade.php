@@ -7,9 +7,9 @@
     <title>@yield('title', 'Dashboard') — FlashSuite Pro</title>
 
     <!-- Favicon / Logo Tab Browser -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}">
-    <link rel="alternate icon" type="image/svg+xml" href="{{ asset('assets/favicon/favicon.svg') }}">
-    <link rel="shortcut icon" href="{{ asset('assets/favicon.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/favicon.svg') }}?v=6">
+    <link rel="alternate icon" type="image/svg+xml" href="{{ asset('assets/favicon/favicon.svg') }}?v=6">
+    <link rel="shortcut icon" href="{{ asset('assets/favicon.svg') }}?v=6">
 
 
 
@@ -1680,10 +1680,17 @@
 
             <!-- Right Options -->
             <div class="flex items-center gap-3 sm:gap-6">
-                <button class="relative text-[#44474e] hover:text-[#03193c] transition-colors p-1" title="Notifikasi">
-                    <span class="material-symbols-outlined">notifications</span>
-                    <span class="absolute top-0.5 right-0.5 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
-                </button>
+                @php
+                    $navPendingApprovals = \App\Models\ApprovalRequest::where('status', 'pending')->count();
+                @endphp
+                <a href="{{ route('approvals.index') }}" class="relative text-[#44474e] hover:text-[#03193c] transition-colors p-1 flex items-center justify-center" title="Approval & Notifikasi ({{ $navPendingApprovals }} pending)">
+                    <span class="material-symbols-outlined text-[24px]">notifications</span>
+                    @if($navPendingApprovals > 0)
+                        <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#ba1a1a] text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none shadow-sm">
+                            {{ $navPendingApprovals > 99 ? '99+' : $navPendingApprovals }}
+                        </span>
+                    @endif
+                </a>
                 <div class="h-6 sm:h-8 w-px bg-[#E2E8F0]"></div>
                 
                 <!-- Profile Dropdown -->
